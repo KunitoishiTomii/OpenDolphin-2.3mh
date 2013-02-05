@@ -1,5 +1,7 @@
 package open.dolphin.impl.pacsviewer;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 
@@ -50,8 +52,8 @@ public class ListDicomObject implements Comparable {
         return ptId;
     }
 
-    public String getPtName() {
-        return ptName;
+    public String getPtName() throws UnsupportedEncodingException {
+        return new String(ptName.getBytes(), "JIS_Encoding");
     }
 
     public String getPtSex() {
@@ -66,8 +68,8 @@ public class ListDicomObject implements Comparable {
         return modalities;
     }
 
-    public String getDescription() {
-        return description;
+    public String getDescription() throws UnsupportedEncodingException {
+        return new String(description.getBytes(), "JIS_Encoding");
     }
 
     public String getStudyDate() {
