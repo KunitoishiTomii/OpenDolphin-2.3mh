@@ -5,6 +5,7 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.event.*;
 import java.awt.print.PrinterException;
 import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -127,8 +128,23 @@ public class LaboTestBean extends AbstractChartDocument {
         for (NLaboModule module : modules) {
 
             // 検体採取日
-            header[moduleIndex + 1] = module.getSampleDate();
-
+            if(module.getSampleDate().length()==12){
+                // FALCOの日付データはyyyymmddhhmm形式でDBに登録されているので、
+                // DBに登録されたデータを他データの形式に併せて出力する (苦肉の策)
+                // 2013/1/19 FALCOのlabocentercodeは"FALCO"でないことがあるため、
+                // labocentercodeを判断条件から除外
+                SimpleDateFormat df12 = new SimpleDateFormat("yyyyMMddhhmm");
+                SimpleDateFormat dfDef= new SimpleDateFormat("yyyy-MM-dd hh:mm");
+                try{
+                    header[moduleIndex + 1] = dfDef.format(df12.parse(module.getSampleDate()));
+                }
+                catch(Exception e){
+                    header[moduleIndex + 1] = module.getSampleDate();
+                }
+            }
+            else{
+                header[moduleIndex + 1] = module.getSampleDate();
+            }
             for (NLaboItem item : module.getItems()) {
 
                 // 検体名を取得する

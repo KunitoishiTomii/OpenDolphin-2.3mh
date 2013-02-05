@@ -1034,6 +1034,14 @@ class Hl7 {
                             if (subCompositeNo != -1) {
                                 subFieldStr = getHL7FactorString(subFieldStr, subCompositeNo, m_scSep);
                             }
+                            else if(subFieldStr.equals("<=")){
+								// 橋本医院オリジナル
+                                /* FALCOのHL7形式の場合、 <= ^ 数値 というフォーマットになっている */
+                                subFieldStr += getHL7FactorString(item, 1, m_cSep);
+                            }
+                            else{
+                                /* Nothing */
+                            }
                             sb.append(subFieldStr);
                         }
                         break;

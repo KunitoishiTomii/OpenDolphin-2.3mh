@@ -615,13 +615,14 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
                                     String val = newRd.getEndDate();
                                     if (val == null || val.equals("")) {
                                         // masuda 転帰日の自動入力を月末にする
-                                        GregorianCalendar gc = new GregorianCalendar();
-                                        int year = gc.get(GregorianCalendar.YEAR);
-                                        int month = gc.get(GregorianCalendar.MONTH);
-                                        int day = gc.getActualMaximum(GregorianCalendar.DATE);
-                                        gc.set(year, month, day, 0, 0, 0);
-                                        String today = MMLDate.getDate(gc);
-                                        newRd.setEndDate(today);
+                                        // katou  2012/11/28 橋本医院オリジナル：月末ではなく当日を入れるように修正
+                                        // GregorianCalendar gc = new GregorianCalendar();
+                                        // int year = gc.get(GregorianCalendar.YEAR);
+                                        // int month = gc.get(GregorianCalendar.MONTH);
+                                        // int day = gc.getActualMaximum(GregorianCalendar.DATE);
+                                        // gc.set(year, month, day, 0, 0, 0);
+                                        // String today = MMLDate.getDate(gc);
+                                        newRd.setEndDate(lastVisit);
                                     }
                                 }
                                 newRd.setStatus(DIAGNOSIS_EDITED);
