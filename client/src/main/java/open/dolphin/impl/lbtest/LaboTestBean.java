@@ -166,7 +166,11 @@ public class LaboTestBean extends AbstractChartDocument {
                 boolean found = false;
 
                 for (LabTestRowObject rowObject : rowObjectList) {
-                    if (item.getItemCode().equals(rowObject.getItemCode())) {
+                	// 20130206 katou
+                	// HbA1c NGSPとJDSが共存していると表示がおかしくなる問題対応
+                    // if (item.getItemCode().equals(rowObject.getItemCode())) {
+                    if ((item.getItemCode().equals(rowObject.getItemCode()) &&
+                        (item.getItemName().equals(rowObject.getItemName())))) {
                         found = true;
                         LabTestValueObject value = new LabTestValueObject();
                         value.setSampleDate(module.getSampleDate());
