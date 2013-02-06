@@ -3,7 +3,6 @@ package open.dolphin.impl.pacsviewer;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import org.dcm4che2.data.DicomObject;
-import org.dcm4che2.data.SpecificCharacterSet;
 import org.dcm4che2.data.Tag;
 
 /**
@@ -22,11 +21,9 @@ public class ListDicomObject implements Comparable {
     private String description;
     private String studyDate;
     private String numberOfImage;
-    private SpecificCharacterSet charSet;
 
     public ListDicomObject(DicomObject obj) {
         object = obj;
-        charSet = obj.getSpecificCharacterSet();
         ptId = getString(Tag.PatientID);
         ptName = getString(Tag.PatientName).replace("^", " ");
         ptSex = getString(Tag.PatientSex);
@@ -43,12 +40,7 @@ public class ListDicomObject implements Comparable {
         if (object == null) {
             return "";
         }
-        String str;
-        if (charSet == null) {
-            str = object.getString(tag);
-        } else {
-            str = charSet.decode(object.getBytes(tag));
-        }
+        String str = object.getString(tag);
         return (str == null) ? "" : str;
     }
 
