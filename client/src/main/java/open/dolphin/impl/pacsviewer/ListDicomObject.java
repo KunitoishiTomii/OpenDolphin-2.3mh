@@ -1,7 +1,7 @@
 package open.dolphin.impl.pacsviewer;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import open.dolphin.util.CharsetDetector;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 
@@ -11,7 +11,7 @@ import org.dcm4che2.data.Tag;
  * @author masuda, Masuda Naika
  */
 public class ListDicomObject implements Comparable {
-
+    
     private DicomObject object;
     private String ptId;
     private String ptName;
@@ -22,6 +22,7 @@ public class ListDicomObject implements Comparable {
     private String studyDate;
     private String numberOfImage;
 
+
     public ListDicomObject(DicomObject obj) {
         object = obj;
         ptId = getString(Tag.PatientID);
@@ -29,7 +30,7 @@ public class ListDicomObject implements Comparable {
         ptSex = getString(Tag.PatientSex);
         ptBirthDate = getString(Tag.PatientBirthDate);
         modalities = getString(Tag.ModalitiesInStudy);
-        description = getString(Tag.StudyDescription);
+        description = getString2(Tag.StudyDescription);
         studyDate = getString(Tag.StudyDate);
         numberOfImage = getString(Tag.NumberOfStudyRelatedInstances);
     }
@@ -43,7 +44,32 @@ public class ListDicomObject implements Comparable {
         String str = object.getString(tag);
         return (str == null) ? "" : str;
     }
+    
+    // Descriptionの文字化け対策
+    private String getString2(int tag) {
+        
+        if (object == null) {
+            return "";
+        }
+        
+        byte[] bytes = object.getBytes(tag);
+        String encoding = CharsetDetector.getStringEncoding(bytes);
+        String str;
 
+        if (encoding != null) {
+            try {
+                str = new String(bytes, encoding);
+            } catch (UnsupportedEncodingException ex) {
+                str = object.getString(tag);
+            }
+        } else {
+            str = object.getString(tag);
+        }
+        
+        return (str == null) ? "" : str;
+    }
+
+    
     public DicomObject getDicomObject() {
         return object;
     }

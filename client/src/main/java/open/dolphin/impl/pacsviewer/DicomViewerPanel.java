@@ -55,7 +55,8 @@ public class DicomViewerPanel extends JPanel {
     private final static DecimalFormat frmt = new DecimalFormat("0.0");
     
     private DicomViewer viewer;
-
+    
+    
     public DicomViewerPanel(DicomViewer viewer) {
         this.viewer = viewer;
         measure = new ArrayList<PointPair>();
@@ -65,7 +66,7 @@ public class DicomViewerPanel extends JPanel {
         this.addMouseListener(adapter);
         this.addMouseMotionListener(adapter);
     }
-
+    
     // AffineTransformとLookup Tableを適応した画像を表示
     @Override
     public void paintComponent(Graphics g) {
