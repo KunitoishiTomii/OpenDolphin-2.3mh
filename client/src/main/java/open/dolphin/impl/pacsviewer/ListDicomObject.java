@@ -1,9 +1,6 @@
 package open.dolphin.impl.pacsviewer;
 
 import java.io.UnsupportedEncodingException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import open.dolphin.client.ClientContext;
 import open.dolphin.util.CharsetDetector;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
