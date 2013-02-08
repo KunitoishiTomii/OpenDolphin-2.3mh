@@ -1,6 +1,9 @@
 package open.dolphin.impl.pacsviewer;
 
 import java.io.UnsupportedEncodingException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import open.dolphin.client.ClientContext;
 import open.dolphin.util.CharsetDetector;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
@@ -26,7 +29,7 @@ public class ListDicomObject implements Comparable {
     public ListDicomObject(DicomObject obj) {
         object = obj;
         ptId = getString(Tag.PatientID);
-        ptName = getString(Tag.PatientName).replace("^", " ");
+        ptName = getNameString().replace("^", " ");
         ptSex = getString(Tag.PatientSex);
         ptBirthDate = getString(Tag.PatientBirthDate);
         modalities = getString(Tag.ModalitiesInStudy);
@@ -70,6 +73,53 @@ public class ListDicomObject implements Comparable {
     }
 
     
+    // Nameの文字化け対策
+    private String getNameString() {
+        String  strAll;
+        String  strPart;
+        String  strTemp;
+        String  strHat;
+        String  strReturn = "";
+        int     iReadEnd;
+        
+        if (object == null) {
+            return "";
+        }
+        
+        strAll = object.getString(Tag.PatientName);
+        if (strAll == null){
+            return "";
+        }
+        iReadEnd    = 0;
+        while(iReadEnd != -1){
+            iReadEnd = strAll.indexOf("=");
+            if(iReadEnd != -1){
+                strPart = strAll.substring(0, iReadEnd);
+                strHat  = "=";
+            }
+            else{
+                strPart = strAll;
+                strHat  = "";
+            }
+            String encoding = CharsetDetector.getStringEncoding(strPart.getBytes());
+            if (encoding != null){
+                try {
+                    strTemp = new String(strPart.getBytes(), encoding);
+                } catch (UnsupportedEncodingException ex) {
+                    strTemp = strPart;
+                }
+            }
+            else{
+                strTemp = strPart;
+            }
+            strReturn = strReturn + strTemp + strHat;
+            if(iReadEnd != -1){
+                strAll = strAll.substring(iReadEnd+1);
+            }
+        }
+        return strReturn;
+    }
+
     public DicomObject getDicomObject() {
         return object;
     }
@@ -78,8 +128,8 @@ public class ListDicomObject implements Comparable {
         return ptId;
     }
 
-    public String getPtName() throws UnsupportedEncodingException {
-        return new String(ptName.getBytes(), "JIS_Encoding");
+    public String getPtName() {
+        return ptName;
     }
 
     public String getPtSex() {
@@ -94,8 +144,8 @@ public class ListDicomObject implements Comparable {
         return modalities;
     }
 
-    public String getDescription() throws UnsupportedEncodingException {
-        return new String(description.getBytes(), "JIS_Encoding");
+    public String getDescription() {
+        return description;
     }
 
     public String getStudyDate() {
