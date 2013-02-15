@@ -1299,8 +1299,7 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
             sender.send(rdList);
 
 */
-            KarteContentSender sender = new KarteContentSender();
-            sender.sendDiagnosis(getContext(), rdList);
+            KarteContentSender.getInstance().sendDiagnosis(getContext(), rdList);
 //masuda$
         }
     }
@@ -1456,8 +1455,7 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
             rdList.addAll(updated);
             rdList.addAll(deleted);
             if (sendClaim && !rdList.isEmpty()) {
-                KarteContentSender sender = new KarteContentSender();
-                sender.sendDiagnosis(getContext(), rdList);
+                KarteContentSender.getInstance().sendDiagnosis(getContext(), rdList);
             }
 
             return result;
