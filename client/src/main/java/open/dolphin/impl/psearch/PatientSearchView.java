@@ -19,11 +19,11 @@ public class PatientSearchView extends JPanel {
     private JTextField keywordFld;
     private JRadioButton karteSearchBtn;
     private JRadioButton ptSearchBtn;
-    private JComboBox methodCombo;
+    // private JComboBox methodCombo;
 
-    public static final String HIBERNATE_SEARCH = "Ｈ検";
-    public static final String ALL_SEARCH = "全て";
-    public static final String CONTENT_SEARCH = "本文";
+    // public static final String HIBERNATE_SEARCH = "Ｈ検";
+    // public static final String ALL_SEARCH = "全て";
+    // public static final String CONTENT_SEARCH = "本文";
     
     public PatientSearchView() {
         JPanel panel = new JPanel();
@@ -51,13 +51,13 @@ public class PatientSearchView extends JPanel {
         panel.add(cb_fullTextSearch);
         panel.add(Box.createHorizontalStrut(5));
 */
-        methodCombo = new JComboBox();
-        methodCombo.addItem(HIBERNATE_SEARCH);
-        methodCombo.addItem(ALL_SEARCH);
-        methodCombo.addItem(CONTENT_SEARCH);
-        methodCombo.setEnabled(false);
-        panel.add(methodCombo);
-        panel.add(Box.createHorizontalStrut(5));
+        // methodCombo = new JComboBox();
+        // methodCombo.addItem(HIBERNATE_SEARCH);
+        // methodCombo.addItem(ALL_SEARCH);
+        // methodCombo.addItem(CONTENT_SEARCH);
+        // methodCombo.setEnabled(false);
+        // panel.add(methodCombo);
+        // panel.add(Box.createHorizontalStrut(5));
 
         keywordFld = new JTextField();
         keywordFld.setToolTipText("キーワードを入力");
@@ -91,7 +91,7 @@ public class PatientSearchView extends JPanel {
     public JLabel getLoupeLbl() {
         return loupeLbl;
     }
-    public JComboBox getMethodCombo() {
-        return methodCombo;
-    }
+    // public JComboBox getMethodCombo() {
+    //     return methodCombo;
+    // }
 }
