@@ -835,22 +835,22 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
 
 //masuda^    同じ病名がないか調べる
     private boolean disallowSameDiagnosis(RegisteredDiagnosisModel newRd){
-
         String diagCd = getRealDiagnosisCode(newRd);
         for (RegisteredDiagnosisModel rd : allDiagnosis) {
+            
             String testCd = getRealDiagnosisCode(rd);
             if (diagCd != null && diagCd.equals(testCd) 
                     && newRd.getId() != rd.getId()) {   // 編集もとは除く
                 int index = tableModel.getDataProvider().indexOf(rd);
                 // activeのみへの対応
-                String msgNonActive = "（非アクティブ）";
-                if (index != -1) {
-                    int sIndex = sorter.modelIndex(index);
-                    diagTable.setRowSelectionInterval(sIndex, sIndex);
-                    msgNonActive = "";
+                if (rd.getEndDate() != null && !rd.getEndDate().equals("")){
+                    // すでに終了日が存在していれば破棄
+                    continue;
                 }
+                int sIndex = sorter.modelIndex(index);
+                diagTable.setRowSelectionInterval(sIndex, sIndex);
                 String[] options = {"取消", "無視"};
-                String msg = newRd.getDiagnosisName() + "は重複しています。" + msgNonActive;
+                String msg = newRd.getDiagnosisName() + "は重複しています。";
                 int val = JOptionPane.showOptionDialog(getContext().getFrame(), msg, "傷病名エディタ",
                         JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null, options, options[0]);
                 if (val != 1) {
