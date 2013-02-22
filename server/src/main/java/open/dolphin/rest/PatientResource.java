@@ -2,9 +2,8 @@ package open.dolphin.rest;
 
 import java.util.List;
 import javax.inject.Inject;
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
+import open.dolphin.infomodel.HealthInsuranceModel;
 import open.dolphin.infomodel.PatientModel;
 import open.dolphin.session.PatientServiceBean;
 
@@ -15,7 +14,7 @@ import open.dolphin.session.PatientServiceBean;
  * @author modified by masuda, Masuda Naika
  */
 
-@Path("patient")
+@Path("rest/patient")
 public class PatientResource extends AbstractResource {
 
     private static final boolean debug = false;
@@ -23,8 +22,6 @@ public class PatientResource extends AbstractResource {
     @Inject
     private PatientServiceBean patientServiceBean;
     
-    @Context
-    private HttpServletRequest servletReq;
     
     public PatientResource() {
     }
@@ -35,7 +32,7 @@ public class PatientResource extends AbstractResource {
     @Produces(MEDIATYPE_JSON_UTF8)
     public String getPatientsByName(@PathParam("param") String param) {
 
-        String fid = getRemoteFacility(servletReq.getRemoteUser());
+        String fid = getRemoteFacility();
         String name = param;
 
         List<PatientModel> patients = patientServiceBean.getPatientsByName(fid, name);
@@ -52,7 +49,7 @@ public class PatientResource extends AbstractResource {
     @Produces(MEDIATYPE_JSON_UTF8)
     public String getPatientsByKana(@PathParam("param") String param) {
 
-        String fid = getRemoteFacility(servletReq.getRemoteUser());
+        String fid = getRemoteFacility();
         String kana = param;
 
         List<PatientModel> patients = patientServiceBean.getPatientsByKana(fid, kana);
@@ -69,7 +66,7 @@ public class PatientResource extends AbstractResource {
     @Produces(MEDIATYPE_JSON_UTF8)
     public String getPatientsByDigit(@PathParam("param") String param) {
 
-        String fid = getRemoteFacility(servletReq.getRemoteUser());
+        String fid = getRemoteFacility();
         String digit = param;
         debug(fid);
         debug(digit);
@@ -88,7 +85,7 @@ public class PatientResource extends AbstractResource {
     @Produces(MEDIATYPE_JSON_UTF8)
     public String getPatientById(@PathParam("param") String param) {
 
-        String fid = getRemoteFacility(servletReq.getRemoteUser());
+        String fid = getRemoteFacility();
         String pid = param;
 
         PatientModel patient = patientServiceBean.getPatientById(fid, pid);
@@ -104,7 +101,7 @@ public class PatientResource extends AbstractResource {
     @Produces(MEDIATYPE_JSON_UTF8)
     public String getPatientsByPvt(@PathParam("param") String param) {
 
-        String fid = getRemoteFacility(servletReq.getRemoteUser());
+        String fid = getRemoteFacility();
         String pvtDate = param;
 
         List<PatientModel> patients = patientServiceBean.getPatientsByPvtDate(fid, pvtDate);
@@ -121,7 +118,7 @@ public class PatientResource extends AbstractResource {
     @Produces(MEDIATYPE_TEXT_UTF8)
     public String postPatient(String json) {
 
-        String fid = getRemoteFacility(servletReq.getRemoteUser());
+        String fid = getRemoteFacility();
 
         PatientModel patient = (PatientModel)
                 getConverter().fromJson(json, PatientModel.class);
@@ -140,7 +137,7 @@ public class PatientResource extends AbstractResource {
     @Produces(MEDIATYPE_TEXT_UTF8)
     public String putPatient(String json) {
 
-        String fid = getRemoteFacility(servletReq.getRemoteUser());
+        String fid = getRemoteFacility();
 
         PatientModel patient = (PatientModel)
                 getConverter().fromJson(json, PatientModel.class);
@@ -158,10 +155,22 @@ public class PatientResource extends AbstractResource {
     @Produces(MEDIATYPE_JSON_UTF8)
     public String getPatientList(@QueryParam("ids") String ids) {
         
-        String fid = getRemoteFacility(servletReq.getRemoteUser());
+        String fid = getRemoteFacility();
         List<String> idList = getConverter().toStrList(ids);
         
         List<PatientModel> list = patientServiceBean.getPatientList(fid, idList);
+        
+        String json = getConverter().toJson(list);
+        
+        return json;
+    }
+
+    @GET
+    @Path("insurances/{id}/")
+    @Produces(MEDIATYPE_JSON_UTF8)
+    public String getHealthInsurances(@PathParam("id") Long pk) {
+        
+        List<HealthInsuranceModel> list = patientServiceBean.getHealthInsurances(pk);
         
         String json = getConverter().toJson(list);
         

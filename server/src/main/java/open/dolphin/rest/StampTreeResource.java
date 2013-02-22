@@ -3,9 +3,7 @@ package open.dolphin.rest;
 import com.fasterxml.jackson.core.type.TypeReference;
 import java.util.List;
 import javax.inject.Inject;
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
 import open.dolphin.infomodel.*;
 import open.dolphin.session.StampServiceBean;
 
@@ -16,7 +14,7 @@ import open.dolphin.session.StampServiceBean;
  * @author modified by masuda, Masuda Naika
  */
 
-@Path("stampTree")
+@Path("rest/stampTree")
 public class StampTreeResource extends AbstractResource {
 
     private static final boolean debug = false;
@@ -24,8 +22,6 @@ public class StampTreeResource extends AbstractResource {
     @Inject
     private StampServiceBean stampServiceBean;
     
-    @Context
-    private HttpServletRequest servletReq;
 
     public StampTreeResource() {
     }
@@ -118,7 +114,7 @@ public class StampTreeResource extends AbstractResource {
     @Produces(MEDIATYPE_JSON_UTF8)
     public String getPublishedTrees() {
 
-        String fid = getRemoteFacility(servletReq.getRemoteUser());
+        String fid = getRemoteFacility();
         List<PublishedTreeModel> list = stampServiceBean.getPublishedTrees(fid);
 
         String json = getConverter().toJson(list);

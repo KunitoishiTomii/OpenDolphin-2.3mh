@@ -1,6 +1,7 @@
 package open.dolphin.util;
 
-import java.beans.*;
+import java.beans.XMLDecoder;
+import java.beans.XMLEncoder;
 import java.io.*;
 
 /**
@@ -13,49 +14,65 @@ public class BeanUtils {
     
     public static String beanToXml(Object bean)  {
         
-        String ret = null;
         try {
-            ret = new String(getXMLBytes(bean), UTF8);
+            return new String(xmlEncode(bean), UTF8);
         } catch (Exception e) {
-            System.out.println(e);
             e.printStackTrace(System.err);
         }
-        return ret;
+        return null;
     }
     
     public static Object xmlToBean(String beanXml) {
-        
-        Object ret;
-        
-        // XMLDecode
+
         try {
             byte[] bytes = beanXml.getBytes(UTF8);
-            
-            XMLDecoder d = new XMLDecoder(
-                    new BufferedInputStream(
-                    new ByteArrayInputStream(bytes)));
-            
-            ret = d.readObject();
+            return xmlDecode(bytes);
         } catch (Exception e) {
-            ret = null;
             e.printStackTrace(System.err);
         }
-        
-        return ret;
-    }
-    
-    public static byte[] getXMLBytes(Object bean)  {
-        ByteArrayOutputStream bo = new ByteArrayOutputStream();
-        XMLEncoder e = new XMLEncoder(new BufferedOutputStream(bo));
-        e.writeObject(bean);
-        e.close();
-        return bo.toByteArray();
+        return null;
     }
     
     public static byte[] xmlEncode(Object bean)  {
+        
+        ByteArrayOutputStream bo = new ByteArrayOutputStream();
+        XMLEncoder e = new XMLEncoder(bo);
+        e.writeObject(bean);
+        e.close();
+        
+        return bo.toByteArray();
+    }
+    
+    public static Object xmlDecode(byte[] bytes) {
+        
+        XMLDecoder d = new XMLDecoder(new ByteArrayInputStream(bytes));
+        return d.readObject();
+    }
+    
+    public static Object deepCopy(Object src) {
+  
+        try {
+            ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+            ObjectOutputStream out = new ObjectOutputStream(byteOut);
+            out.writeObject(src);
+            ByteArrayInputStream byteIn = new ByteArrayInputStream(byteOut.toByteArray());
+            ObjectInputStream in = new ObjectInputStream(byteIn);
+            return in.readObject();
+            
+        } catch (ClassNotFoundException ex) {
+        } catch (IOException ex) {
+        }
+        
+        return null;
+    }
+
+/*
+//masuda^   http://forums.sun.com/thread.jspa?threadID=427879
+
+    public static byte[] xmlEncode(Object bean)  {
         ByteArrayOutputStream bo = new ByteArrayOutputStream();
         XMLEncoder e = new XMLEncoder(new BufferedOutputStream(bo));
-
+        
 //masuda^   java.sql.Dateとjava.sql.TimestampがxmlEncodeで失敗する
         DatePersistenceDelegate dpd = new DatePersistenceDelegate();
         e.setPersistenceDelegate(java.sql.Date.class, dpd);
@@ -67,41 +84,7 @@ public class BeanUtils {
         e.close();
         return bo.toByteArray();
     }
-    
-    public static Object xmlDecode(byte[] bytes) {
-        
-        XMLDecoder d = new XMLDecoder(
-                new BufferedInputStream(
-                new ByteArrayInputStream(bytes)));
 
-        return d.readObject();
-    }
-    
-//masuda^
-    //public static Object deepCopy(Object src) {
-    //    return xmlDecode(getXMLBytes(src));
-    //}
-    
-    public static Object deepCopy(Object src) {
-        
-        Object ret = null;
-  
-        try {
-            ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
-            ObjectOutputStream out = new ObjectOutputStream(byteOut);
-            out.writeObject(src);
-            ByteArrayInputStream byteIn = new ByteArrayInputStream(byteOut.toByteArray());
-            ObjectInputStream in = new ObjectInputStream(byteIn);
-            ret = in.readObject();
-        } catch (ClassNotFoundException ex) {
-        } catch (IOException ex) {
-        }
-        
-        return ret;
-    }
-//masuda$
-
-//masuda^   http://forums.sun.com/thread.jspa?threadID=427879
    private static class DatePersistenceDelegate extends PersistenceDelegate {
 
        @Override
@@ -122,5 +105,5 @@ public class BeanUtils {
        }
    }
 //masuda$
-
+*/
 }
