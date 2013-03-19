@@ -5,7 +5,7 @@
     <artifactId>OpenDolphin-2.3m</artifactId>
     <version>2.3</version>
     <packaging>pom</packaging>
-    <name>OpenDolphin-2.3m</name>
+    <name>OpenDolphin-2.3mh</name>
   
     <modules>
         <module>common</module>

@@ -805,7 +805,7 @@ public class MasudaServiceBean {
         
         final String sql1 = "from ModuleModel m "
                 + "where m.moduleInfo.entity <> '" + IInfoModel.MODULE_PROGRESS_COURSE + "' "
-                + "and m.status = 'F' and m.creator.facility.facilityId = :fid";
+                + "and m.status = 'F' and m.creator.facility.facilityId = :fid order by m.id";
         final String sql2 = "select count(m) " + sql1;
         final String sql3 = sql1 + " and m.id > :fromId order by m.id";
         final String sql4 = "from SanteiHistoryModel s "
