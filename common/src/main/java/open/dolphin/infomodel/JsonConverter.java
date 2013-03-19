@@ -10,10 +10,12 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.*;
+import java.util.zip.GZIPInputStream;
 
 /**
  * Jackson関連
@@ -153,6 +155,60 @@ public class JsonConverter {
         } finally {
             try {
                 is.close();
+            } catch (IOException ex) {
+            }
+        }
+        return null;
+    }
+    
+    // GZipped JSON to Object
+    public Object fromGzippedJson(byte[] bytes, Class clazz) {
+        
+        InputStream is = new ByteArrayInputStream(bytes);
+        return fromGzippedJson(is, clazz);
+    }
+    
+    public Object fromGzippedJson(byte[] bytes, TypeReference typeRef) {
+        
+        InputStream is = new ByteArrayInputStream(bytes);
+        return fromGzippedJson(is, typeRef);
+    }
+    
+    // GZipped JSON InputStream to Object
+    public Object fromGzippedJson(InputStream is, Class clazz) {
+
+        GZIPInputStream gis = null;
+        try {
+            gis = new GZIPInputStream(is);
+            Object obj = fromJson(gis, clazz);
+            return obj;
+        } catch (IOException ex) {
+            processException(ex);
+        } finally {
+            try {
+                if (gis != null) {
+                    gis.close();
+                }
+            } catch (IOException ex) {
+            }
+        }
+        return null;
+    }
+
+    public Object fromGzippedJson(InputStream is, TypeReference typeRef) {
+
+        GZIPInputStream gis = null;
+        try {
+            gis = new GZIPInputStream(is);
+            Object obj = fromJson(gis, typeRef);
+            return obj;
+        } catch (IOException ex) {
+            processException(ex);
+        } finally {
+            try {
+                if (gis != null) {
+                    gis.close();
+                }
             } catch (IOException ex) {
             }
         }

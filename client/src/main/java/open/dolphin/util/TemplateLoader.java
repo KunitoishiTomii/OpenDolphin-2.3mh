@@ -20,7 +20,7 @@ public class TemplateLoader {
     
     private static final String ENCODING = "UTF-8";
 
-    public static Template newTemplate(String templateName) {
+    public Template newTemplate(String templateName) {
         
         RuntimeServices runtimeServices = RuntimeSingleton.getRuntimeServices();
         InputStream instream = ClientContext.getTemplateAsStream(templateName);
@@ -39,7 +39,9 @@ public class TemplateLoader {
         } catch (UnsupportedEncodingException ex) {
         } finally {
             try {
-                reader.close();
+                if (reader != null) {
+                    reader.close();
+                }
             } catch (IOException ex) {
             }
             try {

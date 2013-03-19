@@ -1,9 +1,8 @@
 package open.dolphin.delegater;
 
-import com.sun.jersey.api.client.ClientResponse;
-import java.util.concurrent.Future;
+import java.io.InputStream;
 import open.dolphin.infomodel.ChartEventModel;
-import open.dolphin.project.Project;
+import org.jboss.resteasy.client.ClientResponse;
 
 /**
  * State変化関連のデレゲータ
@@ -18,62 +17,46 @@ public class ChartEventDelegater extends BusinessDelegater {
     private static final boolean debug = false;
     private static final ChartEventDelegater instance;
     
-    private String fid;
-
     static {
         instance = new ChartEventDelegater();
     }
     
     private ChartEventDelegater() {
-        fid = Project.getFacilityId();
     }
     
     public static ChartEventDelegater getInstance() {
         return instance;
     }
     
-    public int putChartEvent(ChartEventModel evt) {
-
+    public int putChartEvent(ChartEventModel evt) throws Exception {
+        
         String json = getConverter().toJson(evt);
 
-        ClientResponse response = getResource(PUT_EVENT_PATH, null)
-                .type(MEDIATYPE_JSON_UTF8)
-                .put(ClientResponse.class, json);
+        ClientResponse response = getClientRequest(PUT_EVENT_PATH)
+                .body(MEDIATYPE_JSON_UTF8, json)
+                .put(ClientResponse.class);
 
         int status = response.getStatus();
-        String enityStr = response.getEntity(String.class);
+        String enityStr = (String) response.getEntity(String.class);
         debug(status, enityStr);
-        
-        if (status != HTTP200) {
-            return -1;
-        }
-        
+        isHTTP200(status);
+
         return Integer.parseInt(enityStr);
     }
 
-    public Future<ClientResponse> subscribe() throws Exception {
+    public InputStream subscribe() throws Exception {
         
-        // できるだけ時間をとらないようにデシリアライズは後回しにする
-        // 処理もれが心配
-        Future<ClientResponse> future = JerseyClient.getInstance()
-                .getAsyncResource(SUBSCRIBE_PATH)
+        ClientResponse response = getClientRequest(SUBSCRIBE_PATH, null)
                 .accept(MEDIATYPE_JSON_UTF8)
                 .get(ClientResponse.class);
 
-        return future;
-    }
-/*
-    public String subscribe() throws Exception {
+        int status = response.getStatus();
+        isHTTP200(status);
+        InputStream is = (InputStream) response.getEntity(InputStream.class);
         
-        // できるだけ時間をとらないようにデシリアライズは後回しにする
-        // 処理もれが心配
-        String json = JerseyClient.getInstance()
-                .getAsyncResource(SUBSCRIBE_PATH)
-                .accept(MEDIATYPE_JSON_UTF8)
-                .get(String.class);
-        return json;
+        return is;
     }
-*/
+
     @Override
     protected void debug(int status, String entity) {
         if (debug || DEBUG) {

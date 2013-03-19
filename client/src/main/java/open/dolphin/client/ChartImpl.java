@@ -28,6 +28,7 @@ import open.dolphin.project.Project;
 import open.dolphin.setting.MiscSettingPanel;
 import open.dolphin.util.AgeCalculator;
 import open.dolphin.util.GUIDGenerator;
+//import open.dolphin.util.LapTimer;
 import open.dolphin.util.MMLDate;
 import org.apache.commons.lang.time.DurationFormatUtils;
 import org.apache.log4j.Level;
@@ -257,11 +258,19 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
      * @param 表示するドキュメントのタブ番号
      */
     @Override
-    public void showDocument(int index) {
-        int cnt = tabbedPane.getTabCount();
-        if (index >= 0 && index <= cnt - 1 && index != tabbedPane.getSelectedIndex()) {
-            tabbedPane.setSelectedIndex(index);
-        }
+    public void showDocument(final int index) {
+        
+        // カルテ選択時にNull Pointer Exceptionが発生することがある
+        // https://github.com/KatouBuntarou/OpenDolphin-2.3mh/issues/10
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                int cnt = tabbedPane.getTabCount();
+                if (index >= 0 && index <= cnt - 1 && index != tabbedPane.getSelectedIndex()) {
+                    tabbedPane.setSelectedIndex(index);
+                }
+            }
+        });
     }
 
     /**
@@ -289,8 +298,8 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
     @Override
     public void start() {
         
+        //final LapTimer timer = new LapTimer();
         
-
         final SimpleWorker worker = new SimpleWorker<KarteBean, Void>() {
             
             private int periodComboIndex;
@@ -311,6 +320,7 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
                 today.clear(Calendar.MILLISECOND);
                 
 //masuda^       // KarteBeanを取得
+                //timer.lap("Getting KarteBean");
                 DocumentDelegater ddl = DocumentDelegater.getInstance();
                 long patientId = getPatientVisit().getPatientModel().getId();
                 KarteBean karteBean = ddl.getKarte(patientId, today.getTime());
@@ -327,6 +337,7 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
                 ExtractionPeriod period = DocumentHistory.EXTRACTION_OBJECTS[periodComboIndex];
                 
                 // DocInfoModelは別に取得する
+                //timer.lap("Getting DocInfoModels");
                 DocumentSearchSpec spec = new DocumentSearchSpec();
                 spec.setKarteId(karteBean.getId());                 // カルテID
                 spec.setDocType(IInfoModel.DOCTYPE_KARTE);          // 文書タイプ
@@ -351,17 +362,14 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
                 karteBean.setPatientModel(getPatientVisit().getPatientModel());
                 setKarte(karteBean);
                 //-------------------------------------------------------------
+                //timer.lap("InitComponents");
                 initComponents();
-                SwingUtilities.invokeLater(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        getDocumentHistory().showHistory();
+                //timer.lap("ShowHistory");
+                getDocumentHistory().showHistory();
 //masuda^   抽出期間コンボ設定・ブロック解除
-                        getDocumentHistory().setExtractionPeriodComboIndex(periodComboIndex);
+                getDocumentHistory().setExtractionPeriodComboIndex(periodComboIndex);
 //masuda$
-                    }
-                });
+                //timer.lap("Finish succeeded");
             }
 
             @Override
@@ -383,10 +391,12 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
 
             @Override
             protected void stopProgress() {
+                //timer.lap("StopProgress");
                 taskTimer.stop();
                 monitor.close();
                 taskTimer = null;
                 monitor = null;
+                //timer.stop();
             }
         };
 
@@ -451,7 +461,7 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
 //masuda$
 
         // Frame と MenuBar を生成する
-        windowSupport = WindowSupport.create(sb.toString());
+        windowSupport = WindowSupport.create(sb.toString(), ChartImpl.this);
 
         // チャート用のメニューバーを得る
         JMenuBar myMenuBar = windowSupport.getMenuBar();
@@ -725,6 +735,13 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
 
         // このチャートの Window にリスナを設定する
         frame.addWindowListener(new WindowAdapter() {
+            
+            @Override
+            public void windowOpened(WindowEvent e) {
+                // Windowオープン時に状態変化を通知する
+                ChartEventHandler scl = ChartEventHandler.getInstance();
+                scl.publishKarteOpened(getPatientVisit());
+            }
 
             @Override
             public void windowClosing(WindowEvent e) {
@@ -735,22 +752,15 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
             }
 
             @Override
-            public void windowOpened(WindowEvent e) {
-                // Window がオープンされた時の処理を行う
-                chartWindowOpened(ChartImpl.this);
-            }
-
-            @Override
             public void windowClosed(WindowEvent e) {
-                // Window がクローズされた時の処理を行う
-                chartWindowClosed(ChartImpl.this);
+                // Windowクローズ時に状態変化を通知する
+                ChartEventHandler scl = ChartEventHandler.getInstance();
+                scl.publishKarteClosed(getPatientVisit());
             }
 
             @Override
             public void windowActivated(WindowEvent e) {
-                //
                 // 文書履歴へフォーカスする
-                //
                 getDocumentHistory().requestFocus();
             }
         });
@@ -861,7 +871,7 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
 
         int index = 0;
         providers = new HashMap<String, ChartDocument>();
-        JTabbedPane tab = new JTabbedPane();
+        final JTabbedPane tab = new JTabbedPane();
 
         while (iterator.hasNext()) {
 
@@ -878,7 +888,8 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
                     plugin.start();
                 }
 
-                tab.addTab(plugin.getTitle(), plugin.getIconInfo(this), plugin.getUI());
+                //tab.addTab(plugin.getTitle(), plugin.getIconInfo(this), plugin.getUI());
+                tab.addTab(plugin.getTitle(), plugin.getUI());
                 providers.put(String.valueOf(index), plugin);
 
                 index += 1;
@@ -890,6 +901,21 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
 
         // ゼロ番目を選択しておき changeListener を機能させる
         tab.setSelectedIndex(0);
+        
+        SwingWorker worker = new SwingWorker<Void, Void>(){
+
+            @Override
+            protected Void doInBackground() throws Exception {
+                int num = providers.size();
+                for (int i = 0; i < num; ++i) {
+                    ChartDocument plugin = providers.get(String.valueOf(i));
+                    ImageIcon icon = plugin.getIconInfo(ChartImpl.this);
+                    tab.setIconAt(i, icon);
+                }
+                return null;
+            }
+        };
+        worker.execute();
 
         //
         // tab に プラグインを遅延生成するためのの ChangeListener を追加する
@@ -2191,33 +2217,6 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
         }
     }
 
-    /**
-     * チャートウインドウのオープンを通知する。
-     *
-     * @param opened オープンした ChartPlugin
-     */
-    //public void windowOpened(ChartImpl opened) {
-    public void chartWindowOpened(ChartImpl opened) {
-        // インスタンスを保持するリストへ追加する
-        Dolphin.getInstance().getAllCharts().add(opened);
-    }
-
-    /**
-     * チャートウインドウのクローズを通知する。
-     *
-     * @param closed クローズした ChartPlugin
-     */
-    //public void windowClosed(ChartImpl closed) {
-    public void chartWindowClosed(ChartImpl closed) {
-
-        // インスタンスリストから取り除く
-        if (Dolphin.getInstance().getAllCharts().remove(closed)) {
-            // 状態変化を通知する
-            ChartEventListener scl = ChartEventListener.getInstance();
-            scl.publishKarteClosed(closed.getPatientVisit());
-        }
-    }
-
 //masuda^
     // ChartDocumentの別ウィンドウを開く
     private HashMap<ChartDocument, JFrame> inactiveProvidersMap;  // 別ウィンドウで開いているChartDocumentとそのJFrame
@@ -2246,7 +2245,7 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
 
     private boolean canOpenNewKarte() {
 
-        List<EditorFrame> editorFrames = Dolphin.getInstance().getAllEditorFrames();
+        List<EditorFrame> editorFrames = WindowSupport.getAllEditorFrames();
         if (editorFrames.isEmpty()) {
             return true;
         }
@@ -2270,7 +2269,7 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
     private boolean canCloseChartImpl() {
 
         // この患者のEditorFrameが開いたままなら、インスペクタを閉じられないようにする
-        List<EditorFrame> editorFrames = Dolphin.getInstance().getAllEditorFrames();
+        List<EditorFrame> editorFrames = WindowSupport.getAllEditorFrames();
         if (editorFrames != null && !editorFrames.isEmpty()) {
             long ptId = getPatient().getId();
             for (EditorFrame ef : editorFrames) {

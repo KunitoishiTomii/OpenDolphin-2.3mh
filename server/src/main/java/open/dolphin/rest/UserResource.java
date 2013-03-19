@@ -3,8 +3,10 @@ package open.dolphin.rest;
 import java.util.List;
 import javax.inject.Inject;
 import javax.ws.rs.*;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
 import open.dolphin.infomodel.UserModel;
-import open.dolphin.mbean.UserCache;
+import open.dolphin.mbean.ServletContextHolder;
 import open.dolphin.session.UserServiceBean;
 
 /**
@@ -14,7 +16,7 @@ import open.dolphin.session.UserServiceBean;
  * @author modified by masuda, Masuda Naika
  */
 
-@Path("rest/user")
+@Path("user")
 public class UserResource extends AbstractResource {
 
     private static final boolean debug = false;
@@ -23,7 +25,7 @@ public class UserResource extends AbstractResource {
     private UserServiceBean userServiceBean;
     
     @Inject
-    private UserCache userCache;
+    private ServletContextHolder contextHolder;
     
 
     public UserResource() {
@@ -32,37 +34,35 @@ public class UserResource extends AbstractResource {
     @GET
     @Path("{userId}/")
     @Produces(MEDIATYPE_JSON_UTF8)
-    public String getUser(@PathParam("userId") String userId) {
+    public Response getUser(@PathParam("userId") String userId) {
 
         UserModel result = userServiceBean.getUser(userId);
-        
-        String json = getConverter().toJson(result);
-        debug(json);
 
-        return json;
+        StreamingOutput so = getJsonOutStream(result);
+        
+        return Response.ok(so).build();
     }
 
     
     @GET
     @Produces(MEDIATYPE_JSON_UTF8)
-    public String getAllUser() {
+    public Response getAllUser() {
         
         String fid = getRemoteFacility();
         debug(fid);
 
         List<UserModel> result = userServiceBean.getAllUser(fid);
-
-        String json = getConverter().toJson(result);
-        debug(json);
-
-        return json;
+        
+        StreamingOutput so = getJsonOutStream(result);
+        
+        return Response.ok(so).build();
     }
 
 
     @POST
     @Consumes(MEDIATYPE_JSON_UTF8)
     @Produces(MEDIATYPE_TEXT_UTF8)
-    public String postUser(String json) {
+    public Response postUser(String json) {
 
         String fid = getRemoteFacility();
         debug(fid);
@@ -76,16 +76,16 @@ public class UserResource extends AbstractResource {
         
         debug(cntStr);
         
-        userCache.getMap().clear();
+        contextHolder.getUserMap().clear();
 
-        return cntStr;
+        return Response.ok(cntStr).build();
     }
 
 
     @PUT
     @Consumes(MEDIATYPE_JSON_UTF8)
     @Produces(MEDIATYPE_TEXT_UTF8)
-    public String putUser(String json) {
+    public Response putUser(String json) {
 
         UserModel model = (UserModel)
                 getConverter().fromJson(json, UserModel.class);
@@ -95,9 +95,9 @@ public class UserResource extends AbstractResource {
         
         debug(cntStr);
         
-        userCache.getMap().clear();
+        contextHolder.getUserMap().clear();
 
-        return cntStr;
+        return Response.ok(cntStr).build();
     }
 
 
@@ -109,7 +109,7 @@ public class UserResource extends AbstractResource {
 
         debug(String.valueOf(result));
         
-        userCache.getMap().clear();
+        contextHolder.getUserMap().clear();
     }
 
 
@@ -117,7 +117,7 @@ public class UserResource extends AbstractResource {
     @Path("facility/")
     @Consumes(MEDIATYPE_JSON_UTF8)
     @Produces(MEDIATYPE_TEXT_UTF8)
-    public String putFacility(String json) {
+    public Response putFacility(String json) {
 
         UserModel model = (UserModel)
                 getConverter().fromJson(json, UserModel.class);
@@ -127,7 +127,7 @@ public class UserResource extends AbstractResource {
         
         debug(cntStr);
 
-        return cntStr;
+        return Response.ok(cntStr).build();
     }
 
     @Override

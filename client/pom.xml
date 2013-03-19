@@ -72,10 +72,10 @@
             <version>9.1-901-1.jdbc4</version>
         </dependency>
         <dependency>
-            <groupId>com.sun.jersey</groupId>
-            <artifactId>jersey-client</artifactId>
-            <version>1.17</version>
-        </dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-jaxrs</artifactId>
+            <version>2.3.5.Final</version>
+	</dependency>
         <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
@@ -119,9 +119,9 @@
             <type>jar</type>
         </dependency>
         <dependency>
-            <groupId>commons-dbcp</groupId>
-            <artifactId>commons-dbcp</artifactId>
-            <version>1.4</version>
+            <groupId>org.apache.tomcat</groupId>
+            <artifactId>tomcat-jdbc</artifactId>
+            <version>7.0.35</version>
         </dependency>
 <!-- 以下は自分でローカルリポジトリに追加する -->
         <dependency>
@@ -139,7 +139,7 @@
         <dependency>
             <groupId>ch.randelshofer</groupId>
             <artifactId>quaqua</artifactId>
-            <version>6.3.1.2</version>
+            <version>6.3.1.3</version>
             <type>jar</type>
         </dependency>
     </dependencies>

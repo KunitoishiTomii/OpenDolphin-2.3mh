@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.List;
 import javax.inject.Inject;
 import javax.ws.rs.*;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
 import open.dolphin.infomodel.HealthInsuranceModel;
 import open.dolphin.infomodel.PatientVisitModel;
 import open.dolphin.session.ChartEventServiceBean;
@@ -15,7 +17,7 @@ import open.dolphin.session.PVTServiceBean;
  * @author masuda, Masuda Naika
  */
 
-@Path("rest/pvt2")
+@Path("pvt2")
 public class PVTResource2 extends AbstractResource {
 
     private static final boolean debug = false;
@@ -33,7 +35,7 @@ public class PVTResource2 extends AbstractResource {
     @POST
     @Consumes(MEDIATYPE_JSON_UTF8)
     @Produces(MEDIATYPE_TEXT_UTF8)
-    public String postPvt(String json) {
+    public Response postPvt(String json) {
 
         PatientVisitModel model = (PatientVisitModel)
                 getConverter().fromJson(json, PatientVisitModel.class);
@@ -54,7 +56,7 @@ public class PVTResource2 extends AbstractResource {
         String cntStr = String.valueOf(result);
         debug(cntStr);
 
-        return cntStr;
+        return Response.ok(cntStr).build();
     }
     
 
@@ -74,15 +76,14 @@ public class PVTResource2 extends AbstractResource {
     @GET
     @Path("pvtList")
     @Produces(MEDIATYPE_JSON_UTF8)
-    public String getPvtList() {
+    public Response getPvtList() {
         
         String fid = getRemoteFacility();
         List<PatientVisitModel> model = eventServiceBean.getPvtList(fid);
         
-        String json = getConverter().toJson(model);
-        debug(json);
+        StreamingOutput so = getJsonOutStream(model);
         
-        return json;
+        return Response.ok(so).build();
     }
 
     @Override

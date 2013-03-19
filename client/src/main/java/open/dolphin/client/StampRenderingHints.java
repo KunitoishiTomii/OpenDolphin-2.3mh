@@ -53,9 +53,10 @@ public class StampRenderingHints {
     }
     
     private void prepareTemplates() {
-        medTemplate = TemplateLoader.newTemplate(BundleMed.class.getName() + DOT_VM);
-        dolphinTemplate = TemplateLoader.newTemplate(BundleDolphin.class.getName() + DOT_VM);
-        laboTemplate = TemplateLoader.newTemplate("labo.vm");
+        TemplateLoader templateLoader = new TemplateLoader();
+        medTemplate = templateLoader.newTemplate(BundleMed.class.getName() + DOT_VM);
+        dolphinTemplate = templateLoader.newTemplate(BundleDolphin.class.getName() + DOT_VM);
+        laboTemplate = templateLoader.newTemplate("labo.vm");
     }
     
     public String getStampHtml(StampHolder sh) {

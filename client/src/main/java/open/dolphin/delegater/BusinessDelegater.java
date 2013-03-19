@@ -1,6 +1,5 @@
 package open.dolphin.delegater;
 
-import com.sun.jersey.api.client.WebResource;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
@@ -11,6 +10,7 @@ import open.dolphin.infomodel.*;
 import open.dolphin.util.BeanUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.jboss.resteasy.client.ClientRequest;
 
 
 /**
@@ -27,7 +27,6 @@ public class BusinessDelegater {
     private static final String CHARSET_UTF8 = "; charset=UTF-8";
     protected static final String MEDIATYPE_JSON_UTF8 = MediaType.APPLICATION_JSON + CHARSET_UTF8;
     protected static final String MEDIATYPE_TEXT_UTF8 = MediaType.TEXT_PLAIN + CHARSET_UTF8;
-    protected static final int HTTP200 = 200;
 //masuda$
     
     protected Logger logger;
@@ -39,12 +38,12 @@ public class BusinessDelegater {
         DEBUG = (logger.getLevel() == Level.DEBUG);
     }
 
-    //protected WebResource.Builder getResource(String path) {
-    //    return JerseyClient.getInstance().getResource(path);
-    //}
+    protected ClientRequest getClientRequest(String path, MultivaluedMap<String, String> qmap) {
+        return RESTEasyClient.getInstance().getClientRequest(path, qmap);
+    }
     
-    protected WebResource.Builder getResource(String path, MultivaluedMap<String, String> qmap) {
-        return JerseyClient.getInstance().getResource(path, qmap);
+    protected ClientRequest getClientRequest(String path) {
+        return RESTEasyClient.getInstance().getClientRequest(path);
     }
 
     protected void debug(int status, String entity) {
@@ -99,6 +98,13 @@ public class BusinessDelegater {
 
             c.clear();
             patient.setHealthInsurances(null);
+        }
+    }
+    
+    protected void isHTTP200(int status) throws Exception {
+        if (status / 100 != 2) {
+            String msg = "HTTP" + String.valueOf(status);
+            throw new Exception(msg);
         }
     }
 }

@@ -9,13 +9,25 @@ package open.dolphin.util;
 public class LapTimer {
 
     private long sTime;
-
-    public  void start() {
+    private StringBuilder sb;
+    
+    public LapTimer() {
         sTime = System.currentTimeMillis();
+        sb = new StringBuilder();
+        sb.append("Lap timer started at ").append(sTime).append("\n");
     }
 
-    public void stop(String msg) {
-        long eTime = System.currentTimeMillis();
-        System.out.println(msg + " in msec :" + String.valueOf(eTime - sTime));
+    public void lap(String msg) {
+        long t = System.currentTimeMillis();
+        sb.append(msg).append(" at ").append(t);
+        sb.append(" (").append(t - sTime).append(")\n");
+    }
+    
+    public void stop() {
+        long t = System.currentTimeMillis();
+        sb.append("Lap timer stopped at").append(t);;
+        sb.append(" (").append(t - sTime).append(")\n");
+        System.out.println(sb.toString());
+
     }
 }

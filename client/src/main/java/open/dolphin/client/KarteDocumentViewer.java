@@ -13,6 +13,7 @@ import java.util.concurrent.Future;
 import javax.swing.*;
 import open.dolphin.delegater.DocumentDelegater;
 import open.dolphin.helper.DBTask;
+import open.dolphin.helper.WindowSupport;
 import open.dolphin.infomodel.*;
 import open.dolphin.letter.KartePDFMaker;
 import open.dolphin.project.Project;
@@ -833,14 +834,17 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
             while (fromIndex < idListSize) {
                 int toIndex = Math.min(fromIndex + fetchSize, idListSize);
                 List<Long> ids = docIdList.subList(fromIndex, toIndex);
-                List<DocumentModel> result = ddl.getDocuments(ids);
-                if (result != null && !result.isEmpty()) {
-                    for (DocumentModel model : result) {
-                        // Executorに登録していく
-                        MakeViewerTask task = new MakeViewerTask(model);
-                        service.submit(task);
-                       ++taskCount;
+                try {
+                    List<DocumentModel> result = ddl.getDocuments(ids);
+                    if (result != null && !result.isEmpty()) {
+                        for (DocumentModel model : result) {
+                            // Executorに登録していく
+                            MakeViewerTask task = new MakeViewerTask(model);
+                            service.submit(task);
+                            ++taskCount;
+                        }
                     }
+                } catch (Exception ex) {
                 }
                 fromIndex += fetchSize;
             }
@@ -1039,7 +1043,7 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
             return true;
         }
 
-        List<EditorFrame> editorFrames = Dolphin.getInstance().getAllEditorFrames();
+        List<EditorFrame> editorFrames = WindowSupport.getAllEditorFrames();
         if (editorFrames.isEmpty()) {
             return true;
         }

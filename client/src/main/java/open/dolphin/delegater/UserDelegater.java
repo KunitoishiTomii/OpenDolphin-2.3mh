@@ -1,11 +1,12 @@
 package open.dolphin.delegater;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.sun.jersey.api.client.ClientResponse;
+import java.io.InputStream;
 import java.util.List;
 import open.dolphin.infomodel.IInfoModel;
 import open.dolphin.infomodel.UserModel;
 import open.dolphin.project.Project;
+import org.jboss.resteasy.client.ClientResponse;
 
 /**
  * User 関連の Business Delegater　クラス。
@@ -31,7 +32,7 @@ public class UserDelegater extends BusinessDelegater {
     private UserDelegater() {
     }
     
-    public UserModel login(String fid, String uid, String password) {
+    public UserModel login(String fid, String uid, String password) throws Exception {
 
         StringBuilder sb = new StringBuilder();
         sb.append(fid);
@@ -39,10 +40,10 @@ public class UserDelegater extends BusinessDelegater {
         sb.append(uid);
         String fidUid = sb.toString();
 
-        JerseyClient jersey = JerseyClient.getInstance();
+        RESTEasyClient restEasy = RESTEasyClient.getInstance();
         String baseURI = Project.getBaseURI();
-        jersey.setBaseURI(baseURI);
-        jersey.setUpAuthentication(fidUid, password, false);
+        restEasy.setBaseURI(baseURI);
+        restEasy.setUpAuthentication(fidUid, password, false);
         
         if (DEBUG) {
             System.out.println(baseURI);
@@ -53,129 +54,123 @@ public class UserDelegater extends BusinessDelegater {
         return getUser(fidUid);
     }
     
-    public UserModel getUser(String userPK) {
+    public UserModel getUser(String userPK) throws Exception {
         
         StringBuilder sb = new StringBuilder();
         sb.append(RES_USER);
         sb.append(userPK);
         String path = sb.toString();
 
-        ClientResponse response = getResource(path, null)
+        ClientResponse response = getClientRequest(path, null)
                    .accept(MEDIATYPE_JSON_UTF8)
                    .get(ClientResponse.class);
 
         int status = response.getStatus();
-        String entityStr = response.getEntity(String.class);
-
-        debug(status, entityStr);
-
-        if (status != HTTP200) {
-            return null;
-        }
+        //String entityStr = (String) response.getEntity(String.class);
+        //debug(status, entityStr);
+        isHTTP200(status);
+        InputStream is = (InputStream) response.getEntity(InputStream.class);
 
         UserModel userModel = (UserModel) 
-                getConverter().fromJson(entityStr, UserModel.class);
+                getConverter().fromJson(is, UserModel.class);
 
         return userModel;
     }
     
-    public List<UserModel> getAllUser() {
-
+    public List<UserModel> getAllUser() throws Exception {
+        
         String path = RES_USER;
 
-        ClientResponse response = getResource(path, null)
+        ClientResponse response = getClientRequest(path, null)
                    .accept(MEDIATYPE_JSON_UTF8)
                    .get(ClientResponse.class);
 
         int status = response.getStatus();
-        String entityStr = response.getEntity(String.class);
+        //String entityStr = (String) response.getEntity(String.class);
+        //debug(status, entityStr);
+        isHTTP200(status);
+        InputStream is = (InputStream) response.getEntity(InputStream.class);
 
-        debug(status, entityStr);
-
-        if (status != HTTP200) {
-            return null;
-        }
-        
         TypeReference typeRef = new TypeReference<List<UserModel>>(){};
         List<UserModel> list  = (List<UserModel>) 
-                getConverter().fromJson(entityStr, typeRef);
-        
+                getConverter().fromJson(is, typeRef);
+
         return list;
     }
     
-    public int addUser(UserModel userModel) {
+    public int addUser(UserModel userModel) throws Exception {
 
         String path = RES_USER;
         String json = getConverter().toJson(userModel);
 
-        ClientResponse response = getResource(path, null)
+        ClientResponse response = getClientRequest(path, null)
                 .accept(MEDIATYPE_TEXT_UTF8)
-                .type(MEDIATYPE_JSON_UTF8)
-                .post(ClientResponse.class, json);
+                .body(MEDIATYPE_JSON_UTF8, json)
+                .post(ClientResponse.class);
 
         int status = response.getStatus();
-        String entityStr = response.getEntity(String.class);
-
+        String entityStr = (String) response.getEntity(String.class);
         debug(status, entityStr);
-
-        int cnt = Integer.parseInt(entityStr);
+        isHTTP200(status);
         
+        int cnt = Integer.parseInt(entityStr);
+
         return cnt;
     }
     
-    public int updateUser(UserModel userModel) {
-        
+    public int updateUser(UserModel userModel) throws Exception {
+
         String path = RES_USER;
         String json = getConverter().toJson(userModel);
 
-        ClientResponse response = getResource(path, null)
+        ClientResponse response = getClientRequest(path, null)
                 .accept(MEDIATYPE_TEXT_UTF8)   
-                .type(MEDIATYPE_JSON_UTF8)
-                .put(ClientResponse.class, json);
+                .body(MEDIATYPE_JSON_UTF8, json)
+                .put(ClientResponse.class);
 
         int status = response.getStatus();
-        String entityStr = response.getEntity(String.class);
-
+        String entityStr = (String) response.getEntity(String.class);
         debug(status, entityStr);
+        isHTTP200(status);
 
         int cnt = Integer.parseInt(entityStr);
-        
+
         return cnt;
     }
     
-    public int deleteUser(String uid) {
-
+    public int deleteUser(String uid) throws Exception {
+        
         String path = RES_USER + uid;
 
-        ClientResponse response = getResource(path, null)
+        ClientResponse response = getClientRequest(path, null)
                 .accept(MEDIATYPE_TEXT_UTF8)
                 .delete(ClientResponse.class);
 
         int status = response.getStatus();
-        
         debug(status, "delete response");
+        isHTTP200(status);
 
         return 1;
     }
     
-    public int updateFacility(UserModel userModel) {
-        
+    public int updateFacility(UserModel userModel) throws Exception {
+
         String path = RES_USER + "facility";
-        
+
         String json = getConverter().toJson(userModel);
 
-        ClientResponse response = getResource(path, null)
+        ClientResponse response = getClientRequest(path, null)
                 .accept(MEDIATYPE_TEXT_UTF8)
-                .type(MEDIATYPE_JSON_UTF8)
-                .put(ClientResponse.class, json);
+                .body(MEDIATYPE_JSON_UTF8, json)
+                .put(ClientResponse.class);
 
         int status = response.getStatus();
-        String entityStr = response.getEntity(String.class);
-
+        String entityStr = (String) response.getEntity(String.class);
         debug(status, entityStr);
+        isHTTP200(status);
 
         int cnt = Integer.parseInt(entityStr);
-        
+
         return cnt;
     }
     

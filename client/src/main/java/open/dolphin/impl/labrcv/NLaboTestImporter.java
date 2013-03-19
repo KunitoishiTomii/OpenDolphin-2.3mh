@@ -17,6 +17,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.TableColumn;
 import open.dolphin.client.*;
 import open.dolphin.delegater.LaboDelegater;
+import open.dolphin.helper.WindowSupport;
 import open.dolphin.infomodel.*;
 import open.dolphin.project.Project;
 import open.dolphin.table.ColumnSpecHelper;
@@ -64,13 +65,13 @@ public class NLaboTestImporter extends AbstractMainComponent {
     private NLabTestImportView view;
     
     private String clientUUID;
-    private ChartEventListener cel;
+    private ChartEventHandler cel;
     
     
     /** Creates new NLaboTestImporter */
     public NLaboTestImporter() {
         setName(NAME);
-        cel = ChartEventListener.getInstance();
+        cel = ChartEventHandler.getInstance();
         clientUUID = cel.getClientUUID();
     }
     
@@ -222,7 +223,7 @@ public class NLaboTestImporter extends AbstractMainComponent {
     private boolean isKarteOpened(PatientModel patient) {
         if (patient != null) {
             boolean opened = false;
-            List<ChartImpl> allCharts = Dolphin.getInstance().getAllCharts();
+            List<ChartImpl> allCharts = WindowSupport.getAllCharts();
             for (ChartImpl chart : allCharts) {
                 if (chart.getPatient().getId() == patient.getId()) {
                     opened = true;
@@ -683,53 +684,57 @@ public class NLaboTestImporter extends AbstractMainComponent {
     @Override
     public void propertyChange(PropertyChangeEvent e) {
         
-        ChartEventModel evt = (ChartEventModel) e.getNewValue();
+        try {
+            ChartEventModel evt = (ChartEventModel) e.getNewValue();
 
-        int sRow = -1;
-        long ptPk = evt.getPtPk();
-        List<NLaboImportSummary> list = tableModel.getDataProvider();
-        ChartEventModel.EVENT eventType = evt.getEventType();
+            int sRow = -1;
+            long ptPk = evt.getPtPk();
+            List<NLaboImportSummary> list = tableModel.getDataProvider();
+            ChartEventModel.EVENT eventType = evt.getEventType();
 
-        switch (eventType) {
-            case PVT_STATE:
-                for (int row = 0; row < list.size(); ++row) {
-                    NLaboImportSummary nlab = list.get(row);
-                    PatientModel pm = nlab.getPatient();
-                    if (pm != null && ptPk == pm.getId()) {
-                        sRow = row;
-                        pm.setOwnerUUID(evt.getOwnerUUID());
-                        break;
+            switch (eventType) {
+                case PVT_STATE:
+                    for (int row = 0; row < list.size(); ++row) {
+                        NLaboImportSummary nlab = list.get(row);
+                        PatientModel pm = nlab.getPatient();
+                        if (pm != null && ptPk == pm.getId()) {
+                            sRow = row;
+                            pm.setOwnerUUID(evt.getOwnerUUID());
+                            break;
+                        }
                     }
-                }
-                break;
-            case PM_MERGE:
-                for (int row = 0; row < list.size(); ++row) {
-                    NLaboImportSummary nlab = list.get(row);
-                    PatientModel pm = nlab.getPatient();
-                    if (pm != null && ptPk == pm.getId()) {
-                        sRow = row;
-                        nlab.setPatient(evt.getPatientModel());
-                        break;
+                    break;
+                case PM_MERGE:
+                    for (int row = 0; row < list.size(); ++row) {
+                        NLaboImportSummary nlab = list.get(row);
+                        PatientModel pm = nlab.getPatient();
+                        if (pm != null && ptPk == pm.getId()) {
+                            sRow = row;
+                            nlab.setPatient(evt.getPatientModel());
+                            break;
+                        }
                     }
-                }
-                break;                
-            case PVT_MERGE:
-                for (int row = 0; row < list.size(); ++row) {
-                    NLaboImportSummary nlab = list.get(row);
-                    PatientModel pm = nlab.getPatient();
-                    if (pm != null && ptPk == pm.getId()) {
-                        sRow = row;
-                        nlab.setPatient(evt.getPatientVisitModel().getPatientModel());
-                        break;
+                    break;
+                case PVT_MERGE:
+                    for (int row = 0; row < list.size(); ++row) {
+                        NLaboImportSummary nlab = list.get(row);
+                        PatientModel pm = nlab.getPatient();
+                        if (pm != null && ptPk == pm.getId()) {
+                            sRow = row;
+                            nlab.setPatient(evt.getPatientVisitModel().getPatientModel());
+                            break;
+                        }
                     }
-                }
-                break;
-            default:
-                break;
-        }
-        
-        if (sRow != -1) {
-            tableModel.fireTableRowsUpdated(sRow, sRow);
+                    break;
+                default:
+                    break;
+            }
+
+            if (sRow != -1) {
+                tableModel.fireTableRowsUpdated(sRow, sRow);
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace(System.err);
         }
     }
 //masuda$

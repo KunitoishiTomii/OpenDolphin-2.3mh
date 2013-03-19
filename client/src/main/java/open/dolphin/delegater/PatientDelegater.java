@@ -1,14 +1,15 @@
 package open.dolphin.delegater;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.core.util.MultivaluedMapImpl;
+import java.io.InputStream;
 import java.util.Collection;
 import java.util.List;
 import javax.ws.rs.core.MultivaluedMap;
 import open.dolphin.dto.PatientSearchSpec;
 import open.dolphin.infomodel.HealthInsuranceModel;
 import open.dolphin.infomodel.PatientModel;
+import org.jboss.resteasy.client.ClientResponse;
+import org.jboss.resteasy.specimpl.MultivaluedMapImpl;
 
 /**
  * 患者関連の Business Delegater　クラス。
@@ -44,20 +45,21 @@ public class  PatientDelegater extends BusinessDelegater {
      * @param patient 追加する患者
      * @return PK
      */
-    public long addPatient(PatientModel patient) {
+    public long addPatient(PatientModel patient) throws Exception {
         
         String json = getConverter().toJson(patient);
 
         String path = BASE_RESOURCE;
 
-        ClientResponse response = getResource(path, null)
+        ClientResponse response = getClientRequest(path, null)
                 .accept(MEDIATYPE_TEXT_UTF8)
-                .type(MEDIATYPE_JSON_UTF8)
-                .post(ClientResponse.class, json);
+                .body(MEDIATYPE_JSON_UTF8, json)
+                .post(ClientResponse.class);
 
         int status = response.getStatus();
-        String entityStr = response.getEntity(String.class);
+        String entityStr = (String) response.getEntity(String.class);
         debug(status, entityStr);
+        isHTTP200(status);
 
         return Long.valueOf(entityStr);
     }
@@ -67,25 +69,23 @@ public class  PatientDelegater extends BusinessDelegater {
      * @param pid 患者ID
      * @return PatientModel
      */
-    public PatientModel getPatientById(String pid) {
+    public PatientModel getPatientById(String pid) throws Exception {
         
         String path = ID_RESOURCE;
 
-        ClientResponse response = getResource(path, null)
+        ClientResponse response = getClientRequest(path, null)
                 .accept(MEDIATYPE_JSON_UTF8)
                 .get(ClientResponse.class);
 
         int status = response.getStatus();
-        String entityStr = response.getEntity(String.class);
-        debug(status, entityStr);
+        //String entityStr = (String) response.getEntity(String.class);
+        //debug(status, entityStr);
+        isHTTP200(status);
+        InputStream is = (InputStream) response.getEntity(InputStream.class);
 
-        if (status != HTTP200) {
-            return null;
-        }
-        
         PatientModel patient = (PatientModel)
-                getConverter().fromJson(entityStr, PatientModel.class);
-        
+                getConverter().fromJson(is, PatientModel.class);
+
         return patient;
     }
     
@@ -94,8 +94,8 @@ public class  PatientDelegater extends BusinessDelegater {
      * @param spec PatientSearchSpec 検索仕様
      * @return PatientModel の Collection
      */
-    public List<PatientModel> getPatients(PatientSearchSpec spec) {
-
+    public List<PatientModel> getPatients(PatientSearchSpec spec) throws Exception {
+        
         StringBuilder sb = new StringBuilder();
 
         switch (spec.getCode()) {
@@ -123,22 +123,20 @@ public class  PatientDelegater extends BusinessDelegater {
 
         String path = sb.toString();
 
-        ClientResponse response = getResource(path, null)
+        ClientResponse response = getClientRequest(path, null)
                 .accept(MEDIATYPE_JSON_UTF8)
                 .get(ClientResponse.class);
 
         int status = response.getStatus();
-        String entityStr = response.getEntity(String.class);
-        debug(status, entityStr);
-        
-        if (status != HTTP200) {
-            return null;
-        }
-        
+        //String entityStr = (String) response.getEntity(String.class);
+        //debug(status, entityStr);
+        isHTTP200(status);
+        InputStream is = (InputStream) response.getEntity(InputStream.class);
+
         TypeReference typeRef = new TypeReference<List<PatientModel>>(){};
         List<PatientModel> list = (List<PatientModel>)
-                getConverter().fromJson(entityStr, typeRef);
-        
+                getConverter().fromJson(is, typeRef);
+
         return list;
     }
 
@@ -147,74 +145,71 @@ public class  PatientDelegater extends BusinessDelegater {
      * @param patient 更新する患者
      * @return 更新数
      */
-    public int updatePatient(PatientModel patient) {
-
+    public int updatePatient(PatientModel patient) throws Exception {
+        
         String json = getConverter().toJson(patient);
 
         String path = BASE_RESOURCE;
 
-        ClientResponse response = getResource(path, null)
+        ClientResponse response = getClientRequest(path, null)
                 .accept(MEDIATYPE_TEXT_UTF8)    
-                .type(MEDIATYPE_JSON_UTF8)
-                .put(ClientResponse.class, json);
+                .body(MEDIATYPE_JSON_UTF8, json)
+                .put(ClientResponse.class);
 
         int status = response.getStatus();
-        String entityStr = response.getEntity(String.class);
+        String entityStr = (String) response.getEntity(String.class);
         debug(status, entityStr);
+        isHTTP200(status);
 
         return Integer.parseInt(entityStr);
     }
     
     // patientIDリストからPatienteModelのリストを取得する
-    public List<PatientModel> getPatientList(Collection patientIdList) {
+    public List<PatientModel> getPatientList(Collection patientIdList) throws Exception {
         
         String path = BASE_RESOURCE + "list";
         String ids = getConverter().fromList(patientIdList);
-        
+
         MultivaluedMap<String, String> qmap = new MultivaluedMapImpl();
         qmap.add("ids", ids);
-        
-        ClientResponse response = getResource(path, qmap)
+
+        ClientResponse response = getClientRequest(path, qmap)
                 .accept(MEDIATYPE_JSON_UTF8)
                 .get(ClientResponse.class);
-        
-        int status = response.getStatus();
-        String entityStr = response.getEntity(String.class);
-        debug(status, entityStr);
 
-        if (status != HTTP200) {
-            return null;
-        }
+        int status = response.getStatus();
+        //String entityStr = (String) response.getEntity(String.class);
+        //debug(status, entityStr);
+        isHTTP200(status);
+        InputStream is = (InputStream) response.getEntity(InputStream.class);
 
         TypeReference typeRef = new TypeReference<List<PatientModel>>(){};
         List<PatientModel> list = (List<PatientModel>)
-                getConverter().fromJson(entityStr, typeRef);
-        
+                getConverter().fromJson(is, typeRef);
+
         return list;
     }
 
     // カルテオープン時に保険情報を更新する
-    public void updateHealthInsurances(PatientModel pm) {
+    public void updateHealthInsurances(PatientModel pm) throws Exception {
         
         long pk = pm.getId();
         String path = BASE_RESOURCE + "insurances/" + String.valueOf(pk);
 
-        ClientResponse response = getResource(path, null)
+        ClientResponse response = getClientRequest(path, null)
                 .accept(MEDIATYPE_JSON_UTF8)
                 .get(ClientResponse.class);
-        
-        int status = response.getStatus();
-        String entityStr = response.getEntity(String.class);
-        debug(status, entityStr);
 
-        if (status != HTTP200) {
-            return;
-        }
+        int status = response.getStatus();
+        //String entityStr = (String) response.getEntity(String.class);
+        //debug(status, entityStr);
+        isHTTP200(status);
+        InputStream is = (InputStream) response.getEntity(InputStream.class);
 
         TypeReference typeRef = new TypeReference<List<HealthInsuranceModel>>(){};
         List<HealthInsuranceModel> list = (List<HealthInsuranceModel>)
-                getConverter().fromJson(entityStr, typeRef);
-        
+                getConverter().fromJson(is, typeRef);
+
         pm.setHealthInsurances(list);
         // 忘れがちｗ
         decodeHealthInsurance(pm);
