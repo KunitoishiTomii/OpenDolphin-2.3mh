@@ -1,8 +1,8 @@
 package open.dolphin.delegater;
 
-import com.sun.jersey.api.client.ClientResponse;
 import java.util.List;
 import open.dolphin.infomodel.AppointmentModel;
+import org.jboss.resteasy.client.ClientResponse;
 
 /**
  * AppointmentDelegater
@@ -26,19 +26,20 @@ public final class AppointmentDelegater extends BusinessDelegater {
     private AppointmentDelegater() {
     }
 
-    public int putAppointments(List<AppointmentModel> list) {
+    public int putAppointments(List<AppointmentModel> list) throws Exception {
 
         String path = "appo/";
         String json = getConverter().toJson(list);
 
-        ClientResponse response = getResource(path, null)
+        ClientResponse response = getClientRequest(path, null)
                 .accept(MEDIATYPE_TEXT_UTF8)
-                .type(MEDIATYPE_JSON_UTF8)
-                .put(ClientResponse.class, json);
-        
+                .body(MEDIATYPE_JSON_UTF8, json)
+                .put(ClientResponse.class);
+
         int status = response.getStatus();
-        String entityStr = response.getEntity(String.class);
+        String entityStr = (String) response.getEntity(String.class);
         debug(status, entityStr);
+        isHTTP200(status);
 
         return Integer.parseInt(entityStr);
     }

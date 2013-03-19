@@ -260,7 +260,7 @@ public class KarteStyledDocument extends DefaultStyledDocument {
         }
         return list;
     }
-
+/*
     // StampHolder直後の改行がない場合は補う
     public void fixCrAfterStamp() {
 
@@ -276,13 +276,13 @@ public class KarteStyledDocument extends DefaultStyledDocument {
         } catch (BadLocationException ex) {
         }
     }
-
+*/
     // 文書末の余分な改行文字を削除する
     public void removeExtraCR() {
 
         int len = getLength();
+        int pos;
         try {
-            int pos = len;
             // 改行文字以外が出てくるまで文書末からスキャン
             for (pos = len - 1; pos >= 0; --pos) {
                 if (!"\n".equals(getText(pos, 1))) {

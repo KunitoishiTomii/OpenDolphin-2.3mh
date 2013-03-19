@@ -1,17 +1,16 @@
 package open.dolphin.client;
 
-import com.sun.jersey.api.client.ClientResponse;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+//import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+//import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import open.dolphin.delegater.ChartEventDelegater;
 import open.dolphin.infomodel.*;
@@ -23,7 +22,7 @@ import open.dolphin.util.NamedThreadFactory;
  * カルテオープンなどの状態の変化をまとめて管理する
  * @author masuda, Masuda Naika
  */
-public class ChartEventListener {
+public class ChartEventHandler {
     
     // propName
     private static final String CHART_EVENT_PROP = "chartEvent";
@@ -40,24 +39,23 @@ public class ChartEventListener {
 
     private PropertyChangeSupport boundSupport;
     
-    // スレッド
-    private EventListenTask listenTask;
-    private Thread thread;
+    // ChartEvent監視タスク
+    private EventListenThread listenThread;
     
     // 状態変化を各listenerに通知するタスク
-    private ExecutorService exec;
+    private ExecutorService onEventExec;
     
-    private static final ChartEventListener instance;
+    private static final ChartEventHandler instance;
 
     static {
-        instance = new ChartEventListener();
+        instance = new ChartEventHandler();
     }
 
-    private ChartEventListener() {
+    private ChartEventHandler() {
         init();
      }
 
-    public static ChartEventListener getInstance() {
+    public static ChartEventHandler getInstance() {
         return instance;
     }
     
@@ -92,7 +90,7 @@ public class ChartEventListener {
 
     // 状態変更処理の共通入り口
     private void publish(ChartEventModel evt) {
-        exec.execute(new LocalOnEventTask(evt));
+        onEventExec.execute(new LocalOnEventTask(evt));
     }
     
     public void publishPvtDelete(PatientVisitModel pvt) {
@@ -150,74 +148,91 @@ public class ChartEventListener {
     }
 
     public void start() {
-        NamedThreadFactory factory = new NamedThreadFactory(getClass().getSimpleName());
-        exec = Executors.newSingleThreadExecutor(factory);
-        listenTask = new EventListenTask();
-        thread = new Thread(listenTask, "ChartEvent Listen Task");
-        thread.start();
+        NamedThreadFactory factory = new NamedThreadFactory("ChartEvent Handle Task");
+        onEventExec = Executors.newSingleThreadExecutor(factory);
+        listenThread = new EventListenThread();
+        listenThread.start();
     }
 
     public void stop() {
-
-        listenTask.stop();
-        thread.interrupt();
-        thread = null;
+        listenThread.halt();
         shutdownExecutor();
     }
 
     private void shutdownExecutor() {
 
         try {
-            exec.shutdown();
-            if (!exec.awaitTermination(5, TimeUnit.SECONDS)) {
-                exec.shutdownNow();
+            onEventExec.shutdown();
+            if (!onEventExec.awaitTermination(20, TimeUnit.MILLISECONDS)) {
+                onEventExec.shutdownNow();
             }
         } catch (InterruptedException ex) {
-            exec.shutdownNow();
+            onEventExec.shutdownNow();
         } catch (NullPointerException ex) {
         }
-        exec = null;
+        onEventExec = null;
     }
 
-    
     // Commetでサーバーと同期するスレッド
-    private class EventListenTask implements Runnable {
+    private class EventListenThread extends Thread {
         
-        private Future<ClientResponse> future;
-        
+        //private SubscribeTask subscribeTask;
+        //private ExecutorService subscribeExec;
+        //private Future<InputStream> future;
         private boolean isRunning;
         
-        private EventListenTask() {
+        private EventListenThread() {
+            super("ChartEvent Listen Thread");
             isRunning = true;
+            //NamedThreadFactory factory = new NamedThreadFactory("ChartEvent Subscribe Task");
+            //subscribeExec = Executors.newSingleThreadExecutor(factory);
+            //subscribeTask = new SubscribeTask();
         }
 
-        private void stop() {
+        public void halt() {
             isRunning = false;
+            interrupt();
+            /*
             if (future != null) {
                 future.cancel(true);
             }
+            try {
+                subscribeExec.shutdown();
+                if (!subscribeExec.awaitTermination(20, TimeUnit.MILLISECONDS)) {
+                    subscribeExec.shutdownNow();
+                }
+            } catch (InterruptedException ex) {
+                subscribeExec.shutdownNow();
+            } catch (NullPointerException ex) {
+            }
+            subscribeExec = null;
+            */
         }
         
         @Override
         public void run() {
             
-            //long t1 = System.currentTimeMillis();
-            
             while (isRunning) {
                 try {
-                    future = ChartEventDelegater.getInstance().subscribe();
-                    //System.out.println("time = " + String.valueOf(System.currentTimeMillis() - t1));
-                    ClientResponse response = future.get();
-                    //t1 = System.currentTimeMillis();
-                    exec.execute(new RemoteOnEventTask(response));
-                    //System.out.println("ChartEvent= " + json);
+                    // Futureでなくてもいい気がするｗ
+                    //future = subscribeExec.submit(subscribeTask);
+                    //InputStream is = future.get();
+                    InputStream is = ChartEventDelegater.getInstance().subscribe();
+                    onEventExec.execute(new RemoteOnEventTask(is));
                 } catch (Exception e) {
-                    //System.out.println(e.toString());
                 }
             }
         }
     }
-    
+/*
+    private class SubscribeTask implements Callable<InputStream> {
+        
+        @Override
+        public InputStream call() throws Exception {
+            return ChartEventDelegater.getInstance().subscribe();
+        }
+    }
+*/
     // 自クライアントの状態変更後、サーバーに通知するタスク
     private class LocalOnEventTask implements Runnable {
         
@@ -235,37 +250,27 @@ public class ChartEventListener {
 
             // サーバーに更新を通知
             ChartEventDelegater del = ChartEventDelegater.getInstance();
-            del.putChartEvent(evt);
+            try {
+                del.putChartEvent(evt);
+            } catch (Exception ex) {
+            }
         }
     }
     
     // 状態変化通知メッセージをデシリアライズし各リスナに処理を分配する
     private class RemoteOnEventTask implements Runnable {
         
-        private ClientResponse response;
+        private InputStream is;
         
-        private RemoteOnEventTask(ClientResponse response) {
-            this.response = response;
+        private RemoteOnEventTask(InputStream is) {
+            this.is = is;
         }
 
         @Override
         public void run() {
             
-            int status = response.getStatus();
-            
-            if (status != 200) {
-                return;
-            }
-            
-            InputStream is = response.getEntityInputStream();
-        
             ChartEventModel evt = (ChartEventModel) 
                     JsonConverter.getInstance().fromJson(is, ChartEventModel.class);
-            
-            try {
-                is.close();
-            } catch (IOException ex) {
-            }
             
             if (evt == null) {
                 return;

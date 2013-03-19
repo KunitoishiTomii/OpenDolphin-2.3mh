@@ -18,7 +18,7 @@ import open.dolphin.session.KarteServiceBean;
  * @author modified by masuda, Masuda Naika
  * @author modified by katoh, Hashimoto iin
  */
-@Path("rest/karte")
+@Path("karte")
 public class KarteResource extends AbstractResource {
 
     private static final boolean debug = false;
@@ -32,17 +32,15 @@ public class KarteResource extends AbstractResource {
     @GET
     @Path("{ptId}")
     @Produces(MEDIATYPE_JSON_UTF8)
-    public String getKarte(@PathParam("ptId") Long patientPK, 
+    public Response getKarte(@PathParam("ptId") Long patientPK, 
             @QueryParam("fromDate") String fromDateStr) {
 
         Date fromDate = parseDate(fromDateStr);
 
         KarteBean karte = karteServiceBean.getKarte(patientPK, fromDate);
+        StreamingOutput so = getJsonOutStream(karte);
 
-        String json = getConverter().toJson(karte);
-        debug(json);
-        
-        return json;
+        return Response.ok(so).build();
     }
 
     //-------------------------------------------------------
@@ -51,7 +49,7 @@ public class KarteResource extends AbstractResource {
     @GET
     @Path("docinfo/{id}")
     @Produces(MEDIATYPE_JSON_UTF8)
-    public String getDocumentList(@PathParam("id") Long karteId, 
+    public Response getDocumentList(@PathParam("id") Long karteId, 
             @QueryParam("fromDate") String fromDateStr, 
             @QueryParam("toDate") String toDateStr, 
             @QueryParam("includeModified") Boolean includeModified) {
@@ -61,28 +59,11 @@ public class KarteResource extends AbstractResource {
 
         List<DocInfoModel> result = karteServiceBean.getDocumentList(karteId, fromDate, toDate, includeModified);
 
-        String json = getConverter().toJson(result);
-        debug(json);
-
-        return json;
+        StreamingOutput so = getGzipOutStream(result);
+        return Response.ok(so).build();
     }
 //katoh$
-/*
-    @GET
-    @Path("document")
-    @Produces(MEDIATYPE_JSON_UTF8)
-    public String getDocuments(@QueryParam("ids") String ids) {
 
-        List<Long> list = getConverter().toLongList(ids);
-
-        List<DocumentModel> result = karteServiceBean.getDocuments(list);
-
-        String json = getConverter().toJson(result);
-        debug(json);
-        
-        return json;
-    }
-*/
     @GET
     @Path("document")
     @Produces(MEDIATYPE_JSON_UTF8)
@@ -90,10 +71,10 @@ public class KarteResource extends AbstractResource {
 
         List<Long> list = getConverter().toLongList(ids);
 
-        final List<DocumentModel> result = karteServiceBean.getDocuments(list);
+        List<DocumentModel> result = karteServiceBean.getDocuments(list);
 
-        StreamingOutput so = getJsonOutStream(result);
-
+        StreamingOutput so = getGzipOutStream(result);
+        
         return Response.ok(so).build();
     }
 
@@ -101,7 +82,7 @@ public class KarteResource extends AbstractResource {
     @Path("document")
     @Consumes(MEDIATYPE_JSON_UTF8)
     @Produces(MEDIATYPE_TEXT_UTF8)
-    public String postDocument(String json) {
+    public Response postDocument(String json) {
 
         DocumentModel document = (DocumentModel) 
                 getConverter().fromJson(json, DocumentModel.class);
@@ -110,7 +91,7 @@ public class KarteResource extends AbstractResource {
         String pkStr = String.valueOf(result);
         debug(pkStr);
 
-        return pkStr;
+        return Response.ok(pkStr).build();
     }
 
     
@@ -118,13 +99,13 @@ public class KarteResource extends AbstractResource {
     @Path("document/{id}")
     @Consumes(MEDIATYPE_TEXT_UTF8)
     @Produces(MEDIATYPE_TEXT_UTF8)
-    public String putTitle(@PathParam("id") String idStr, String title) {
+    public Response putTitle(@PathParam("id") String idStr, String title) {
 
         long id = Long.valueOf(idStr);
 
         int result = karteServiceBean.updateTitle(id, title);
 
-        return String.valueOf(result);
+        return Response.ok(String.valueOf(result)).build();
     }
 
 
@@ -144,7 +125,7 @@ public class KarteResource extends AbstractResource {
     @GET
     @Path("modules/{id}")
     @Produces(MEDIATYPE_JSON_UTF8)
-    public String getModules(@PathParam("id") Long karteId,
+    public Response getModules(@PathParam("id") Long karteId,
             @QueryParam("froms") String fromStr,
             @QueryParam("tos") String toStr,
             @QueryParam("entity") String entity) {
@@ -162,17 +143,16 @@ public class KarteResource extends AbstractResource {
 
         List<List<ModuleModel>> result = karteServiceBean.getModules(karteId, entity, fromList, toList);
 
-        String json = getConverter().toJson(result);
-        debug(json);
+        StreamingOutput so = getJsonOutStream(result);
         
-        return json;
+        return Response.ok(so).build();
     }
 
 
     @GET
     @Path("iamges/{id}")
     @Produces(MEDIATYPE_JSON_UTF8)
-    public String getImages(@PathParam("id") Long karteId,
+    public Response getImages(@PathParam("id") Long karteId,
             @QueryParam("froms") String fromStr,
             @QueryParam("tos") String toStr) {
 
@@ -189,24 +169,22 @@ public class KarteResource extends AbstractResource {
 
         List<List<SchemaModel>> result = karteServiceBean.getImages(karteId, fromList, toList);
 
-        String json = getConverter().toJson(result);
-        debug(json);
+        StreamingOutput so = getJsonOutStream(result);
         
-        return json;
+        return Response.ok(so).build();
     }
 
     
     @GET
     @Path("image/{id}")
     @Produces(MEDIATYPE_JSON_UTF8)
-    public String getImage(@PathParam("param") Long karteId) {
+    public Response getImage(@PathParam("param") Long karteId) {
 
         SchemaModel result = karteServiceBean.getImage(karteId);
 
-        String json = getConverter().toJson(result);
-        debug(json);
+        StreamingOutput so = getJsonOutStream(result);
         
-        return json;
+        return Response.ok(so).build();
     }
 
     //-------------------------------------------------------
@@ -214,7 +192,7 @@ public class KarteResource extends AbstractResource {
     @GET
     @Path("diagnosis/{id}")
     @Produces(MEDIATYPE_JSON_UTF8)
-    public String getDiagnosis(@PathParam("id") Long karteId, 
+    public Response getDiagnosis(@PathParam("id") Long karteId, 
             @QueryParam("fromDate") String fromDateStr, 
             @QueryParam("activeOnly") Boolean activeOnly) {
         
@@ -222,17 +200,16 @@ public class KarteResource extends AbstractResource {
 
         List<RegisteredDiagnosisModel> list = karteServiceBean.getDiagnosis(karteId, fromDate, activeOnly);
 
-        String json = getConverter().toJson(list);
-        debug(json);
+        StreamingOutput so = getJsonOutStream(list);
         
-        return json;
+        return Response.ok(so).build();
     }
 
     @POST
     @Path("diagnosis")
     @Consumes(MEDIATYPE_JSON_UTF8)
     @Produces(MEDIATYPE_TEXT_UTF8)
-    public String postDiagnosis(String json) {
+    public Response postDiagnosis(String json) {
         
         TypeReference typeRef = new TypeReference<List<RegisteredDiagnosisModel>>(){};
         List<RegisteredDiagnosisModel> list = (List<RegisteredDiagnosisModel>)
@@ -242,14 +219,14 @@ public class KarteResource extends AbstractResource {
         String text = getConverter().fromList(result);
         debug(text);
 
-        return text;
+        return Response.ok(text).build();
     }
 
     @PUT
     @Path("diagnosis")
     @Consumes(MEDIATYPE_JSON_UTF8)
     @Produces(MEDIATYPE_TEXT_UTF8)
-    public String putDiagnosis(String json) {
+    public Response putDiagnosis(String json) {
 
         TypeReference typeRef = new TypeReference<List<RegisteredDiagnosisModel>>(){};
         List<RegisteredDiagnosisModel> list = (List<RegisteredDiagnosisModel>)
@@ -259,7 +236,7 @@ public class KarteResource extends AbstractResource {
         String text = String.valueOf(result);
         debug(text);
 
-        return text;
+        return Response.ok(text).build();
     }
 
     @DELETE
@@ -277,7 +254,7 @@ public class KarteResource extends AbstractResource {
     @Path("observations")
     @Consumes(MEDIATYPE_JSON_UTF8)
     @Produces(MEDIATYPE_TEXT_UTF8)
-    public String postObservations(String json) {
+    public Response postObservations(String json) {
         
         TypeReference typeRef = new TypeReference<List<ObservationModel>>(){};
         List<ObservationModel> list = (List<ObservationModel>)
@@ -288,7 +265,7 @@ public class KarteResource extends AbstractResource {
         String text = getConverter().fromList(result);
         debug(text);
 
-        return text;
+        return Response.ok(text).build();
     }
 
     @DELETE
@@ -305,7 +282,7 @@ public class KarteResource extends AbstractResource {
     @Path("memo")
     @Consumes(MEDIATYPE_JSON_UTF8)
     @Produces(MEDIATYPE_TEXT_UTF8)
-    public String putPatientMemo(String json) {
+    public Response putPatientMemo(String json) {
 
         PatientMemoModel memo = (PatientMemoModel)
                 getConverter().fromJson(json, PatientMemoModel.class);
@@ -314,13 +291,13 @@ public class KarteResource extends AbstractResource {
         String text = String.valueOf(result);
         debug(text);
 
-        return text;
+        return Response.ok(text).build();
     }
 
     @GET
     @Path("appo/{id}")
     @Produces(MEDIATYPE_JSON_UTF8)
-    public String getAppoinmentList(@PathParam("id") Long karteId,
+    public Response getAppoinmentList(@PathParam("id") Long karteId,
             @QueryParam("froms") String fromStr,
             @QueryParam("tos") String toStr) {
 
@@ -337,10 +314,9 @@ public class KarteResource extends AbstractResource {
 
         List<List<AppointmentModel>> result = karteServiceBean.getAppointmentList(karteId, fromList, toList);
 
-        String json = getConverter().toJson(result);
-        debug(json);
-
-        return json;
+        StreamingOutput so = getJsonOutStream(result);
+        
+        return Response.ok(so).build();
     }
 
     @Override

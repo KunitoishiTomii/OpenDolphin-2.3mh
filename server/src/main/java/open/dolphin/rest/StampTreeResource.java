@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import java.util.List;
 import javax.inject.Inject;
 import javax.ws.rs.*;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
 import open.dolphin.infomodel.*;
 import open.dolphin.session.StampServiceBean;
 
@@ -14,7 +16,7 @@ import open.dolphin.session.StampServiceBean;
  * @author modified by masuda, Masuda Naika
  */
 
-@Path("rest/stampTree")
+@Path("stampTree")
 public class StampTreeResource extends AbstractResource {
 
     private static final boolean debug = false;
@@ -29,20 +31,19 @@ public class StampTreeResource extends AbstractResource {
     @GET
     @Path("{userPK}")
     @Produces(MEDIATYPE_JSON_UTF8)
-    public String getStampTree(@PathParam("userPK") String userPK) {
+    public Response getStampTree(@PathParam("userPK") String userPK) {
 
         UserStampTreeModel result = stampServiceBean.getTrees(Long.parseLong(userPK));
-        String json = getConverter().toJson(result);
-
-        debug(json);
         
-        return json;
+        StreamingOutput so = getJsonOutStream(result);
+        
+        return Response.ok(so).build();
     }
 
     @PUT
     @Consumes(MEDIATYPE_JSON_UTF8)
     @Produces(MEDIATYPE_TEXT_UTF8)
-    public String putTree(String json) {
+    public Response putTree(String json) {
 
         StampTreeModel model = (StampTreeModel) 
                 getConverter().fromJson(json, StampTreeModel.class);
@@ -52,14 +53,14 @@ public class StampTreeResource extends AbstractResource {
         
         debug(pkStr);
 
-        return pkStr;
+        return Response.ok(pkStr).build();
     }
 
     @POST
     @Path("published")
     @Consumes(MEDIATYPE_JSON_UTF8)
     @Produces(MEDIATYPE_TEXT_UTF8)
-    public String postPublishedTree(String json) {
+    public Response postPublishedTree(String json) {
         
         UserStampTreeModel treeModel = (UserStampTreeModel)
                 getConverter().fromJson(json, UserStampTreeModel.class);
@@ -71,14 +72,14 @@ public class StampTreeResource extends AbstractResource {
         
         debug(pkStr);
 
-        return pkStr;
+        return Response.ok(pkStr).build();
     }
 
     @PUT
     @Path("published")
     @Consumes(MEDIATYPE_JSON_UTF8)
     @Produces(MEDIATYPE_TEXT_UTF8)
-    public String putPublishedTree(String json) {
+    public Response putPublishedTree(String json) {
 
         UserStampTreeModel treeModel = (UserStampTreeModel)
                 getConverter().fromJson(json, UserStampTreeModel.class);
@@ -90,7 +91,7 @@ public class StampTreeResource extends AbstractResource {
         
         debug(cntStr);
 
-        return cntStr;
+        return Response.ok(cntStr).build();
     }
 
     @PUT
@@ -112,16 +113,14 @@ public class StampTreeResource extends AbstractResource {
     @GET
     @Path("published")
     @Produces(MEDIATYPE_JSON_UTF8)
-    public String getPublishedTrees() {
+    public Response getPublishedTrees() {
 
         String fid = getRemoteFacility();
         List<PublishedTreeModel> list = stampServiceBean.getPublishedTrees(fid);
-
-        String json = getConverter().toJson(list);
-
-        debug(json);
-
-        return json;
+        
+        StreamingOutput so = getJsonOutStream(list);
+        
+        return Response.ok(so).build();
     }
 
 
@@ -129,7 +128,7 @@ public class StampTreeResource extends AbstractResource {
     @Path("subscribed")
     @Consumes(MEDIATYPE_JSON_UTF8)
     @Produces(MEDIATYPE_TEXT_UTF8)
-    public String subscribeTrees(String json) {
+    public Response subscribeTrees(String json) {
         
         TypeReference typeRef = new TypeReference<List<SubscribedTreeModel>>(){};
         List<SubscribedTreeModel> list = (List<SubscribedTreeModel>)
@@ -141,7 +140,7 @@ public class StampTreeResource extends AbstractResource {
         
         debug(pks);
 
-        return pks;
+        return Response.ok(pks).build();
     }
 
 

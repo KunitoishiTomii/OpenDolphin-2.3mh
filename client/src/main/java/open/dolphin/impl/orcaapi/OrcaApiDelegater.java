@@ -1,8 +1,5 @@
 package open.dolphin.impl.orcaapi;
 
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.WebResource;
-import com.sun.jersey.core.util.MultivaluedMapImpl;
 import java.io.IOException;
 import java.io.StringReader;
 import java.text.SimpleDateFormat;
@@ -15,6 +12,9 @@ import open.dolphin.client.KarteSenderResult;
 import open.dolphin.dao.SyskanriInfo;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.jboss.resteasy.client.ClientRequest;
+import org.jboss.resteasy.client.ClientResponse;
+import org.jboss.resteasy.specimpl.MultivaluedMapImpl;
 import org.jdom2.Attribute;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -31,7 +31,6 @@ public class OrcaApiDelegater implements IOrcaApi {
     
     private static final String CHARSET_UTF8 = "; charset=UTF-8";
     private static final String MEDIATYPE_XML_UTF8 = MediaType.APPLICATION_XML + CHARSET_UTF8;
-    private static final int HTTP200 = 200;
     private static final String ORCA_API = "ORCA API";
 
     private static final OrcaApiDelegater instance;
@@ -61,11 +60,21 @@ public class OrcaApiDelegater implements IOrcaApi {
     }
     
     public KarteSenderResult sendMedicalModModel(MedicalModModel model) {
+        try {
+            return sendMedicalModModelImpl(model);
+        } catch (Exception ex) {
+            String code = ex.getMessage();      // HTTP404
+            String msg = "接続を確認してください。";
+            return new KarteSenderResult(ORCA_API, code, msg);
+        }
+    }
+    
+    private KarteSenderResult sendMedicalModModelImpl(MedicalModModel model) throws Exception {
         
         final String path = xml2
                 ? "/api21/medicalmodv2"
                 : "/api21/medicalmod";
-        
+
         final Document post = xml2
                 ? new Document(new OrcaApiElement2.MedicalMod(model))
                 : new Document(new OrcaApiElement.MedicalMod(model));
@@ -74,21 +83,16 @@ public class OrcaApiDelegater implements IOrcaApi {
         MultivaluedMap<String, String> qmap = new MultivaluedMapImpl();
         qmap.add(CLASS, "01");
 
-        ClientResponse response = getResource(path, qmap)
+        ClientResponse response = getClientRequest(path, qmap)
                 .accept(MEDIATYPE_XML_UTF8)
-                .type(MEDIATYPE_XML_UTF8)
-                .post(ClientResponse.class, xml);
-        
+                .body(MEDIATYPE_XML_UTF8, xml)
+                .post(ClientResponse.class);
+
         int status = response.getStatus();
-        String resXml = response.getEntity(String.class);
+        String resXml = (String) response.getEntity(String.class);
         debug(status, resXml);
-        
-        if (status != HTTP200) {
-            String code = "HTTP" + String.valueOf(status);
-            String msg = "接続を確認してください。";
-            return new KarteSenderResult(ORCA_API, code, msg);
-        }
-        
+        isHTTP200(status);
+
         KarteSenderResult result;
         try {
             Document res = builder.build(new StringReader(resXml));
@@ -105,32 +109,29 @@ public class OrcaApiDelegater implements IOrcaApi {
         return result;
     }
     
-    private void getDepartmentInfo() {
+    private void getDepartmentInfo() throws Exception {
         
         final String path = xml2
                 ? "/api01rv2/system01lstv2"
                 : "/api01r/system01lst";
-        
+
         final String xml = xml2
                 ? createSystem01ManagereqXml2()
                 : createSystem01ManagereqXml();
-        
+
         MultivaluedMap<String, String> qmap = new MultivaluedMapImpl();
         qmap.add(CLASS, "01");
-        
-        ClientResponse response = getResource(path, qmap)
+
+        ClientResponse response = getClientRequest(path, qmap)
                 .accept(MEDIATYPE_XML_UTF8)
-                .type(MEDIATYPE_XML_UTF8)
-                .post(ClientResponse.class, xml);
-        
+                .body(MEDIATYPE_XML_UTF8, xml)
+                .post(ClientResponse.class);
+
         int status = response.getStatus();
-        String resXml = response.getEntity(String.class);
+        String resXml = (String) response.getEntity(String.class);
         debug(status, resXml);
-        
-        if (status != HTTP200) {
-            return;
-        }
-        
+        isHTTP200(status);
+
         try {
             Document res = builder.build(new StringReader(resXml));
             DepartmentResParser parser = new DepartmentResParser(res);
@@ -139,37 +140,35 @@ public class OrcaApiDelegater implements IOrcaApi {
             if (!API_NO_ERROR.equals(code)) {
                 deptList = parser.getList();
             }
+
         } catch (JDOMException ex) {
         } catch (IOException ex) {
         }
     }
 
-    private void getPhysicianInfo() {
-
+    private void getPhysicianInfo() throws Exception {
+        
         final String path = xml2
                 ? "/api01rv2/system01lstv2t"
                 : "/api01r/system01lst";
-        
+
         final String xml = xml2
                 ? createSystem01ManagereqXml2()
                 : createSystem01ManagereqXml();
-        
+
         MultivaluedMap<String, String> qmap = new MultivaluedMapImpl();
         qmap.add(CLASS, "02");
 
-        ClientResponse response = getResource(path, qmap)
+        ClientResponse response = getClientRequest(path, qmap)
                 .accept(MEDIATYPE_XML_UTF8)
-                .type(MEDIATYPE_XML_UTF8)
-                .post(ClientResponse.class, xml);
-        
+                .body(MEDIATYPE_XML_UTF8, xml)
+                .post(ClientResponse.class);
+
         int status = response.getStatus();
-        String resXml = response.getEntity(String.class);
+        String resXml = (String) response.getEntity(String.class);
         debug(status, resXml);
-        
-        if (status != HTTP200) {
-            return;
-        }
-        
+        isHTTP200(status);
+
         try {
             Document res = builder.build(new StringReader(resXml));
             PhysicianResParser parser = new PhysicianResParser(res);
@@ -219,8 +218,15 @@ public class OrcaApiDelegater implements IOrcaApi {
         return xml;
     }
 
-    private WebResource.Builder getResource(String path, MultivaluedMap<String, String> qmap) {
-        return OrcaApiClient.getInstance().getResource(path, qmap);
+    private ClientRequest getClientRequest(String path, MultivaluedMap<String, String> qmap) {
+        return OrcaApiClient.getInstance().getClientRequest(path, qmap);
+    }
+    
+    private void isHTTP200(int status) throws Exception {
+        if (status != 200) {
+            String msg = "HTTP" + String.valueOf(status);
+            throw new Exception(msg);
+        }
     }
     
     private void debug(int status, String entity) {

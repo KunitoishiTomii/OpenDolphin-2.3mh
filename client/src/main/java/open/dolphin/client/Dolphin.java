@@ -18,7 +18,6 @@ import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.*;
-import java.util.concurrent.CopyOnWriteArrayList;
 import javax.print.attribute.HashPrintRequestAttributeSet;
 import javax.print.attribute.PrintRequestAttributeSet;
 import javax.swing.Timer;
@@ -44,6 +43,8 @@ import open.dolphin.server.PVTServer;
 import open.dolphin.setting.MiscSettingPanel;
 import open.dolphin.setting.ProjectSettingDialog;
 import open.dolphin.stampbox.StampBoxPlugin;
+import org.jboss.resteasy.plugins.providers.RegisterBuiltin;
+import org.jboss.resteasy.spi.ResteasyProviderFactory;
 
 /**
  * アプリケーションのメインウインドウクラス。
@@ -102,27 +103,13 @@ public class Dolphin implements MainWindow {
     private PacsService pacsService;
 
     // 状態変化リスナー
-    private ChartEventListener scl;
+    private ChartEventHandler scl;
     
     // clientのUUID
     private String clientUUID;
 
     public String getClientUUID() {
         return clientUUID;
-    }
-    
-    // allEditorFramesはEditorFrameから移動
-    private List<EditorFrame> allEditorFrames = new CopyOnWriteArrayList<EditorFrame>();
-    
-    public List<EditorFrame> getAllEditorFrames() {
-        return allEditorFrames;
-    }
-    
-    // allChartsはChartImplから移動
-    private List<ChartImpl> allCharts = new CopyOnWriteArrayList<ChartImpl>();
-    
-    public List<ChartImpl> getAllCharts() {
-        return allCharts;
     }
     
     // ChartMediatorを経由せずに、Dolphin.getInstance().getStampBox()でスタンプ箱を取得できるようにする。
@@ -194,6 +181,9 @@ public class Dolphin implements MainWindow {
      */
     private void startServices() {
 
+        // RestEasyを初期化
+        RegisterBuiltin.register(ResteasyProviderFactory.getInstance());
+        
         // プラグインのプロバイダマップを生成する
         setProviders(new HashMap<String, MainService>());
 
@@ -269,7 +259,7 @@ public class Dolphin implements MainWindow {
 
                 // User用のStampTreeが存在しない新規ユーザの場合、そのTreeを生成する
                 boolean hasTree = false;
-                if (treeList != null || treeList.size() > 0) {
+                if (treeList != null || !treeList.isEmpty()) {
                     for (IStampTreeModel tree : treeList) {
                         if (tree != null) {
                             long id = tree.getUserModel().getId();
@@ -451,7 +441,7 @@ public class Dolphin implements MainWindow {
         FocusPropertyChangeListener.getInstance().register();
 
         // ChartStateListenerを開始する
-        scl = ChartEventListener.getInstance();
+        scl = ChartEventHandler.getInstance();
         scl.start();
 //masuda$
         
@@ -608,7 +598,7 @@ public class Dolphin implements MainWindow {
         PatientModel pm = pvt.getPatientModel();
         boolean opened = false;
         long ptId = pm.getId();
-        for (ChartImpl chart : allCharts) {
+        for (ChartImpl chart : WindowSupport.getAllCharts()) {
             if (chart.getPatient().getId() == ptId) {
                 chart.getFrame().setExtendedState(java.awt.Frame.NORMAL);
                 chart.getFrame().toFront();
@@ -617,7 +607,7 @@ public class Dolphin implements MainWindow {
             }
         }
 
-        for (EditorFrame ef : allEditorFrames) {
+        for (EditorFrame ef : WindowSupport.getAllEditorFrames()) {
             if (ef.getPatient().getId() == ptId) {
                 ef.getFrame().setExtendedState(java.awt.Frame.NORMAL);
                 ef.getFrame().toFront();
@@ -658,7 +648,10 @@ public class Dolphin implements MainWindow {
         
         // カルテオープン時にpvtHealthInsuranceが設定されてなかったら取得しに行く
         if (pm.getPvtHealthInsurances() == null) {
-            PatientDelegater.getInstance().updateHealthInsurances(pm);
+            try {
+                PatientDelegater.getInstance().updateHealthInsurances(pm);
+            } catch (Exception ex) {
+            }
         }
 
         Chart chart = new ChartImpl();
@@ -667,8 +660,9 @@ public class Dolphin implements MainWindow {
         chart.setReadOnly(readOnly);
         chart.start();
         
+        // ChartImplに移動
         // publish state
-        scl.publishKarteOpened(pvt);
+        //scl.publishKarteOpened(pvt);
 //masuda$        
     }
 
@@ -1029,7 +1023,8 @@ public class Dolphin implements MainWindow {
         boolean dirty = false;
 
         // Chart を調べる
-        if (allCharts != null && allCharts.size() > 0) {
+        List<ChartImpl> allCharts = WindowSupport.getAllCharts();
+        if (allCharts != null && !allCharts.isEmpty()) {
             for (ChartImpl chart : allCharts) {
                 if (chart.isDirty()) {
                     dirty = true;
@@ -1044,7 +1039,8 @@ public class Dolphin implements MainWindow {
         }
 
         // EditorFrameのチェックを行う
-        if (allEditorFrames != null && allEditorFrames.size() > 0) {
+        List<EditorFrame> allEditorFrames = WindowSupport.getAllEditorFrames();
+        if (allEditorFrames != null && !allEditorFrames.isEmpty()) {
             for (Chart chart : allEditorFrames) {
                 if (chart.isDirty()) {
                     dirty = true;
@@ -1075,10 +1071,10 @@ public class Dolphin implements MainWindow {
         }
 //pns$
 //masuda^   終了時は強制的に開いたままのChartImplとEditorFrameを閉じちゃう
-        for (Chart chart : allEditorFrames) {
+        for (Chart chart : WindowSupport.getAllEditorFrames()) {
             chart.stop();
         }
-        for (ChartImpl chart : allCharts) {
+        for (ChartImpl chart : WindowSupport.getAllCharts()) {
             chart.stop();
         }
 
@@ -1691,9 +1687,12 @@ public class Dolphin implements MainWindow {
     }
     
     public void checkTempKarte() {
-        TempKarteCheckDialog tempKarte = TempKarteCheckDialog.getInstance();
-        tempKarte.renewList();
-        tempKarte.setVisible(true);
+        try {
+            TempKarteCheckDialog tempKarte = TempKarteCheckDialog.getInstance();
+            tempKarte.renewList();
+            tempKarte.setVisible(true);
+        } catch (Exception ex) {
+        }
     }
 //masuda$
 }

@@ -5,7 +5,6 @@ import java.awt.event.*;
 import java.awt.im.InputSubset;
 import java.util.Date;
 import java.util.List;
-import java.util.StringTokenizer;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -307,11 +306,9 @@ public class AddUserImpl extends AbstractMainTool implements AddUser {
             if (facility.getZipCode() != null) {
                 String val = facility.getZipCode();
                 try {
-                    StringTokenizer st = new StringTokenizer(val, "-");
-                    if (st.hasMoreTokens()) {
-                        zipField1.setText(st.nextToken());
-                        zipField2.setText(st.nextToken());
-                    }
+                    String[] tokens = val.split("-");
+                    zipField1.setText(tokens[0]);
+                    zipField2.setText(tokens[1]);
                 } catch (Exception e) {
                     e.printStackTrace(System.err);
                 }
@@ -889,7 +886,7 @@ public class AddUserImpl extends AbstractMainTool implements AddUser {
         private String usersRole; // user に与える role 名
         
 //masuda^   生パスワードを記録するかどうか
-        private JCheckBox chk_rawPass;
+        //private JCheckBox chk_rawPass;
 //masuda$
         
         public AddUserPanel() {
@@ -1027,8 +1024,8 @@ public class AddUserImpl extends AbstractMainTool implements AddUser {
             constrain(content, label, x + 2, y, 1, 1, GridBagConstraints.NONE, GridBagConstraints.EAST);
             constrain(content, userPassword2, x + 3, y, 1, 1, GridBagConstraints.NONE, GridBagConstraints.WEST);
 //masuda^   生パスワード
-            chk_rawPass = new JCheckBox("生Pass登録");
-            constrain(content, chk_rawPass, x + 4, y, 1, 1, GridBagConstraints.NONE, GridBagConstraints.WEST);
+            //chk_rawPass = new JCheckBox("生Pass登録");
+            //constrain(content, chk_rawPass, x + 4, y, 1, 1, GridBagConstraints.NONE, GridBagConstraints.WEST);
 //masuda$
             
             x = 0;
@@ -1113,6 +1110,7 @@ public class AddUserImpl extends AbstractMainTool implements AddUser {
             user.setSirName(sn.getText().trim());
             user.setGivenName(givenName.getText().trim());
             user.setCommonName(user.getSirName() + " " + user.getGivenName());
+/*
 //masuda^   生パスワード
             if (chk_rawPass.isSelected()) {
                 user.setPasswd(pass);
@@ -1120,7 +1118,7 @@ public class AddUserImpl extends AbstractMainTool implements AddUser {
                 user.setPasswd(null);
             }
 //masuda$
-            
+*/
             // 施設情報
             // 管理者のものを使用する
             user.setFacilityModel(Project.getUserModel().getFacilityModel());

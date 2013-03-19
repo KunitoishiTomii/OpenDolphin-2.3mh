@@ -25,12 +25,14 @@ import open.dolphin.delegater.PatientDelegater;
 import open.dolphin.dto.PatientSearchSpec;
 import open.dolphin.helper.KeyBlocker;
 import open.dolphin.helper.SimpleWorker;
+import open.dolphin.helper.WindowSupport;
 import open.dolphin.infomodel.*;
 import open.dolphin.project.Project;
 import open.dolphin.setting.MiscSettingPanel;
 import open.dolphin.table.*;
 import open.dolphin.util.AgeCalculator;
 import open.dolphin.util.StringTool;
+import open.dolphin.util.ZenkakuUtils;
 
 /**
  * 患者検索PatientSearchPlugin
@@ -83,13 +85,13 @@ public class PatientSearchImpl extends AbstractMainComponent {
     private AbstractAction copyAction;
     
     private String clientUUID;
-    private ChartEventListener cel;
+    private ChartEventHandler cel;
 
     
     /** Creates new PatientSearch */
     public PatientSearchImpl() {
         setName(NAME);
-        cel = ChartEventListener.getInstance();
+        cel = ChartEventHandler.getInstance();
         clientUUID = cel.getClientUUID();
     }
 
@@ -131,12 +133,11 @@ public class PatientSearchImpl extends AbstractMainComponent {
         return selectedPatient;
     }
 
-    public void setSelectedPatinet(PatientModel model) {
+    public void setSelectedPatient(PatientModel model) {
         selectedPatient = model;
         controlMenu();
     }
 
-    @SuppressWarnings("unchecked")
     public ListTableModel<PatientModel> getTableModel() {
         return (ListTableModel<PatientModel>) view.getTable().getModel();
     }
@@ -200,7 +201,7 @@ public class PatientSearchImpl extends AbstractMainComponent {
     private boolean isKarteOpened(PatientModel patient) {
         if (patient != null) {
             boolean opened = false;
-            List<ChartImpl> allCharts = Dolphin.getInstance().getAllCharts();
+            List<ChartImpl> allCharts = WindowSupport.getAllCharts();
             for (ChartImpl chart : allCharts) {
                 if (chart.getPatient().getId() == patient.getId()) {
                     opened = true;
@@ -493,9 +494,9 @@ public class PatientSearchImpl extends AbstractMainComponent {
 //pns   row = -1 でここに入ってくることあり
                 if (row >= 0) {
                     PatientModel patient = (PatientModel) sorter.getObject(row);
-                    setSelectedPatinet(patient);
+                    setSelectedPatient(patient);
                 } else {
-                    setSelectedPatinet(null);
+                    setSelectedPatient(null);
                 }
             }
         }
@@ -582,10 +583,13 @@ public class PatientSearchImpl extends AbstractMainComponent {
 
             @Override
             protected Void doInBackground() {
-                PatientModel pm = getSelectedPatient();
-                PatientVisitModel pvt = cel.createFakePvt(pm);
-                PVTDelegater pdl = PVTDelegater.getInstance();
-                pdl.addPvt(pvt);
+                try {
+                    PatientModel pm = getSelectedPatient();
+                    PatientVisitModel pvt = cel.createFakePvt(pm);
+                    PVTDelegater pdl = PVTDelegater.getInstance();
+                    pdl.addPvt(pvt);
+                } catch (Exception ex) {
+                }
                 return null;
             }
 
@@ -651,6 +655,10 @@ public class PatientSearchImpl extends AbstractMainComponent {
                     sb.append(text);
                     text = sb.toString();
                 }
+                
+                //カルテ検索時に、全角数字を半角として扱えるようにする
+                // https://github.com/KatouBuntarou/OpenDolphin-2.3mh/issues/14
+                text = ZenkakuUtils.toHalfNumber(text);
 
                 spec.setCode(PatientSearchSpec.DIGIT_SEARCH);
                 spec.setDigit(text);
@@ -697,7 +705,6 @@ public class PatientSearchImpl extends AbstractMainComponent {
         }
 
         @Override
-        @SuppressWarnings("unchecked")
         protected void succeeded(Collection<PatientModel> result) {
 
             if (result != null){
@@ -720,6 +727,14 @@ public class PatientSearchImpl extends AbstractMainComponent {
         @Override
         protected void stopProgress() {
             doStopProgress();
+            
+            // カルテをIDで検索した際、候補が1件であれば即座に開くように修正する
+            // https://github.com/KatouBuntarou/OpenDolphin-2.3mh/issues/15
+            if (tableModel.getDataProvider().size() == 1) {
+                //setSelectedPatient(tableModel.getDataProvider().get(0));
+                view.getTable().getSelectionModel().setSelectionInterval(0, 0);
+                openKarte();
+            }
         }
     }
 
@@ -923,7 +938,7 @@ public class PatientSearchImpl extends AbstractMainComponent {
             }
         }
 
-        private List<PatientModel> hibernateSearch() {
+        private List<PatientModel> hibernateSearch() throws Exception {
             // カルテ内検索をちょっとインチキする(Hibernate Search)
             publish(new String[]{startingNote, "50"});
             MasudaDelegater dl = MasudaDelegater.getInstance();
@@ -931,8 +946,7 @@ public class PatientSearchImpl extends AbstractMainComponent {
             return dl.getKarteFullTextSearch(0, searchText);
         }
 
-        @SuppressWarnings("unchecked")
-        private List<PatientModel> grepSearch() {
+        private List<PatientModel> grepSearch() throws Exception {
 
             final int maxResult = 500;
             /* final boolean progressCourseOnly 
@@ -1038,7 +1052,7 @@ public class PatientSearchImpl extends AbstractMainComponent {
         private final String initialNote = "<html><br>";
 
         @Override
-        protected Void doInBackground() {
+        protected Void doInBackground() throws Exception {
 
             doStartProgress();
             // progress bar 設定

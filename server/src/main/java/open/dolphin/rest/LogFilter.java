@@ -1,6 +1,7 @@
 package open.dolphin.rest;
 
 import java.io.IOException;
+import java.net.URLDecoder;
 import java.util.Map;
 import java.util.logging.Logger;
 import javax.inject.Inject;
@@ -9,7 +10,7 @@ import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import open.dolphin.infomodel.IInfoModel;
-import open.dolphin.mbean.UserCache;
+import open.dolphin.mbean.ServletContextHolder;
 import open.dolphin.session.UserServiceBean;
 
 /**
@@ -32,7 +33,7 @@ public class LogFilter implements Filter {
     private UserServiceBean userService;
     
     @Inject
-    private UserCache userCache;
+    private ServletContextHolder contextHolder;
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
@@ -52,7 +53,13 @@ public class LogFilter implements Filter {
         //System.err.println(userName);
         //System.err.println(password);
         
-        Map<String, String> userMap = userCache.getMap();
+        if (userName == null || password == null) {
+            HttpServletResponse res = (HttpServletResponse) response;
+            res.sendError(400);
+            return;
+        }
+        
+        Map<String, String> userMap = contextHolder.getUserMap();
         boolean authentication = password.equals(userMap.get(userName));
         
         if (!authentication) {
@@ -84,10 +91,13 @@ public class LogFilter implements Filter {
         if (query != null && !query.isEmpty()) {
             sb.append("?").append(query);
         }
-        int len = sb.length();
-        String msg = len > 160
-                ? sb.delete(157, len).append("...").toString()
-                : sb.toString();
+        
+        String msg = URLDecoder.decode(sb.toString(), "UTF-8"); // TO-DO
+
+        if (msg.length() > 160) {
+            msg = msg.substring(0, 157) + ("...");
+        }
+
         info(msg);
 
         chain.doFilter(req, response);

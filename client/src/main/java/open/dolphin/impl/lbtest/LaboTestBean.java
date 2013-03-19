@@ -145,6 +145,9 @@ public class LaboTestBean extends AbstractChartDocument {
             else{
                 header[moduleIndex + 1] = module.getSampleDate();
             }
+            //header[moduleIndex + 1] = module.getSampleDate();
+            // 画面がちっちゃいと日付が見えないらしい
+            header[moduleIndex + 1] = header[moduleIndex + 1].substring(2);
             for (NLaboItem item : module.getItems()) {
 
                 // 検体名を取得する
@@ -179,6 +182,7 @@ public class LaboTestBean extends AbstractChartDocument {
                         value.setComment1(item.getComment1());
                         value.setComment2(item.getComment2());
                         rowObject.addLabTestValueObjectAt(moduleIndex, value);
+                        rowObject.setNormalValue(item.getNormalValue());    // 基準値記録漏れ対策
                         break;
                     }
                 }
@@ -767,11 +771,14 @@ public class LaboTestBean extends AbstractChartDocument {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                InFacilityLabo fLabo = new InFacilityLabo();
-                fLabo.setContext(LaboTestBean.this.getContext());
-                boolean toUpdate = fLabo.start();
-                if (toUpdate) {
-                    searchLaboTest();
+                try {
+                    InFacilityLabo fLabo = new InFacilityLabo();
+                    fLabo.setContext(LaboTestBean.this.getContext());
+                    boolean toUpdate = fLabo.start();
+                    if (toUpdate) {
+                        searchLaboTest();
+                    }
+                } catch (Exception ex) {
                 }
             }
         });
