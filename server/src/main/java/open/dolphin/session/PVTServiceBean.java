@@ -243,7 +243,6 @@ public class PVTServiceBean {
         }
         return 0;
     }
-    
 
     private void setHealthInsurances(PatientModel pm) {
         if (pm != null) {

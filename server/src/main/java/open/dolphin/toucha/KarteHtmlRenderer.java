@@ -1,4 +1,4 @@
-package open.dolphin.util;
+package open.dolphin.toucha;
 
 import java.awt.Dimension;
 import java.io.StringReader;
@@ -22,7 +22,7 @@ public class KarteHtmlRenderer {
     
     private static final String CR = "\n";
     private static final String BR = "<BR>";
-    private static final Dimension imageSize = new Dimension(128, 128);
+    private static final Dimension imageSize = new Dimension(192, 192);
     
     private enum ELEMENTS {paragraph, content, text, component, icon, kartePane, section, unknown};
     
@@ -210,13 +210,16 @@ public class KarteHtmlRenderer {
                 
             } else if (name != null && name.equals(SCHEMA_HOLDER)) {
                 SchemaModel schema = schemas.get(index);
-                byte[] bytes = ImageTool.getJpegBytes(schema.getJpegByte(), imageSize);
+
+                byte[] bytes = ImageTool.getScaledBytes(schema.getJpegByte(), imageSize, "jpeg");
+                
                 if (bytes != null) {
                     String base64 = Base64Utils.getBase64(bytes);
                     htmlBuff.append("<img src=\"data:image/jpeg;base64,\n");
                     htmlBuff.append(base64);
-                    htmlBuff.append("\" alt=\"img\">");
+                    htmlBuff.append("\" alt=\"img\"><br>");
                 }
+
             }
         }
     }
