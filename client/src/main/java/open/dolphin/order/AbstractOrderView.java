@@ -272,6 +272,24 @@ public abstract class AbstractOrderView extends JPanel {
         return item.getNumber();
     }
 
+    public void setShinkuByShinku(String sShinku) {
+        int i;
+        if(sShinku != null){
+            for (i=0; i<shinkuCmb.getItemCount(); i++){
+                // 最初の"."を取り除いた文字列で始まるかどうかチェック
+                if(shinkuCmb.getItemAt(i).toString().startsWith(sShinku) == true){
+                    if (shinkuCmb.getSelectedIndex() != i){
+                        shinkuCmb.setSelectedIndex(i);
+                    }
+                    break;
+                }
+            }
+        }
+        else{
+            // do nothing
+        }
+    }
+    
     private JComboBox createShinkuCmb() {
         JComboBox cb = new JComboBox();
         cb.setMaximumRowCount(20);
