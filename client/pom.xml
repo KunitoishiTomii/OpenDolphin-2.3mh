@@ -33,7 +33,7 @@
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-core</artifactId>
-            <version>4.1.9.Final</version>
+            <version>4.1.10.Final</version>
             <type>jar</type>
         </dependency>
         <dependency>
@@ -51,11 +51,13 @@
             <artifactId>slf4j-log4j12</artifactId>
             <version>1.7.2</version>
         </dependency>
+<!--
         <dependency>
             <groupId>org.swinglabs</groupId>
             <artifactId>swing-layout</artifactId>
             <version>1.0.3</version>
         </dependency>
+-->
         <dependency>
             <groupId>org.apache.velocity</groupId>
             <artifactId>velocity</artifactId>
@@ -72,10 +74,18 @@
             <version>9.1-901-1.jdbc4</version>
         </dependency>
         <dependency>
+            <groupId>com.sun.jersey</groupId>
+            <artifactId>jersey-client</artifactId>
+            <version>1.17.1</version>
+            <type>jar</type>
+        </dependency>
+<!--
+        <dependency>
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-jaxrs</artifactId>
             <version>2.3.5.Final</version>
 	</dependency>
+-->
         <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
@@ -121,7 +131,7 @@
         <dependency>
             <groupId>org.apache.tomcat</groupId>
             <artifactId>tomcat-jdbc</artifactId>
-            <version>7.0.35</version>
+            <version>7.0.37</version>
         </dependency>
 <!-- 以下は自分でローカルリポジトリに追加する -->
         <dependency>
@@ -139,7 +149,7 @@
         <dependency>
             <groupId>ch.randelshofer</groupId>
             <artifactId>quaqua</artifactId>
-            <version>6.3.1.4</version>
+            <version>9.0.0.1</version>
             <type>jar</type>
         </dependency>
     </dependencies>

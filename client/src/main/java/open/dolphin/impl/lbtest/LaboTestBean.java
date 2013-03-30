@@ -13,6 +13,7 @@ import javax.swing.JTable.PrintMode;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.table.JTableHeader;
 import open.dolphin.client.AbstractChartDocument;
 import open.dolphin.client.ClientContext;
 import open.dolphin.client.GUIConst;
@@ -267,7 +268,25 @@ public class LaboTestBean extends AbstractChartDocument {
         String footer = sb.toString();
         
         try {
-            table.print(PrintMode.FIT_WIDTH, null, new MessageFormat(footer));
+            // quaqua使用時の不具合対策
+            final String currentLaf = UIManager.getLookAndFeel().getClass().getName();
+            final String quaquaCls = "ch.randelshofer.quaqua.QuaquaLookAndFeel";
+            boolean quaqua = quaquaCls.equals(currentLaf);
+            
+            if (quaqua) {
+                JTableHeader header = table.getTableHeader();
+                Font tableFont = table.getFont();
+                Font headerFont = header.getFont();
+                table.setFont(new Font(Font.MONOSPACED, tableFont.getStyle(), tableFont.getSize()));
+                header.setFont(new Font(Font.MONOSPACED, headerFont.getStyle(), headerFont.getSize()));
+                
+                table.print(PrintMode.FIT_WIDTH, null, new MessageFormat(footer));
+                
+                table.setFont(tableFont);
+                header.setFont(headerFont);
+            } else {
+                table.print(PrintMode.FIT_WIDTH, null, new MessageFormat(footer));
+            }
         } catch (PrinterException ex) {
         }
 
