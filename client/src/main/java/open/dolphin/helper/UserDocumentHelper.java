@@ -17,7 +17,7 @@ public class UserDocumentHelper {
 
     /**
      * PDF/OpenOffice差し込み文書Fileへのパスを生成する。 File name =
-     * 患者氏名_文書名_YYYY-MM-DD(N).pdf/odt
+     * 患者氏名_文書名_YYYY-MM-DD(N).pdf/odt/ods
      */
     public static String createPathToDocument(String dirStr, String docName, String ext, String ptName, Date d, Window parent) {
 

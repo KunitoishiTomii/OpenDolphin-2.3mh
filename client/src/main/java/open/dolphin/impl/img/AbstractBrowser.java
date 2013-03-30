@@ -48,10 +48,11 @@ public abstract class AbstractBrowser extends AbstractChartDocument {
     protected static final String PROP_SORT_ORDER       = "sortOrder";
 
     protected static final String[] ACCEPT_FILE_TYPES = {"dcm","jpg", "png", "bmp", "gif", "tif"};
-    protected static final String[] ACCEPT_DOC_TYPES = {"pdf", "doc","docx", "xls", "xlsx", "ppt","pptx", "odt"};
+    protected static final String[] ACCEPT_DOC_TYPES = {"pdf", "doc","docx", "xls", "xlsx", "ppt","pptx", "odt", "ods"};
+    // LibreOfficeCalcのアイコンをわざわざ作るの面倒なのでExcelアイコンで代用
     protected static final String[] ACCEPT_DOC_ICONS = 
         {"pdf_icon40px.gif", "Word-32-d.gif","Word-32-d.gif", "Excel-32-d.gif", "Excel-32-d.gif", 
-            "PowerPoint-32-d.gif", "PowerPoint-32-d.gif", "LibreWriterIcon.png"};
+            "PowerPoint-32-d.gif", "PowerPoint-32-d.gif", "LibreWriterIcon.png", "Excel-32-d.gif"};
 
 //    protected static final String[] OTHER_DOC_TYPES =
 //        {"pdf", "txt", "rtf", "htm","html", "doc","docx", "xls", "xlsx", "ppt","pptx","pages", "numbers", "key"};

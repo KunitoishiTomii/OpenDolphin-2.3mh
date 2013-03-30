@@ -47,6 +47,7 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
     public static final String CHART_STATE = "chartStateProp";
 
     private static final String EXT_ODT_TEMPLATE = ".odt";
+    private static final String EXT_ODS_TEMPLATE = ".ods";
 
     private static final String PROP_FRMAE_BOUNDS = "chartFrame.bounds";
     // Document Plugin を格納する TabbedPane
@@ -1724,7 +1725,8 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
 
         if (!Desktop.isDesktopSupported()
                 || templatePath == null
-                || (!templatePath.endsWith(EXT_ODT_TEMPLATE))) {
+                || ((!templatePath.endsWith(EXT_ODT_TEMPLATE)) 
+                &&  (!templatePath.endsWith(EXT_ODS_TEMPLATE)))) {
             return;
         }
 
@@ -1732,6 +1734,19 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
 
             @Override
             protected String doInBackground() throws Exception {
+                String sExtension;
+
+                // set extension
+                if(templatePath.endsWith(EXT_ODT_TEMPLATE)){
+                    sExtension = new String(EXT_ODT_TEMPLATE);
+                }
+                else if (templatePath.endsWith(EXT_ODS_TEMPLATE)){
+                    sExtension = new String(EXT_ODS_TEMPLATE);
+                }
+                else{
+                    // 何かおかしいが、デフォルトこっちにしておく(dead logic)
+                    sExtension = new String(EXT_ODT_TEMPLATE);
+                }
                 DocumentTemplateFactory documentTemplateFactory = new DocumentTemplateFactory();
                 DocumentTemplate template = documentTemplateFactory.getTemplate(new File(templatePath));
                 Map<String, String> data = new HashMap<String, String>();
@@ -1743,6 +1758,7 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
                 data.put("entry_date_era", MMLDate.warekiStringFromDate(entryDate));
 
                 // Patient
+                data.put("pt_id", getPatient().getPatientId());
                 data.put("pt_kana", getOdtString(getPatient().getKanaName()));
                 data.put("pt_name", getPatient().getFullName());
                 data.put("g", ModelUtils.getGenderDesc(getPatient().getGender()));
@@ -1780,7 +1796,7 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
                         //Project.getString(Project.LOCATION_PDF),    // 設定画面で指定されている dir
                         filePath, // // 設定画面で指定されている dir + \ + PatientId
                         docName, // 文書名
-                        EXT_ODT_TEMPLATE, // 拡張子
+                        sExtension, // 拡張子
                         getPatient().getFullName(), // 患者氏名
                         entryDate, // 日付
                         getFrame());
@@ -1863,7 +1879,8 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
             for (File file : files) {
                 if (file.isFile()) {
                     String path = file.getPath();
-                    if (path.toLowerCase().endsWith(EXT_ODT_TEMPLATE)) {
+                    if (path.toLowerCase().endsWith(EXT_ODT_TEMPLATE) ||
+                        path.toLowerCase().endsWith(EXT_ODS_TEMPLATE)) {
                         String name = file.getName();
                         int len = name.length() - 4;  // .odt
                         name = name.substring(0, len);
@@ -1939,7 +1956,8 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
                 dialog.dispose();
                 NameValuePair pair = (NameValuePair) docList.getSelectedValue();
                 String test = pair.getValue();
-                if (test.endsWith(EXT_ODT_TEMPLATE)) {
+                if (test.endsWith(EXT_ODT_TEMPLATE) || 
+                    test.endsWith(EXT_ODS_TEMPLATE)) {
                     String docName = pair.getName();
                     invokeOffice(docName, test);
                 } else {

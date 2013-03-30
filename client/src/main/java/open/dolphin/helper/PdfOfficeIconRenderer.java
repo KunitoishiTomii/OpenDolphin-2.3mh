@@ -51,7 +51,7 @@ public class PdfOfficeIconRenderer extends DefaultListCellRenderer {
             NameValuePair pair = (NameValuePair)value;
             String test = pair.getValue();
             if (test!=null) {
-                if (test.endsWith(".odt")) {
+                if (test.endsWith(".odt") || test.endsWith(".ods")) {
                     label.setIcon(ICON_OFFICE);
                 } else if (test.endsWith("KarteEditor")) {
                     label.setIcon(null);
