@@ -954,7 +954,7 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         val = String.valueOf(model.weasisAddress);
         val = val != null ? val : "";
         tf_weasis.setText(val);
-        
+
         // 色
         val = String.valueOf(model.zebraColor);
         val = val != null ? val : "";

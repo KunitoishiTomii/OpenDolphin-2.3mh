@@ -442,7 +442,6 @@ public abstract class AbstractBrowser extends AbstractChartDocument {
         // memory leak?
         if (imagePanel != null) {
             imagePanel.removeAll();
-            imagePanel = null;
         }
     }
 
