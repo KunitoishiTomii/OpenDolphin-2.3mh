@@ -148,7 +148,7 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
                 }
 
                 JTextPane pane = (JTextPane) src;
-                KarteViewer viewer = (KarteViewer) pane.getClientProperty("KarteViewer");
+                KarteViewer viewer = (KarteViewer) pane.getClientProperty(GUIConst.PROP_KARTE_VIEWER);
                 if (viewer != null) {
                     int cnt = e.getClickCount();
                     if (cnt == 2) {
@@ -308,12 +308,14 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
     public void showDocuments(final DocInfoModel[] selectedHistories, final JScrollPane scroller) {
 
         this.scroller = scroller;
-        docInfoList = Arrays.asList(selectedHistories);
 
         if (selectedHistories == null || selectedHistories.length == 0) {
             initScrollerPanel();
+            docInfoList = Collections.emptyList();
             return;
         }
+        
+        docInfoList = Arrays.asList(selectedHistories);
         
         // ここでソートしておく
         if (ascending) {
@@ -323,20 +325,20 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
         }
 
         // 選択リストにあって 現在の karteViewerMap にないものはデータベースから取得する
-        List<Long> added = new ArrayList<Long>();
+        Map<Long, DocInfoModel> map = new LinkedHashMap<Long, DocInfoModel>();
         for (DocInfoModel docInfo : docInfoList) {
             long docPk = docInfo.getDocPk();
             if (!karteViewerMap.containsKey(docPk)) {
-                added.add(docPk);
+                map.put(docPk, docInfo);
             }
         }
 
-        if (added.isEmpty()) {
+        if (map.isEmpty()) {
             // 追加されたものがない場合は、表示に飛ぶ
             showKarteViewers();
         } else {
             // 追加されたものがある場合はデータベースから取得する
-            KarteTask task = new KarteTask(getContext(), added);
+            KarteTask task = new KarteTask(getContext(), map);
             task.execute();
         }
     }
@@ -370,7 +372,7 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
                     if (viewer != null) {
                         JPanel panel = viewer.getUI();
                         // skip scroll用にインデックスを振る
-                        panel.putClientProperty("index", i);
+                        panel.putClientProperty(GUIConst.PROP_VIEWER_INDEX, i);
                         scrollerPanel.add(panel);
                     }
                 }
@@ -680,7 +682,8 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
                     schema.setIcon(icon);
                 }
             }
-            
+            // KarteTaskに移動
+/*
             // DocumentModelにDocInfoModelを設定する
             for (DocInfoModel info : docInfoList) {
                 if (docModel.getId() == info.getDocPk()) {
@@ -688,7 +691,7 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
                     break;
                 }
             }
-
+*/
             // シングル及び２号用紙の判定を行い、KarteViewer を生成する
             final KarteViewer viewer = createKarteViewer(docModel.getDocInfoModel());
             viewer.setContext(getContext());
@@ -704,10 +707,7 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
             // これをしないとJTextPaneにフォーカスがあるとキーでスクロールできない
             ActionMap amap = scrollerPanel.getActionMap();
             viewer.setParentActionMap(amap);
-            
-            // karteViewerMapに登録する
-            //karteViewerMap.put(docModel.getId(), viewer);
-            
+
             return viewer;
         }
     }
@@ -730,14 +730,14 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
     private final class KarteTask extends DBTask<Integer, Void> {
         
         private static final int fetchSize = 200;
-        private List<Long> docIdList;
+        private Map<Long, DocInfoModel> docInfoMap;
         private CompletionService service;
         private MultiTaskExecutor exec;
         
 
-        public KarteTask(Chart ctx, List<Long> docIdList) {
+        public KarteTask(Chart ctx, Map<Long, DocInfoModel> docInfoMap) {
             super(ctx);
-            this.docIdList = docIdList;
+            this.docInfoMap = docInfoMap;
             // CompletionServceを使ってみる
             exec = new MultiTaskExecutor();
             service = exec.createCompletionService();
@@ -754,17 +754,21 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
             DocumentDelegater ddl = DocumentDelegater.getInstance();
 
             int fromIndex = 0;
-            int idListSize = docIdList.size();
+            int idListSize = docInfoMap.size();
             int taskCount=  0;
+            List<Long> allIds = new ArrayList<Long>(docInfoMap.keySet());
             
             // 分割してサーバーから取得する
             while (fromIndex < idListSize) {
                 int toIndex = Math.min(fromIndex + fetchSize, idListSize);
-                List<Long> ids = docIdList.subList(fromIndex, toIndex);
+                List<Long> ids = allIds.subList(fromIndex, toIndex);
                 try {
                     List<DocumentModel> result = ddl.getDocuments(ids);
                     if (result != null && !result.isEmpty()) {
                         for (DocumentModel model : result) {
+                            // DocumentModelにDocInfoModelを設定する
+                            DocInfoModel docInfo = docInfoMap.get(model.getId());
+                            model.setDocInfoModel(docInfo);
                             // Executorに登録していく
                             MakeViewerTask task = new MakeViewerTask(model);
                             service.submit(task);
@@ -805,6 +809,7 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
             }
             service = null;
             exec.dispose();
+            docInfoMap.clear();
         }
 
         @Override
@@ -812,6 +817,7 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
             logger.debug(e.getMessage());
             service = null;
             exec.dispose();
+            docInfoMap.clear();
         }
     }
 
