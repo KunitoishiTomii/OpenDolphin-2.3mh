@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.swing.*;
@@ -23,12 +22,12 @@ public abstract class AbstractOrderView extends JPanel {
 
     protected static final int TEXTFIELD_WIDTH = 20;
     private static final Border border = BorderFactory.createEtchedBorder();
-    private static final ImageIcon infoIcon    = ClientContext.getImageIcon("about_16.gif");
-    private static final ImageIcon deleteIcon  = ClientContext.getImageIcon("del_16.gif");
-    private static final ImageIcon clearIcon   = ClientContext.getImageIcon("remov_16.gif");
-    private static final ImageIcon okIcon      = ClientContext.getImageIcon("lgicn_16.gif");
-    private static final ImageIcon okCntIcon   = ClientContext.getImageIcon("apps_16.gif");
-    private static final ImageIcon loupeIcon   = ClientContext.getImageIcon("srch_16.gif");
+    private static final ImageIcon infoIcon    = ClientContext.getImageIconAlias("icon_info_small");
+    private static final ImageIcon deleteIcon  = ClientContext.getImageIconAlias("icon_delete_small");
+    private static final ImageIcon clearIcon   = ClientContext.getImageIconAlias("icon_clear_small");
+    private static final ImageIcon okIcon      = ClientContext.getImageIconAlias("icon_accept_small");
+    private static final ImageIcon okCntIcon   = ClientContext.getImageIconAlias("icon_gear_small");
+    private static final ImageIcon loupeIcon   = ClientContext.getImageIconAlias("icon_search_small");
     
     private static final String setTableToolTip     = "セット内容は Drag & Drop で順番を入れ替えることができます。";
     private static final String stampNameFldToolTip = "セット名を編集します。";
@@ -297,8 +296,7 @@ public abstract class AbstractOrderView extends JPanel {
         cb.addItem("診療行為区分指定");
         List<ShinkuItem> shinkuItems = new ArrayList<ShinkuItem>();
         Map<String,String> mmlMap = MMLTable.getClaimClassCodeMap();
-        for (Iterator<Map.Entry<String, String>> itr = mmlMap.entrySet().iterator(); itr.hasNext();) {
-            Map.Entry<String, String> entry = itr.next();
+        for (Map.Entry<String, String> entry : mmlMap.entrySet()) {
             String number = entry.getKey();
             String name = entry.getValue();
             shinkuItems.add(new ShinkuItem(number, name));

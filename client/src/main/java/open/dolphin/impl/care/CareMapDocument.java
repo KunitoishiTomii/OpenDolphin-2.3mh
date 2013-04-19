@@ -128,7 +128,7 @@ public final class CareMapDocument extends AbstractChartDocument {
         p.add(c2);
         
         // カレンダーの範囲を１ケ月以に戻すボタン
-        JButton prevBtn = new JButton(ClientContext.getImageIcon("back_16.gif"));
+        JButton prevBtn = new JButton(ClientContext.getImageIconAlias("icon_back_small"));
         
         prevBtn.addActionListener(new ActionListener() {
             
@@ -181,8 +181,7 @@ public final class CareMapDocument extends AbstractChartDocument {
         });
         
         // カレンダーの範囲を１ケ月送るボタン
-        JButton nextBtn = new JButton(ClientContext
-                .getImageIcon("forwd_16.gif"));
+        JButton nextBtn = new JButton(ClientContext.getImageIconAlias("icon_forward_small"));
         
         nextBtn.addActionListener(new ActionListener() {
             
@@ -231,7 +230,7 @@ public final class CareMapDocument extends AbstractChartDocument {
         });
         
         // 予約表テーブルを生成する
-        updateAppoBtn = new JButton(ClientContext.getImageIcon("save_16.gif"));
+        updateAppoBtn = new JButton(ClientContext.getImageIconAlias("icon_save_small"));
         updateAppoBtn.setEnabled(false);
         updateAppoBtn.addActionListener(new ActionListener() {
             @Override
@@ -726,14 +725,8 @@ public final class CareMapDocument extends AbstractChartDocument {
     public void save() {
         
         final ArrayList<AppointmentModel> results = new ArrayList<AppointmentModel>();
-        // HashMap<Integer, SimpleCalendarPanel> cPool;
-        Iterator iter = cPool.entrySet().iterator();
         
-        while (iter.hasNext()) {
-
-            Map.Entry entry = (Map.Entry)iter.next();
-
-            // カレンダー単位に抽出する
+        for (Map.Entry entry : cPool.entrySet()) {
             SimpleCalendarPanel c = (SimpleCalendarPanel) entry.getValue();
 
             if (c.getRelativeMonth() >= 0) {

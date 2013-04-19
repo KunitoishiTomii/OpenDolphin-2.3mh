@@ -5,6 +5,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -112,6 +113,7 @@ public class MakeBaseChargeStamp extends CheckSantei {
         if (claimItemMap != null){
             return true;
         }
+        DecimalFormat srycdFrmt = new DecimalFormat(srycdFrmtStr);
 
         List<String> srycdList = new ArrayList<String>();
         srycdList.add(srycdFrmt.format(srycd_Saishin));
@@ -217,7 +219,7 @@ public class MakeBaseChargeStamp extends CheckSantei {
         
         // CheckSanteiの初期化
         try {
-            init(editor.getContext(), stamps, editor.getModel().getDocInfoModel().getFirstConfirmDate());
+            init(editor.getContext(), stamps, editor.getModel().getDocInfoModel().getFirstConfirmDate(), null);
         } catch (Exception ex) {
             return;
         }

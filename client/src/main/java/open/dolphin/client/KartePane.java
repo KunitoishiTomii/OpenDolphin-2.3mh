@@ -43,6 +43,7 @@ import open.dolphin.tr.*;
 import open.dolphin.util.BeanUtils;
 import open.dolphin.util.DicomImageEntry;
 import open.dolphin.util.ImageTool;
+import open.dolphin.util.PopupMenuUtil;
 import org.apache.log4j.Logger;
 
 /**
@@ -458,8 +459,9 @@ public class KartePane implements DocumentListener, MouseListener,
     // ペイン内の右クリックメニューを生成する
     protected JPopupMenu createMenus() {
 
-        final JPopupMenu contextMenu = new JPopupMenu();
-
+        //final JPopupMenu contextMenu = new JPopupMenu();
+        final JPopupMenu contextMenu = PopupMenuUtil.createPopupMenu();
+        
         // cut, copy, paste メニューを追加する
         contextMenu.add(mediator.getAction(GUIConst.ACTION_CUT));
         contextMenu.add(mediator.getAction(GUIConst.ACTION_COPY));
@@ -981,7 +983,7 @@ public class KartePane implements DocumentListener, MouseListener,
                             ClientContext.getFrameTitle(title),
                             JOptionPane.DEFAULT_OPTION,
                             JOptionPane.INFORMATION_MESSAGE,
-                            ClientContext.getImageIcon("about_32.gif"),
+                            ClientContext.getImageIconAlias("icon_info"),
                             new String[]{"縮小する", "取消す"}, "縮小する");
         return option == 0;
     }

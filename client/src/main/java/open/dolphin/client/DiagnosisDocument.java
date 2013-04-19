@@ -36,6 +36,7 @@ import open.dolphin.table.StripeTableCellRenderer;
 import open.dolphin.tr.DiagnosisTransferHandler;
 import open.dolphin.util.BeanUtils;
 import open.dolphin.util.MMLDate;
+import open.dolphin.util.PopupMenuUtil;
 import org.apache.log4j.Logger;
 
 /**
@@ -56,12 +57,12 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
     private static final int END_DATE_COL   = 4;
 
     // GUI コンポーネント定義
-    private static final String RESOURCE_BASE = "/open/dolphin/resources/images/";
-    private static final String DELETE_BUTTON_IMAGE     = "del_16.gif";
-    private static final String ADD_BUTTON_IMAGE        = "add_16.gif";
-    private static final String UPDATE_BUTTON_IMAGE     = "save_16.gif";
-    private static final String ORCA_VIEW_IMAGE         = "impt_16.gif";
-    private static final String ORCA_IMPORT_IMAGE       = "favs_16.gif";
+    //private static final String RESOURCE_BASE = "/open/dolphin/resources/images/";
+    private static final String DELETE_BUTTON_IMAGE     = "icon_delete_small";
+    private static final String ADD_BUTTON_IMAGE        = "icon_add_small";
+    private static final String UPDATE_BUTTON_IMAGE     = "icon_save_small";
+    private static final String ORCA_VIEW_IMAGE         = "icon_import_orca_diagnosis";
+    private static final String ORCA_IMPORT_IMAGE       = "icon_import_orca_star";
 
     /** JTableレンダラ用のカラー */
     private static final Color ORCA_BACK = new Color(227, 250, 207); //ClientContext.getColor("color.CALENDAR_BACK");
@@ -244,6 +245,7 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
 
             @Override
             public void actionPerformed(ActionEvent ae) {
+                
             }
         };
         JButton addButton = new JButton(addAction);
@@ -255,7 +257,8 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
                 if (!e.isPopupTrigger()) {
                     // ASP StampBox が選択されていて傷病名Treeがない場合がある
                     if (hasTree(IInfoModel.ENTITY_DIAGNOSIS)) {
-                        JPopupMenu popup = new JPopupMenu();
+                        //JPopupMenu popup = new JPopupMenu();
+                        JPopupMenu popup = PopupMenuUtil.createPopupMenu();
                         getContext().getChartMediator().addDiseaseMenu(popup);
                         popup.show(e.getComponent(), e.getX(), e.getY());
                     } else {
@@ -1966,7 +1969,7 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
 //masuda^   ORCAの病名を参照したらボタンをインポートボタンに変更する     
                     updateIkouTokutei2(result);
                     allDiagnosis.addAll(result);
-                    orcaButton.setIcon(ClientContext.getImageIcon(ORCA_IMPORT_IMAGE));
+                    orcaButton.setIcon(ClientContext.getImageIconAlias(ORCA_IMPORT_IMAGE));
                     orcaButton.setToolTipText("ORCAの病名をインポートします。");
                     importBtnEnabled = true;
                     filterDiagnosis();
@@ -1983,8 +1986,9 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
      * ImageIcon を返す
      */
     private ImageIcon createImageIcon(String name) {
-        String res = RESOURCE_BASE + name;
-        return new ImageIcon(this.getClass().getResource(res));
+        //String res = RESOURCE_BASE + name;
+        //return new ImageIcon(this.getClass().getResource(res));
+        return ClientContext.getImageIconAlias(name);
     }
     
 //masuda^   Orcaの病名をOpenDolphinにインポート

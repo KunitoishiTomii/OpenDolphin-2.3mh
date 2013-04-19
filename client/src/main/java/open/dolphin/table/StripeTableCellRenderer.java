@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Rectangle;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JTable;
@@ -81,24 +82,26 @@ public class StripeTableCellRenderer extends DefaultTableCellRenderer {
 
     // テーブルにストライプの背景を描く
     // http://explodingpixels.wordpress.com/2008/10/05/making-a-jtable-fill-the-view-without-extension/
+    // を改変。popupやtooltip表示後乱れるのを修正
     private static class StripeTableUI extends BasicTableUI {
 
         @Override
         public void paint(Graphics g, JComponent c) {
-            // get the row index at the top of the clip bounds (the first row to paint).
-            int rowAtPoint = table.rowAtPoint(g.getClipBounds().getLocation());
-            // get the y coordinate of the first row to paint. if there are no rows in the table, start
-            // painting at the top of the supplied clipping bounds.
-            int topY = rowAtPoint < 0 ? g.getClipBounds().y : table.getCellRect(rowAtPoint, 0, true).y;
+            
+            final Rectangle clipBounds = g.getClipBounds();
+            final int rowHeight = table.getRowHeight();
+            final int endY = clipBounds.y + clipBounds.height;
 
-            // create a counter variable to hold the current row. if there are no rows in the table,
-            // start the counter at 0.
-            int currentRow = rowAtPoint < 0 ? 0 : rowAtPoint;
-            while (topY < g.getClipBounds().y + g.getClipBounds().height) {
-                int bottomY = topY + table.getRowHeight();
+            int topY = clipBounds.y;
+            int currentRow = topY / rowHeight;
+            int height = rowHeight - topY % rowHeight;
+            
+            while (topY < endY) {
+                int bottomY = topY + height;
                 g.setColor(ROW_COLORS[currentRow & 1]);
-                g.fillRect(g.getClipBounds().x, topY, g.getClipBounds().width, bottomY);
+                g.fillRect(clipBounds.x, topY, clipBounds.width, Math.min(bottomY, endY));
                 topY = bottomY;
+                height = rowHeight;
                 currentRow++;
             }
             super.paint(g, c);

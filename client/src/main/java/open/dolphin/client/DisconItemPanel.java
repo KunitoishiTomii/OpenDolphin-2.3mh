@@ -31,10 +31,10 @@ public class DisconItemPanel {
     private static final int NAME_COL = 1;
     private static final int MEMO_COL = 2;
     
-    private static final ImageIcon addIcon = ClientContext.getImageIcon("add_16.gif");
-    private static final ImageIcon cancelIcon = ClientContext.getImageIcon("cancl_16.gif");
-    private static final ImageIcon removeIcon = ClientContext.getImageIcon("del_16.gif");
-    private static final ImageIcon saveIcon = ClientContext.getImageIcon("save_16.gif");
+    private static final ImageIcon addIcon = ClientContext.getImageIconAlias("icon_add_small");
+    private static final ImageIcon cancelIcon = ClientContext.getImageIconAlias("icon_cancel_small");
+    private static final ImageIcon removeIcon = ClientContext.getImageIconAlias("icon_delete_small");
+    private static final ImageIcon saveIcon = ClientContext.getImageIconAlias("icon_save_small");
     
     private ListTableModel<DisconItemModel> tableModel;
     private List<DisconItemModel> addedList = new ArrayList<DisconItemModel>();

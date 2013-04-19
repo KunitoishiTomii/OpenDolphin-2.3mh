@@ -705,17 +705,17 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
         frame.setContentPane(myPanel);
 
         // Injection
-        textBtn.setIcon(ClientContext.getImageIcon(resource.getString("textBtn.icon")));
+        textBtn.setIcon(ClientContext.getImageIconAlias("icon_text_stamp_menu"));
         textBtn.setText(null);
         textBtn.setToolTipText(resource.getString("textBtn.toolTipText"));
         //textBtn.setMargin(new Insets(5,5,5,5));
 
-        schemaBtn.setIcon(ClientContext.getImageIcon(resource.getString("schemaBtn.icon")));
+        schemaBtn.setIcon(ClientContext.getImageIconAlias("icon_open_schema_box"));
         schemaBtn.setText(null);
         schemaBtn.setToolTipText(resource.getString("schemaBtn.toolTipText"));
         //schemaBtn.setMargin(new Insets(5,5,5,5));
 
-        stampBtn.setIcon(ClientContext.getImageIcon(resource.getString("stampBtn.icon")));
+        stampBtn.setIcon(ClientContext.getImageIconAlias("icon_stamp_menu"));
         stampBtn.setText(null);
         stampBtn.setToolTipText(resource.getString("stampBtn.toolTipText"));
         //stampBtn.setMargin(new Insets(5,5,5,5));
@@ -725,7 +725,7 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
 //        chgBtn.setToolTipText(resource.getString("chgBtn.toolTipText"));
 //        chgBtn.setMargin(new Insets(5,5,5,5));
 
-        insBtn.setIcon(ClientContext.getImageIcon(resource.getString("insBtn.icon")));
+        insBtn.setIcon(ClientContext.getImageIconAlias("icon_health_insurance"));
         insBtn.setText(null);
         insBtn.setToolTipText(resource.getString("insBtn.toolTipText"));
         //insBtn.setMargin(new Insets(5,5,5,5));
@@ -1849,16 +1849,7 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
         PluginLister<NChartDocument> lister = PluginLister.list(NChartDocument.class);
         LinkedHashMap<String, String> nproviders = lister.getProviders();
         if (nproviders != null) {
-//masuda^
-/*
-             * Iterator<String> iter = nproviders.keySet().iterator(); while
-             * (iter.hasNext()) { String cmd = iter.next(); String clsName =
-             * nproviders.get(cmd); NameValuePair pair = new NameValuePair(cmd,
-             * clsName); documents.add(pair); if (DEBUG) {
-             * ClientContext.getBootLogger().debug(cmd + " = " + clsName); } }
-             */
-            for (Iterator itr = nproviders.entrySet().iterator(); itr.hasNext();) {
-                Map.Entry entry = (Map.Entry) itr.next();
+            for (Map.Entry entry : nproviders.entrySet()) {
                 String cmd = (String) entry.getKey();
                 String clsName = (String) entry.getValue();
                 NameValuePair pair = new NameValuePair(cmd, clsName);
@@ -1905,14 +1896,14 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
         JPanel pdfOffice = new JPanel();
         pdfOffice.setLayout(new BoxLayout(pdfOffice, BoxLayout.Y_AXIS));
         JLabel pdfLabel = new JLabel(": FormからPDF作成");
-        ImageIcon icon = ClientContext.getImageIcon("pdf_icon16.png");
+        ImageIcon icon = ClientContext.getImageIconAlias("icon_pdf_small");
         pdfLabel.setIcon(icon);
         pdfOffice.add(pdfLabel);
 
         if (hasOOD) {
             pdfOffice.add(Box.createVerticalStrut(5));
             JLabel officeLabel = new JLabel(": OpenDocumentテンプレートへ差し込み");
-            officeLabel.setIcon(ClientContext.getImageIcon("docs_16.png"));
+            officeLabel.setIcon(ClientContext.getImageIconAlias("icon_default_document"));
             pdfOffice.add(officeLabel);
         }
         pdfOffice.setBorder(BorderFactory.createEmptyBorder(6, 6, 5, 5));
@@ -2302,9 +2293,8 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
         }
         // 別ウィンドウで開いていたら閉じるように警告する
         if (inactiveProvidersMap != null && !inactiveProvidersMap.isEmpty()) {
-            for (Iterator itr = inactiveProvidersMap.entrySet().iterator(); itr.hasNext();) {
+            for (Map.Entry entry : inactiveProvidersMap.entrySet()) {
                 String title = ClientContext.getFrameTitle("インスペクタ");
-                Map.Entry entry = (Map.Entry) itr.next();
                 JFrame frame = (JFrame) entry.getValue();
                 frame.setExtendedState(Frame.NORMAL);
                 JOptionPane.showMessageDialog(frame,

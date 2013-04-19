@@ -128,7 +128,7 @@ public class StampPublisher {
         JPanel contentPane = new JPanel();
         
         // GUIコンポーネントを生成する
-        infoLable = new JLabel(ClientContext.getImageIcon("about_16.gif"));
+        infoLable = new JLabel(ClientContext.getImageIconAlias("icon_info_small"));
         instLabel = new JLabel("");
         instLabel.setFont(new Font("Dialog", Font.PLAIN, ClientContext.getInt("watingList.state.font.size")));
         publishedDate = new JLabel("");
@@ -645,7 +645,7 @@ public class StampPublisher {
                 ClientContext.getFrameTitle(title),
                 JOptionPane.YES_NO_OPTION,
                 JOptionPane.INFORMATION_MESSAGE,
-                ClientContext.getImageIcon("sinfo_32.gif"));
+                ClientContext.getImageIconAlias("icon_caution"));
         
         if (option != JOptionPane.YES_OPTION) {
             return;

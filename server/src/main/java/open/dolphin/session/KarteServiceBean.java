@@ -3,10 +3,12 @@ package open.dolphin.session;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import open.dolphin.infomodel.*;
+import open.dolphin.mbean.ServletContextHolder;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
 
@@ -94,6 +96,9 @@ public class KarteServiceBean {
             = "from ModuleModel m where m.document.id = :id "
             + "and m.moduleInfo.role = 'soaSpec' and m.moduleInfo.name = 'progressCourse'";
 //masuda$
+    
+    @Inject
+    private ServletContextHolder contextHolder;
     
     @PersistenceContext
     private EntityManager em;
@@ -372,11 +377,19 @@ public class KarteServiceBean {
         return ret;
     }
 */
+    
     public List<DocumentModel> getDocuments(List<Long> ids) {
+        boolean mysql = contextHolder.getDatabase().toLowerCase().contains("mysql");
+        if (mysql) {
+            return getDocumentsMySQL(ids);
+        } else {
+            return getDocumentsPSQL(ids);
+        }
+    }
 
-        //long t = System.currentTimeMillis();
+    // まとめてquery改改
+    public List<DocumentModel> getDocumentsPSQL(List<Long> ids) {
 
-        // まとめて query改
         List<DocumentModel> documentList =
                 em.createQuery("from DocumentModel m where m.id in (:ids)")
                 .setParameter("ids", ids)
@@ -391,46 +404,60 @@ public class KarteServiceBean {
                 em.createQuery("from SchemaModel m where m.document.id in (:ids)")
                 .setParameter("ids", ids)
                 .getResultList();
-
+        
+        // DocumentModelのMapを作る
         HashMap<Long, DocumentModel> dmMap = new HashMap<Long, DocumentModel>();
         for (DocumentModel dm : documentList) {
+            // LazyFetchのdetached objectsは一旦バッサリ消す！
+            dm.setModules(null);
+            dm.setSchema(null);
             dmMap.put(dm.getId(), dm);
         }
-
-        HashMap<Long, List<ModuleModel>> mmMap = new HashMap<Long, List<ModuleModel>>();
+        
+        // ModuleModelを登録しなおす
         for (ModuleModel mm : moduleList) {
-            long id = mm.getDocumentModel().getId();
-            List<ModuleModel> mmList = mmMap.get(id);
-            if (mmList == null) {
-                mmList = new ArrayList<ModuleModel>();
-                mmMap.put(id, mmList);
+            long docPk = mm.getDocumentModel().getId();
+            DocumentModel docModel = dmMap.get(docPk);
+            if (docModel != null) {
+                docModel.addModule(mm);
             }
-            mmList.add(mm);
         }
-
-        HashMap<Long, List<SchemaModel>> smMap = new HashMap<Long, List<SchemaModel>>();
+        
+        // SchemaModelを登録しなおす
         for (SchemaModel sm : schemaList) {
-            long id = sm.getDocumentModel().getId();
-            List<SchemaModel> smList = smMap.get(id);
-            if (smList == null) {
-                smList = new ArrayList<SchemaModel>();
-                smMap.put(id, smList);
+            long docPk = sm.getDocumentModel().getId();
+            DocumentModel docModel = dmMap.get(docPk);
+            if (docModel != null) {
+                docModel.addSchema(sm);
             }
-            smList.add(sm);
+        }
+        dmMap.clear();
+
+        return documentList;
+    }
+
+    // まとめてquery改改改 postgresでは遅い
+    public List<DocumentModel> getDocumentsMySQL(List<Long> ids) {
+
+        List<DocumentModel> documentList =
+                em.createQuery("from DocumentModel m where m.id in (:ids)")
+                .setParameter("ids", ids)
+                .getResultList();
+        
+        // Lazy fetchのやつらを取得するtrick
+        // http://stackoverflow.com/questions/3421314/jpa-lazy-loading-lazyinitializationexception-when-not-accessing-child-coll
+        // Lazy means that collection items will be loaded when someone will call get(index) 
+        // or other method which needs to operate with fully initialized collection. size() 
+        // doesn't initialize collection.
+        for (DocumentModel dm : documentList) {
+            // サイズを取得するだけでfetchできる
+            dm.getModules().size();
+            dm.getSchema().size();
         }
 
-        List<DocumentModel> ret = new ArrayList<DocumentModel>(documentList.size());
-        for (long id : ids) {
-            DocumentModel dm = dmMap.get(id);
-            List<ModuleModel> mmList = mmMap.get(id);
-            dm.setModules(mmList != null ? mmList : new ArrayList<ModuleModel>(0));
-            List<SchemaModel> smList = smMap.get(id);
-            dm.setSchema(smList != null ? smList : new ArrayList<SchemaModel>(0));
-            ret.add(dm);
-        }
-        //System.out.println(System.currentTimeMillis() - t);
-        return ret;
+        return documentList;
     }
+
 //masuda$
     
     /**

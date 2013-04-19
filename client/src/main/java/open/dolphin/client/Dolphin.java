@@ -596,6 +596,9 @@ public class Dolphin implements MainWindow {
         
         // このクライアントでChartImplとEditorFrameを開いていた場合の処理
         PatientModel pm = pvt.getPatientModel();
+        if (pm == null) {
+            return;
+        }
         boolean opened = false;
         long ptId = pm.getId();
         for (ChartImpl chart : WindowSupport.getAllCharts()) {
@@ -1318,6 +1321,11 @@ public class Dolphin implements MainWindow {
         ResourceBundle resource = ClientContext.getBundle(this.getClass());
         browseURL(resource.getString("menu.seaGaiaUrl"));
     }
+    
+    public void browseGitHub() {
+        ResourceBundle resource = ClientContext.getBundle(this.getClass());
+        browseURL(resource.getString("menu.githubUrl"));
+    }
 
     /**
      * URLをオープンする。
@@ -1437,6 +1445,7 @@ public class Dolphin implements MainWindow {
                 GUIConst.ACTION_BROWS_MEDXML,
                 GUIConst.ACTION_SHOW_ABOUT,
 //masuda^   中止項目と採用薬編集
+                GUIConst.ACTION_BROWS_GITHUB,
                 GUIConst.ACTION_EDIT_DISCONITEM,
                 GUIConst.ACTION_EDIT_USINGDRUG,
                 GUIConst.ACTION_CHECK_TEMP_KARTE
@@ -1444,12 +1453,6 @@ public class Dolphin implements MainWindow {
             };
             mediator.enableMenus(enables);
             
-//masuda^   LAF
-            mediator.enabledAction("nimbusLookAndFeel", true);
-            mediator.enabledAction("nativeLookAndFeel", true);
-            mediator.enabledAction("quaquaLookAndFeel", true);
-//masuda$
-
             Action addUserAction = mediator.getAction(GUIConst.ACTION_ADD_USER);
             boolean admin = false;
             Collection<RoleModel> roles = Project.getUserModel().getRoles();
@@ -1506,6 +1509,10 @@ public class Dolphin implements MainWindow {
 
     public static void main(String[] args) {
 //masuda^
+        // アンチエイリアスの設定は最初がいい？
+        System.setProperty("awt.useSystemAAFontSettings","on");
+        settingForMac();
+        
         boolean pro = false;
         boolean server = false;
         String userId = null;
@@ -1529,20 +1536,10 @@ public class Dolphin implements MainWindow {
             new StandAlonePVTServer(pro, null, userId, userPassword);
             return;
         }
-        
-        settingForMac();
-        
-        // quaquaの場合systemのantialiasをoffにする
-        final String quaquaCls = "ch.randelshofer.quaqua.QuaquaLookAndFeel";
-        final String nimbusCls = "com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel";
-        
+
         ClientContext.setClientContextStub(new ClientContextStub(pro));
         Project.setProjectStub(new ProjectStub());
-        String userLaf = Project.getString("lookAndFeel", nimbusCls);
-        boolean isWin = ClientContext.isWin();
-        if (isWin && quaquaCls.equals(userLaf)) {
-            System.setProperty("awt.useSystemAAFontSettings","off");
-        }
+        // configure LAF/UI
         ClientContext.getClientContextStub().setUI();
         
         instance = new Dolphin();
@@ -1596,31 +1593,10 @@ public class Dolphin implements MainWindow {
             }
         });
     }
-
-    public void nimbusLookAndFeel() {
+    
+    public void changeLookAndFeel(String lafClassName) {
         try {
-            String nimbus = "com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel";
-            Project.setString("lookAndFeel", nimbus);
-            requestReboot();
-        } catch (Exception e) {
-            e.printStackTrace(System.err);
-        }
-    }
-
-    public void nativeLookAndFeel() {
-        try {
-            String nativeLaf = UIManager.getSystemLookAndFeelClassName();
-            Project.setString("lookAndFeel", nativeLaf);
-            requestReboot();
-        } catch (Exception e) {
-            e.printStackTrace(System.err);
-        }
-    }
-
-    public void quaquaLookAndFeel() {
-        try {
-            final String quaqua = "ch.randelshofer.quaqua.QuaquaLookAndFeel";
-            Project.setString("lookAndFeel", quaqua);
+            Project.setString("lookAndFeel", lafClassName);
             requestReboot();
         } catch (Exception e) {
             e.printStackTrace(System.err);

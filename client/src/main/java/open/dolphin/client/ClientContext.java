@@ -244,4 +244,10 @@ public class ClientContext {
         return stub.getZebraColor();
     }
 //masuda$
+    
+//minagawa^ Icon Server
+    public static ImageIcon getImageIconAlias(String name) {
+        return stub.getImageIconArias(name);
+    }
+//minagawa$ 
 }

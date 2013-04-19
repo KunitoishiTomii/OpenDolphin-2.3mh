@@ -73,6 +73,8 @@ public class WatingListImpl extends AbstractMainComponent {
     private final String[] AGE_METHOD = {"getPatientAgeBirthday", "getPatientBirthday"};
     // カラム仕様名
     private static final String COLUMN_SPEC_NAME = "pvtTable.column.spec";
+    // state Clumn Identifier
+    private static final String COLUMN_IDENTIFIER_STATE = "stateColumn";
     // カラム仕様ヘルパー
     private ColumnSpecHelper columnHelper;
 
@@ -115,8 +117,8 @@ public class WatingListImpl extends AbstractMainComponent {
     // Chart State を表示するアイコン
     private ImageIcon[] chartIconArray = {
         OPEN_ICON, 
-        ClientContext.getImageIcon("sinfo_16.gif"), 
-        ClientContext.getImageIcon("flag_16.gif")};
+        ClientContext.getImageIconAlias("icon_karte_modified_small"), 
+        ClientContext.getImageIconAlias("icon_sent_claim_small")};
     // State ComboBox
     //private Integer[] userBitArray = {0, 3, 4, 5, 6};
     private Integer[] userBitArray = {
@@ -128,11 +130,11 @@ public class WatingListImpl extends AbstractMainComponent {
         PatientVisitModel.BIT_SAVE_CLAIM};
     private ImageIcon[] userIconArray = {
         null, 
-        ClientContext.getImageIcon("apps_16.gif"), 
-        ClientContext.getImageIcon("fastf_16.gif"), 
-        ClientContext.getImageIcon("cart_16.gif"), 
-        ClientContext.getImageIcon("cancl_16.gif"),
-        ClientContext.getImageIcon("flag_16.gif")};
+        ClientContext.getImageIconAlias("icon_under_treatment_small"), 
+        ClientContext.getImageIconAlias("icon_emergency_small"), 
+        ClientContext.getImageIconAlias("icon_under_shopping_small"), 
+        ClientContext.getImageIconAlias("icon_cancel_small"),
+        ClientContext.getImageIconAlias("icon_sent_claim_small")};
     private ImageIcon modifySendIcon;
     
     // Status　情報　メインウィンドウの左下に表示される内容
@@ -206,9 +208,9 @@ public class WatingListImpl extends AbstractMainComponent {
         
         // 修正送信アイコンを決める
         if (Project.getBoolean("change.icon.modify.send", true)) {
-            modifySendIcon = ClientContext.getImageIcon("sinfo_16.gif");
+            modifySendIcon = ClientContext.getImageIconAlias("icon_karte_modified_small");
         } else {
-            modifySendIcon = ClientContext.getImageIcon("flag_16.gif");
+            modifySendIcon = ClientContext.getImageIconAlias("icon_sent_claim_small");
         }
         chartIconArray[INDEX_MODIFY_SEND_ICON] = modifySendIcon;
 
@@ -350,7 +352,7 @@ public class WatingListImpl extends AbstractMainComponent {
                                 ClientContext.getFrameTitle(getName()),
                                 JOptionPane.YES_NO_CANCEL_OPTION,
                                 JOptionPane.QUESTION_MESSAGE,
-                                ClientContext.getImageIcon("cancl_32.gif"),
+                                ClientContext.getImageIconAlias("icon_caution"),
                                 cstOptions, "はい");
 
                         System.err.println("select=" + select);
@@ -415,7 +417,8 @@ public class WatingListImpl extends AbstractMainComponent {
 
         // PVT状態設定エディタ
         pvtTable.getColumnModel().getColumn(stateColumn).setCellEditor(new DefaultCellEditor(stateCmb));
-
+        pvtTable.getColumnModel().getColumn(stateColumn).setIdentifier(COLUMN_IDENTIFIER_STATE);
+        
         // カラム幅更新
         columnHelper.updateColumnWidth();
     }
@@ -782,9 +785,9 @@ public class WatingListImpl extends AbstractMainComponent {
 
         // 修正送信アイコンを決める
         if (Project.getBoolean("change.icon.modify.send", true)) {
-            modifySendIcon = ClientContext.getImageIcon("sinfo_16.gif");
+            modifySendIcon = ClientContext.getImageIconAlias("icon_sent_claim_small");
         } else {
-            modifySendIcon = ClientContext.getImageIcon("flag_16.gif");
+            modifySendIcon = ClientContext.getImageIconAlias("icon_karte_modified_small");
         }
         chartIconArray[INDEX_MODIFY_SEND_ICON] = modifySendIcon;
 
@@ -884,7 +887,7 @@ public class WatingListImpl extends AbstractMainComponent {
                 ClientContext.getFrameTitle(getName()),
                 JOptionPane.YES_NO_CANCEL_OPTION,
                 JOptionPane.QUESTION_MESSAGE,
-                ClientContext.getImageIcon("cancl_32.gif"),
+                ClientContext.getImageIconAlias("icon_caution"),
                 cstOptions, cstOptions[1]);
         return (select == 0);
     }
@@ -937,9 +940,12 @@ public class WatingListImpl extends AbstractMainComponent {
                     }
                 }
             }
-
-            if (value != null && col == stateColumn) {
-
+            
+//minagawa^
+            Object identifier = pvtTable.getColumnModel().getColumn(col).getIdentifier();
+            //if (value != null && col == stateColumn) {
+            if (value != null && COLUMN_IDENTIFIER_STATE.equals(identifier)) {
+//minagawa$
                 ImageIcon icon = null;
 
                 // 最初に chart bit をテストする
@@ -1236,9 +1242,12 @@ public class WatingListImpl extends AbstractMainComponent {
                     }
                 }
                 int sRow = selectedRow;
-                pvtTableModel.addObject(model);
                 // 番号を振る
-                model.setNumber(tableDataList.size());
+                int num = tableDataList.size() + 1;
+                model.setNumber(num);
+                // テーブルに追加
+                pvtTableModel.addObject(model);
+                
                 // 選択中の行を保存
                 // 保存した選択中の行を選択状態にする
                 pvtTable.getSelectionModel().addSelectionInterval(sRow, sRow);
@@ -1311,7 +1320,7 @@ public class WatingListImpl extends AbstractMainComponent {
                     PatientVisitModel pvt = pvtList.get(i);
                     if (pvt.getId() == evt.getPvtPk()) {
                         // 受付番号を継承
-                        int num = pvt.getNumber();
+                        num = pvt.getNumber();
                         toMerge.setNumber(num);
                         pvtList.set(i, toMerge);
                     }

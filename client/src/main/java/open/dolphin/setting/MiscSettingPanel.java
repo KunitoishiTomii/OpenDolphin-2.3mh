@@ -33,7 +33,7 @@ public class MiscSettingPanel extends AbstractSettingPanel {
 
     private static final String ID = "miscSetting";
     private static final String TITLE = "その他";
-    private static final String ICON = "confg_16.gif";
+    private static final String ICON = "icon_misc_settings_small";
 
     // preference名
     public static final String LBLPRT_ADDRESS = "lblPrtAddress";
@@ -1305,8 +1305,7 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         String userId = Project.getUserModel().getUserId();
         String facilityId = Project.getFacilityId();
         
-        for (Iterator itr = prop.entrySet().iterator(); itr.hasNext();) {
-            Map.Entry entry = (Map.Entry) itr.next();
+        for (Map.Entry entry : prop.entrySet()) {
             String key = (String) entry.getKey();
             String value = (String) entry.getValue();
             UserPropertyModel propModel = new UserPropertyModel();

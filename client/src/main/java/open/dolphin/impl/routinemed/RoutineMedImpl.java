@@ -44,9 +44,9 @@ public class RoutineMedImpl extends AbstractChartDocument {
     private static final int BOOKMARK_COLUMN = 1;
     private static final int MEMO_COLUMN = 2;
 
-    private static final ImageIcon deleteIcon = ClientContext.getImageIcon("del_16.gif");
-    private static final ImageIcon saveIcon = ClientContext.getImageIcon("save_16.gif");
-    private static final ImageIcon updateIcon = ClientContext.getImageIcon("ref_16.gif");
+    private static final ImageIcon deleteIcon = ClientContext.getImageIconAlias("icon_delete_small");
+    private static final ImageIcon saveIcon = ClientContext.getImageIconAlias("icon_save_small");
+    private static final ImageIcon updateIcon = ClientContext.getImageIconAlias("icon_refresh_small");
     
     // 削除カラー
     private static final Color DELETE_COLOR = new Color(128, 128, 128);

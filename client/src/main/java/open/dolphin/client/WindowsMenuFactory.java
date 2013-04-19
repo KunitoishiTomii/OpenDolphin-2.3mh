@@ -5,13 +5,12 @@ import java.awt.Insets;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
 import javax.swing.*;
 import open.dolphin.helper.MenuSupport;
-import open.dolphin.project.Project;
 
 /**
  * Menu Factory for Mac. 
@@ -19,7 +18,7 @@ import open.dolphin.project.Project;
  * @author Minagawa, Kazushi
  */
 public class WindowsMenuFactory extends AbstractMenuFactory {
-    
+        
     private MenuSupport main;
     
     private MenuSupport chart;
@@ -60,7 +59,7 @@ public class WindowsMenuFactory extends AbstractMenuFactory {
 
         // New Karte
         String text = resource.getString("newKarte.Action.text");
-        ImageIcon icon = ClientContext.getImageIcon(resource.getString("newKarte.Action.icon"));
+        ImageIcon icon = ClientContext.getImageIconAlias("icon_new_karte");
         AbstractAction newKarte = new AbstractAction(text, icon) {
             @Override
             public void actionPerformed(ActionEvent ae) {
@@ -71,7 +70,7 @@ public class WindowsMenuFactory extends AbstractMenuFactory {
 
         // New Document
         text = resource.getString("newDocument.Action.text");
-        icon = ClientContext.getImageIcon(resource.getString("newDocument.Action.icon"));
+        icon = ClientContext.getImageIconAlias("icon_new_document");
         AbstractAction newDocument = new AbstractAction(text, icon) {
             @Override
             public void actionPerformed(ActionEvent ae) {
@@ -102,7 +101,7 @@ public class WindowsMenuFactory extends AbstractMenuFactory {
 
         // Save
         text = resource.getString("save.Action.text");
-        icon = ClientContext.getImageIcon(resource.getString("save.Action.icon"));
+        icon = ClientContext.getImageIconAlias("icon_save");
         AbstractAction save = new AbstractAction(text, icon) {
             @Override
             public void actionPerformed(ActionEvent ae) {
@@ -133,7 +132,7 @@ public class WindowsMenuFactory extends AbstractMenuFactory {
 
         // Print
         text = resource.getString("print.Action.text");
-        icon = ClientContext.getImageIcon(resource.getString("print.Action.icon"));
+        icon = ClientContext.getImageIconAlias("icon_printer");
         AbstractAction print = new AbstractAction(text, icon) {
             @Override
             public void actionPerformed(ActionEvent ae) {
@@ -154,7 +153,7 @@ public class WindowsMenuFactory extends AbstractMenuFactory {
 
         // Modify
         text = resource.getString("modifyKarte.Action.text");
-        icon = ClientContext.getImageIcon(resource.getString("modifyKarte.Action.icon"));
+        icon = ClientContext.getImageIconAlias("icon_edit_karte_document");
         AbstractAction modifyKarte = new AbstractAction(text, icon) {
             @Override
             public void actionPerformed(ActionEvent ae) {
@@ -165,7 +164,7 @@ public class WindowsMenuFactory extends AbstractMenuFactory {
 
         // Undo
         text = resource.getString("undo.Action.text");
-        icon = ClientContext.getImageIcon(resource.getString("undo.Action.icon"));
+        icon = ClientContext.getImageIconAlias("icon_undo");
         AbstractAction undo = new AbstractAction(text, icon) {
             @Override
             public void actionPerformed(ActionEvent ae) {
@@ -176,7 +175,7 @@ public class WindowsMenuFactory extends AbstractMenuFactory {
 
         // Redo
         text = resource.getString("redo.Action.text");
-        icon = ClientContext.getImageIcon(resource.getString("redo.Action.icon"));
+        icon = ClientContext.getImageIconAlias("icon_redo");
         AbstractAction redo = new AbstractAction(text, icon) {
             @Override
             public void actionPerformed(ActionEvent ae) {
@@ -187,7 +186,7 @@ public class WindowsMenuFactory extends AbstractMenuFactory {
 
         // Cut
         text = resource.getString("cut.Action.text");
-        icon = ClientContext.getImageIcon(resource.getString("cut.Action.icon"));
+        icon = ClientContext.getImageIconAlias("icon_cut");
         AbstractAction cut = new AbstractAction(text, icon) {
             @Override
             public void actionPerformed(ActionEvent ae) {
@@ -198,7 +197,7 @@ public class WindowsMenuFactory extends AbstractMenuFactory {
 
         // Copy
         text = resource.getString("copy.Action.text");
-        icon = ClientContext.getImageIcon(resource.getString("copy.Action.icon"));
+        icon = ClientContext.getImageIconAlias("icon_copy");
         AbstractAction copy = new AbstractAction(text, icon) {
             @Override
             public void actionPerformed(ActionEvent ae) {
@@ -209,7 +208,7 @@ public class WindowsMenuFactory extends AbstractMenuFactory {
 
         // Paste
         text = resource.getString("paste.Action.text");
-        icon = ClientContext.getImageIcon(resource.getString("paste.Action.icon"));
+        icon = ClientContext.getImageIconAlias("icon_paste");
         AbstractAction paste = new AbstractAction(text, icon) {
             @Override
             public void actionPerformed(ActionEvent ae) {
@@ -618,6 +617,16 @@ public class WindowsMenuFactory extends AbstractMenuFactory {
         map.put("showAbout", showAbout);
         
 //masuda^
+        // GitHub
+        text = resource.getString("browseGitHub.Action.text");
+        AbstractAction browseGitHub = new AbstractAction(text) {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                main.sendToChain("browseGitHub");
+            }
+        };
+        map.put("browseGitHub", browseGitHub);
+        
         text = resource.getString("findFirst.Action.text");
         AbstractAction findFirst = new AbstractAction(text) {
 
@@ -657,36 +666,6 @@ public class WindowsMenuFactory extends AbstractMenuFactory {
             }
         };
         map.put("selectAll", selectAll);
-
-        text = resource.getString("quaquaLookAndFeel.Action.text");
-        AbstractAction quaquaLookAndFeel = new AbstractAction(text) {
-
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-                main.sendToChain("quaquaLookAndFeel");
-            }
-        };
-        map.put("quaquaLookAndFeel", quaquaLookAndFeel);
-
-        text = resource.getString("nimbusLookAndFeel.Action.text");
-        AbstractAction nimbusLookAndFeel = new AbstractAction(text) {
-
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-                main.sendToChain("nimbusLookAndFeel");
-            }
-        };
-        map.put("nimbusLookAndFeel", nimbusLookAndFeel);
-
-        text = resource.getString("nativeLookAndFeel.Action.text");
-        AbstractAction nativeLookAndFeel = new AbstractAction(text) {
-
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-                main.sendToChain("nativeLookAndFeel");
-            }
-        };
-        map.put("nativeLookAndFeel", nativeLookAndFeel);
 
         text = resource.getString("editDisconItem.Action.text");
         AbstractAction editDisconItem = new AbstractAction(text) {
@@ -1048,43 +1027,8 @@ public class WindowsMenuFactory extends AbstractMenuFactory {
         
 //masuda^
         // Look&Feel
-        JMenu lookAndFeel = new JMenu();
-        //lookAndFeel.setName("lookAndFeel");
-        lookAndFeel.setText("ルック & フィール");
+        JMenu lookAndFeel = createLafMenu();
         karte.add(lookAndFeel);
-
-        JRadioButtonMenuItem nimbusLaf = new JRadioButtonMenuItem();
-        nimbusLaf.setName("nimbusLookAndFeel");
-        nimbusLaf.setAction(actionMap.get("nimbusLookAndFeel"));
-        lookAndFeel.add(nimbusLaf);
-
-        JRadioButtonMenuItem nativeLaf = new JRadioButtonMenuItem();
-        nativeLaf.setName("nativeLookAndFeel");
-        nativeLaf.setAction(actionMap.get("nativeLookAndFeel"));
-        lookAndFeel.add(nativeLaf);
-
-        JRadioButtonMenuItem quaquaLaf = new JRadioButtonMenuItem();
-        quaquaLaf.setName("quaquaLookAndFeel");
-        quaquaLaf.setAction(actionMap.get("quaquaLookAndFeel"));
-        lookAndFeel.add(quaquaLaf);
-
-        ButtonGroup lafbg = new ButtonGroup();
-        lafbg.add(nimbusLaf);
-        lafbg.add(nativeLaf);
-        lafbg.add(quaquaLaf);
-
-        String systemLaf = UIManager.getSystemLookAndFeelClassName();
-        String quaquaCls = "ch.randelshofer.quaqua.QuaquaLookAndFeel";
-        String nimbusCls = "com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel";
-        String userLaf = Project.getString("lookAndFeel", nimbusCls);
-
-        if (userLaf.equals(systemLaf)) {
-            nativeLaf.setSelected(true);
-        } else if (userLaf.equals(quaquaCls)) {
-            quaquaLaf.setSelected(true);
-        } else {
-            nimbusLaf.setSelected(true);
-        }
 //masuda$
         
         /******************************************************/
@@ -1298,26 +1242,7 @@ public class WindowsMenuFactory extends AbstractMenuFactory {
             
             tool.add(new JSeparator());
 //masuda^
-/*
-            Iterator<String> iter = toolProviders.keySet().iterator();
-            
-            while (iter.hasNext()) {
-                String cmd = iter.next();
-                final String className = toolProviders.get(cmd);
-                JMenuItem mItem = new JMenuItem();
-                AbstractAction a = new AbstractAction() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        main.sendToChain("invokeToolPlugin", className);
-                    }
-                };
-                mItem.setAction(a);
-                mItem.setText(cmd);
-                tool.add(mItem);
-            }
-*/
-            for (Iterator itr = toolProviders.entrySet().iterator(); itr.hasNext();) {
-                Map.Entry entry = (Map.Entry) itr.next();
+            for (Map.Entry entry : toolProviders.entrySet()) {
                 String cmd = (String) entry.getKey();
                 final String className = (String) entry.getValue();
                 JMenuItem mItem = new JMenuItem();
@@ -1356,6 +1281,11 @@ public class WindowsMenuFactory extends AbstractMenuFactory {
         browseMedXml.setName("browseMedXml");
         browseMedXml.setAction(actionMap.get("browseMedXml"));
         help.add(browseMedXml);
+        
+        JMenuItem brouseGitHub = new JMenuItem();
+        browseMedXml.setName("browseGitHub");
+        brouseGitHub.setAction(actionMap.get("browseGitHub"));
+        help.add(brouseGitHub);
         
         help.add(new JSeparator());
         
@@ -1404,19 +1334,68 @@ public class WindowsMenuFactory extends AbstractMenuFactory {
         btn.putClientProperty("Quaqua.Component.visualMargin", new Insets(0, 0, 0, 0));
         return btn;
     }
+    
+    // LAF menu
+    private JMenu createLafMenu() {
+        
+        JMenu menu = new JMenu("ルック & フィール");
+        String currentLaf = UIManager.getLookAndFeel().getClass().getName();
+        final ButtonGroup bg = new ButtonGroup();
+        
+        AbstractAction lafAction = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                ButtonModel bm = bg.getSelection();
+                String lafClassName = bm.getActionCommand();
+                // Dolphin.changeLookAndFeelを呼ぶ
+                main.sendToChain("changeLookAndFeel", lafClassName);
+            }
+        };
+        
+        // システム提供のLAF
+        for (UIManager.LookAndFeelInfo lafInfo : UIManager.getInstalledLookAndFeels()) {
+            String lafName = lafInfo.getName();
+            String lafCls = lafInfo.getClassName();
+            JRadioButtonMenuItem lafItem = createRadioMenuItem(lafName, lafCls, currentLaf, lafAction, bg);
+            menu.add(lafItem);
+        }
+        
+        // 外部LAF
+        Map<String, JMenu> subMenuMap = new HashMap<String, JMenu>();
+        for (String[] lafInfo : ILookAndFeelConst.EXT_LAF_INFO) {
+            String group = lafInfo[0];
+            String lafName = lafInfo[1];
+            String lafCls = lafInfo[2];
+            if (group == null) {
+                JRadioButtonMenuItem lafItem = createRadioMenuItem(lafName, lafCls, currentLaf, lafAction, bg);
+                menu.add(lafItem);
+            } else {
+                JMenu subMenu = subMenuMap.get(group);
+                if (subMenu == null) {
+                    subMenu = new JMenu(group);
+                    subMenuMap.put(group, subMenu);
+                    menu.add(subMenu);
+                }
+                JRadioButtonMenuItem lafItem = createRadioMenuItem(lafName, lafCls, currentLaf, lafAction, bg);
+                subMenu.add(lafItem);
+            }
+        }
+        subMenuMap.clear();
+        
+        return menu;
+    }
+    
+    private JRadioButtonMenuItem createRadioMenuItem(String lafName, String lafCls, 
+            String currentLaf, AbstractAction lafAction, ButtonGroup bg) {
+
+        JRadioButtonMenuItem lafItem = new JRadioButtonMenuItem();
+        lafItem.setHideActionText(true);
+        lafItem.setAction(lafAction);
+        lafItem.setActionCommand(lafCls);
+        lafItem.setText(lafName);
+        lafItem.setSelected(lafCls.equals(currentLaf));
+        bg.add(lafItem);
+
+        return lafItem;
+    }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

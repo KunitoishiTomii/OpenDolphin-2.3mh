@@ -20,7 +20,7 @@ import open.dolphin.util.MMLDate;
  *
  * @author masuda, Masuda Naika
  */
-public class CheckSantei extends CheckSanteiConst {
+public class CheckSantei implements ICheckSanteiConst {
     
     protected Chart context;
 
@@ -29,7 +29,7 @@ public class CheckSantei extends CheckSanteiConst {
     private Date karteDateTrimTime;
 
     private List<ModuleModel> stamps;
-    private List<ClaimItem> allClaimItems;
+    private Map<String, ClaimItem> allClaimItems;
     private List<SanteiHistoryModel> currentSanteiList;
     private List<SanteiHistoryModel> pastSanteiListMonth;
     protected List<RegisteredDiagnosisModel> diagnosis;
@@ -67,11 +67,14 @@ public class CheckSantei extends CheckSanteiConst {
     private boolean pastZaitakuInMed;
     private boolean allHokatsuMed;
     private boolean hasTumorMarkers;
+    private boolean hasLabo;
 
     protected boolean homeCare;
     protected boolean nursingHomeCare;
     protected boolean zaitakuSougouKanri;
     protected boolean exMed;
+    
+    private String soaPaneText;
     
     protected JikangaiTaiou jikangaiTaiou;
     protected Shienshin zaitakuShien;
@@ -84,7 +87,7 @@ public class CheckSantei extends CheckSanteiConst {
     private MasudaDelegater del;    
 
 
-    public void init(Chart context, List<ModuleModel> stamps, Date date) throws Exception {
+    public void init(Chart context, List<ModuleModel> stamps, Date date, String text) throws Exception {
         
         eTenDao = SqlETensuDao.getInstance();
         del = MasudaDelegater.getInstance();
@@ -92,6 +95,7 @@ public class CheckSantei extends CheckSanteiConst {
         this.context = context;
         this.stamps = stamps;
         karteId = context.getKarte().getId();
+        this.soaPaneText = text;
 
         // 未確定なら現在の日付
         karteDate = (date == null) ? new Date() : date;
@@ -350,7 +354,7 @@ public class CheckSantei extends CheckSanteiConst {
         if (zaitakuSougouKanri && !allHokatsuMed && hasInMed && !hasExMed) {
             sb.append("処方は包括にしてください。\n");
         }
-
+        
         return sb.toString();
     }
 
@@ -376,6 +380,9 @@ public class CheckSantei extends CheckSanteiConst {
         sb.append(check(true));
         // 有効期限と中止項目チェック
         sb.append(checkYukoEndDisconItem());
+        
+        // カルテ文章から算定漏れチェック
+        sb.append(checkSanteiMore());
 
         boolean ret = false;
         if (sb.length() > 0) {
@@ -393,6 +400,40 @@ public class CheckSantei extends CheckSanteiConst {
             }
         }
         return ret;
+    }
+    
+    private String checkSanteiMore() {
+        
+        StringBuilder sb = new StringBuilder();
+        
+        boolean cancerCare = context.getPatient().getSanteiInfoModel().isCancerCare();
+        if (cancerCare && hasLabo) {
+            boolean found = false;
+            for (String srycd : TM_KANRI_SRYCD) {
+                if (allClaimItems.containsKey(srycd)) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                sb.append("マーカーチェックは要りませんか？");
+            }
+        }
+
+        // カルテ記述から算定漏れ検索
+        if (soaPaneText != null && !soaPaneText.isEmpty()) {
+            for (String[] data : SANTEI_MORE_CHECK_DATA) {
+                String text = data[0];
+                String srycd = data[1];
+                String msg = data[2];
+                if (soaPaneText.contains(text)) {
+                    if (!allClaimItems.containsKey(srycd)) {
+                        sb.append(msg).append("\n");
+                    }
+                }
+            }
+        }
+        return sb.toString();
     }
  
     private void checkKarte(boolean past) {
@@ -545,15 +586,9 @@ public class CheckSantei extends CheckSanteiConst {
         StringBuilder sb = new StringBuilder();
 
         // tbl_tensuを参照して有効期限が設定されていないか調べる
-        int len = allClaimItems.size();
-
-        if (len > 0) {
-            List<String> srycdList = new ArrayList<String>();
-            for (ClaimItem ci : allClaimItems) {
-                srycdList.add(ci.getCode());
-            }
+        if (!allClaimItems.isEmpty()) {
             SqlMiscDao dao = SqlMiscDao.getInstance();
-            List<TensuMaster> list = dao.getTensuMasterList(srycdList);
+            List<TensuMaster> list = dao.getTensuMasterList(allClaimItems.keySet());
 
             // 有効期限が設定されているものをしらべる
             for (TensuMaster tm : list) {
@@ -568,7 +603,7 @@ public class CheckSantei extends CheckSanteiConst {
             // 中止項目かどうか調べる
             // 中止項目リストを最新にする
             DisconItems.getInstance().loadDisconItems();
-            for (ClaimItem ci : allClaimItems) {
+            for (ClaimItem ci : allClaimItems.values()) {
                 String name = ci.getName();
                 if (DisconItems.getInstance().isDiscon(name)) {
                     sb.append(name);
@@ -657,10 +692,10 @@ public class CheckSantei extends CheckSanteiConst {
     
     private void setupCurrentSanteiHistory() {
 
-        allClaimItems = new ArrayList<ClaimItem>();
+        allClaimItems = new HashMap<String, ClaimItem>();
+        hasLabo = false;
 
         // 現在のカルテにある全てのsrycdをとりあえず列挙する
-        Set<String> srycds = new HashSet<String>();
         for (ModuleModel stamp : stamps) {
             // 編集元は含めない
             if (sourceStampHolder != null && stamp == sourceStampHolder.getStamp()) {
@@ -670,14 +705,13 @@ public class CheckSantei extends CheckSanteiConst {
             for (ClaimItem ci : cb.getClaimItem()) {
                 String srycd = ci.getCode();
                 if (srycd != null) {
-                    srycds.add(srycd);
-                    allClaimItems.add(ci);
+                    allClaimItems.put(srycd, ci);
                 }
             }
         }
         
         // 現在のカルテの電子点数表に関連する項目を取得する
-        List<ETensuModel1> eTenList = eTenDao.getETensuModel1(karteDate, srycds);
+        List<ETensuModel1> eTenList = eTenDao.getETensuModel1(karteDate, allClaimItems.keySet());
         // 一旦HashMapに登録
         Map<String, ETensuModel1> map = new HashMap<String, ETensuModel1>();
         for (ETensuModel1 etm : eTenList) {
@@ -704,6 +738,12 @@ public class CheckSantei extends CheckSanteiConst {
                     shm.setSanteiDate(karteDate);
                     currentSanteiList.add(shm);
                 }
+            }
+            
+            // ついでにラボがあるかどうかチェック
+            String entity = mm.getModuleInfoBean().getEntity();
+            if (IInfoModel.ENTITY_LABO_TEST.equals(entity)) {
+                hasLabo = true;
             }
         }
     }

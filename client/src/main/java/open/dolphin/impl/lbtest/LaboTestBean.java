@@ -69,9 +69,9 @@ public class LaboTestBean extends AbstractChartDocument {
     private boolean widthAdjusted;
     
 //masuda^
-    private static final ImageIcon addIcon = ClientContext.getImageIcon("add_16.gif");
-    private static final ImageIcon backIcon = ClientContext.getImageIcon("back_16.gif");
-    private static final ImageIcon forwdIcon = ClientContext.getImageIcon("forwd_16.gif");
+    private static final ImageIcon addIcon = ClientContext.getImageIconAlias("icon_add_small");
+    private static final ImageIcon backIcon = ClientContext.getImageIconAlias("icon_back_small");
+    private static final ImageIcon forwdIcon = ClientContext.getImageIconAlias("icon_forward_small");
     private int selectedColumn;
     
     private JTextField tf_period;
