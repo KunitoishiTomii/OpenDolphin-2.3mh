@@ -663,6 +663,7 @@ public class PatientSearchImpl extends AbstractMainComponent {
 
             } else if (isNameAddress(text)) {
                 spec.setCode(PatientSearchSpec.NAME_SEARCH);
+                text = text.replace("　", " ");     // 全角スペースは半角に置換する
                 spec.setName(text);
 
             } else {
