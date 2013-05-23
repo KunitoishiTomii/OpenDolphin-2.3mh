@@ -102,5 +102,7 @@ public class FocusPropertyChangeListener implements PropertyChangeListener {
         }
 
         oldComp = newComp;
+        
+        DolphinTransferHandler.setModifiersEx(0);
     }
 }
