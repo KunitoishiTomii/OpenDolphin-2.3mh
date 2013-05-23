@@ -37,12 +37,12 @@ public class TextComponentTransferHandler extends AbstractKarteTransferHandler {
         JTextComponent source = (JTextComponent) src;
 
         // テキストの選択範囲を記憶
+        startTransfer(src);
         boolean b = setSelectedTextArea(source);
         if (!b) {
+            endTransfer();
             return null;
         }
-        
-        startTransfer(src);
 
         String data = source.getSelectedText();
         return new StringSelection(data);
