@@ -1,9 +1,11 @@
-
 package open.dolphin.stampbox;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
+import open.dolphin.client.ClientContext;
 import open.dolphin.delegater.StampDelegater;
 import open.dolphin.infomodel.IInfoModel;
 import open.dolphin.infomodel.ModuleInfoBean;
@@ -40,9 +42,27 @@ public class ExtendedStampTreeBuilder {
     private List<StampTree> products;
     /** Logger */
     private Logger logger;  // = ClientContext.getLogger("boot");
+    
+    private Set<String> allStampIds;
+    private List<StampModel> stampList;
 
     // Creates new ExtendedStampTreeBuilder
     public ExtendedStampTreeBuilder() {
+        
+        logger = ClientContext.getBootLogger();
+        
+        // 先にユーザーのスタンプをデータベースからまとめて取得しstampIdをHashSetに登録しておく
+        allStampIds = new HashSet<>();
+        long userId = Project.getUserModel().getId();
+        try {
+            List<StampModel> allStamps = StampDelegater.getInstance().getAllStamps(userId);
+            for (StampModel stamp : allStamps) {
+                allStampIds.add(stamp.getId());
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace(System.err);
+        }
+        stampList = new ArrayList<>();
     }
 
     public List<StampTree> getProduct() {
@@ -142,27 +162,23 @@ public class ExtendedStampTreeBuilder {
         if (memo != null) {
             info.setStampMemo(fromXmlText(memo));
         }
-        if ( id != null ) {
-            StampDelegater del = StampDelegater.getInstance();
-            StampModel model = del.getStamp(id);
-            // データベースに該当するIDのスタンプが存在する場合
-            if (model != null) {
-                info.setStampId(id);
-            } else {
+        if (id != null && stampHexBytes != null) {
+            info.setStampId(id);
             // データベースにスタンプが存在しない場合は新たに作成して登録する。
+            if (!allStampIds.contains(id)) {
                 long userId = Project.getUserModel().getId();
+                StampModel model = new StampModel();
                 //String stampId = GUIDGenerator.generate(model);
-                model = new StampModel();
                 //model.setId(stampId);
+                // infoのstampIdは新たに生成したものに置き換える
+                //info.setStampId(stampId);
                 model.setId(id);    // id 再利用
                 model.setEntity(entity);
                 model.setUserId(userId);
                 byte[] stampBytes = HexBytesTool.hexToBytes(stampHexBytes);
                 model.setStampBytes(stampBytes);
-                // 新たに作成したStampModelをデータベースに登録する
-                del.putStamp(model);
-                // infoのstampIdは新たに生成したものに置き換える
-                //info.setStampId(stampId);
+                // 新たに作成したStampModelを登録リストに追加する
+                stampList.add(model);
             }
         }
         // StampInfo から TreeNode を生成し現在のノードへ追加する
@@ -236,6 +252,17 @@ public class ExtendedStampTreeBuilder {
             products.add(IInfoModel.TAB_INDEX_ORCA, tree);
             if (logger != null) {
                 logger.debug("ORCAセットを加えました");
+            }
+        }
+        
+        // まとめてデータベースに登録する
+        if (!stampList.isEmpty()) {
+            try {
+                StampDelegater.getInstance().putStamp(stampList);
+            } catch (Exception ex) {
+                if (logger != null) {
+                    logger.debug(ex.getMessage());
+                }
             }
         }
     }
