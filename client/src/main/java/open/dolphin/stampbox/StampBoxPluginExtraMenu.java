@@ -281,7 +281,7 @@ public class StampBoxPluginExtraMenu extends MouseAdapter {
                 List<StampTree> treeList = getAllTreesExceptOrca();
                 for (StampTree tree : treeList) {
                     // 各ツリーのゾンビを抹消する
-                    System.out.println(tree.getEntity() + "ツリーを処理中です。\n");
+                    System.out.println(tree.getEntity() + "ツリーを処理中です。");
 
                     StampTreeNode rootNode = (StampTreeNode) tree.getModel().getRoot();
                     Enumeration e = rootNode.preorderEnumeration();
@@ -302,7 +302,7 @@ public class StampBoxPluginExtraMenu extends MouseAdapter {
                     }
 
                 }
-                sb.append(cnt).append("件のゾンビを退治しました！\n");
+                sb.append(cnt).append("匹のゾンビを退治しました！\n");
 
                 // 引き続きデータベースのゾンビを退治する
                 sb.append("スタンプゾンビ退治\n");
@@ -318,9 +318,9 @@ public class StampBoxPluginExtraMenu extends MouseAdapter {
 
                 // データベースから削除する
                 //cnt = removeList.size();
-                cnt = StampDelegater.getInstance().removeStamps(removeList);
+                cnt = StampDelegater.getInstance().postRemoveStamps(removeList);
 
-                sb.append(cnt).append("件のゾンビを退治しました！\n");
+                sb.append(cnt).append("匹のゾンビを退治しました！\n");
 
                 String msg = sb.toString();
                 return msg;

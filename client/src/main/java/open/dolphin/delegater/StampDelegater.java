@@ -518,7 +518,33 @@ public class StampDelegater extends BusinessDelegater {
         return ids.size();
     }
     
-//masuda^   すべてのStampModelを取得する
+//masuda^
+    // URL文字数制限回避
+    public int postRemoveStamps(List<String> ids) throws Exception {
+        
+        // キャッシュから削除する
+        for (String stampId : ids) {
+            stampCache.remove(stampId);
+        }
+
+        String path = RES_STAMP + "postRemoveStamps";
+        String json = getConverter().toJson(ids);
+
+        ClientResponse response = getClientRequest(path, null)
+                .accept(MEDIATYPE_TEXT_UTF8)    
+                .type(MEDIATYPE_JSON_UTF8)
+                .post(ClientResponse.class, json);
+
+        int status = response.getStatus();
+        debug(status, "delete response");
+        isHTTP200(status);
+        
+        int cnt = Integer.valueOf(response.getEntity(String.class));
+        
+        return cnt;
+    }
+    
+    // すべてのStampModelを取得する
     public List<StampModel> getAllStamps(long userId) throws Exception {
         
         String path = RES_STAMP + "allStamps/" + String.valueOf(userId);
@@ -537,7 +563,7 @@ public class StampDelegater extends BusinessDelegater {
         
         return smList;
     }
-    
+//masuda$
     
     @Override
     protected void debug(int status, String entity) {
