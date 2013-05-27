@@ -18,20 +18,25 @@ public class KartePanelEditorKit extends StyledEditorKit {
     private static final Image CR_ICON = ClientContext.getImageIconAlias("icon_cr").getImage();
     private static final Image EOF_ICON = ClientContext.getImageIconAlias("icon_eof").getImage();
     private static final int crMargin = 20;
-    private boolean showCr;
 
-    public KartePanelEditorKit(boolean showCr) {
-        this.showCr = showCr;
+    private static final KartePanelEditorKit instance;
+    private ViewFactory viewFactory;
+    
+    static {
+        instance = new KartePanelEditorKit();
+    }
+
+    private KartePanelEditorKit() {
+        viewFactory = new VisibleCrViewFactory();
+    }
+    
+    public static KartePanelEditorKit getInstance() {
+        return instance;
     }
 
     @Override
     public ViewFactory getViewFactory() {
-        
-        if (showCr) {
-            return new VisibleCrViewFactory();
-        } else {
-            return new InvisibleCrViewFactory();
-        }
+        return viewFactory;
     }
     
     private static final class VisibleCrViewFactory implements ViewFactory {
@@ -40,44 +45,19 @@ public class KartePanelEditorKit extends StyledEditorKit {
         public View create(Element elem) {
             
             String kind = elem.getName();
-            
-            if (kind != null) {
-                if (kind.equals(AbstractDocument.ContentElementName)) {
-                    return new LabelView(elem);
-                } else if (kind.equals(AbstractDocument.ParagraphElementName)) {
-                    return new MyParagraphView(elem);
-                } else if (kind.equals(AbstractDocument.SectionElementName)) {
-                    return new BoxView(elem, View.Y_AXIS);
-                } else if (kind.equals(StyleConstants.ComponentElementName)) {
-                    return new MyComponentView(elem);
-                } else if (kind.equals(StyleConstants.IconElementName)) {
-                    return new IconView(elem);
-                }
-            }
-            return new LabelView(elem);
-        }
-    }
 
-    private static final class InvisibleCrViewFactory implements ViewFactory {
-
-        @Override
-        public View create(Element elem) {
-            
-            String kind = elem.getName();
-            
-            if (kind != null) {
-                if (kind.equals(AbstractDocument.ContentElementName)) {
-                    return new LabelView(elem);
-                } else if (kind.equals(AbstractDocument.ParagraphElementName)) {
-                    return new ParagraphView(elem);
-                } else if (kind.equals(AbstractDocument.SectionElementName)) {
-                    return new BoxView(elem, View.Y_AXIS);
-                } else if (kind.equals(StyleConstants.ComponentElementName)) {
-                    return new MyComponentView(elem);
-                } else if (kind.equals(StyleConstants.IconElementName)) {
-                    return new IconView(elem);
-                }
+            if (AbstractDocument.ContentElementName.equals(kind)) {
+                return new LabelView(elem);
+            } else if (AbstractDocument.ParagraphElementName.equals(kind)) {
+                return new MyParagraphView(elem);
+            } else if (AbstractDocument.SectionElementName.equals(kind)) {
+                return new BoxView(elem, View.Y_AXIS);
+            } else if (StyleConstants.ComponentElementName.equals(kind)) {
+                return new MyComponentView(elem);
+            } else if (StyleConstants.IconElementName.equals(kind)) {
+                return new IconView(elem);
             }
+
             return new LabelView(elem);
         }
     }
@@ -94,9 +74,8 @@ public class KartePanelEditorKit extends StyledEditorKit {
         public float getPreferredSpan(int axis) {
             
             Component comp = getComponent();
-            if (axis == View.X_AXIS && comp instanceof StampHolder) {
-                StampHolder sh = (StampHolder) comp;
-                return getStampHolderSpanX(sh);
+            if (axis == View.X_AXIS && comp instanceof ComponentHolder) {
+                return getComponentHolderSpanX(comp);
             }
             return super.getPreferredSpan(axis);
         }
@@ -105,19 +84,20 @@ public class KartePanelEditorKit extends StyledEditorKit {
         public float getMaximumSpan(int axis) {
             
             Component comp = getComponent();
-            if (axis == View.X_AXIS && comp instanceof StampHolder) {
-                StampHolder sh = (StampHolder) comp;
-                return getStampHolderSpanX(sh);
+            if (axis == View.X_AXIS && comp instanceof ComponentHolder) {
+                return getComponentHolderSpanX(comp);
             }
             return super.getMaximumSpan(axis);
         }
 
-        private float getStampHolderSpanX(StampHolder sh) {
-
-            int paneWidth = sh.getKartePane().getTextPane().getWidth() - crMargin;
-            int stampWidth = sh.getPreferredSize().width;
-            if (paneWidth > stampWidth) {
-                return (float) stampWidth;
+        private float getComponentHolderSpanX(Component comp) {
+            
+            KarteStyledDocument doc = (KarteStyledDocument) getDocument();
+            int paneWidth = doc.getKartePane().getTextPane().getWidth() - crMargin;
+            int compWidth = comp.getPreferredSize().width;
+            
+            if (paneWidth > compWidth) {
+                return (float) compWidth;
             } else {
                 return (float) paneWidth;
             }
@@ -134,21 +114,25 @@ public class KartePanelEditorKit extends StyledEditorKit {
         public void paint(Graphics g, Shape a) {
             
             super.paint(g, a);
-            
+
+            // 編集可の場合は改行文字を表示する
             try {
-                Shape paragraph = modelToView(getEndOffset(), a, Position.Bias.Backward);
-                Rectangle r = (paragraph == null) ? a.getBounds() : paragraph.getBounds();
-                //int fontHeight = g.getFontMetrics().getHeight();
-                Color old = g.getColor();
-                g.setColor(COLOR);
-                if (getEndOffset() != getDocument().getEndPosition().getOffset()) {
-                    //g.drawString(CR, r.x + 1, r.y + (r.height + fontHeight) / 2 - 2);
-                    g.drawImage(CR_ICON, r.x + 1, r.y + (r.height - 10) / 2 + 2, null);
-                } else {
-                    //g.drawString(EOF, r.x + 1, r.y + (r.height + fontHeight) / 2 - 2);
-                    g.drawImage(EOF_ICON, r.x + 1, r.y + (r.height - 10) / 2 + 2, null);
+                KarteStyledDocument doc = (KarteStyledDocument) getDocument();
+                if (doc.getKartePane().getTextPane().isEditable()) {
+                    Shape paragraph = modelToView(getEndOffset(), a, Position.Bias.Backward);
+                    Rectangle r = (paragraph == null) ? a.getBounds() : paragraph.getBounds();
+                    //int fontHeight = g.getFontMetrics().getHeight();
+                    Color old = g.getColor();
+                    g.setColor(COLOR);
+                    if (getEndOffset() != getDocument().getEndPosition().getOffset()) {
+                        //g.drawString(CR, r.x + 1, r.y + (r.height + fontHeight) / 2 - 2);
+                        g.drawImage(CR_ICON, r.x + 1, r.y + (r.height - 10) / 2 + 2, null);
+                    } else {
+                        //g.drawString(EOF, r.x + 1, r.y + (r.height + fontHeight) / 2 - 2);
+                        g.drawImage(EOF_ICON, r.x + 1, r.y + (r.height - 10) / 2 + 2, null);
+                    }
+                    g.setColor(old);
                 }
-                g.setColor(old);
             } catch (Exception e) {
                 e.printStackTrace(System.err);
             }

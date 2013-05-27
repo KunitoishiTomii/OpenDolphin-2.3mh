@@ -27,13 +27,13 @@ public final class KartePanel1 extends KartePanel {
 
         if (editor) {
             contentPanel.setLayout(new GridLayout(rows, cols, hgap, vgap));
-            soaTextPane = createTextPane(true);
-            JScrollPane scroll = new JScrollPane(soaTextPane);
-            scroll.setBorder(null);
-            contentPanel.add(scroll);
+            soaTextPane = createTextPane();
+            JScrollPane soaScroll = new JScrollPane(soaTextPane);
+            soaScroll.setBorder(null);
+            contentPanel.add(soaScroll);
         } else {
             contentPanel.setLayout(new GridLayout(rows, cols, hgap, vgap));
-            soaTextPane = createTextPane(false);
+            soaTextPane = createTextPane();
             contentPanel.add(soaTextPane);
         }
     }

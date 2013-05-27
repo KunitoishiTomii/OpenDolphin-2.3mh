@@ -30,10 +30,10 @@ public final class KartePanel2V extends KartePanel {
 
         JPanel contentPanel = getContentPanel();
         contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
-        soaTextPane = createTextPane(false);
+        soaTextPane = createTextPane();
         contentPanel.add(soaTextPane);
         contentPanel.add(Box.createVerticalStrut(vgap2));
-        pTextPane = createTextPane(false);
+        pTextPane = createTextPane();
         contentPanel.add(pTextPane);
     }
 

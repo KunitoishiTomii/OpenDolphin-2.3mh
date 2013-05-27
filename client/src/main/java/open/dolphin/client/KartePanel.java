@@ -104,10 +104,10 @@ public abstract class KartePanel extends Panel2 {
     }
 
     // 継承クラスから呼ばれる
-    protected final JTextPane createTextPane(boolean editor) {
+    protected final JTextPane createTextPane() {
         JTextPane textPane = new JTextPane();
         textPane.setMargin(TEXT_PANE_MARGIN);
-        textPane.setEditorKit(new KartePanelEditorKit(editor));
+        textPane.setEditorKit(KartePanelEditorKit.getInstance());
         // これをセットしないと，勝手に cut copy paste のポップアップがセットされてしまう。 thx to Dr. pns
         textPane.putClientProperty("Quaqua.TextComponent.showPopup", false);
         return textPane;
