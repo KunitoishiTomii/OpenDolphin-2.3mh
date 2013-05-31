@@ -61,6 +61,7 @@ public class MakeBaseChargeStamp extends CheckSantei {
     private JRadioButton rb_riha1;
     private JRadioButton rb_riha2;
     private JRadioButton rb_yakan;
+    private JCheckBox cb_yakan_souchou_kasan;
     
     private JCheckBox cb_zaitakuKanri;
     private JCheckBox cb_nursingHome;
@@ -126,6 +127,7 @@ public class MakeBaseChargeStamp extends CheckSantei {
         srycdList.add(srycdFrmt.format(srycd_Saishin_Jikangai));
         srycdList.add(srycdFrmt.format(srycd_Saishin_Kyujitsu));
         srycdList.add(srycdFrmt.format(srycd_Saishin_Shinya));
+        srycdList.add(srycdFrmt.format(srycd_Yakan_Souchou_Kasan));
         srycdList.add(srycdFrmt.format(srycd_Oushin));
         srycdList.add(srycdFrmt.format(srycd_Oushin_Kinkyu_Kasan1));
         srycdList.add(srycdFrmt.format(srycd_Oushin_Shinya_Kasan1));
@@ -319,6 +321,9 @@ public class MakeBaseChargeStamp extends CheckSantei {
                 case srycd_Saishin_Shinya:
                     rb_saishin.setSelected(true);
                     rb_shinya.setSelected(true);
+                    break;
+                case srycd_Yakan_Souchou_Kasan:
+                    cb_yakan_souchou_kasan.setSelected(true);
                     break;
                 case srycd_Oushin:
                     cb_oushin.setSelected(true);
@@ -612,6 +617,10 @@ public class MakeBaseChargeStamp extends CheckSantei {
                             ? new SrycdNumberPair(srycd_Saishin_Doujitsu)
                             : new SrycdNumberPair(srycd_Saishin);
                     srycdList.add(pair);
+                    // 夜間・早朝加算
+                    if (cb_yakan_souchou_kasan.isSelected()) {
+                        srycdList.add(new SrycdNumberPair(srycd_Yakan_Souchou_Kasan));
+                    }
                 }
                 if (rb_jikangai.isSelected()) {
                     srycdList.add(new SrycdNumberPair(srycd_Saishin_Jikangai));
@@ -642,7 +651,7 @@ public class MakeBaseChargeStamp extends CheckSantei {
                         break;
                 }
             }
-        }
+         }
         
         // リハ１と２
         if (rb_riha1.isSelected()) {
@@ -889,6 +898,7 @@ public class MakeBaseChargeStamp extends CheckSantei {
         rb_shinya = new JRadioButton("深夜");
         rb_kinkyu = new JRadioButton("緊急");
         rb_yakan = new JRadioButton("夜間");
+        cb_yakan_souchou_kasan = new JCheckBox("夜早加");
         rb_inMed = new JRadioButton("院内");
         rb_exMed = new JRadioButton("院外");
         cmb_jikan = new JComboBox(timeItem);
@@ -1016,13 +1026,14 @@ public class MakeBaseChargeStamp extends CheckSantei {
         panel.add(rb_shinya);
         panel.add(rb_kinkyu);
         panel.add(rb_yakan);
-        panel.add(Box.createVerticalStrut(5));
+        panel.add(cb_yakan_souchou_kasan);
+        //panel.add(Box.createVerticalStrut(5));
         panel.add(rb_inMed);
         panel.add(rb_exMed);
         
         cmb_jikan.setMaximumSize(cmb_jikan.getPreferredSize());
         cmb_jikan.setAlignmentX(Component.LEFT_ALIGNMENT);
-        panel.add(Box.createVerticalStrut(5));
+        //panel.add(Box.createVerticalStrut(5));
         panel.add(cmb_jikan);
         panel.add(Box.createGlue());
         view.add(panel);
@@ -1060,8 +1071,9 @@ public class MakeBaseChargeStamp extends CheckSantei {
         tmp.add(btn_cancel);
         tmp.add(btn_insert);
         tmp.setMaximumSize(tmp.getPreferredSize());
-        panel.add(tmp);
         panel.add(Box.createGlue());
+        panel.add(tmp);
+        panel.add(Box.createVerticalStrut(5));
         view.add(panel);
 
         btn_insert.addActionListener(new ActionListener() {
