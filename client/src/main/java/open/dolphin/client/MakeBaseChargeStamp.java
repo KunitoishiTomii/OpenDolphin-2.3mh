@@ -127,7 +127,7 @@ public class MakeBaseChargeStamp extends CheckSantei {
         srycdList.add(srycdFrmt.format(srycd_Saishin_Jikangai));
         srycdList.add(srycdFrmt.format(srycd_Saishin_Kyujitsu));
         srycdList.add(srycdFrmt.format(srycd_Saishin_Shinya));
-        srycdList.add(srycdFrmt.format(srycd_Yakan_Souchou_Kasan));
+        srycdList.add(srycdFrmt.format(srycd_Saishin_Yakan_Souchou_Kasan));
         srycdList.add(srycdFrmt.format(srycd_Oushin));
         srycdList.add(srycdFrmt.format(srycd_Oushin_Kinkyu_Kasan1));
         srycdList.add(srycdFrmt.format(srycd_Oushin_Shinya_Kasan1));
@@ -146,6 +146,7 @@ public class MakeBaseChargeStamp extends CheckSantei {
         srycdList.add(srycdFrmt.format(srycd_Shoshin_Jikangai_Kasan));
         srycdList.add(srycdFrmt.format(srycd_Shoshin_Kyujitsu_Kasan));
         srycdList.add(srycdFrmt.format(srycd_Shoshin_Shinya_Kasan));
+        srycdList.add(srycdFrmt.format(srycd_Shoshin_Yakan_Souchou_Kasan));
         srycdList.add(srycdFrmt.format(srycd_Gairaikanri_Kasan));
         srycdList.add(srycdFrmt.format(srycd_Tokutei_Ryouyou));
         srycdList.add(srycdFrmt.format(srycd_Tokutei_Shohou));
@@ -322,7 +323,8 @@ public class MakeBaseChargeStamp extends CheckSantei {
                     rb_saishin.setSelected(true);
                     rb_shinya.setSelected(true);
                     break;
-                case srycd_Yakan_Souchou_Kasan:
+                case srycd_Saishin_Yakan_Souchou_Kasan:
+                case srycd_Shoshin_Yakan_Souchou_Kasan:
                     cb_yakan_souchou_kasan.setSelected(true);
                     break;
                 case srycd_Oushin:
@@ -594,6 +596,10 @@ public class MakeBaseChargeStamp extends CheckSantei {
         // 初診
         if (rb_shoshin.isSelected()) {
             srycdList.add(new SrycdNumberPair(srycd_Shoshin));
+            // 夜間・早朝加算
+            if (cb_yakan_souchou_kasan.isSelected()) {
+                srycdList.add(new SrycdNumberPair(srycd_Shoshin_Yakan_Souchou_Kasan));
+            }
             if (rb_jikangai.isSelected()) {
                 srycdList.add(new SrycdNumberPair(srycd_Shoshin_Jikangai_Kasan));
             }
@@ -617,10 +623,10 @@ public class MakeBaseChargeStamp extends CheckSantei {
                             ? new SrycdNumberPair(srycd_Saishin_Doujitsu)
                             : new SrycdNumberPair(srycd_Saishin);
                     srycdList.add(pair);
-                    // 夜間・早朝加算
-                    if (cb_yakan_souchou_kasan.isSelected()) {
-                        srycdList.add(new SrycdNumberPair(srycd_Yakan_Souchou_Kasan));
-                    }
+                }
+                // 夜間・早朝加算
+                if (cb_yakan_souchou_kasan.isSelected()) {
+                    srycdList.add(new SrycdNumberPair(srycd_Saishin_Yakan_Souchou_Kasan));
                 }
                 if (rb_jikangai.isSelected()) {
                     srycdList.add(new SrycdNumberPair(srycd_Saishin_Jikangai));
