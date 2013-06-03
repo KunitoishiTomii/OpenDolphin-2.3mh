@@ -7,6 +7,7 @@ import java.awt.Rectangle;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
+import javax.swing.JViewport;
 import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
 
@@ -30,7 +31,6 @@ public final class KartePanel2 extends KartePanel {
         soaTextPane = createTextPane();
         pTextPane = createTextPane();
 
-        
         if (editor) {
             JPanel panel = new DoubleScrollPanel();
             panel.setLayout(new GridLayout(rows, cols, hgap, vgap));
@@ -87,7 +87,6 @@ public final class KartePanel2 extends KartePanel {
     }
     
     // ２号用紙形式KarteEditorのJScrollPaneに入れるパネル
-    // Trick: JTextPaneはScrollableが親ならば幅拡張しない
     private static final class DoubleScrollPanel extends JPanel implements Scrollable {
 
         @Override
