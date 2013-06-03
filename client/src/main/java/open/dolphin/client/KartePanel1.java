@@ -1,8 +1,6 @@
 package open.dolphin.client;
 
 import java.awt.Dimension;
-import java.awt.GridLayout;
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 
@@ -23,18 +21,14 @@ public final class KartePanel1 extends KartePanel {
     @Override
     protected void initComponents(boolean editor) {
 
-        JPanel contentPanel = getContentPanel();
-
+        soaTextPane = createTextPane();
+        
         if (editor) {
-            contentPanel.setLayout(new GridLayout(rows, cols, hgap, vgap));
-            soaTextPane = createTextPane();
-            JScrollPane soaScroll = new JScrollPane(soaTextPane);
-            soaScroll.setBorder(null);
-            contentPanel.add(soaScroll);
+            JScrollPane scroll = new JScrollPane(soaTextPane);
+            scroll.setBorder(null);
+            add(scroll);
         } else {
-            contentPanel.setLayout(new GridLayout(rows, cols, hgap, vgap));
-            soaTextPane = createTextPane();
-            contentPanel.add(soaTextPane);
+            add(soaTextPane);
         }
     }
 

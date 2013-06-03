@@ -1,5 +1,6 @@
 package open.dolphin.client;
 
+import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import javax.swing.JPanel;
@@ -23,27 +24,26 @@ public final class KartePanel2 extends KartePanel {
     @Override
     protected void initComponents(boolean editor) {
 
-        JPanel contentPanel = getContentPanel();
-
+        soaTextPane = createTextPane();
+        pTextPane = createTextPane();
+        JPanel panel = new JPanel();
+        panel.setLayout(new GridLayout(rows, cols, hgap, vgap));
+        
         if (editor) {
-            contentPanel.setLayout(new GridLayout(rows, cols, hgap, vgap));
-            soaTextPane = createTextPane();
             JScrollPane soaScroll = new JScrollPane(soaTextPane);
             soaScroll.setBorder(null);
-            contentPanel.add(soaScroll);
-            pTextPane = createTextPane();
+            panel.add(soaScroll);
             JScrollPane pScroll = new JScrollPane(pTextPane);
             pScroll.setBorder(null);
-            contentPanel.add(pScroll);
+            panel.add(pScroll);
         } else {
-            contentPanel.setLayout(new GridLayout(rows, cols, hgap, vgap));
-            soaTextPane = createTextPane();
-            contentPanel.add(soaTextPane);
-            pTextPane = createTextPane();
-            contentPanel.add(pTextPane);
+            panel.add(soaTextPane);
+            panel.add(pTextPane);
         }
+        
+        add(panel, BorderLayout.CENTER);
     }
-
+    
     @Override
     public JTextPane getSoaTextPane() {
         return soaTextPane;

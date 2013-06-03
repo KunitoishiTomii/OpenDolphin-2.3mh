@@ -47,7 +47,7 @@ public class KartePanelEditorKit extends StyledEditorKit {
             String kind = elem.getName();
 
             if (AbstractDocument.ContentElementName.equals(kind)) {
-                return new LabelView(elem);
+                return new WrapLabelView(elem);
             } else if (AbstractDocument.ParagraphElementName.equals(kind)) {
                 return new MyParagraphView(elem);
             } else if (AbstractDocument.SectionElementName.equals(kind)) {
@@ -59,6 +59,27 @@ public class KartePanelEditorKit extends StyledEditorKit {
             }
 
             return new LabelView(elem);
+        }
+    }
+    
+    // Thread: Word wraping behaviour in JTextPane since Java 7
+    // https://forums.oracle.com/forums/thread.jspa?messageID=10757680
+    private static final class WrapLabelView extends LabelView {
+
+        private WrapLabelView(Element elem) {
+            super(elem);
+        }
+
+        @Override
+        public float getMinimumSpan(int axis) {
+            switch (axis) {
+                case View.X_AXIS:
+                    return 0;
+                case View.Y_AXIS:
+                    return super.getMinimumSpan(axis);
+                default:
+                    throw new IllegalArgumentException("Invalid axis: " + axis);
+            }
         }
     }
 
@@ -100,6 +121,18 @@ public class KartePanelEditorKit extends StyledEditorKit {
                 return (float) compWidth;
             } else {
                 return (float) paneWidth;
+            }
+        }
+        
+        @Override
+        public float getMinimumSpan(int axis) {
+            switch (axis) {
+                case View.X_AXIS:
+                    return 0;
+                case View.Y_AXIS:
+                    return super.getMinimumSpan(axis);
+                default:
+                    throw new IllegalArgumentException("Invalid axis: " + axis);
             }
         }
     }
