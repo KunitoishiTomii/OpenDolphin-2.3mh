@@ -138,7 +138,8 @@ public interface ICheckSanteiConst {
     public static final int sk1006_zaitakuShienHsp1    = 3057;  // 3057:在宅療養支援病院（１）     <-機能強化、単独
     public static final int sk1006_zaitakuShienHsp2    = 3058;  // 3058:在宅療養支援病院（２）     <-機能強化、連携
     public static final int sk1006_zaitakuShienHsp3    = 3169;  // 3058:在宅療養支援病院（３）     <-機能普通の支援病？
-    public static final int sk1006_zaitakuShienHsp3old = 695 ;  // 0695:在宅療養支援病院 -> 3169
+    public static final int sk1006_zaitakuShienHsp3old = 695;   // 0695:在宅療養支援病院 -> 3169
+    public static final int sk1006_yakanSouchouKasan   = 672;   // 0672:夜間・早朝等加算
     
     public static final int sk1006_zaiiSoukan          = 721;    // 0721:在宅時医学総合管理料及び特定施設入居時等医学総合管理料
     

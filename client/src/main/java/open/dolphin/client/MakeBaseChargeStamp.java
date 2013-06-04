@@ -279,6 +279,7 @@ public class MakeBaseChargeStamp extends CheckSantei {
             rb_inMed.setSelected(true);
         }
         controlExMedRadio();
+        cb_yakan_souchou_kasan.setEnabled(yakanSouchouAvailable);
 
         BundleDolphin bundle = (BundleDolphin) sh.getStamp().getModel();
         ClaimItem[] ci = bundle.getClaimItem();
@@ -325,7 +326,9 @@ public class MakeBaseChargeStamp extends CheckSantei {
                     break;
                 case srycd_Saishin_Yakan_Souchou_Kasan:
                 case srycd_Shoshin_Yakan_Souchou_Kasan:
-                    cb_yakan_souchou_kasan.setSelected(true);
+                    if (yakanSouchouAvailable) {
+                        cb_yakan_souchou_kasan.setSelected(true);
+                    }
                     break;
                 case srycd_Oushin:
                     cb_oushin.setSelected(true);
@@ -513,6 +516,8 @@ public class MakeBaseChargeStamp extends CheckSantei {
                 cb_doujitsu.setSelected(true);
             }
         }
+        // 夜間・早朝等加算
+        cb_yakan_souchou_kasan.setEnabled(yakanSouchouAvailable);
         // 薬剤情報
         cb_yakujou.setSelected(yakujouAvailable);
 
