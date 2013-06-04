@@ -16,7 +16,7 @@ import open.dolphin.setting.MiscSettingPanel;
  *
  * @author masuda, Masuda Naika
  */
-public class KarteScrollerPanel extends JPanel {
+public class KarteScrollerPanel extends ScrollableJPanel {
 
     // アニメーションスクロールをするMouseWheelAdapter
     private SkipScrollWheelAdapter scrollAdapter;

@@ -1,8 +1,6 @@
 package open.dolphin.client;
 
 import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.*;
 import java.util.*;
@@ -192,12 +190,7 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
 
     @Override
     public void stop() {
-/*
-        for (Map.Entry entry : karteViewerMap.entrySet()) {
-            KarteViewer viewer = (KarteViewer) entry.getValue();
-            viewer.stop();
-        }
-*/
+        
         try {
             karteTask.cancel(true);
         } catch (Exception ex) {
@@ -272,41 +265,9 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
         // デフォルト値の設定は環境設定で行う。
         ascending = getContext().getDocumentHistory().isAscending();
         showModified = getContext().getDocumentHistory().isShowModified();
-
-        // windowサイズが変更されるとKarteViewerの高さを調節する
-        getContext().getFrame().addComponentListener(new ComponentAdapter() {
-
-            @Override
-            public void componentResized(ComponentEvent e) {
-                resizeKarteViewers();
-            }
-        });
+        
     }
-
-    private void resizeKarteViewers() {
-
-        // 親コンテナが決まっていなかったらリターン
-        if (scrollerPanel == null || scrollerPanel.getParent() == null) {
-            return;
-        }
-
-        // 現在地を保存
-        final Point p = scroller.getViewport().getViewPosition();
-
-        // scrollerPanelのサイズをWindowに合わせる
-        Dimension d = scrollerPanel.getParent().getSize();
-        scrollerPanel.setSize(d);   // setPreferredSize()にあらず
-
-        // ViewPositionが原点になるので、現在地を回復
-        SwingUtilities.invokeLater(new Runnable() {
-
-            @Override
-            public void run() {
-                scroller.getViewport().setViewPosition(p);
-            }
-        });
-    }
-
+    
     /**
      * KarteViewerを生成し表示する。
      *
@@ -364,8 +325,10 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
         // 縦並びかどうかに応じてレイアウトを設定
         if (vsc) {
             scrollerPanel.setLayout(new BoxLayout(scrollerPanel, BoxLayout.Y_AXIS));
+            scrollerPanel.setFixedWidth(true);
         } else {
             scrollerPanel.setLayout(new BoxLayout(scrollerPanel, BoxLayout.X_AXIS));
+            scrollerPanel.setFixedWidth(false);
         }
     }
 
