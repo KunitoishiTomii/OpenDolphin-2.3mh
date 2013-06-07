@@ -174,8 +174,9 @@ public class KarteScrollerPanel extends ScrollableJPanel {
                 scroller.getViewport().setViewPosition(destPoint);
             } else {
                 // 底の変換なんてちょー久しぶりｗ
-                int y = (int) (curPoint.y + (destPoint.y - curPoint.y) * Math.log(++i) / Math.log(DIV));
-                int x = (int) (curPoint.x + (destPoint.x - curPoint.x) * Math.log(++i) / Math.log(DIV));
+                i++;
+                int y = (int) (curPoint.y + (destPoint.y - curPoint.y) * Math.log(i) / Math.log(DIV));
+                int x = (int) (curPoint.x + (destPoint.x - curPoint.x) * Math.log(i) / Math.log(DIV));
                 scroller.getViewport().setViewPosition(new Point(x, y));
             }
         }
