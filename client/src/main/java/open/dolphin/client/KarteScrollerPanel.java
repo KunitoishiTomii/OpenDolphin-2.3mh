@@ -24,7 +24,7 @@ public class KarteScrollerPanel extends ScrollableJPanel {
     private javax.swing.Timer scrollTimer;
     // アニメーションスクロールのActionListener
     private AnimateScrollAction scrollAction;
-    private static final int DIV = 10;  // Animated scrollの分割数
+    private static final int DIV = 8;  // Animated scrollの分割数
     private static final int INTERVAL = 5; // Animated scrollの実行間隔msec
 
     private static final String PAGE_UP = DefaultEditorKit.pageUpAction;
