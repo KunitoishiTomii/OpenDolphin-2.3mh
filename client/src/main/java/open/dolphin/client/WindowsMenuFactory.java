@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import javax.swing.*;
 import open.dolphin.helper.MenuSupport;
+import open.dolphin.util.ModifiedFlowLayout;
 
 /**
  * Menu Factory for Mac. 
@@ -725,7 +726,7 @@ public class WindowsMenuFactory extends AbstractMenuFactory {
             fileBar.setName("fileBar");
             editBar = new JToolBar();
             editBar.setName("editBar");
-            toolPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            toolPanel = new JPanel(new ModifiedFlowLayout(FlowLayout.LEFT));
             toolPanel.add(fileBar);
             toolPanel.add(editBar);
         }
