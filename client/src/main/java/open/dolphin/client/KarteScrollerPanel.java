@@ -20,12 +20,9 @@ public class KarteScrollerPanel extends ScrollableJPanel {
 
     // アニメーションスクロールをするMouseWheelAdapter
     private SkipScrollWheelAdapter scrollAdapter;
-    // アニメーションスクロールのタイマー
-    private javax.swing.Timer scrollTimer;
+
     // アニメーションスクロールのActionListener
     private AnimateScrollAction scrollAction;
-    private static final int DIV = 8;  // Animated scrollの分割数
-    private static final int INTERVAL = 5; // Animated scrollの実行間隔msec
 
     private static final String PAGE_UP = DefaultEditorKit.pageUpAction;
     private static final String PAGE_DOWN = DefaultEditorKit.pageDownAction;
@@ -51,7 +48,7 @@ public class KarteScrollerPanel extends ScrollableJPanel {
 
         // アニメーションスクロールを設定
         scrollAction = new AnimateScrollAction();
-        scrollTimer = new javax.swing.Timer(INTERVAL, scrollAction);
+
         // KarteScrollerPanelにキー移動アクションを設定する
         setKeyAction(KarteScrollerPanel.this);
     }
@@ -81,8 +78,8 @@ public class KarteScrollerPanel extends ScrollableJPanel {
     }
 
     public void dispose() {
-        scrollTimer.stop();
-        scrollTimer = null;
+        scrollAction.dispose();
+        removeMouseWheelListener(scrollAdapter);
         scrollAdapter = null;
         // memory leak?
         removeAll();
@@ -130,10 +127,29 @@ public class KarteScrollerPanel extends ScrollableJPanel {
 
     // スクロールを滑らかに移動するアクション
     private class AnimateScrollAction implements ActionListener {
-
+        
+        private static final int DIV = 8;       // Animated scrollの分割数
+        private static final int INTERVAL = 5;  // Animated scrollの実行間隔msec
+        
+        // アニメーションスクロールのタイマー
+        private Timer scrollTimer;
+        
         private Point destPoint;
         private Point curPoint;
         private int i;
+        
+        private AnimateScrollAction() {
+            scrollTimer = new Timer(INTERVAL, AnimateScrollAction.this);
+        }
+        
+        private boolean isRunning() {
+            return scrollTimer.isRunning();
+        }
+        
+        private void dispose() {
+            scrollTimer.stop();
+            scrollTimer = null;
+        }
 
         private void moveTo(Point p) {
 
@@ -143,14 +159,14 @@ public class KarteScrollerPanel extends ScrollableJPanel {
                 return;
             }
 
-            if (scrollTimer.isRunning() && p.equals(destPoint)) {
+            if (isRunning() && p.equals(destPoint)) {
                 return;
             }
 
             scrollTimer.stop();
             destPoint = p;
             curPoint = scroller.getViewport().getViewPosition();
-            i = 0;
+            i = 1;
             scrollTimer.start();
         }
 
@@ -167,14 +183,14 @@ public class KarteScrollerPanel extends ScrollableJPanel {
                 scrollTimer.stop();
                 return;
             }
-
+            
+            i++;
             if (i == DIV) {
                 // 指定回数繰り返したらタイマーをストップする
                 scrollTimer.stop();
                 scroller.getViewport().setViewPosition(destPoint);
             } else {
                 // 底の変換なんてちょー久しぶりｗ
-                i++;
                 int y = (int) (curPoint.y + (destPoint.y - curPoint.y) * Math.log(i) / Math.log(DIV));
                 int x = (int) (curPoint.x + (destPoint.x - curPoint.x) * Math.log(i) / Math.log(DIV));
                 scroller.getViewport().setViewPosition(new Point(x, y));
@@ -278,7 +294,7 @@ public class KarteScrollerPanel extends ScrollableJPanel {
 
     // 現在のViewPortの位置を取得。timerがrunningならばdestPoint
     private Point getViewportPoint() {
-        boolean timerRunning = scrollTimer.isRunning();
+        boolean timerRunning = scrollAction.isRunning();
 
         Point p = timerRunning
                 ? scrollAction.getDestPoint()
@@ -341,7 +357,7 @@ public class KarteScrollerPanel extends ScrollableJPanel {
             return;
         }
 
-        boolean timerRunning = scrollTimer.isRunning();
+        boolean timerRunning = scrollAction.isRunning();
         Point p = getViewportPoint();
 
         // currentLocのComponentを取得する。
@@ -391,7 +407,7 @@ public class KarteScrollerPanel extends ScrollableJPanel {
             return;
         }
 
-        boolean timerRunning = scrollTimer.isRunning();
+        boolean timerRunning = scrollAction.isRunning();
         Point p = getViewportPoint();
 
         // currentLocのComponentを取得する。
