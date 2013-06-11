@@ -13,7 +13,7 @@ import java.awt.Insets;
  * 
  * http://www.javakb.com/Uwe/Forum.aspx/java-gui/1904/Flowlayout-JPanel-and-JScrollPane-Scrolling-vertically-impossible
  * @author Babu Kalakrishnan
- * @author masuda, Mauda Naika
+ * @author modified by masuda, Mauda Naika
  */
 public class ModifiedFlowLayout extends FlowLayout {
 

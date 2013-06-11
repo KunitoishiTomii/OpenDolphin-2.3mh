@@ -53,22 +53,11 @@ public class BeanUtils {
     }
     
     public static Object deepCopy(Object src) {
-  
-        try {
-            ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
-            ObjectOutputStream out = new ObjectOutputStream(byteOut);
-            out.writeObject(src);
-            ByteArrayInputStream byteIn = new ByteArrayInputStream(byteOut.toByteArray());
-            ObjectInputStream in = new ObjectInputStream(byteIn);
-            return in.readObject();
-            
-        } catch (ClassNotFoundException ex) {
-        } catch (IOException ex) {
-        }
-        
-        return null;
+        byte[] bytes = xmlEncode(src);
+        return xmlDecode(bytes);
     }
 
+    
 /*
 //masuda^   http://forums.sun.com/thread.jspa?threadID=427879
 
