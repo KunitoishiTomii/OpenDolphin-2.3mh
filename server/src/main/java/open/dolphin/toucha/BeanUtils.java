@@ -36,7 +36,8 @@ public class BeanUtils {
     public static byte[] xmlEncode(Object bean)  {
         
         ByteArrayOutputStream bo = new ByteArrayOutputStream();
-        XMLEncoder e = new XMLEncoder(bo);
+        OutputStream os = new BufferedOutputStream(bo);
+        XMLEncoder e = new XMLEncoder(os);
         e.writeObject(bean);
         e.close();
         
@@ -45,7 +46,9 @@ public class BeanUtils {
     
     public static Object xmlDecode(byte[] bytes) {
         
-        XMLDecoder d = new XMLDecoder(new ByteArrayInputStream(bytes));
+        //XMLDecoder d = new XMLDecoder(new ByteArrayInputStream(bytes));
+        InputStream is = new BufferedInputStream(new ByteArrayInputStream(bytes));
+        XMLDecoder d = new XMLDecoder(is);
         return d.readObject();
     }
     

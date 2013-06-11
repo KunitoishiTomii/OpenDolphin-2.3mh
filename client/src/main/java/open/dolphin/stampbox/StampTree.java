@@ -2,8 +2,6 @@ package open.dolphin.stampbox;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.beans.XMLEncoder;
-import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -17,6 +15,7 @@ import open.dolphin.delegater.StampDelegater;
 import open.dolphin.helper.ProgressMonitorWorker;
 import open.dolphin.infomodel.*;
 import open.dolphin.project.Project;
+import open.dolphin.util.BeanUtils;
 import open.dolphin.util.GUIDGenerator;
 import org.apache.log4j.Logger;
 
@@ -946,11 +945,7 @@ public class StampTree extends JTree implements TreeModelListener {
     }
 
     private byte[] getXMLBytes(Object bean) {
-        ByteArrayOutputStream bo = new ByteArrayOutputStream();
-        XMLEncoder e = new XMLEncoder(bo);
-        e.writeObject(bean);
-        e.close();
-        return bo.toByteArray();
+        return BeanUtils.xmlEncode(bean);
     }
     
 

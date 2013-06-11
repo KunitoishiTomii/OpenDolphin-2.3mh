@@ -1,7 +1,9 @@
 package open.dolphin.infomodel;
 
 import java.beans.XMLDecoder;
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -483,7 +485,9 @@ public class ModelUtils implements IInfoModel {
             }
         };
 */
-        XMLDecoder d = new XMLDecoder(new ByteArrayInputStream(bytes));
+        //XMLDecoder d = new XMLDecoder(new ByteArrayInputStream(bytes));
+        InputStream is = new BufferedInputStream(new ByteArrayInputStream(bytes));
+        XMLDecoder d = new XMLDecoder(is);
         
         //d.setExceptionListener(el);
         
