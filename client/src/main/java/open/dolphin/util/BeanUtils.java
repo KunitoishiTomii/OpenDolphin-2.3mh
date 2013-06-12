@@ -3,7 +3,6 @@ package open.dolphin.util;
 import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.*;
-import java.nio.ByteBuffer;
 
 /**
  *
@@ -37,34 +36,31 @@ public class BeanUtils {
     
     public static byte[] xmlEncode(Object bean)  {
         
-        //ByteArrayOutputStream bo = new ByteArrayOutputStream();
-        //OutputStream os = new BufferedOutputStream(bo);
-        ByteBufferOutputStream os = new ByteBufferOutputStream();
+        ByteArrayOutputStream os = new ByteArrayOutputStream(16384);
         XMLEncoder e = new XMLEncoder(os);
         e.writeObject(bean);
         e.close();
         
-        //return bo.toByteArray();
-        return os.getBytes();
+        return os.toByteArray();
     }
     
     public static Object xmlDecode(byte[] bytes) {
         
-        //XMLDecoder d = new XMLDecoder(new ByteArrayInputStream(bytes));
-        //InputStream is = new BufferedInputStream(new ByteArrayInputStream(bytes));
-        InputStream is = new ByteBufferInputStream(bytes);
+        InputStream is = new ByteArrayInputStream(bytes);
         XMLDecoder d = new XMLDecoder(is);
-        return d.readObject();
+        Object obj = d.readObject();
+        d.close();
+        
+        return obj;
     }
     
-/* 
     public static Object deepCopy(Object src) {
         byte[] bytes = xmlEncode(src);
         return xmlDecode(bytes);
     }
-*/
     
-    public static Object deepCopy(Object src) {
+/*
+    public static Object deepCopySharedByteBuffer(Object src) {
         
         ByteBufferOutputStream os = new ByteBufferOutputStream();
         XMLEncoder e = new XMLEncoder(os);
@@ -79,7 +75,7 @@ public class BeanUtils {
         Object ret = d.readObject();
         return ret;
     }
-    
+*/
 /*
 //masuda^   http://forums.sun.com/thread.jspa?threadID=427879
 

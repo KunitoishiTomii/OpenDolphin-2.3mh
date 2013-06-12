@@ -22,34 +22,24 @@ public class BeanUtils {
         return null;
     }
     
-    public static Object xmlToBean(String beanXml) {
-
-        try {
-            byte[] bytes = beanXml.getBytes(UTF8);
-            return xmlDecode(bytes);
-        } catch (Exception e) {
-            e.printStackTrace(System.err);
-        }
-        return null;
-    }
-    
     public static byte[] xmlEncode(Object bean)  {
         
-        ByteArrayOutputStream bo = new ByteArrayOutputStream();
-        OutputStream os = new BufferedOutputStream(bo);
+        ByteArrayOutputStream os = new ByteArrayOutputStream(16384);
         XMLEncoder e = new XMLEncoder(os);
         e.writeObject(bean);
         e.close();
         
-        return bo.toByteArray();
+        return os.toByteArray();
     }
     
     public static Object xmlDecode(byte[] bytes) {
         
-        //XMLDecoder d = new XMLDecoder(new ByteArrayInputStream(bytes));
-        InputStream is = new BufferedInputStream(new ByteArrayInputStream(bytes));
+        InputStream is = new ByteArrayInputStream(bytes);
         XMLDecoder d = new XMLDecoder(is);
-        return d.readObject();
+        Object obj = d.readObject();
+        d.close();
+        
+        return obj;
     }
     
     public static Object deepCopy(Object src) {
