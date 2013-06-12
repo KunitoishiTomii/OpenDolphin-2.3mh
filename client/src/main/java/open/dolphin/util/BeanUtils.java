@@ -66,13 +66,12 @@ public class BeanUtils {
     
     public static Object deepCopy(Object src) {
         
-        ByteBuffer buf = ByteBuffer.allocate(16384);
-        ByteBufferOutputStream os = new ByteBufferOutputStream(buf);
+        ByteBufferOutputStream os = new ByteBufferOutputStream();
         XMLEncoder e = new XMLEncoder(os);
         e.writeObject(src);
         e.close();
         
-        buf = os.getBuffer();
+        ByteBuffer buf = os.getBuffer();
         buf.flip();
         
         ByteBufferInputStream is = new ByteBufferInputStream(buf);
