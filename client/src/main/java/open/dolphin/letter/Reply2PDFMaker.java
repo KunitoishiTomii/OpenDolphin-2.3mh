@@ -5,6 +5,9 @@ import com.lowagie.text.pdf.BaseFont;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import open.dolphin.client.ClientContext;
 import open.dolphin.infomodel.UserModel;
 import open.dolphin.project.Project;
@@ -41,7 +44,11 @@ public class Reply2PDFMaker extends AbstractPDFMaker {
 
         try {
             // Open Document
-            writer = PdfWriter.getInstance(document, new FileOutputStream(pathToPDF));
+//minagawa^ mac jdk7            
+//            writer = PdfWriter.getInstance(document, new FileOutputStream(filePath));
+            Path path = Paths.get(filePath);
+            writer = PdfWriter.getInstance(document, Files.newOutputStream(path));
+//minagawa$
             document.open();
 
             // Font
