@@ -3,10 +3,12 @@ package open.dolphin.util;
 import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.*;
+import java.nio.ByteBuffer;
 
 /**
  *
  * @author Kazushi Minagawa.
+ * @author modified by masuda, Masuda Naika
  */
 public class BeanUtils {
 
@@ -35,28 +37,49 @@ public class BeanUtils {
     
     public static byte[] xmlEncode(Object bean)  {
         
-        ByteArrayOutputStream bo = new ByteArrayOutputStream();
-        OutputStream os = new BufferedOutputStream(bo);
+        //ByteArrayOutputStream bo = new ByteArrayOutputStream();
+        //OutputStream os = new BufferedOutputStream(bo);
+        ByteBufferOutputStream os = new ByteBufferOutputStream();
         XMLEncoder e = new XMLEncoder(os);
         e.writeObject(bean);
         e.close();
         
-        return bo.toByteArray();
+        //return bo.toByteArray();
+        return os.getBytes();
     }
     
     public static Object xmlDecode(byte[] bytes) {
         
         //XMLDecoder d = new XMLDecoder(new ByteArrayInputStream(bytes));
-        InputStream is = new BufferedInputStream(new ByteArrayInputStream(bytes));
+        //InputStream is = new BufferedInputStream(new ByteArrayInputStream(bytes));
+        InputStream is = new ByteBufferInputStream(bytes);
         XMLDecoder d = new XMLDecoder(is);
         return d.readObject();
     }
     
+/* 
     public static Object deepCopy(Object src) {
         byte[] bytes = xmlEncode(src);
         return xmlDecode(bytes);
     }
-
+*/
+    
+    public static Object deepCopy(Object src) {
+        
+        ByteBuffer buf = ByteBuffer.allocate(16384);
+        ByteBufferOutputStream os = new ByteBufferOutputStream(buf);
+        XMLEncoder e = new XMLEncoder(os);
+        e.writeObject(src);
+        e.close();
+        
+        buf = os.getBuffer();
+        buf.flip();
+        
+        ByteBufferInputStream is = new ByteBufferInputStream(buf);
+        XMLDecoder d = new XMLDecoder(is);
+        Object ret = d.readObject();
+        return ret;
+    }
     
 /*
 //masuda^   http://forums.sun.com/thread.jspa?threadID=427879
