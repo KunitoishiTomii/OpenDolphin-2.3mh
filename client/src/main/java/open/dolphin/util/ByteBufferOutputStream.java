@@ -28,9 +28,13 @@ public class ByteBufferOutputStream extends OutputStream {
     private void verifyBuffer(int length) {
         if (buf.remaining() < length) {
             ByteBuffer old = buf;
+            int bufLength = old.position();
             old.flip();
-            int capacity = old.capacity();
-            buf = ByteBuffer.allocate((capacity + length) * 2);
+            int newCapacity = old.capacity() * 2;
+            while (newCapacity < bufLength + length) {
+                newCapacity *= 2;
+            }
+            buf = ByteBuffer.allocate(newCapacity);
             buf.put(old);
         }
     }
