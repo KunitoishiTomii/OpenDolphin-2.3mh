@@ -1,8 +1,6 @@
 package open.dolphin.client;
 
 import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.*;
 import java.util.*;
@@ -56,7 +54,8 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
     // docInfo.getDocId() (=String)ではなくgetDocPk() (=long)であることに注意
     private Map<Long, KarteViewer> karteViewerMap;
     // 今選択されているDocInfoModelの配列
-    private List<DocInfoModel> docInfoList;
+    private DocInfoModel[] docInfoList;
+    //private List<DocInfoModel> docInfoList;
     // ScrollerPaneに入っている、KarteViewerを含んだPanal
     private KarteScrollerPanel scrollerPanel;
     
@@ -64,6 +63,8 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
     
     // Common MouseListener
     private MouseListener mouseListener;
+    
+    private KarteTask karteTask;
     
 
 //pns^ 表示されているカルテの中身を検索する modified by masuda
@@ -189,12 +190,12 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
 
     @Override
     public void stop() {
-/*
-        for (Map.Entry entry : karteViewerMap.entrySet()) {
-            KarteViewer viewer = (KarteViewer) entry.getValue();
-            viewer.stop();
+        
+        try {
+            karteTask.cancel(true);
+        } catch (Exception ex) {
         }
-*/
+        
         karteViewerMap.clear();
         karteViewerMap = null;
 
@@ -264,41 +265,9 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
         // デフォルト値の設定は環境設定で行う。
         ascending = getContext().getDocumentHistory().isAscending();
         showModified = getContext().getDocumentHistory().isShowModified();
-
-        // windowサイズが変更されるとKarteViewerの高さを調節する
-        getContext().getFrame().addComponentListener(new ComponentAdapter() {
-
-            @Override
-            public void componentResized(ComponentEvent e) {
-                resizeKarteViewers();
-            }
-        });
+        
     }
-
-    private void resizeKarteViewers() {
-
-        // 親コンテナが決まっていなかったらリターン
-        if (scrollerPanel == null || scrollerPanel.getParent() == null) {
-            return;
-        }
-
-        // 現在地を保存
-        final Point p = scroller.getViewport().getViewPosition();
-
-        // scrollerPanelのサイズをWindowに合わせる
-        Dimension d = scrollerPanel.getParent().getSize();
-        scrollerPanel.setSize(d);   // setPreferredSize()にあらず
-
-        // ViewPositionが原点になるので、現在地を回復
-        SwingUtilities.invokeLater(new Runnable() {
-
-            @Override
-            public void run() {
-                scroller.getViewport().setViewPosition(p);
-            }
-        });
-    }
-
+    
     /**
      * KarteViewerを生成し表示する。
      *
@@ -306,22 +275,24 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
      */
     @Override
     public void showDocuments(final DocInfoModel[] selectedHistories, final JScrollPane scroller) {
+        
+        if (karteViewerMap == null) {
+            return;
+        }
 
         this.scroller = scroller;
+        docInfoList = selectedHistories;
 
         if (selectedHistories == null || selectedHistories.length == 0) {
             initScrollerPanel();
-            docInfoList = Collections.emptyList();
             return;
         }
         
-        docInfoList = Arrays.asList(selectedHistories);
-        
         // ここでソートしておく
         if (ascending) {
-            Collections.sort(docInfoList);
+            Arrays.sort(docInfoList);
         } else {
-            Collections.sort(docInfoList, Collections.reverseOrder());
+            Arrays.sort(docInfoList, Collections.reverseOrder());
         }
 
         // 選択リストにあって 現在の karteViewerMap にないものはデータベースから取得する
@@ -338,8 +309,11 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
             showKarteViewers();
         } else {
             // 追加されたものがある場合はデータベースから取得する
-            KarteTask task = new KarteTask(getContext(), map);
-            task.execute();
+            if (karteTask != null && !karteTask.isDone()) {
+                karteTask.cancel(true);
+            }
+            karteTask = new KarteTask(getContext(), map);
+            karteTask.execute();
         }
     }
     
@@ -351,8 +325,10 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
         // 縦並びかどうかに応じてレイアウトを設定
         if (vsc) {
             scrollerPanel.setLayout(new BoxLayout(scrollerPanel, BoxLayout.Y_AXIS));
+            scrollerPanel.setFixedWidth(true);
         } else {
             scrollerPanel.setLayout(new BoxLayout(scrollerPanel, BoxLayout.X_AXIS));
+            scrollerPanel.setFixedWidth(false);
         }
     }
 
@@ -366,8 +342,9 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
                 initScrollerPanel();
 
                 // 選択されているDocInfoに対応するKarteViewerをviewerListに追加する
-                for (int i = 0; i < docInfoList.size(); ++i) {
-                    DocInfoModel docInfo = docInfoList.get(i);
+                int size = docInfoList.length;
+                for (int i = 0; i < size; ++i) {
+                    DocInfoModel docInfo = docInfoList[i];
                     KarteViewer viewer = karteViewerMap.get(docInfo.getDocPk());
                     if (viewer != null) {
                         JPanel panel = viewer.getUI();
@@ -385,8 +362,8 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
                 // 文書履歴タブに変更
                 getContext().showDocument(0);
                 // 一つ目を選択し、フォーカスを設定する。フォーカスがないとキー移動できない
-                int index = (ascending) ? docInfoList.size() - 1 : 0;
-                KarteViewer kv = karteViewerMap.get(docInfoList.get(index).getDocPk());
+                int index = (ascending) ? docInfoList.length - 1 : 0;
+                KarteViewer kv = karteViewerMap.get(docInfoList[index].getDocPk());
                 if (kv != null) {
                     setSelectedKarte(kv);
                     kv.getUI().requestFocusInWindow();
@@ -729,7 +706,7 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
      */
     private final class KarteTask extends DBTask<Integer, Void> {
         
-        private static final int fetchSize = 200;
+        private static final int defaultFetchSize = 200;
         private Map<Long, DocInfoModel> docInfoMap;
         private CompletionService service;
         private MultiTaskExecutor exec;
@@ -756,9 +733,16 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
             int fromIndex = 0;
             int idListSize = docInfoMap.size();
             int taskCount=  0;
-            List<Long> allIds = new ArrayList<Long>(docInfoMap.keySet());
+
+            // 最初のfetchSizeを決める
+            // 20文書までは一回で、20～400文書までは２分割で、400以上は200文書ごと取得
+            int fetchSize = (idListSize <= 20 || idListSize / defaultFetchSize >= 2)
+                    ? idListSize % defaultFetchSize
+                    : idListSize / 2;
             
             // 分割してサーバーから取得する
+            List<Long> allIds = new ArrayList<Long>(docInfoMap.keySet());
+            
             while (fromIndex < idListSize) {
                 int toIndex = Math.min(fromIndex + fetchSize, idListSize);
                 List<Long> ids = allIds.subList(fromIndex, toIndex);
@@ -778,6 +762,7 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
                 } catch (Exception ex) {
                 }
                 fromIndex += fetchSize;
+                fetchSize = defaultFetchSize;
             }
             
             // 出来上がったものからkarteViewerMapに登録していく

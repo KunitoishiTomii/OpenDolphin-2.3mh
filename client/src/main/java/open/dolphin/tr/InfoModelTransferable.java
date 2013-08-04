@@ -27,20 +27,22 @@ import open.dolphin.infomodel.IInfoModel;
 /**
  * Transferable class of the IInfoModel.
  *
- * @author  Kazushi Minagawa, Digital Globe, Inc.
+ * @author Kazushi Minagawa, Digital Globe, Inc.
+ * @author masuda, Masuda Naika
  */ 
-public final class InfoModelTransferable implements Transferable, ClipboardOwner {
+public final class InfoModelTransferable extends DolphinTransferable {
 
     /** Data Flavor of this class */
-    public static DataFlavor infoModelFlavor = new DataFlavor(open.dolphin.infomodel.IInfoModel.class, "Info Model");
+    public static DataFlavor infoModelFlavor = new DataFlavor(IInfoModel.class, "Info Model");
 
     public static final DataFlavor[] flavors = {InfoModelTransferable.infoModelFlavor};
-      
-    private IInfoModel model;
+    
+    // 複数対応 masuda
+    private IInfoModel[] infoModels;
 
     /** Creates new InfoModelTransferable */
-    public InfoModelTransferable(IInfoModel model) {
-        this.model = model;
+    public InfoModelTransferable(IInfoModel[] infoModels) {
+        this.infoModels = infoModels;
     }
 
     @Override
@@ -58,7 +60,7 @@ public final class InfoModelTransferable implements Transferable, ClipboardOwner
 	    throws UnsupportedFlavorException, IOException {
 
         if (flavor.equals(infoModelFlavor)) {
-            return model;
+            return infoModels;
         } else {
             throw new UnsupportedFlavorException(flavor);
         }
@@ -66,10 +68,6 @@ public final class InfoModelTransferable implements Transferable, ClipboardOwner
 
     @Override
     public String toString() {
-        return "InfoModelTransferable";
-    }
-  
-    @Override
-    public void lostOwnership(Clipboard clipboard, Transferable contents) {
+        return "InfoModel Transferable";
     }
 }

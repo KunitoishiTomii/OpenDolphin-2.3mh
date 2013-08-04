@@ -46,7 +46,7 @@ public final class TensuItemRenderer extends StripeTableCellRenderer {
 
             String slot = item.getSlot();
 
-            if (passPattern != null && slot != null && passPattern.matcher(slot).find()) {
+            if (passPattern != null && passPattern.matcher(slot).find()) {
 
                 String srycd = item.getSrycd();
 

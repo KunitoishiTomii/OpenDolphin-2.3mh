@@ -1,13 +1,12 @@
-
 package open.dolphin.tr;
 
+import java.awt.Image;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.JTable;
-import javax.swing.TransferHandler;
 import open.dolphin.infomodel.InFacilityLaboItem;
 import open.dolphin.table.ListTableModel;
 
@@ -16,7 +15,7 @@ import open.dolphin.table.ListTableModel;
  * 
  * @author masuda, Masuda Naika
  */
-public class InFacilityLaboTransferHandler extends TransferHandler {
+public class InFacilityLaboTransferHandler extends DolphinTransferHandler {
 
     private DataFlavor inFacilityLaboItem = InFacilityLaboItemTransferable.inFacilityLaboItemFlavor;
     
@@ -26,22 +25,33 @@ public class InFacilityLaboTransferHandler extends TransferHandler {
         this.editable = editable;
     }
     
-    
     @Override
-    protected Transferable createTransferable(JComponent c) {
-        JTable sourceTable = (JTable) c;
-
-        @SuppressWarnings("unchecked")
-        ListTableModel<InFacilityLaboItem> tableModel = (ListTableModel<InFacilityLaboItem>) sourceTable.getModel();
+    protected Transferable createTransferable(JComponent src) {
+        
+        JTable sourceTable = (JTable) src;
         int[] selectedRows = sourceTable.getSelectedRows();
-        List<InFacilityLaboItem> list = new ArrayList<InFacilityLaboItem>();
-        for (int row : selectedRows) {
-            list.add(tableModel.getObject(row));
-        }
-        if (list.isEmpty()) {
+        int size = selectedRows.length;
+        
+        if (size == 0) {
             return null;
         }
-        return new InFacilityLaboItemTransferable(list.toArray(new InFacilityLaboItem[0])); 
+        
+        startTransfer(src);
+        
+        ListTableModel<InFacilityLaboItem> tableModel = (ListTableModel<InFacilityLaboItem>) sourceTable.getModel();
+        InFacilityLaboItem[] items = new InFacilityLaboItem[size];
+        List<String> strList = new ArrayList<>();
+        for (int i = 0; i < size; ++i) {
+            InFacilityLaboItem item = tableModel.getObject(selectedRows[i]);
+            items[i] = item;
+            strList.add(item.getItemName());
+        }
+
+        // ドラッグ中のイメージを設定する
+        Image image = createDragImage(strList, sourceTable.getFont());
+        setDragImage(image);
+        
+        return new InFacilityLaboItemTransferable(items); 
     }
     
     @Override
@@ -50,12 +60,14 @@ public class InFacilityLaboTransferHandler extends TransferHandler {
     }
     
     @Override
-    public boolean importData(TransferHandler.TransferSupport support) {
+    public boolean importData(TransferSupport support) {
         
         if (!canImport(support)) {
+            importDataFailed();
             return false;
         }
         if (!editable) {
+            importDataFailed();
             return false;
         }
 
@@ -90,9 +102,12 @@ public class InFacilityLaboTransferHandler extends TransferHandler {
     @Override
     protected void exportDone(JComponent c, Transferable data, int action) {
         
-        if (!editable) {
+        // export先がOpenDolphin以外なら削除しない
+        if (isExportToOther()) {
+            endTransfer();
             return;
         }
+
         try {
             if (action == MOVE) {
                 JTable sourceTable = (JTable) c;
@@ -105,10 +120,12 @@ public class InFacilityLaboTransferHandler extends TransferHandler {
             }
         } catch (Exception e) {
         }
+        
+        endTransfer();
     }
 
     @Override
-    public boolean canImport(TransferHandler.TransferSupport support) {
+    public boolean canImport(TransferSupport support) {
         return support.isDrop() && support.isDataFlavorSupported(inFacilityLaboItem);
     }
     

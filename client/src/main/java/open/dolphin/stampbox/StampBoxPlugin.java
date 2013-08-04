@@ -8,12 +8,10 @@ import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.tree.DefaultTreeModel;
 import open.dolphin.client.*;
 import open.dolphin.helper.ComponentMemory;
 import open.dolphin.infomodel.*;
@@ -285,15 +283,31 @@ public class StampBoxPlugin extends AbstractMainTool {
         //
         publishBtn = new JButton(ClientContext.getImageIconAlias("icon_stamp_publish"));
         publishBtn.setToolTipText("スタンプの公開を管理をします");
-        publishBtn.addActionListener(new ReflectActionListener(this, "publishStamp"));
-        
+//masuda^   reflectionはキライ
+        //publishBtn.addActionListener(new ReflectActionListener(this, "publishStamp"));
+        publishBtn.addActionListener(new ActionListener(){
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                publishStamp();
+            }
+        });
+//masuda$
         //
         // インポートボタンを生成する
         //
         importBtn = new JButton(ClientContext.getImageIconAlias("icon_stamp_import"));
         importBtn.setToolTipText("スタンプのインポートを管理をします");
-        importBtn.addActionListener(new ReflectActionListener(this, "importStamp"));
-        
+//masuda^   reflectionはキライ
+        //importBtn.addActionListener(new ReflectActionListener(this, "importStamp"));
+        importBtn.addActionListener(new ActionListener(){
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                importStamp();
+            }
+        });
+//masuda$
 //pns^  ロックボタンを生成する
         lockBtn = new JToggleButton();
         lockBtn.setIcon(ClientContext.getImageIconAlias("icon_stamp_lock_on"));
@@ -677,96 +691,61 @@ public class StampBoxPlugin extends AbstractMainTool {
      * EditorValueListener
      * エディタで作成したスタンプをStampTreeに加える。
      */
-    class EditorValueListener implements PropertyChangeListener {
+    private class EditorValueListener implements PropertyChangeListener {
 
         @Override
         public void propertyChange(PropertyChangeEvent e) {
-//masuda^
-            IInfoModel[] value = (IInfoModel[]) e.getNewValue();
-            if (value == null && value.length == 0) {
+            
+            IInfoModel[] infos = (IInfoModel[]) e.getNewValue();
+            if (infos == null || infos.length == 0) {
                 return;
             }
             
-            IInfoModel firstObj = value[0];
-            if (firstObj == null) {
-                return;
-            }
+            IInfoModel firstObj = infos[0];
 
             if (firstObj instanceof ModuleModel) {
-                
                 //--------------------
                 // 編集したスタンプ
                 //--------------------
-                
-                for (Object obj : value) {
-                    ModuleModel stamp = (ModuleModel) obj;
-                    String entity = stamp.getModuleInfoBean().getEntity();
-                    StampTree tree = userBox.getStampTree(entity);
-                    // stampTreeのrootを取得
-                    DefaultTreeModel treeModel = (DefaultTreeModel) tree.getModel();
-                    StampTreeNode rootNode = (StampTreeNode) treeModel.getRoot();
-                    // stampIdが同じものが編集元である。
-                    String stampId = stamp.getModuleInfoBean().getStampId();
-                    // 編集元のnodeをtreeから取得する
-                    StampTreeNode sourceNode = getSourceNode(tree, rootNode, stampId);
-                    
-                    if (sourceNode == null) {
-                        // スタンプ挿入位置を選択中の位置にする
-                        StampTreeNode target = tree.getSelectedNode();
-                        tree.addStamp(stamp, target);
-                    } else {
-                        // 置き換えの場合は置き換える
-                        tree.replaceStamp(stamp);
-                        sourceNode.setUserObject(stamp.getModuleInfoBean());
-                        treeModel.reload(sourceNode);
+                ModuleModel[] newStamps = (ModuleModel[]) infos;
+                ModuleModel[] oldStamps = (ModuleModel[]) e.getOldValue();
+                // 編集元があれば一つ目はstampIdを継承する
+                if (oldStamps != null && oldStamps.length > 0) {
+                    ModuleInfoBean newInfo = newStamps[0].getModuleInfoBean();
+                    ModuleInfoBean oldInfo = oldStamps[0].getModuleInfoBean();
+                    if (newInfo != null && oldInfo != null) {
+                        newInfo.setStampId(oldInfo.getStampId());
                     }
+                }
+                
+                String entity = newStamps[0].getModuleInfoBean().getEntity();
+                StampTree tree = getStampTree(entity);
+                if (IInfoModel.ENTITY_TEXT.equals(entity)) {
+                    tree.addOrReplaceTextStamp(newStamps);
+                } else {
+                    tree.addOrReplaceStamp(newStamps);
                 }
                 
             } else if (firstObj instanceof RegisteredDiagnosisModel) {
                 //-------------------
                 // 傷病名
                 //-------------------
-                //System.err.println("EditorValueListener: 傷病名");
-                StampTree tree = getStampTree(IInfoModel.ENTITY_DIAGNOSIS);
-                tree.addDiagnosis((List) Collections.singletonList(firstObj));
-            }
-        }
-//masuda$  
-    }
-    
-//masuda^   編集元のスタンプのStampTreeNodeを取得する。再帰は苦手ｗｗｗ
-    private StampTreeNode getSourceNode(JTree tree, StampTreeNode node, String stampId) {
-
-        if (stampId == null) {
-            return null;
-        }
-
-        if (node.getUserObject() instanceof ModuleInfoBean) {
-            ModuleInfoBean info = (ModuleInfoBean) node.getUserObject();
-            if (stampId.equals(info.getStampId())) {
-                return node;
-            }
-        }
-        
-        int childCount = node.getChildCount();
-        if (childCount != 0) {
-            // childrenがある場合はそれも調べる。
-            for (int i = 0; i < childCount; ++i) {
-                StampTreeNode childNode = (StampTreeNode) node.getChildAt(i);
-                StampTreeNode ret = getSourceNode(tree, childNode, stampId);
-                if (ret != null) {
-                    return ret;
+                RegisteredDiagnosisModel[] newRds = (RegisteredDiagnosisModel[]) infos;
+                RegisteredDiagnosisModel[] oldRds = (RegisteredDiagnosisModel[]) e.getOldValue();
+                // 編集元があれば一つ目はstampIdを継承する
+                if (oldRds != null && oldRds.length > 0) {
+                    newRds[0].setStampId(oldRds[0].getStampId());
                 }
+                StampTree tree = getStampTree(IInfoModel.ENTITY_DIAGNOSIS);
+                tree.addOrReplaceDiagnosis(newRds);
             }
         }
-        return null;
     }
-//masuda$
     
     /**
      * スタンプパブリッシャーを起動する。
      */
-    public void publishStamp() {
+    private void publishStamp() {
         StampPublisher publisher = new StampPublisher(this);
         publisher.start();
     }
@@ -774,7 +753,7 @@ public class StampBoxPlugin extends AbstractMainTool {
     /**
      * スタンプインポーターを起動する。
      */
-    public void importStamp() {
+    private void importStamp() {
         StampImporter importer = new StampImporter(this);
         importer.start();
     }

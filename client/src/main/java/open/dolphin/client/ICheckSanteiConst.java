@@ -34,10 +34,12 @@ public interface ICheckSanteiConst {
     public static final int srycd_Saishin_Jikangai  =        112001110; //時間外（再診）
     public static final int srycd_Saishin_Kyujitsu =         112001210; //休日（再診）
     public static final int srycd_Saishin_Shinya =           112001310; //深夜（再診）
+    public static final int srycd_Saishin_Yakan_Souchou_Kasan = 112015570; //再診（夜間・早朝等）加算
     public static final int srycd_Shoshin =                  111000110; //初診
     public static final int srycd_Shoshin_Jikangai_Kasan =   111000570; //初診（時間外）加算
     public static final int srycd_Shoshin_Kyujitsu_Kasan =   111000670; //初診（休日）加算
     public static final int srycd_Shoshin_Shinya_Kasan =     111000770; //初診（深夜）加算
+    public static final int srycd_Shoshin_Yakan_Souchou_Kasan = 111012470; //初診（夜間・早朝等）加算
     public static final int srycd_Gairaikanri_Kasan =        112011010; //外来管理加算
     public static final int srycd_Tokutei_Ryouyou  =         113001810; //特定疾患療養管理料（診療所）
     public static final int srycd_Tokutei_Shohou =           120002270; //特定疾患処方管理加算（処方料）
@@ -136,7 +138,8 @@ public interface ICheckSanteiConst {
     public static final int sk1006_zaitakuShienHsp1    = 3057;  // 3057:在宅療養支援病院（１）     <-機能強化、単独
     public static final int sk1006_zaitakuShienHsp2    = 3058;  // 3058:在宅療養支援病院（２）     <-機能強化、連携
     public static final int sk1006_zaitakuShienHsp3    = 3169;  // 3058:在宅療養支援病院（３）     <-機能普通の支援病？
-    public static final int sk1006_zaitakuShienHsp3old = 695 ;  // 0695:在宅療養支援病院 -> 3169
+    public static final int sk1006_zaitakuShienHsp3old = 695;   // 0695:在宅療養支援病院 -> 3169
+    public static final int sk1006_yakanSouchouKasan   = 672;   // 0672:夜間・早朝等加算
     
     public static final int sk1006_zaiiSoukan          = 721;    // 0721:在宅時医学総合管理料及び特定施設入居時等医学総合管理料
     

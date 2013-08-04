@@ -107,9 +107,9 @@ public class SqlDaoBean extends DaoBean {
     
     private List<String> getColumnValues(ResultSet rs) throws SQLException {
 
-        List<String> values = new ArrayList<String>();
         ResultSetMetaData meta = rs.getMetaData();
         int columnCount = meta.getColumnCount();
+        List<String> values = new ArrayList<String>(columnCount);
 
         for (int i = 1; i <= columnCount; ++i) {
             int type = meta.getColumnType(i);
@@ -163,10 +163,11 @@ public class SqlDaoBean extends DaoBean {
         } catch (Exception e) {
             e.printStackTrace(System.err);
             processError(e);
-            closeConnection(con);
-
         } finally {
-            closeConnection(con);
+            try {
+                con.close();
+            } catch (Exception ex) {
+            }
         }
 
         return valuesList;
@@ -245,10 +246,11 @@ public class SqlDaoBean extends DaoBean {
         } catch (Exception e) {
             e.printStackTrace(System.err);
             processError(e);
-            closeConnection(con);
-
         } finally {
-            closeConnection(con);
+            try {
+                con.close();
+            } catch (Exception ex) {
+            }
         }
 
         return valuesList;
@@ -361,7 +363,17 @@ public class SqlDaoBean extends DaoBean {
         return ptid;
     }
 
-    public Connection getConnection() throws Exception {
+    private Connection getConnection() throws Exception {
+        Connection con;
+        if (false) {
+            con = DriverManager.getConnection(getURL(), getUser(), getPasswd());
+        } else {
+            con = getConnectionFromPool();
+        }
+        return con;
+    }
+    
+    private Connection getConnectionFromPool() throws Exception {
         
         if (dataSource == null) {
             setupDataSource();
@@ -380,6 +392,13 @@ public class SqlDaoBean extends DaoBean {
         p.setUsername(getUser());
         p.setPassword(getPasswd());
         p.setDefaultReadOnly(true);
+        p.setMaxActive(2);
+        p.setMaxIdle(2);
+        p.setMinIdle(1);
+        p.setInitialSize(1);
+        p.setMaxWait(5000);
+        p.setRemoveAbandonedTimeout(30);
+        p.setRemoveAbandoned(true);
         dataSource = new DataSource();
         dataSource.setPoolProperties(p);
     }
@@ -390,6 +409,10 @@ public class SqlDaoBean extends DaoBean {
 
     public final void setDriver(String driver) {
         this.driver = driver;
+        try {
+            Class.forName(driver);
+        } catch (ClassNotFoundException ex) {
+        }
     }
 
     public final String getDatabase() {
@@ -437,30 +460,6 @@ public class SqlDaoBean extends DaoBean {
         buf.append("',");
         return buf.toString();
     }
-    
-    public void closeStatement(Statement st) {
-        try {
-            st.close();
-        } catch (SQLException e) {
-        } catch (NullPointerException e) {
-        }
-    }
-
-    public void closePreparedStatement(PreparedStatement ps) {
-        try {
-            ps.close();
-        } catch (SQLException e) {
-        } catch (NullPointerException e) {
-        }
-    }
-
-    public void closeConnection(Connection con) {
-        try {
-            con.close();
-        } catch (SQLException e) {
-        } catch (NullPointerException e) {
-        }
-    }
 
     protected void debug(String msg) {
         logger.debug(msg);
@@ -469,6 +468,12 @@ public class SqlDaoBean extends DaoBean {
     protected void printTrace(String msg) {
         if (trace) {
             logger.debug(msg);
+        }
+    }
+    
+    public static void closeDao() {
+        if (dataSource != null) {
+            dataSource.close(true);
         }
     }
     

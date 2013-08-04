@@ -1,90 +1,86 @@
 package open.dolphin.tr;
 
+import java.awt.Image;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import javax.swing.JComponent;
 import javax.swing.JTable;
-import javax.swing.TransferHandler;
 import open.dolphin.infomodel.RegisteredDiagnosisModel;
 import open.dolphin.table.ListTableModel;
 
 
 /**
- * RegisteredDiagnosisTransferHandler
+ * RegisteredDiagnosisTransferHandler　病名エディタ
  *
  * @author Minagawa,Kazushi
  * @author modified by masuda, Masuda Naika, from 1.4
  */
-public class RegisteredDiagnosisTransferHandler extends TransferHandler {
-
-    private DataFlavor registeredDiagnosisFlavor = RegisteredDiagnosisTransferable.registeredDiagnosisFlavor;
-
-    private JTable sourceTable;
-    private boolean shouldRemove;
+public class RegisteredDiagnosisTransferHandler extends DolphinTransferHandler {
+    
+    private static final DataFlavor FLAVOR = RegisteredDiagnosisTransferable.registeredDiagnosisFlavor;
     private int fromIndex;
-    private int toIndex;
-
 
     @Override
-    @SuppressWarnings("unchecked")
-    protected Transferable createTransferable(JComponent c) {
+    protected Transferable createTransferable(JComponent src) {
         
-        sourceTable = (JTable) c;
-        ListTableModel<RegisteredDiagnosisModel> tableModel = (ListTableModel<RegisteredDiagnosisModel>) sourceTable.getModel();
+        JTable sourceTable = (JTable) src;
         fromIndex = sourceTable.getSelectedRow();
-        RegisteredDiagnosisModel dragItem = tableModel.getObject(fromIndex);
-        return dragItem != null ? new RegisteredDiagnosisTransferable(dragItem) : null;
+        if (fromIndex < 0) {
+            return null;
+        }
+        
+        startTransfer(src);
+        
+        ListTableModel<RegisteredDiagnosisModel> tableModel = (ListTableModel<RegisteredDiagnosisModel>) sourceTable.getModel();
+        RegisteredDiagnosisModel rd = tableModel.getObject(fromIndex);
+        
+        // ドラッグ中のイメージを設定する
+        Image image = createDragImage(rd.getDiagnosisName(), sourceTable.getFont());
+        setDragImage(image);
+        
+        return new RegisteredDiagnosisTransferable(rd);
     }
 
     @Override
-    public int getSourceActions(JComponent c) {
-        return COPY_OR_MOVE;
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
     public boolean importData(TransferSupport support) {
         
-        if (!canImport(support)) {
+        JTable dropTable = (JTable) support.getComponent();
+        if (!canImport(support) || dropTable != srcComponent) {
+            fromIndex = -1;
+            importDataFailed();
             return false;
         }
-
+        
         try {
-            JTable dropTable = (JTable) support.getComponent();
-
             ListTableModel<RegisteredDiagnosisModel> tableModel = (ListTableModel<RegisteredDiagnosisModel>) dropTable.getModel();
             JTable.DropLocation dropLocation = (JTable.DropLocation) support.getDropLocation();
-            toIndex = dropLocation.getRow();
-            shouldRemove = (dropTable == sourceTable);
-            if (shouldRemove) {
-                tableModel.moveRow(fromIndex, (toIndex > fromIndex) ? --toIndex : toIndex);
-            }
-            sourceTable.getSelectionModel().setSelectionInterval(toIndex, toIndex);
+            int toIndex = dropLocation.getRow();
+            tableModel.moveRow(fromIndex, (toIndex > fromIndex) ? --toIndex : toIndex);
+            dropTable.getSelectionModel().setSelectionInterval(toIndex, toIndex);
+            importDataSuccess(dropTable);
             return true;
-
+            
         } catch (Exception ioe) {
+            fromIndex = -1;
+            importDataFailed();
+            return false;
         }
-        
-        return false;
     }
 
     @Override
     protected void exportDone(JComponent c, Transferable data, int action) {
-
-        shouldRemove = false;
         fromIndex = -1;
-        toIndex = -1;
+        endTransfer();
     }
-
+    
+    @Override
+    public int getSourceActions(JComponent c) {
+        return MOVE;
+    }
+    
     @Override
     public boolean canImport(TransferSupport support) {
-
-        if (!support.isDrop()) {
-            return false;
-        }
-        if (support.isDataFlavorSupported(registeredDiagnosisFlavor)) {
-            return true;
-        }
-        return false;
+        return support.isDrop() 
+                && support.isDataFlavorSupported(FLAVOR);
     }
 }

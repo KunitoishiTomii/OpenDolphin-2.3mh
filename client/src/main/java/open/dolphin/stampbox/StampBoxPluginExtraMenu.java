@@ -6,12 +6,22 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import javax.swing.*;
 import open.dolphin.client.BlockGlass;
+import open.dolphin.delegater.StampDelegater;
 import open.dolphin.infomodel.IInfoModel;
+import open.dolphin.infomodel.ModuleInfoBean;
+import open.dolphin.infomodel.StampModel;
+import open.dolphin.project.Project;
 import open.dolphin.tr.StampTreeTransferHandler;
 
 /**
@@ -66,10 +76,13 @@ public class StampBoxPluginExtraMenu extends MouseAdapter {
         int selected = fileChooser.showSaveDialog(context.getFrame());
 
         if (selected == JFileChooser.APPROVE_OPTION) {
-
-            final File file = fileChooser.getSelectedFile();
-            if (!file.exists() || overwriteConfirmed(file)) {
-
+            final Path path = fileChooser.getSelectedFile().toPath();
+            if (!Files.exists(path)|| overwriteConfirmed(path)) {
+                
+                BlockGlass blockGlass = getBlockGlass();
+                blockGlass.setText("スタンプ箱をエクスポート中です。");
+                blockGlass.block();
+                
                 SwingWorker worker = new SwingWorker<String, Void>() {
 
                     @Override
@@ -77,53 +90,29 @@ public class StampBoxPluginExtraMenu extends MouseAdapter {
 //masuda    stampBytesを含めたデータを書き出す
                         ExtendedStampTreeXmlBuilder builder = new ExtendedStampTreeXmlBuilder();
                         ExtendedStampTreeXmlDirector director = new ExtendedStampTreeXmlDirector(builder);
-                        BlockGlass blockGlass = getBlockGlass();
-                        blockGlass.setText("スタンプ箱をエクスポート中です。");
-                        blockGlass.block();
-                        ArrayList<StampTree> publishList = new ArrayList<StampTree>(IInfoModel.STAMP_ENTITIES.length);
-                        publishList.addAll(stampBox.getAllTrees());
-                        String ret = director.build(publishList);
+                        String ret = director.build(stampBox.getAllTrees());
                         return ret;
                     }
 
                     @Override
                     protected void done() {
-                        String xml = null;
-                        FileOutputStream fos = null;
-                        OutputStreamWriter writer = null;
-
                         try {
-                            xml = get();
-                            fos = new FileOutputStream(file);
-                            writer = new OutputStreamWriter(fos, "UTF-8");
-                            // 書き出す内容
-                            writer.write(xml);
+                            String xml = get();
+                            Charset cs = Charset.forName("UTF-8");
+                            try (BufferedWriter writer = Files.newBufferedWriter(path, cs)) {
+                                writer.write(xml);
+                                writer.close();
+                            } catch (IOException ex) {
+                                processException(ex);
+                            }
                         } catch (InterruptedException ex) {
                             processException(ex);
                         } catch (ExecutionException ex) {
                             processException(ex);
-                        } catch (FileNotFoundException ex) {
-                            processException(ex);
-                        } catch (UnsupportedEncodingException ex) {
-                            processException(ex);
-                        } catch (IOException ex) {
-                            processException(ex);
-                        } finally {
-                            try {
-                                writer.close();
-                                fos.close();
-                            } catch (IOException ex) {
-                                processException(ex);
-                            } catch (NullPointerException ex) {
-                                processException(ex);
-                            }
                         }
+
                         BlockGlass blockGlass = getBlockGlass();
                         blockGlass.unblock();
-                    }
-
-                    private void processException(Exception ex){
-                        System.out.println("StampBoxPluginExtraMenu.java: " + ex);
                     }
                 };
                 worker.execute();
@@ -137,13 +126,12 @@ public class StampBoxPluginExtraMenu extends MouseAdapter {
      * @param file 上書き対象ファイル
      * @return 上書きOKが指示されたらtrue
      */
-    private boolean overwriteConfirmed(File file){
+    private boolean overwriteConfirmed(Path path){
         String title = "上書き確認";
-        String message = "既存のファイル " + file.toString() + "\n"
+        String message = "既存のファイル " + path.getFileName().toString() + "\n"
                         +"を上書きしようとしています。続けますか？";
 
         int confirm = JOptionPane.showConfirmDialog(
-        //int confirm = MyJSheet.showConfirmDialog(
             context.getFrame(), message, title,
                 JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.WARNING_MESSAGE );
@@ -168,22 +156,22 @@ public class StampBoxPluginExtraMenu extends MouseAdapter {
         int selected = fileChooser.showSaveDialog(context.getFrame());
 
         if (selected == JFileChooser.APPROVE_OPTION) {
-            final File file = fileChooser.getSelectedFile();
-
-            SwingWorker worker = new SwingWorker(){
+            
+            final Path path = fileChooser.getSelectedFile().toPath();
+            BlockGlass blockGlass = getBlockGlass();
+            blockGlass.setText("スタンプ箱インポート中です。");
+            blockGlass.block();
+            
+            SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>(){
 
                 @Override
-                protected Object doInBackground() throws Exception {
-                    BlockGlass blockGlass = getBlockGlass();
-                    blockGlass.setText("スタンプ箱インポート中です。");
-                    blockGlass.block();
-                    try {
-                        // xml ファイルから StampTree 作成
-                        FileInputStream in = new FileInputStream(file);
-                        BufferedReader reader = new BufferedReader(new InputStreamReader(in, "UTF-8"));
+                protected Void doInBackground() throws Exception {
+                    
+                    Charset cs = Charset.forName("UTF-8");
+                    try (BufferedReader reader = Files.newBufferedReader(path, cs)) {
 //masuda^   stampBytesを含めたデータを読み込む
-                        ExtendedStampTreeDirector director
-                                = new ExtendedStampTreeDirector(new ExtendedStampTreeBuilder());
+                        ExtendedStampTreeDirector director = 
+                                new ExtendedStampTreeDirector(new ExtendedStampTreeBuilder());
 //masuda$
                         List<StampTree> userTrees = director.build(reader);
                         reader.close();
@@ -210,13 +198,10 @@ public class StampBoxPluginExtraMenu extends MouseAdapter {
                         }
                         stampBox.setSelectedIndex(currentTab);
 
-                    } catch (FileNotFoundException ex) {
-                        processException(ex);
-                    } catch (UnsupportedEncodingException ex) {
-                        processException(ex);
                     } catch (IOException ex) {
                         processException(ex);
                     }
+
                     return null;
                 }
 
@@ -226,9 +211,6 @@ public class StampBoxPluginExtraMenu extends MouseAdapter {
                     blockGlass.unblock();
                 }
 
-                private void processException(Exception ex) {
-                    System.out.println("StampBoxPluginExtraMenu.java: " + ex);
-                }
             };
             worker.execute();
 
@@ -255,5 +237,141 @@ public class StampBoxPluginExtraMenu extends MouseAdapter {
             }
         });
         popup.add(item);
+        popup.addSeparator();
+        item = new JMenuItem("ゾンビ退治する");
+        item.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    removeZombies();
+                } catch (Exception ex) {
+                    processException(ex);
+                }
+            }
+        });
+        popup.add(item);
+    }
+    
+    private void removeZombies() throws Exception {
+        
+        BlockGlass blockGlass = getBlockGlass();
+        blockGlass.setText("スタンプ箱のゾンビ退治中です。");
+        blockGlass.block();
+        
+        SwingWorker<String, Void> worker = new SwingWorker<String, Void>() {
+            
+            @Override
+            protected String doInBackground() throws Exception {
+                
+                // 先にスタンプツリーのゾンビを退治する
+                StringBuilder sb = new StringBuilder();
+                sb.append("ツリーゾンビ退治\n");
+
+                // ユーザーのすべてのスタンプをデータベースから取得しHashMapに登録する
+                long userId = Project.getUserModel().getId();
+                List<StampModel> allStamps = StampDelegater.getInstance().getAllStamps(userId);
+                Map<String, StampModel> map = new HashMap<>();
+                for (StampModel stamp : allStamps) {
+                    map.put(stamp.getId(), stamp);
+                }
+
+                // ORCA以外のスタンプツリーを取得する
+                int cnt = 0;
+                List<StampTree> treeList = getAllTreesExceptOrca();
+                for (StampTree tree : treeList) {
+                    // 各ツリーのゾンビを抹消する
+                    System.out.println(tree.getEntity() + "ツリーを処理中です。");
+
+                    StampTreeNode rootNode = (StampTreeNode) tree.getModel().getRoot();
+                    Enumeration e = rootNode.preorderEnumeration();
+
+                    while (e.hasMoreElements()) {
+                        StampTreeNode node = (StampTreeNode) e.nextElement();
+                        if (node.isLeaf() && node.getUserObject() instanceof ModuleInfoBean) {
+                            ModuleInfoBean info = (ModuleInfoBean) node.getUserObject();
+                            // エディタから発行のStampIdはnull
+                            String stampId = info.getStampId();
+                            if (stampId != null && !map.containsKey(info.getStampId())) {
+                                node.removeFromParent();
+                                //String msg = String.format("ゾンビ：%s %s", info.getStampName(), info.getStampId());
+                                //System.out.println(msg);
+                                cnt++;
+                            }
+                        }
+                    }
+
+                }
+                sb.append(cnt).append("匹のゾンビを退治しました！\n");
+
+                // 引き続きデータベースのゾンビを退治する
+                sb.append("スタンプゾンビ退治\n");
+                // 現在のORCA以外のスタンプツリーのModuleInfoBeanを取得する
+                List<ModuleInfoBean> allInfos = getAllStampInfos();
+                for (ModuleInfoBean info : allInfos) {
+                    // HashMapから削除していく
+                    map.remove(info.getStampId());
+                }
+                // 残ったものがデータベース側のゾンビである
+                List<String> removeList = new ArrayList<>();
+                removeList.addAll(map.keySet());
+
+                // データベースから削除する
+                //cnt = removeList.size();
+                cnt = StampDelegater.getInstance().postRemoveStamps(removeList);
+
+                sb.append(cnt).append("匹のゾンビを退治しました！\n");
+
+                String msg = sb.toString();
+                return msg;
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    BlockGlass blockGlass = getBlockGlass();
+                    blockGlass.unblock();
+                    String msg = get();
+                    JOptionPane.showMessageDialog(null, msg, "ゾンビ退治", JOptionPane.WARNING_MESSAGE);
+                } catch (InterruptedException ex) {
+                    processException(ex);
+                } catch (ExecutionException ex) {
+                    processException(ex);
+                }
+            }
+        };
+        worker.execute();
+    }
+
+    // ORCA以外のユーザースタンプのModuleInfoBeanを取得する
+    private List<ModuleInfoBean> getAllStampInfos() {
+        List<StampTree> treeList = getAllTreesExceptOrca();
+        List<ModuleInfoBean> infoList = new ArrayList<>();
+        for (StampTree tree : treeList) {
+            infoList.addAll(stampBox.getAllStamps(tree.getEntity()));
+        }
+        return infoList;
+    }
+    
+    /**
+     * スタンプボックスに含まれるORCA以外の全treeを返す。
+     * @return StampTreeのリスト
+     */
+    private List<StampTree> getAllTreesExceptOrca() {
+        List<StampTree> ret = new ArrayList<>();
+        int cnt = stampBox.getTabCount();
+        for (int i = 0; i < cnt; i++) {
+            StampTreePanel tp = (StampTreePanel) stampBox.getComponentAt(i);
+            if (IInfoModel.ENTITY_ORCA.equals(tp.getTree().getEntity())) {
+                continue;
+            }
+            StampTree tree = tp.getTree();
+            ret.add(tree);
+        }
+        return ret;
+    }
+    
+    private void processException(Exception ex) {
+        System.err.println("StampBoxPluginExtraMenu.java: " + ex);
     }
 }

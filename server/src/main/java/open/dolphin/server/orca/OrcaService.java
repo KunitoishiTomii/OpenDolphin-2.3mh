@@ -7,7 +7,6 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
-import javax.sql.DataSource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 import javax.servlet.AsyncContext;
 import open.dolphin.infomodel.OrcaSqlModel;
+import org.apache.tomcat.jdbc.pool.DataSource;
 import org.apache.tomcat.jdbc.pool.PoolProperties;
 
 /**
@@ -58,6 +58,10 @@ public class OrcaService {
         task.stop();
         thread.interrupt();
         thread = null;
+        for (DataSource ds : dataSourceMap.values()) {
+            ds.close(true);
+        }
+        dataSourceMap.clear();
         logger.info("Server ORCA service stopped.");
     }
 
@@ -216,8 +220,15 @@ public class OrcaService {
         p.setUsername(user);
         p.setPassword(pass);
         p.setDefaultReadOnly(true);
-        DataSource ds = new org.apache.tomcat.jdbc.pool.DataSource();
-        ((org.apache.tomcat.jdbc.pool.DataSource) ds).setPoolProperties(p);
+        p.setMaxActive(5);
+        p.setMaxIdle(5);
+        p.setMinIdle(1);
+        p.setInitialSize(1);
+        p.setMaxWait(5000);
+        p.setRemoveAbandonedTimeout(30);
+        p.setRemoveAbandoned(true);
+        DataSource ds = new DataSource();
+        ds.setPoolProperties(p);
 
         return ds;
     }

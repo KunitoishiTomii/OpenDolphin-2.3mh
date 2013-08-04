@@ -1,15 +1,15 @@
 package open.dolphin.tr;
 
-import java.awt.Point;
+import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
-import javax.swing.ActionMap;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.JTree;
-import javax.swing.TransferHandler;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
@@ -25,17 +25,14 @@ import open.dolphin.stampbox.StampTreeNode;
  * @author Minagawa,Kazushi. Digital Globe, Inc.
  * @author modified by masuda, Masuda Naika
  */
-public class StampTreeTransferHandler extends AbstractKarteTransferHandler {
-    
+public class StampTreeTransferHandler extends DolphinTransferHandler {
+
     // StampTreeNode Flavor
     private DataFlavor stampTreeNodeFlavor = LocalStampTreeNodeTransferable.localStampTreeNodeFlavor;
-
     // KartePaneからDropされるオーダのFlavor
     private DataFlavor orderFlavor = OrderListTransferable.orderListFlavor;
-
     // KartePaneからDropされるテキストFlavor
     //private DataFlavor stringFlavor = DataFlavor.stringFlavor;
-    
     // 病名エディタからDropされるRegisteredDiagnosis Flavor
     private DataFlavor infoModelFlavor = InfoModelTransferable.infoModelFlavor;
 
@@ -43,88 +40,91 @@ public class StampTreeTransferHandler extends AbstractKarteTransferHandler {
      * 選択されたノードでDragを開始する。
      */
     @Override
-    protected Transferable createTransferable(JComponent c) {
+    protected Transferable createTransferable(JComponent src) {
         
-        StampTree sourceTree = (StampTree) c;
+        StampTree sourceTree = (StampTree) src;
         StampTreeNode dragNode = (StampTreeNode) sourceTree.getLastSelectedPathComponent();
-        // ドラッグ元を設定する
-        srcComponent = sourceTree;
+        
+        if (dragNode == null) {
+            return null;
+        }
+        
+        startTransfer(src);
+        
+        // ドラッグ中のイメージを設定する
+        Image image = createDragImage(sourceTree, dragNode);
+        setDragImage(image);
+        
         return new LocalStampTreeNodeTransferable(dragNode);
     }
-
-    @Override
-    public int getSourceActions(JComponent c) {
-        return COPY_OR_MOVE;
-    }
-
+    
     /**
      * DropされたFlavorをStampTreeにインポートする。
      */
     @Override
-    public boolean importData(TransferHandler.TransferSupport support) {
-        
+    public boolean importData(TransferSupport support) {
+
         if (!canImport(support)) {
+            importDataFailed();
             return false;
         }
-        
-        JTree.DropLocation dl = (JTree.DropLocation)support.getDropLocation();
+
+        JTree.DropLocation dl = (JTree.DropLocation) support.getDropLocation();
         TreePath path = dl.getPath();
         int childIndex = dl.getChildIndex();
-        StampTreeNode parentNode = (StampTreeNode)path.getLastPathComponent();
-        StampTree target = (StampTree)support.getComponent();
+        StampTreeNode parentNode = (StampTreeNode) path.getLastPathComponent();
+        StampTree target = (StampTree) support.getComponent();
         String targetEntity = target.getEntity();
         Transferable tr = support.getTransferable();
-        
-        destComponent = target;
-        target.paintDropPointMark(null);
-        
+
+        boolean imported = false;
         try {
             if (support.isDataFlavorSupported(orderFlavor)) {
                 OrderList list = (OrderList) tr.getTransferData(orderFlavor);
-                ModuleModel droppedStamp = list.orderList[0];
-                String droppedStampEntity = droppedStamp.getModuleInfoBean().getEntity();
+                List<ModuleModel> mmList = new ArrayList<>();
+                for (ModuleModel mm : list.getOrderList()) {
+                    String stampEntity = mm.getModuleInfoBean().getEntity();
 
-                if (droppedStampEntity.equals(targetEntity)) {
-                    return target.addStamp(parentNode, droppedStamp, childIndex);
+                    if (stampEntity.equals(targetEntity)) {
+                        mmList.add(mm);
+                    } else if (stampEntity.equals(IInfoModel.ENTITY_LABO_TEST)
+                            && (targetEntity.equals(IInfoModel.ENTITY_PHYSIOLOGY_ORDER) || 
+                            targetEntity.equals(IInfoModel.ENTITY_BACTERIA_ORDER))) {
+                        //-----------------------------------------
+                        // drop が検体検査で受けが生体もしくは細菌の場合
+                        // entity を受側に変更して受け入れる
+                        //-----------------------------------------
+                        mm.getModuleInfoBean().setEntity(targetEntity);
+                        mmList.add(mm);
+                    } else if (stampEntity.equals(IInfoModel.ENTITY_PHYSIOLOGY_ORDER)
+                            && (targetEntity.equals(IInfoModel.ENTITY_LABO_TEST) || 
+                            targetEntity.equals(IInfoModel.ENTITY_BACTERIA_ORDER))) {
+                        //-----------------------------------------
+                        // drop が生体検査で受けが検体もしくは細菌の場合
+                        // entity を受側に変更して受け入れる
+                        //-----------------------------------------
+                        mm.getModuleInfoBean().setEntity(targetEntity);
+                        mmList.add(mm);
+                    } else if (stampEntity.equals(IInfoModel.ENTITY_BACTERIA_ORDER)
+                            && (targetEntity.equals(IInfoModel.ENTITY_LABO_TEST) || 
+                            targetEntity.equals(IInfoModel.ENTITY_PHYSIOLOGY_ORDER))) {
+                        //-----------------------------------------
+                        // drop が細菌検査で受けが検体もしくは生体の場合
+                        // entity を受側に変更して受け入れる
+                        //-----------------------------------------
+                        mm.getModuleInfoBean().setEntity(targetEntity);
+                        mmList.add(mm);
+                    } else if (targetEntity.equals(IInfoModel.ENTITY_PATH)) {
+                        //---------------------
+                        // パス Tree の場合
+                        //---------------------
+                        mmList.add(mm);
 
-                } else if (droppedStampEntity.equals(IInfoModel.ENTITY_LABO_TEST) &&
-                           (targetEntity.equals(IInfoModel.ENTITY_PHYSIOLOGY_ORDER) || targetEntity.equals(IInfoModel.ENTITY_BACTERIA_ORDER))) {
-                    //-----------------------------------------
-                    // drop が検体検査で受けが生体もしくは細菌の場合
-                    // entity を受側に変更して受け入れる
-                    //-----------------------------------------
-                    droppedStamp.getModuleInfoBean().setEntity(targetEntity);
-                    return target.addStamp(parentNode, droppedStamp, childIndex);
-
-                } else if (droppedStampEntity.equals(IInfoModel.ENTITY_PHYSIOLOGY_ORDER) &&
-                               (targetEntity.equals(IInfoModel.ENTITY_LABO_TEST) || targetEntity.equals(IInfoModel.ENTITY_BACTERIA_ORDER))) {
-                    //-----------------------------------------
-                    // drop が生体検査で受けが検体もしくは細菌の場合
-                    // entity を受側に変更して受け入れる
-                    //-----------------------------------------
-                    droppedStamp.getModuleInfoBean().setEntity(targetEntity);
-                    return target.addStamp(parentNode, droppedStamp, childIndex);
-
-                } else if (droppedStampEntity.equals(IInfoModel.ENTITY_BACTERIA_ORDER) &&
-                           (targetEntity.equals(IInfoModel.ENTITY_LABO_TEST) || targetEntity.equals(IInfoModel.ENTITY_PHYSIOLOGY_ORDER))) {
-                    //-----------------------------------------
-                    // drop が細菌検査で受けが検体もしくは生体の場合
-                    // entity を受側に変更して受け入れる
-                    //-----------------------------------------
-                    droppedStamp.getModuleInfoBean().setEntity(targetEntity);
-                    return target.addStamp(parentNode, droppedStamp, childIndex);
-
-                } else if (targetEntity.equals(IInfoModel.ENTITY_PATH)) {
-                    //---------------------
-                    // パス Tree の場合
-                    //---------------------
-                    return target.addStamp(parentNode, droppedStamp, childIndex);
-
-                } else {
-                    // Rootの最後に追加する
-                    //return target.addStamp(droppedStamp, null);
-                    // これがいいかどうか.....
-                    return false;
+                    }
+                }
+                if (!mmList.isEmpty()) {
+                    ModuleModel[] adds = mmList.toArray(new ModuleModel[mmList.size()]);
+                    imported = target.addStamp(parentNode, adds, childIndex);
                 }
 
             } else if (support.isDataFlavorSupported(stringFlavor)) {
@@ -133,31 +133,31 @@ public class StampTreeTransferHandler extends AbstractKarteTransferHandler {
                 //-----------------------------------------
                 String text = (String) tr.getTransferData(stringFlavor);
                 if (targetEntity.equals(IInfoModel.ENTITY_TEXT)) {
-                    return target.addTextStamp(parentNode, text, childIndex);
+                    imported = target.addTextStamp(parentNode, text, childIndex);
                 } else {
-                    return false;
+                    imported = false;
                 }
             } else if (support.isDataFlavorSupported(infoModelFlavor)) {
                 //----------------------------------------------
                 // DiagnosisEditorからDropされた病名をインポートする
                 //----------------------------------------------
-                RegisteredDiagnosisModel rd = (RegisteredDiagnosisModel) tr.getTransferData(InfoModelTransferable.infoModelFlavor);
                 if (targetEntity.equals(IInfoModel.ENTITY_DIAGNOSIS)) {
-                    return target.addDiagnosis(parentNode, rd, childIndex);
+                    RegisteredDiagnosisModel[] rds = (RegisteredDiagnosisModel[]) 
+                            tr.getTransferData(InfoModelTransferable.infoModelFlavor);
+                    imported = target.addDiagnosis(parentNode, rds, childIndex);
                 } else {
-                    return false;
+                    imported = false;
                 }
-
             } else if (support.isDataFlavorSupported(stampTreeNodeFlavor)) {
                 //-----------------------------------------------
                 // StampTree内のDnD, Dropされるノードを取得する
                 //-----------------------------------------------
-                StampTreeNode dropNode = (StampTreeNode)tr.getTransferData(stampTreeNodeFlavor);
+                StampTreeNode dropNode = (StampTreeNode) tr.getTransferData(stampTreeNodeFlavor);
                 //------------------------------------------------------------------------
                 // root までの親のパスのなかに自分がいるかどうかを判定する
                 // Drop先が DragNode の子である時は DnD できない i.e 親が自分の子になることはできない
                 //------------------------------------------------------------------------
-                DefaultTreeModel model = (DefaultTreeModel)target.getModel();
+                DefaultTreeModel model = (DefaultTreeModel) target.getModel();
                 TreeNode[] parents = model.getPathToRoot(parentNode);
                 boolean exist = false;
                 for (TreeNode parent : parents) {
@@ -169,36 +169,33 @@ public class StampTreeTransferHandler extends AbstractKarteTransferHandler {
                 }
 
                 if (exist) {
-                    return false;
-                }
+                    imported = false;
+                } else {
+                    //System.err.println("1:"+ childIndex);
+                    if (childIndex < 0) {
+                        childIndex = 0;
+                    }
 
-                //System.err.println("1:"+ childIndex);
-
-                if (childIndex < 0) {
-                    //return false;
-                    childIndex = 0;
-                }
-
-                // dropNodeの親==parentNodeの場合
-                // childIndexを補正する(dropNodeを最初に削除するため）
-                if (dropNode.getParent()==parentNode) {
-                    int cnt = parentNode.getChildCount();
-                    for (int i = 0; i < cnt; i++) {
-                        if (parentNode.getChildAt(i)==dropNode) {
-                            childIndex = childIndex > i ? childIndex-1 : childIndex;
-                            //System.err.println("2:"+ childIndex);
-                            break;
+                    // dropNodeの親==parentNodeの場合
+                    // childIndexを補正する(dropNodeを最初に削除するため）
+                    if (dropNode.getParent() == parentNode) {
+                        int cnt = parentNode.getChildCount();
+                        for (int i = 0; i < cnt; i++) {
+                            if (parentNode.getChildAt(i) == dropNode) {
+                                childIndex = childIndex > i ? childIndex - 1 : childIndex;
+                                //System.err.println("2:"+ childIndex);
+                                break;
+                            }
                         }
                     }
+
+                    // stampTreeNodeFlavorは参照のため最初に削除してから挿入する
+                    model.removeNodeFromParent(dropNode);
+                    model.insertNodeInto(dropNode, parentNode, childIndex);
                 }
 
-                // stampTreeNodeFlavorは参照のため最初に削除してから挿入する
-                model.removeNodeFromParent(dropNode);
-                model.insertNodeInto(dropNode, parentNode, childIndex);
-                return true;
-                
             } else {
-                return false;
+                imported = false;
             }
 
         } catch (UnsupportedFlavorException ue) {
@@ -207,28 +204,26 @@ public class StampTreeTransferHandler extends AbstractKarteTransferHandler {
         } catch (IOException ie) {
             ie.printStackTrace(System.err);
         }
-        return false;
-    }
 
-    /**
-     * DnD後、Dragしたノードを元のStamptreeから削除する。
-     */
-    @Override
-    protected void exportDone(JComponent c, Transferable data, int action) {
+        if (imported) {
+            importDataSuccess(target);
+        } else {
+            importDataFailed();
+        }
+
+        return imported;
     }
 
     /**
      * インポート可能かどうかを返す。
      */
     @Override
-    public boolean canImport(TransferHandler.TransferSupport support) {
-        
+    public boolean canImport(TransferSupport support) {
+
         if (!support.isDrop()) {
             return false;
         }
 //masuda^
-        // 背景色をつけないためにshowDropLocationをfalseにする
-        support.setShowDropLocation(false);
         // スタンプ箱がロックされている場合はfalse
         StampTree stampTree = (StampTree) support.getComponent();
         if (stampTree.getStampBox().isLocked()) {
@@ -239,23 +234,9 @@ public class StampTreeTransferHandler extends AbstractKarteTransferHandler {
                 || support.isDataFlavorSupported(stringFlavor)
                 || support.isDataFlavorSupported(infoModelFlavor)
                 || support.isDataFlavorSupported(stampTreeNodeFlavor)) {
-            
-            // ドロップ先をわかりやすく表示する
-            Point p = support.getDropLocation().getDropPoint();
-            stampTree.paintDropPointMark(p);
-            
             return true;
         }
 //masuda$
         return false;
     }
-
-    @Override
-    public void enter(JComponent jc, ActionMap map) {
-    }
-
-    @Override
-    public void exit(JComponent jc) {
-    }
-
 }

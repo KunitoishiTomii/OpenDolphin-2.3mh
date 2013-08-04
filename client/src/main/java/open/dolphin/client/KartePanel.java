@@ -47,7 +47,6 @@ public abstract class KartePanel extends Panel2 {
     protected static final int cols = 2;
 
     private JPanel timeStampPanel;
-    private JPanel contentPanel;
     private JLabel timeStampLabel;
 
     // ファクトリー
@@ -99,15 +98,13 @@ public abstract class KartePanel extends Panel2 {
         timeStampPanel.setOpaque(true);
         setLayout(new BorderLayout());
         add(timeStampPanel, BorderLayout.NORTH);
-        contentPanel = new JPanel();
-        add(contentPanel, BorderLayout.CENTER);
     }
 
     // 継承クラスから呼ばれる
-    protected final JTextPane createTextPane(boolean editor) {
+    protected final JTextPane createTextPane() {
         JTextPane textPane = new JTextPane();
         textPane.setMargin(TEXT_PANE_MARGIN);
-        textPane.setEditorKit(new KartePanelEditorKit(editor));
+        textPane.setEditorKit(KartePanelEditorKit.getInstance());
         // これをセットしないと，勝手に cut copy paste のポップアップがセットされてしまう。 thx to Dr. pns
         textPane.putClientProperty("Quaqua.TextComponent.showPopup", false);
         return textPane;
@@ -125,10 +122,6 @@ public abstract class KartePanel extends Panel2 {
 
     protected final JPanel getTimeStampPanel() {
         return timeStampPanel;
-    }
-
-    protected final JPanel getContentPanel() {
-        return contentPanel;
     }
     
     public void setTitleColor(DocInfoModel docInfo) {

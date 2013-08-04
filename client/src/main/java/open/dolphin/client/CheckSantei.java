@@ -42,6 +42,7 @@ public class CheckSantei implements ICheckSanteiConst {
     protected boolean choukiAvailable;
     protected boolean yakujouAvailable;
     protected boolean zaitakuKanriAvailable;
+    protected boolean yakanSouchouAvailable;
     protected boolean isDoujitsu;
     protected boolean isShoshin;
     protected int pastTokuRyouyouCount;
@@ -644,6 +645,9 @@ public class CheckSantei implements ICheckSanteiConst {
         
         // 有床か無床か
         hasBed = syskanri.hasBed();
+        
+        // 夜間・早朝等加算
+        yakanSouchouAvailable = syskanri.getSyskanriFlag(sk1006_yakanSouchouKasan);
         
         // 在宅療養支援診療所フラグ
         if (syskanri.getSyskanriFlag(sk1006_zaitakuShien1)

@@ -124,6 +124,9 @@ public class ImageTool {
         entry.setFileName(sb.toString());
         // TitleにSOPInstanceUIDを設定しておく
         entry.setTitle(object.getString(Tag.SOPInstanceUID));
+        // iconText
+        entry.setIconText(entry.getFileName());
+        
         return entry;
     }
 
@@ -164,6 +167,7 @@ public class ImageTool {
         BufferedImage image = new BufferedImage(d.width, d.height, BufferedImage.TYPE_INT_BGR);
         Graphics2D g2d = image.createGraphics();
         cmp.paint(g2d);
+        g2d.dispose();
         return image;
     }
 

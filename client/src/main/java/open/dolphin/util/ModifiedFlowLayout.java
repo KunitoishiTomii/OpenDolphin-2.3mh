@@ -1,6 +1,11 @@
 package open.dolphin.util;
 
-import java.awt.*;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Insets;
+
 
 /**
  * A modified version of FlowLayout that allows containers using this Layout to
@@ -8,6 +13,7 @@ import java.awt.*;
  * 
  * http://www.javakb.com/Uwe/Forum.aspx/java-gui/1904/Flowlayout-JPanel-and-JScrollPane-Scrolling-vertically-impossible
  * @author Babu Kalakrishnan
+ * @author modified by masuda, Mauda Naika
  */
 public class ModifiedFlowLayout extends FlowLayout {
 
@@ -49,21 +55,18 @@ public class ModifiedFlowLayout extends FlowLayout {
             if (insets == null) {
                 insets = new Insets(0, 0, 0, 0);
             }
-            int reqdWidth = 0;
-
+            
+            Dimension reqdSize = new Dimension();
             int maxwidth = w - (insets.left + insets.right + hgap * 2);
             int n = target.getComponentCount();
             int x = 0;
-            int y = insets.top;
             int rowHeight = 0;
 
             for (int i = 0; i < n; i++) {
                 Component c = target.getComponent(i);
                 if (c.isVisible()) {
-                    Dimension d =
-                            minimum ? c.getMinimumSize()
-                            : c.getPreferredSize();
-                    if ((x == 0) || ((x + d.width) <= maxwidth)) {
+                    Dimension d = minimum ? c.getMinimumSize() : c.getPreferredSize();
+                    if (x == 0 || x + d.width <= maxwidth) {
                         if (x > 0) {
                             x += hgap;
                         }
@@ -71,15 +74,18 @@ public class ModifiedFlowLayout extends FlowLayout {
                         rowHeight = Math.max(rowHeight, d.height);
                     } else {
                         x = d.width;
-                        y += vgap + rowHeight;
+                        reqdSize.height += vgap + rowHeight;
                         rowHeight = d.height;
                     }
-                    reqdWidth = Math.max(reqdWidth, x);
+                    reqdSize.width = Math.max(reqdSize.width, x);
                 }
             }
-            y += rowHeight;
-            
-            return new Dimension(reqdWidth + insets.left + insets.right, y);
+            reqdSize.height += rowHeight;
+
+            reqdSize.width += insets.left + insets.right + hgap * 2;
+            reqdSize.height += insets.top + insets.bottom + vgap * 2;
+
+            return reqdSize;
         }
     }
 }

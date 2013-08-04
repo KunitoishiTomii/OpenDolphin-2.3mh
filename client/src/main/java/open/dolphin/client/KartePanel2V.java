@@ -1,5 +1,6 @@
 package open.dolphin.client;
 
+import java.awt.BorderLayout;
 import java.awt.Dimension;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -28,13 +29,16 @@ public final class KartePanel2V extends KartePanel {
     @Override
     protected void initComponents(boolean editor) {
 
-        JPanel contentPanel = getContentPanel();
-        contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
-        soaTextPane = createTextPane(false);
-        contentPanel.add(soaTextPane);
-        contentPanel.add(Box.createVerticalStrut(vgap2));
-        pTextPane = createTextPane(false);
-        contentPanel.add(pTextPane);
+        soaTextPane = createTextPane();
+        pTextPane = createTextPane();
+        
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.add(soaTextPane);
+        panel.add(Box.createVerticalStrut(vgap2));
+        panel.add(pTextPane);
+        
+        add(panel, BorderLayout.CENTER);
     }
 
     @Override

@@ -5,6 +5,9 @@ import com.lowagie.text.pdf.BaseFont;
 import com.lowagie.text.pdf.PdfWriter;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import open.dolphin.client.ClientContext;
 import open.dolphin.infomodel.UserModel;
 import open.dolphin.project.Project;
@@ -30,18 +33,22 @@ public class Reply2PDFMaker extends AbstractPDFMaker {
     protected boolean makePDF(String filePath) {
         
         boolean result = false;
-        marginLeft = 20;
-        marginRight = 20;
-        marginTop = 20;
-        marginBottom = 30;
-        titleFontSize = 10;
+        marginLeft = 35;
+        marginRight = 35;
+        marginTop = 40;
+        marginBottom = 40;
+        titleFontSize = 18;
 
         // 用紙サイズを設定
         Document document = new Document(PageSize.A4, marginLeft, marginRight, marginTop, marginBottom);
 
         try {
             // Open Document
-            writer = PdfWriter.getInstance(document, new FileOutputStream(pathToPDF));
+//minagawa^ mac jdk7            
+//            writer = PdfWriter.getInstance(document, new FileOutputStream(filePath));
+            Path path = Paths.get(filePath);
+            writer = PdfWriter.getInstance(document, Files.newOutputStream(path));
+//minagawa$
             document.open();
 
             // Font

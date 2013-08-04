@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import javax.swing.*;
 import open.dolphin.helper.MenuSupport;
+import open.dolphin.util.ModifiedFlowLayout;
 
 /**
  * Menu Factory for Mac. 
@@ -617,6 +618,15 @@ public class WindowsMenuFactory extends AbstractMenuFactory {
         map.put("showAbout", showAbout);
         
 //masuda^
+        // Broadcast
+        text = "一斉通知";
+        AbstractAction broadcastMsg = new AbstractAction(text) {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                main.sendToChain("broadcastMsg");
+            }
+        };
+        map.put("broadcastMsg", broadcastMsg);
         // GitHub
         text = resource.getString("browseGitHub.Action.text");
         AbstractAction browseGitHub = new AbstractAction(text) {
@@ -716,7 +726,7 @@ public class WindowsMenuFactory extends AbstractMenuFactory {
             fileBar.setName("fileBar");
             editBar = new JToolBar();
             editBar.setName("editBar");
-            toolPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            toolPanel = new JPanel(new ModifiedFlowLayout(FlowLayout.LEFT));
             toolPanel.add(fileBar);
             toolPanel.add(editBar);
         }
@@ -1293,6 +1303,13 @@ public class WindowsMenuFactory extends AbstractMenuFactory {
         showAbout.setName("showAbout");
         showAbout.setAction(actionMap.get("showAbout"));
         help.add(showAbout);
+        
+        help.add(new JSeparator());
+        
+        JMenuItem broadcast = new JMenuItem();
+        broadcast.setName("ブロードキャスト");
+        broadcast.setAction(actionMap.get("broadcastMsg"));
+        help.add(broadcast);
         
         /******************************************************/
         

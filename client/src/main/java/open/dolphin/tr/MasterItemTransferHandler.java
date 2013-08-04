@@ -1,10 +1,10 @@
 package open.dolphin.tr;
 
+import java.awt.Image;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import javax.swing.JComponent;
 import javax.swing.JTable;
-import javax.swing.TransferHandler;
 import open.dolphin.order.MasterItem;
 import open.dolphin.table.ListTableModel;
 
@@ -15,22 +15,61 @@ import open.dolphin.table.ListTableModel;
  * @author Minagawa,Kazushi. Digital Globe, Inc.
  *
  */
-public final class MasterItemTransferHandler extends TransferHandler {
+public final class MasterItemTransferHandler extends DolphinTransferHandler {
     
-    private DataFlavor masterItemFlavor = MasterItemTransferable.masterItemFlavor;
-    
-    private JTable sourceTable;
-    private MasterItem dragItem;
-    private boolean shouldRemove;
+    private static final DataFlavor FLAVOR = MasterItemTransferable.masterItemFlavor;
+    private int fromIndex;
     
     @Override
-    protected Transferable createTransferable(JComponent c) {
-        sourceTable = (JTable) c;
-        @SuppressWarnings("unchecked")
+    protected Transferable createTransferable(JComponent src) {
+        
+        JTable sourceTable = (JTable) src;
+        fromIndex = sourceTable.getSelectedRow();
+        if (fromIndex < 0) {
+            return null;
+        }
+        
+        startTransfer(src);
+        
         ListTableModel<MasterItem> tableModel = (ListTableModel<MasterItem>) sourceTable.getModel();
-        int fromIndex = sourceTable.getSelectedRow();
-        dragItem = tableModel.getObject(fromIndex);
-        return dragItem != null ? new MasterItemTransferable(dragItem) : null;
+        MasterItem mi = tableModel.getObject(fromIndex);
+ 
+        // ドラッグ中のイメージを設定する
+        Image image = createDragImage(mi.getName(), sourceTable.getFont());
+        setDragImage(image);
+        return new MasterItemTransferable(mi);
+    }
+    
+    @Override
+    public boolean importData(TransferSupport support) {
+        
+        JTable dropTable = (JTable) support.getComponent();
+        if (!canImport(support) || dropTable != srcComponent) {
+            fromIndex = -1;
+            importDataFailed();
+            return false;
+        }
+
+        try {
+            ListTableModel<MasterItem> tableModel = (ListTableModel<MasterItem>) dropTable.getModel();
+            JTable.DropLocation dropLocation = (JTable.DropLocation) support.getDropLocation();
+            int toIndex = dropLocation.getRow();
+            tableModel.moveRow(fromIndex, (toIndex > fromIndex) ? --toIndex : toIndex);
+            dropTable.getSelectionModel().setSelectionInterval(toIndex, toIndex);
+            importDataSuccess(dropTable);
+            return true;
+
+        } catch (Exception ioe) {
+            fromIndex = -1;
+            importDataFailed();
+            return false;
+        }
+    }
+    
+    @Override
+    protected void exportDone(JComponent c, Transferable data, int action) {
+        fromIndex = -1;
+        endTransfer();
     }
     
     @Override
@@ -39,50 +78,8 @@ public final class MasterItemTransferHandler extends TransferHandler {
     }
     
     @Override
-    public boolean importData(TransferHandler.TransferSupport support) {
-        
-        if (!canImport(support)) {
-            return false;
-        }
-
-        try {
-            JTable.DropLocation dl = (JTable.DropLocation)support.getDropLocation();
-            int toIndex = dl.getRow();
-            if (dl.isInsertRow() && toIndex>-1) {
-                Transferable t = support.getTransferable();
-                MasterItem dropItem = (MasterItem) t.getTransferData(masterItemFlavor);
-                JTable dropTable = (JTable) support.getComponent();
-                @SuppressWarnings("unchecked")
-                ListTableModel<MasterItem> tableModel = (ListTableModel<MasterItem>) dropTable.getModel();
-                shouldRemove = (dropTable == sourceTable);
-
-                if (toIndex<tableModel.getObjectCount()) {
-                    tableModel.addObject(toIndex, dropItem);
-                } else {
-                    tableModel.addObject(dropItem);
-                }
-
-                return true;
-            }
-        } catch (Exception ioe) {
-            ioe.printStackTrace(System.err);
-        }
-        
-        return false;
-    }
-    
-    @Override
-    protected void exportDone(JComponent c, Transferable data, int action) {
-        if (action==MOVE && shouldRemove && (dragItem!=null)) {
-            ListTableModel<MasterItem> tableModel = (ListTableModel<MasterItem>) sourceTable.getModel();
-            tableModel.delete(dragItem);
-        }
-        shouldRemove = false;
-        dragItem = null;
-    }
-
-    @Override
-    public boolean canImport(TransferHandler.TransferSupport support) {
-        return (support.isDrop() && support.isDataFlavorSupported(masterItemFlavor));
+    public boolean canImport(TransferSupport support) {
+        return support.isDrop() 
+                && support.isDataFlavorSupported(FLAVOR);
     }
 }

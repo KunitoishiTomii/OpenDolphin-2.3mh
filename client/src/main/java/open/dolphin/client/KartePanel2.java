@@ -1,5 +1,6 @@
 package open.dolphin.client;
 
+import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import javax.swing.JPanel;
@@ -23,27 +24,34 @@ public final class KartePanel2 extends KartePanel {
     @Override
     protected void initComponents(boolean editor) {
 
-        JPanel contentPanel = getContentPanel();
+        soaTextPane = createTextPane();
+        pTextPane = createTextPane();
 
         if (editor) {
-            contentPanel.setLayout(new GridLayout(rows, cols, hgap, vgap));
-            soaTextPane = createTextPane(true);
-            JScrollPane scroll = new JScrollPane(soaTextPane);
-            scroll.setBorder(null);
-            contentPanel.add(scroll);
-            pTextPane = createTextPane(true);
-            scroll = new JScrollPane(pTextPane);
-            scroll.setBorder(null);
-            contentPanel.add(scroll);
+            ScrollableJPanel panel = new ScrollableJPanel();
+            panel.setFixedWidth(true);
+            panel.setLayout(new GridLayout(rows, cols, hgap, vgap));
+            panel.add(soaTextPane);
+            panel.add(pTextPane);
+            JScrollPane scroll = new JScrollPane(panel);
+            add(scroll, BorderLayout.CENTER);
+/*
+            JScrollPane soaScroll = new JScrollPane(soaTextPane);
+            soaScroll.setBorder(null);
+            panel.add(soaScroll);
+            JScrollPane pScroll = new JScrollPane(pTextPane);
+            pScroll.setBorder(null);
+            panel.add(pScroll);
+*/
         } else {
-            contentPanel.setLayout(new GridLayout(rows, cols, hgap, vgap));
-            soaTextPane = createTextPane(false);
-            contentPanel.add(soaTextPane);
-            pTextPane = createTextPane(false);
-            contentPanel.add(pTextPane);
+            JPanel panel = new JPanel();
+            panel.setLayout(new GridLayout(rows, cols, hgap, vgap));
+            panel.add(soaTextPane);
+            panel.add(pTextPane);
+            add(panel, BorderLayout.CENTER);
         }
     }
-
+    
     @Override
     public JTextPane getSoaTextPane() {
         return soaTextPane;
@@ -74,4 +82,5 @@ public final class KartePanel2 extends KartePanel {
 
         return new Dimension(w, h);
     }
+    
 }

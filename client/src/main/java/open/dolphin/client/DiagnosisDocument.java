@@ -1,14 +1,10 @@
 package open.dolphin.client;
 
 import java.awt.*;
-import java.awt.dnd.DropTarget;
-import java.awt.dnd.DropTargetAdapter;
-import java.awt.dnd.DropTargetDragEvent;
-import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.*;
-import java.beans.EventHandler;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.*;
@@ -34,9 +30,10 @@ import open.dolphin.table.ListTableModel;
 import open.dolphin.table.ListTableSorter;
 import open.dolphin.table.StripeTableCellRenderer;
 import open.dolphin.tr.DiagnosisTransferHandler;
+import open.dolphin.util.AgeCalculator;
 import open.dolphin.util.BeanUtils;
 import open.dolphin.util.MMLDate;
-import open.dolphin.util.PopupMenuUtil;
+import open.dolphin.util.NonHidePopupMenu;
 import org.apache.log4j.Logger;
 
 /**
@@ -143,9 +140,7 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
 
 //masuda    最終受診日＝今日受診している場合は今日，していないばあいは最後の受診日
     private String lastVisit;
-
-//pns   Stamp から drop を受け取る場合のアクション
-    private int action; // 通常は MOVE で，ALT が押されていたら COPY になる
+    private DiagnosisTransferHandler tr;
 
     /**
      *  Creates new DiagnosisDocument
@@ -258,7 +253,7 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
                     // ASP StampBox が選択されていて傷病名Treeがない場合がある
                     if (hasTree(IInfoModel.ENTITY_DIAGNOSIS)) {
                         //JPopupMenu popup = new JPopupMenu();
-                        JPopupMenu popup = PopupMenuUtil.createPopupMenu();
+                        JPopupMenu popup = new NonHidePopupMenu();
                         getContext().getChartMediator().addDiseaseMenu(popup);
                         popup.show(e.getComponent(), e.getX(), e.getY());
                     } else {
@@ -361,7 +356,12 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
         diagTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         diagTable.setRowSelectionAllowed(true);
         ListSelectionModel m = diagTable.getSelectionModel();
-        m.addListSelectionListener(EventHandler.create(ListSelectionListener.class, this, "rowSelectionChanged", ""));
+        m.addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                rowSelectionChanged(e);
+            }
+        });
 
 //masuda    ソーター組み込み
         sorter = new ListTableSorter(tableModel);
@@ -457,31 +457,10 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
         pcl2.setCellEditor(de2);
 
         // TransferHandler を設定する
-        diagTable.setTransferHandler(new DiagnosisTransferHandler(this));
+        tr = new DiagnosisTransferHandler(this);
+        diagTable.setTransferHandler(tr);
         diagTable.setDragEnabled(true);
 
-//pns^  insertStamp() でALT キーで疑い病名に変換する機能をつけるため，action を記録する
-        // ALT 押した場合が COPY になり，押してないと MOVE
-        DropTarget dt = new DropTarget(diagTable, new DropTargetAdapter() {
-
-            @Override
-            public void dragEnter(DropTargetDragEvent dtde) {
-                action = dtde.getDropAction();
-            }
-
-            @Override
-            public void dropActionChanged(DropTargetDragEvent dtde) {
-                action = dtde.getDropAction();
-            }
-
-            @Override
-            public void drop(DropTargetDropEvent dtde) {
-                diagTable.getTransferHandler().importData(diagTable, dtde.getTransferable());
-                dtde.dropComplete(true); // これをしないとドラッグしてきたアイコンが逃げる
-            }
-        });
-        dt.setActive(true);
-//pns$
         // Layout
         JScrollPane scroller = new JScrollPane(diagTable,
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
@@ -621,14 +600,13 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
                                     String val = newRd.getEndDate();
                                     if (val == null || val.equals("")) {
                                         // masuda 転帰日の自動入力を月末にする
-                                        // katou  2012/11/28 橋本医院オリジナル：月末ではなく当日を入れるように修正
-                                        // GregorianCalendar gc = new GregorianCalendar();
-                                        // int year = gc.get(GregorianCalendar.YEAR);
-                                        // int month = gc.get(GregorianCalendar.MONTH);
-                                        // int day = gc.getActualMaximum(GregorianCalendar.DATE);
-                                        // gc.set(year, month, day, 0, 0, 0);
-                                        // String today = MMLDate.getDate(gc);
-                                        newRd.setEndDate(lastVisit);
+                                        GregorianCalendar gc = new GregorianCalendar();
+                                        int year = gc.get(GregorianCalendar.YEAR);
+                                        int month = gc.get(GregorianCalendar.MONTH);
+                                        int day = gc.getActualMaximum(GregorianCalendar.DATE);
+                                        gc.set(year, month, day, 0, 0, 0);
+                                        String today = MMLDate.getDate(gc);
+                                        newRd.setEndDate(today);
                                     }
                                 }
                                 newRd.setStatus(DIAGNOSIS_EDITED);
@@ -640,11 +618,9 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
                     case START_DATE_COL:
                     case END_DATE_COL:
                         String newDate = (String) value;
-                        try {
-                            newDate = convertToSeireki(newDate);  // 西暦に整形する
-                        } catch (Exception ex) {
+                        newDate = convertToSeireki(newDate);  // 西暦に整形する
+                        if (newDate == null) {
                             diagTable.getCellEditor(row, col).cancelCellEditing();
-                            break;
                         }
                         selectedRows = diagTable.getSelectedRows();
                         for (int tableRow : selectedRows) {
@@ -681,7 +657,12 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
         int currentDiagnosisPeriod = Project.getInt(Project.DIAGNOSIS_PERIOD, 0);
         int selectIndex = NameValuePair.getIndex(String.valueOf(currentDiagnosisPeriod), extractionObjects);
         extractionCombo.setSelectedIndex(selectIndex);
-        extractionCombo.addItemListener(EventHandler.create(ItemListener.class, this, "extPeriodChanged", ""));
+        extractionCombo.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                extPeriodChanged(e);
+            }
+        });
 
         JPanel comboPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         comboPanel.add(extractionCombo);
@@ -721,7 +702,7 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
     /**
      * 行選択が起った時のボタン制御を行う。
      */
-    public void rowSelectionChanged(ListSelectionEvent e) {
+    private void rowSelectionChanged(ListSelectionEvent e) {
 
         if (e.getValueIsAdjusting() == false) {
             // 削除ボタンをコントロールする
@@ -759,7 +740,7 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
      * 抽出期間を変更した場合に再検索を行う。
      * ORCA 病名ボタンが disable であれば検索後に enable にする。
      */
-    public void extPeriodChanged(ItemEvent e) {
+    private void extPeriodChanged(ItemEvent e) {
         if (e.getStateChange() == ItemEvent.SELECTED) {
             getDiagnosisHistory();
         }
@@ -841,22 +822,22 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
 
 //masuda^    同じ病名がないか調べる
     private boolean disallowSameDiagnosis(RegisteredDiagnosisModel newRd){
+
         String diagCd = getRealDiagnosisCode(newRd);
         for (RegisteredDiagnosisModel rd : allDiagnosis) {
-            
             String testCd = getRealDiagnosisCode(rd);
             if (diagCd != null && diagCd.equals(testCd) 
                     && newRd.getId() != rd.getId()) {   // 編集もとは除く
                 int index = tableModel.getDataProvider().indexOf(rd);
                 // activeのみへの対応
-                if (rd.getEndDate() != null && !rd.getEndDate().equals("")){
-                    // すでに終了日が存在していれば破棄
-                    continue;
+                String msgNonActive = "（非アクティブ）";
+                if (index != -1) {
+                    int sIndex = sorter.modelIndex(index);
+                    diagTable.setRowSelectionInterval(sIndex, sIndex);
+                    msgNonActive = "";
                 }
-                int sIndex = sorter.modelIndex(index);
-                diagTable.setRowSelectionInterval(sIndex, sIndex);
                 String[] options = {"取消", "無視"};
-                String msg = newRd.getDiagnosisName() + "は重複しています。";
+                String msg = newRd.getDiagnosisName() + "は重複しています。" + msgNonActive;
                 int val = JOptionPane.showOptionDialog(getContext().getFrame(), msg, "傷病名エディタ",
                         JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null, options, options[0]);
                 if (val != 1) {
@@ -952,7 +933,8 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
                 module.setCategoryDesc("疑い病名");
                 module.setCategoryCodeSys("MML0015");
             }
-            // ALT キーが押されていたら，疑いにセットする
+            // CTRLキー(Windows)が押されていたら，疑いにセットする
+            int action = tr.getTransferAction();
             if (action == java.awt.dnd.DnDConstants.ACTION_COPY) {
                 module.setCategory("suspectedDiagnosis");
                 module.setCategoryDesc("疑い病名");
@@ -1519,7 +1501,7 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
             if (value != null) {
             // 和暦が選択されていたら、開始日・終了日のカラムは和暦に変換して表示する masuda
                 if (cb_wareki.isSelected() && (col == START_DATE_COL || col == END_DATE_COL)) {
-                    setText(ModelUtils.toNengo((String) value));
+                    setText(AgeCalculator.toNengo((String) value));
                 } else {
                     setText((String) value);
                 }
@@ -1853,66 +1835,38 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
     }
 
 //masuda^   和暦で入力したら変換する
-    private String convertToSeireki(String input) throws Exception {
-        final String separator = "[/\\.\\-]";
-        final String mtsh = "[MmTtSsHh]";
-
-        if ("".equals(input) || input == null) {
-            return null;
-        }
-        String output;
-        String nengo = input.substring(0, 1);
-        int year;
-        output = input;
-
-        // H21.1.1とか入力した場合の前処置
-        String ymd[] = output.split(separator);
-        if (ymd.length == 3) {
+    private String convertToSeireki(String input) {
+        
+        Locale locale = new Locale("ja","JP","JP"); 
+        SimpleDateFormat frmtWareki = new SimpleDateFormat("Gyy-MM-dd", locale);
+        SimpleDateFormat frmtSeireki = new SimpleDateFormat("yyyy-MM-dd");
+        
+        input = input.replaceAll("[/\\.]", "-");
+        int len = input.length();
+        
+        if (!input.contains("-") && len > 4) {
             StringBuilder sb = new StringBuilder();
-            String str;
-            if (nengo.matches(mtsh)) {
-                str = "00" + ymd[0].replaceAll(mtsh, "");
-                sb.append(str.substring(str.length() - 2, str.length()));
-                sb.insert(0, nengo);
-            } else {
-                str = "0000" + ymd[0];
-                sb.append(str.substring(str.length() - 4, str.length()));
-            }
-            str = "00" + ymd[1];
-            sb.append(str.substring(str.length() - 2, str.length()));
-            str = "00" + ymd[2];
-            sb.append(str.substring(str.length() - 2, str.length()));
-            output = sb.toString();
+            sb.append(input);
+            sb.insert(len - 2, "-");
+            sb.insert(len - 4, "-");
+            input = sb.toString();
         }
-
-        // 区切り文字[./-]はいったん消してしまう。
-        output = output.replaceAll(separator, "");
-
-        if (nengo.matches("[Mm]")) {
-            year = Integer.valueOf(output.substring(1, 3)) + 1867;
-            output = output.substring(3);
-        } else if (nengo.matches("[Tt]")) {
-            year = Integer.valueOf(output.substring(1, 3)) + 1911;
-            output = output.substring(3);
-        } else if (nengo.matches("[Ss]")) {
-            year = Integer.valueOf(output.substring(1, 3)) + 1925;
-            output = output.substring(3);
-        } else if (nengo.matches("[Hh]")) {
-            year = Integer.valueOf(output.substring(1, 3)) + 1988;
-            output = output.substring(3);
-        } else {
-            //どうやら西暦
-            year = Integer.valueOf(output.substring(0, 4));
-            output = output.substring(4);
+        
+        // 西暦に変換してみる
+        try {
+            Date d = frmtSeireki.parse(input);
+            return frmtSeireki.format(d);
+        } catch (ParseException ex) {
         }
-        output = Integer.toString(year) + "-"
-                + output.substring(0, 2) + "-" + output.substring(2, 4);
-        //YYYY-MM-DDの型かチェック
-        if (!output.matches("\\d{4}\\-\\d{2}\\-\\d{2}")) {
-            output = null;
+        
+        // 西暦がダメなら和暦？
+        try {
+            Date d = frmtWareki.parse(input);
+            return frmtSeireki.format(d);
+        } catch (ParseException ex) {
         }
-
-        return output;
+        
+        return null;
     }
 //masuda$
 

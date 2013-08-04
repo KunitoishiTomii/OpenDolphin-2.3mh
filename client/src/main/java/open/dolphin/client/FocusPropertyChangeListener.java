@@ -6,9 +6,10 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.JTextPane;
 import javax.swing.TransferHandler;
-import javax.swing.text.JTextComponent;
 import open.dolphin.helper.WindowSupport;
+import open.dolphin.tr.DolphinTransferHandler;
 import open.dolphin.tr.IKarteTransferHandler;
 
 /**
@@ -24,8 +25,6 @@ public class FocusPropertyChangeListener implements PropertyChangeListener {
     private static final String PROPERTY_PERMANENT_FOCUS_OWNER = "permanentFocusOwner";
     //private static final String PROPERTY_FOCUS_OWNER = "focusOwner";
 
-    // ComponentをクリックしたときのmodifiersEx
-    private int modifiersEx;
     // old focused component
     private  JComponent oldComp;
 
@@ -38,14 +37,6 @@ public class FocusPropertyChangeListener implements PropertyChangeListener {
 
     public static FocusPropertyChangeListener getInstance() {
         return instance;
-    }
-
-    public int getModifiersEx() {
-        return modifiersEx;
-    }
-
-    public void setModifiersEx(int modifiersEx) {
-        this.modifiersEx = modifiersEx;
     }
 
     public void register() {
@@ -72,13 +63,14 @@ public class FocusPropertyChangeListener implements PropertyChangeListener {
         if (newComp == null || newComp == oldComp) {
             return;
         }
-
-        // focusOwnerになるのはJTextComponent とComponentHolderとImagePanel
-        // native, numbusはコレしないとダメ。ボタンなどもfocus取ってしまう
-        if (!(newComp instanceof JTextComponent 
-                || newComp instanceof ComponentHolder 
-                || newComp instanceof ImagePanel)) {
-            return;
+        
+        // DolphinTransferHandlerが設定されていない場合はChartMediator処理は不要
+        // KarteViewerのJTextPaneは例外
+        if (!(newComp instanceof JTextPane)) {
+            TransferHandler t = newComp.getTransferHandler();
+            if (t == null || !(t instanceof DolphinTransferHandler)) {
+                return;
+            }
         }
 
         // get Mediator from focused JFrame
@@ -110,6 +102,7 @@ public class FocusPropertyChangeListener implements PropertyChangeListener {
         }
 
         oldComp = newComp;
-        modifiersEx = 0;
+        
+        DolphinTransferHandler.setModifiersEx(0);
     }
 }

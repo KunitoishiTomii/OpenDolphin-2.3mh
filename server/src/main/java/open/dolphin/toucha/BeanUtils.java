@@ -22,48 +22,29 @@ public class BeanUtils {
         return null;
     }
     
-    public static Object xmlToBean(String beanXml) {
-
-        try {
-            byte[] bytes = beanXml.getBytes(UTF8);
-            return xmlDecode(bytes);
-        } catch (Exception e) {
-            e.printStackTrace(System.err);
-        }
-        return null;
-    }
-    
     public static byte[] xmlEncode(Object bean)  {
         
-        ByteArrayOutputStream bo = new ByteArrayOutputStream();
-        XMLEncoder e = new XMLEncoder(bo);
+        ByteArrayOutputStream os = new ByteArrayOutputStream(16384);
+        XMLEncoder e = new XMLEncoder(os);
         e.writeObject(bean);
         e.close();
         
-        return bo.toByteArray();
+        return os.toByteArray();
     }
     
     public static Object xmlDecode(byte[] bytes) {
         
-        XMLDecoder d = new XMLDecoder(new ByteArrayInputStream(bytes));
-        return d.readObject();
+        InputStream is = new ByteArrayInputStream(bytes);
+        XMLDecoder d = new XMLDecoder(is);
+        Object obj = d.readObject();
+        d.close();
+        
+        return obj;
     }
     
     public static Object deepCopy(Object src) {
-  
-        try {
-            ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
-            ObjectOutputStream out = new ObjectOutputStream(byteOut);
-            out.writeObject(src);
-            ByteArrayInputStream byteIn = new ByteArrayInputStream(byteOut.toByteArray());
-            ObjectInputStream in = new ObjectInputStream(byteIn);
-            return in.readObject();
-            
-        } catch (ClassNotFoundException ex) {
-        } catch (IOException ex) {
-        }
-        
-        return null;
+        byte[] bytes = xmlEncode(src);
+        return xmlDecode(bytes);
     }
 
 /*

@@ -1,5 +1,6 @@
 package open.dolphin.client;
 
+import java.awt.Component;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.text.*;
@@ -19,6 +20,8 @@ public class KarteStyledDocument extends DefaultStyledDocument {
     
     // schemaHolder
     private static final String SCHEMA_STYLE = "schemaHolder";
+    
+    private static final String COMPONENT_ELEMENT_NAME = "component";
     
     // KartePane
     private KartePane kartePane;
@@ -233,14 +236,16 @@ public class KarteStyledDocument extends DefaultStyledDocument {
         }
     }
     
-//masuda^   KarteStyledDocument内のStampHolderを取得する。pns先生のコード
+//masuda^   KarteStyledDocument内のStampHolderを取得する。
     public List<StampHolder> getStampHolders() {
 
-        List<StampHolder> list = new ArrayList<StampHolder>();
-        int length = getLength();
-        for (int i = 0; i < length; ++i) {
-            StampHolder sh = (StampHolder) StyleConstants.getComponent(getCharacterElement(i).getAttributes());
-            if (sh != null) {
+        List<Component> components = new ArrayList<>();
+        listComponents(components, getDefaultRootElement());
+
+        List<StampHolder> list = new ArrayList<>();
+        for (Component c : components) {
+            if (c instanceof StampHolder) {
+                StampHolder sh = (StampHolder) c;
                 list.add(sh);
             }
         }
@@ -250,16 +255,48 @@ public class KarteStyledDocument extends DefaultStyledDocument {
     // StampHolder内のModuleModelだけ返す
     public List<ModuleModel> getStamps() {
         
-        List<ModuleModel> list = new ArrayList<ModuleModel>();
-        int length = getLength();
-        for (int i = 0; i < length; ++i) {
-            StampHolder sh = (StampHolder) StyleConstants.getComponent(getCharacterElement(i).getAttributes());
-            if (sh != null) {
+        List<Component> components = new ArrayList<>();
+        listComponents(components, getDefaultRootElement());
+
+        List<ModuleModel> list = new ArrayList<>();
+        for (Component c : components) {
+            if (c instanceof StampHolder) {
+                StampHolder sh = (StampHolder) c;
                 list.add(sh.getStamp());
             }
         }
         return list;
     }
+    
+    public List<SchemaHolder> getSchemaHolders() {
+        
+        List<Component> components = new ArrayList<>();
+        listComponents(components, getDefaultRootElement());
+
+        List<SchemaHolder> list = new ArrayList<>();
+        for (Component c : components) {
+            if (c instanceof SchemaHolder) {
+                SchemaHolder sh = (SchemaHolder) c;
+                list.add(sh);
+            }
+        }
+        return list;
+    }
+
+    private void listComponents(List<Component> components, Element elem) {
+        
+        if (COMPONENT_ELEMENT_NAME.equals(elem.getName())) {
+            components.add(StyleConstants.getComponent(elem.getAttributes()));
+        }
+        
+        // 再帰は苦手ｗ
+        int count = elem.getElementCount();
+        for (int i = 0; i < count; ++i) {
+            Element leaf = elem.getElement(i);
+            listComponents(components, leaf);
+        }
+    }
+    
 /*
     // StampHolder直後の改行がない場合は補う
     public void fixCrAfterStamp() {
@@ -320,5 +357,6 @@ public class KarteStyledDocument extends DefaultStyledDocument {
     public KartePane getKartePane() {
         return kartePane;
     }
+    
 //masuda$
 }

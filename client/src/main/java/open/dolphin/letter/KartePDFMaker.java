@@ -8,6 +8,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.MalformedURLException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.*;
@@ -118,7 +121,11 @@ public class KartePDFMaker extends AbstractPDFMaker {
             Font font = new Font(baseFont, KARTE_FONT_SIZE);
 
             // PdfWriterの設定
-            writer = PdfWriter.getInstance(document, new FileOutputStream(filePath));
+//minagawa^ mac jdk7            
+//            writer = PdfWriter.getInstance(document, new FileOutputStream(filePath));
+            Path path = Paths.get(filePath);
+            writer = PdfWriter.getInstance(document, Files.newOutputStream(path));
+//minagawa$
             writer.setStrictImageSequence(true);
             writer.setViewerPreferences(PdfWriter.PageModeUseOutlines);
 
@@ -167,6 +174,9 @@ public class KartePDFMaker extends AbstractPDFMaker {
                 // 念のためソート
                 Collections.sort(soaModules);
                 Collections.sort(pModules);
+                if (schemas != null) {
+                    Collections.sort(schemas);
+                }
 
                 // テーブルを作成する
                 KarteTable table;

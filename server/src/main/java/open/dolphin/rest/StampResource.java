@@ -106,6 +106,35 @@ public class StampResource extends AbstractResource {
 
         debug(String.valueOf(cnt));
     }
+    
+    
+    @POST
+    @Path("postRemoveStamps")
+    @Consumes(MEDIATYPE_JSON_UTF8)
+    @Produces(MEDIATYPE_TEXT_UTF8)
+    public Response postRemoveStamps(String json) {
+        
+        TypeReference typeRef = new TypeReference<List<String>>(){};
+        List<String> list = (List<String>)
+                getConverter().fromJson(json, typeRef);
+        
+        int cnt = stampServiceBean.removeStamp(list);
+        String ret = String.valueOf(cnt);
+        
+        debug(ret);
+        
+        return Response.ok(ret).build();
+    }
+    
+    @GET
+    @Path("allStamps/{param}")
+    public Response getAllStamps(@PathParam("param") Long userId) {
+        
+        List<StampModel> stamps = stampServiceBean.getAllStamps(userId);
+        StreamingOutput so = getGzipOutStream(stamps);
+        
+        return Response.ok(so).build();
+    }
 
     @Override
     protected void debug(String msg) {

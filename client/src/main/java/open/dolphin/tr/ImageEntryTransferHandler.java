@@ -1,21 +1,17 @@
-
 package open.dolphin.tr;
 
+import java.awt.Image;
 import java.awt.datatransfer.Transferable;
-import java.awt.event.MouseEvent;
 import javax.swing.JComponent;
-import javax.swing.TransferHandler.TransferSupport;
+import javax.swing.JList;
 import open.dolphin.client.ImageEntry;
-import open.dolphin.client.ImageLabel;
-import open.dolphin.client.ImagePanel;
 
 /**
- * ImageLabelTransferHandler
- * 内容はImageEntryTransferable
+ * ImageEntryTransferHandler
  *
  * @author masuda, Masuda Naika
  */
-public class ImageEntryTransferHandler extends AbstractImagePanelTransferHandler {
+public class ImageEntryTransferHandler extends DolphinTransferHandler {
     
     private static ImageEntryTransferHandler instance;
 
@@ -31,13 +27,21 @@ public class ImageEntryTransferHandler extends AbstractImagePanelTransferHandler
     }
 
     @Override
-    protected Transferable createTransferable(JComponent c) {
-        ImagePanel imagePanel = (ImagePanel) c;
-        ImageLabel imageLabel = imagePanel.getSelectedImageLabel();
-        if (imageLabel == null) {
+    protected Transferable createTransferable(JComponent src) {
+        
+        JList imageList = (JList) src;
+        ImageEntry entry = (ImageEntry) imageList.getSelectedValue();
+        
+        if (entry == null) {
             return null;
         }
-        ImageEntry entry = imageLabel.getImageEntry();
+        
+        startTransfer(src);
+        
+        // ドラッグ中のイメージを設定する
+        Image image = entry.getImageIcon().getImage();
+        setDragImage(image);
+        
         Transferable tr = new ImageEntryTransferable(entry);
         return tr;
     }
@@ -49,19 +53,7 @@ public class ImageEntryTransferHandler extends AbstractImagePanelTransferHandler
 
     @Override
     public boolean importData(TransferSupport support) {
+        importDataFailed();
         return false;
-    }
-
-    @Override
-    public int getSourceActions(JComponent c) {
-        return COPY_OR_MOVE;
-    }
-
-    @Override
-    public void mouseClicked(MouseEvent e) {
-    }
-
-    @Override
-    public void maybeShowPopup(MouseEvent e) {
     }
 }

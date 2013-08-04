@@ -138,15 +138,39 @@ public final class SqlMiscDao extends SqlDaoBean {
     }
 
     
-    public List<DrugInteractionModel> checkInteraction(Collection<String> drug1, Collection<String> drug2) {
+    public List<DrugInteractionModel> checkInteraction(Collection<String> src1, Collection<String> src2) {
         // 引数はdrugcdの配列ｘ２
 
-        if (drug1 == null || drug1.isEmpty() || drug2 == null || drug2.isEmpty()) {
+        if (src1 == null || src1.isEmpty() || src2 == null || src2.isEmpty()) {
             return Collections.emptyList();
         }
+        
+        // コードが後発品ならばその先発品のコードを追加する
+        Collection<String> allDrug = new ArrayList<>();
+        allDrug.addAll(src1);
+        allDrug.addAll(src2);
+        
+        // ゾロと先発の対応リストを作成する one-to-many
+        List<ZoroBrandPair> zoroBrandList = getZoroBrandPair(allDrug);
 
+        Collection<String> drug1 = new ArrayList<>(src1);
+        for (String srycd : src1) {
+            List<ZoroBrandPair> pairs = getBrands(zoroBrandList, srycd);
+            for (ZoroBrandPair pair : pairs) {
+                drug1.add(pair.brandSrycd);
+            }
+        }
+        
+        Collection<String> drug2 = new ArrayList<>(src2);
+        for (String srycd : src2) {
+            List<ZoroBrandPair> pairs = getBrands(zoroBrandList, srycd);
+            for (ZoroBrandPair pair : pairs) {
+                drug2.add(pair.brandSrycd);
+            }
+        }
+        
         StringBuilder sb = new StringBuilder();
-        List<DrugInteractionModel> ret = new ArrayList<DrugInteractionModel>();
+        Map<String, DrugInteractionModel> map = new HashMap<>();
 
         // SQL文を作成
         sb.append("select drugcd, drugcd2, TI.syojyoucd, syojyou ");
@@ -160,8 +184,138 @@ public final class SqlMiscDao extends SqlDaoBean {
 
         List<List<String>> valuesList = executeStatement(sql);
         for (List<String> values : valuesList) {
-            ret.add(new DrugInteractionModel(values.get(0), values.get(1), values.get(2), values.get(3)));
+            String srycd1 = values.get(0);
+            String srycd2 = values.get(1);
+            String sskijo = values.get(2);
+            String syojoucd = values.get(3);
+            String brandName1 = null;
+            String brandName2 = null;
+            
+            ZoroBrandPair zoro = getZoro(zoroBrandList, srycd1);
+            // ゾロのエイリアスとしての先発薬の場合
+            if (zoro != null) {
+                List<ZoroBrandPair> brands = getBrands(zoroBrandList, zoro.zoroSrycd);
+                if (!brands.isEmpty()) {
+                    srycd1 = zoro.zoroSrycd;
+                    boolean first = true;
+                    sb = new StringBuilder();
+                    for (ZoroBrandPair pair : brands) {
+                        if (!first) {
+                            sb.append(",");
+                        } else {
+                            first = false;
+                        }
+                        sb.append(pair.brandName);
+                    }
+                    brandName1 = sb.toString();
+                }
+            }
+
+            zoro = getZoro(zoroBrandList, srycd2);
+            if (zoro != null) {
+                List<ZoroBrandPair> brands = getBrands(zoroBrandList, zoro.zoroSrycd);
+                if (!brands.isEmpty()) {
+                    srycd2 = zoro.zoroSrycd;
+                    boolean first = true;
+                    sb = new StringBuilder();
+                    for (ZoroBrandPair pair : brands) {
+                        if (!first) {
+                            sb.append(",");
+                        } else {
+                            first = false;
+                        }
+                        sb.append(pair.brandName);
+                    }
+                    brandName2 = sb.toString();
+                }
+            }
+            map.put(srycd1, new DrugInteractionModel(
+                    srycd1, srycd2, sskijo, syojoucd, brandName1, brandName2));
         }
+        
+        List<DrugInteractionModel> ret = new ArrayList<>(map.values());
+        map.clear();
+        
+        return ret;
+    }
+    
+    private class ZoroBrandPair {
+
+        String zoroSrycd;
+        String zoroName;
+        String brandSrycd;
+        String brandName;
+    }
+
+    private ZoroBrandPair getZoro(List<ZoroBrandPair> list, String brandSrycd) {
+        for (ZoroBrandPair pair : list) {
+            if (brandSrycd.equals(pair.brandSrycd)) {
+                return pair;
+            }
+        }
+        return null;
+    }
+
+    private List<ZoroBrandPair> getBrands(List<ZoroBrandPair> list, String zoroSrycd) {
+        List<ZoroBrandPair> ret = new ArrayList<>();
+        for (ZoroBrandPair pair : list) {
+            if (zoroSrycd.equals(pair.zoroSrycd)) {
+                ret.add(pair);
+            }
+        }
+        return ret;
+    }
+    
+    private List<ZoroBrandPair> getZoroBrandPair(Collection codes) {
+        
+        List<ZoroBrandPair> ret = new ArrayList<>();
+        
+        // 後発薬の薬価基準コードを取得する。先頭９ケタ
+        StringBuilder sb = new StringBuilder();
+        sb.append("select distinct srycd,name,yakkakjncd from tbl_tensu where srycd in (");
+        sb.append(getCodes(codes));
+        sb.append(") and kouhatukbn='1' and yukoedymd='99999999'");
+        String sql = sb.toString();
+        
+        Map<String, ZoroBrandPair> yakkakjncdMap = new HashMap<>();
+        List<List<String>> valuesList = executeStatement(sql);
+        for (List<String> values : valuesList) {
+            ZoroBrandPair pair = new ZoroBrandPair();
+            pair.zoroSrycd = values.get(0);
+            pair.zoroName = values.get(1);
+            // javaのsubstringはyakkakjncd.substring(0,9)である
+            String yakkakjncd = values.get(2).substring(0, 9);
+            yakkakjncdMap.put(yakkakjncd, pair);
+        }
+        
+        if (yakkakjncdMap.isEmpty()) {
+            return Collections.emptyList();
+        }
+        
+        // 先発薬を調べる
+        sb = new StringBuilder();
+        // sqlのsubstringはsubstring(yakkakjncd,0,10)である
+        sb.append("select distinct srycd,name,yakkakjncd from tbl_tensu where substring(yakkakjncd,0,10) in (");
+        sb.append(getCodes(yakkakjncdMap.keySet()));
+        sb.append(") and kouhatukbn<>'1' and yukoedymd='99999999'");
+        sql = sb.toString();
+        valuesList = executeStatement(sql);
+        for (List<String> values : valuesList) {
+            String brandSrycd = values.get(0);
+            String brandName = values.get(1);
+            String yakkakjncd = values.get(2).substring(0, 9);
+            ZoroBrandPair mapPair = yakkakjncdMap.get(yakkakjncd);
+            if (mapPair != null) {
+                ZoroBrandPair pair = new ZoroBrandPair();
+                pair.brandSrycd = brandSrycd;
+                pair.brandName = brandName;
+                pair.zoroSrycd = mapPair.zoroSrycd;
+                pair.zoroName = mapPair.zoroName;
+                ret.add(pair);
+            }
+        }
+        
+        yakkakjncdMap.clear();
 
         return ret;
     }

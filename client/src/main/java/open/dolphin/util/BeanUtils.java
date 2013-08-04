@@ -7,6 +7,7 @@ import java.io.*;
 /**
  *
  * @author Kazushi Minagawa.
+ * @author modified by masuda, Masuda Naika
  */
 public class BeanUtils {
 
@@ -35,37 +36,46 @@ public class BeanUtils {
     
     public static byte[] xmlEncode(Object bean)  {
         
-        ByteArrayOutputStream bo = new ByteArrayOutputStream();
-        XMLEncoder e = new XMLEncoder(bo);
+        ByteArrayOutputStream os = new ByteArrayOutputStream(16384);
+        XMLEncoder e = new XMLEncoder(os);
         e.writeObject(bean);
         e.close();
         
-        return bo.toByteArray();
+        return os.toByteArray();
     }
     
     public static Object xmlDecode(byte[] bytes) {
         
-        XMLDecoder d = new XMLDecoder(new ByteArrayInputStream(bytes));
-        return d.readObject();
+        InputStream is = new ByteArrayInputStream(bytes);
+        XMLDecoder d = new XMLDecoder(is);
+        Object obj = d.readObject();
+        d.close();
+        
+        return obj;
     }
     
     public static Object deepCopy(Object src) {
-  
-        try {
-            ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
-            ObjectOutputStream out = new ObjectOutputStream(byteOut);
-            out.writeObject(src);
-            ByteArrayInputStream byteIn = new ByteArrayInputStream(byteOut.toByteArray());
-            ObjectInputStream in = new ObjectInputStream(byteIn);
-            return in.readObject();
-            
-        } catch (ClassNotFoundException ex) {
-        } catch (IOException ex) {
-        }
-        
-        return null;
+        byte[] bytes = xmlEncode(src);
+        return xmlDecode(bytes);
     }
-
+    
+/*
+    public static Object deepCopySharedByteBuffer(Object src) {
+        
+        ByteBufferOutputStream os = new ByteBufferOutputStream();
+        XMLEncoder e = new XMLEncoder(os);
+        e.writeObject(src);
+        e.close();
+        
+        ByteBuffer buf = os.getBuffer();
+        buf.flip();
+        
+        ByteBufferInputStream is = new ByteBufferInputStream(buf);
+        XMLDecoder d = new XMLDecoder(is);
+        Object ret = d.readObject();
+        return ret;
+    }
+*/
 /*
 //masuda^   http://forums.sun.com/thread.jspa?threadID=427879
 
