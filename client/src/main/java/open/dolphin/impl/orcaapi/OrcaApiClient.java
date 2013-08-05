@@ -31,7 +31,6 @@ public class OrcaApiClient {
     }
     
     private OrcaApiClient() {
-        client = ClientBuilder.newClient();
         setup();
     }
     
@@ -49,9 +48,9 @@ public class OrcaApiClient {
         String username = Project.getString(Project.ORCA_USER_ID);
         String password = Project.getString(Project.ORCA_USER_PASSWORD);
         
+        client = ClientBuilder.newClient();
         webTarget = client.target(uri);
-        
-        client.register(new HttpBasicAuthFilter(username, password));
+        webTarget.register(new HttpBasicAuthFilter(username, password));
     }
 
     public Invocation.Builder buildRequest(String path, MultivaluedMap<String, String> qmap) {
