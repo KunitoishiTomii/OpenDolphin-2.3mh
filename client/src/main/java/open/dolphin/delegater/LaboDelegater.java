@@ -1,11 +1,13 @@
 package open.dolphin.delegater;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.core.util.MultivaluedMapImpl;
 import java.io.InputStream;
 import java.util.List;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
 import open.dolphin.infomodel.LaboModuleValue;
 import open.dolphin.infomodel.NLaboModule;
 import open.dolphin.infomodel.PatientLiteModel;
@@ -37,18 +39,15 @@ public class LaboDelegater extends BusinessDelegater {
 
         String path = "lab/patient";
         
-        MultivaluedMap<String, String> qmap = new MultivaluedMapImpl();
+        MultivaluedMap<String, String> qmap = new MultivaluedHashMap();
         qmap.add("ids", getConverter().fromList(idList));
 
-        ClientResponse response = getClientRequest(path, qmap)
-                .accept(MEDIATYPE_JSON_UTF8)
-                .get(ClientResponse.class);
+        Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
+                .get(Response.class);
 
         int status = response.getStatus();
-        //String entityStr = (String) response.getEntity(String.class);
-        //debug(status, entityStr);
         isHTTP200(status);
-        InputStream is = response.getEntityInputStream();
+        InputStream is = response.readEntity(InputStream.class);
 
         TypeReference typeRef = new TypeReference<List<PatientLiteModel>>(){};
         List<PatientLiteModel> list = (List<PatientLiteModel>)
@@ -66,18 +65,14 @@ public class LaboDelegater extends BusinessDelegater {
         
         String path = "lab/module/";
 
-        String json = getConverter().toJson(value);
+        Entity entity = toJsonEntity(value);
 
-        ClientResponse response = getClientRequest(path, null)
-                .accept(MEDIATYPE_JSON_UTF8)
-                .type(MEDIATYPE_JSON_UTF8)
-                .post(ClientResponse.class, json);
+        Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
+                .post(entity, Response.class);
 
         int status = response.getStatus();
-        //String entityStr = (String) response.getEntity(String.class);
-        //debug(status, entityStr);
         isHTTP200(status);
-        InputStream is = response.getEntityInputStream();
+        InputStream is = response.readEntity(InputStream.class);
 
         PatientModel patient = (PatientModel)
                 getConverter().fromJson(is, PatientModel.class);
@@ -96,19 +91,16 @@ public class LaboDelegater extends BusinessDelegater {
 
         String path = "lab/module/" + patientId;
         
-        MultivaluedMap<String, String> qmap = new MultivaluedMapImpl();
+        MultivaluedMap<String, String> qmap = new MultivaluedHashMap();
         qmap.add("firstResult", String.valueOf(firstResult));
         qmap.add("maxResult", String.valueOf(maxResult));
 
-        ClientResponse response = getClientRequest(path, qmap)
-                .accept(MEDIATYPE_JSON_UTF8)
-                .get(ClientResponse.class);
+        Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
+                .get(Response.class);
 
         int status = response.getStatus();
-        //String entityStr = (String) response.getEntity(String.class);
-        //debug(status, entityStr);
         isHTTP200(status);
-        InputStream is = response.getEntityInputStream();
+        InputStream is = response.readEntity(InputStream.class);
 
         TypeReference typeRef = new TypeReference<List<NLaboModule>>(){};
         List<NLaboModule> list = (List<NLaboModule>)
@@ -122,18 +114,14 @@ public class LaboDelegater extends BusinessDelegater {
 
         String path = "lab/mmlModule";
 
-        String json = getConverter().toJson(value);
+        Entity entity = toJsonEntity(value);
 
-        ClientResponse response = getClientRequest(path, null)
-                .accept(MEDIATYPE_JSON_UTF8)
-                .type(MEDIATYPE_JSON_UTF8)
-                .post(ClientResponse.class, json);
+        Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
+                .post(entity, Response.class);
 
         int status = response.getStatus();
-        //String entityStr = (String) response.getEntity(String.class);
-        //debug(status, entityStr);
         isHTTP200(status);
-        InputStream is = response.getEntityInputStream();
+        InputStream is = response.readEntity(InputStream.class);
 
         PatientModel patient = (PatientModel) 
                 getConverter().fromJson(is, PatientModel.class);
@@ -148,9 +136,8 @@ public class LaboDelegater extends BusinessDelegater {
 
         String path = "lab/module/id/" + String.valueOf(id);
 
-        ClientResponse response = getClientRequest(path, null)
-                .accept(MEDIATYPE_TEXT_UTF8)
-                .delete(ClientResponse.class);
+        Response response = buildRequest(path, null, null)
+                .delete(Response.class);
 
         int status = response.getStatus();
         debug(status, "delete response");
@@ -163,9 +150,8 @@ public class LaboDelegater extends BusinessDelegater {
 
         String path = "lab/mmlModule/id/" + String.valueOf(id);
 
-        ClientResponse response = getClientRequest(path, null)
-                .accept(MEDIATYPE_TEXT_UTF8)
-                .delete(ClientResponse.class);
+        Response response = buildRequest(path, null, null)
+                .delete(Response.class);
 
         int status = response.getStatus();
         debug(status, "delete response");

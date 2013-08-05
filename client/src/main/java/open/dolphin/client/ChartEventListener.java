@@ -1,6 +1,5 @@
 package open.dolphin.client;
 
-import com.sun.jersey.api.client.ClientResponse;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -10,6 +9,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import javax.ws.rs.core.Response;
 import open.dolphin.delegater.ChartEventDelegater;
 import open.dolphin.infomodel.*;
 import open.dolphin.project.Project;
@@ -172,7 +172,7 @@ public class ChartEventListener {
     // Commetでサーバーと同期するスレッド
     private class EventListenThread extends Thread {
         
-        private Future<ClientResponse> future;
+        private Future<Response> future;
         private boolean isRunning;
         
         private EventListenThread() {
@@ -195,9 +195,10 @@ public class ChartEventListener {
             while (isRunning) {
                 try {
                     future = ChartEventDelegater.getInstance().subscribe();
-                    ClientResponse response = future.get();
+                    Response response = future.get();
                     onEventExec.execute(new RemoteOnEventTask(response));
                 } catch (Exception e) {
+                    //e.printStackTrace(System.err);
                 }
             }
         }
@@ -235,9 +236,9 @@ public class ChartEventListener {
     // 状態変化通知メッセージをデシリアライズし各リスナに処理を分配する
     private class RemoteOnEventTask implements Runnable {
         
-        private ClientResponse response;
+        private Response response;
         
-        private RemoteOnEventTask(ClientResponse response) {
+        private RemoteOnEventTask(Response response) {
             this.response = response;
         }
 
@@ -248,7 +249,7 @@ public class ChartEventListener {
                 return;
             }
             
-            InputStream is = response.getEntityInputStream();
+            InputStream is = response.readEntity(InputStream.class);
             ChartEventModel evt = (ChartEventModel) 
                     JsonConverter.getInstance().fromJson(is, ChartEventModel.class);
             

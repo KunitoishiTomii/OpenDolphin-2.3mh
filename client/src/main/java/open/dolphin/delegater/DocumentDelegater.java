@@ -1,14 +1,16 @@
 package open.dolphin.delegater;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.core.util.MultivaluedMapImpl;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import javax.swing.ImageIcon;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
 import open.dolphin.client.ImageEntry;
 import open.dolphin.dto.DocumentSearchSpec;
 import open.dolphin.dto.ImageSearchSpec;
@@ -52,19 +54,16 @@ public class  DocumentDelegater extends BusinessDelegater {
     public KarteBean getKarte(long patientPK, Date fromDate) throws Exception {
         
         String path = "karte/" + String.valueOf(patientPK);
-        MultivaluedMap<String, String> qmap= new MultivaluedMapImpl();
+        MultivaluedMap<String, String> qmap= new MultivaluedHashMap();
         qmap.add("fromDate", toRestFormat(fromDate));
 
-        ClientResponse response = getClientRequest(path, qmap)
-                .accept(MEDIATYPE_JSON_UTF8)
-                .get(ClientResponse.class);
+        Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
+                .get(Response.class);
 
         int status = response.getStatus();
-        //String entityStr = (String) response.getEntity(String.class);
-        //debug(status, entityStr);
         isHTTP200(status);
-        //InputStream is = (InputStream) response.getEntity(InputStream.class);
-        InputStream is = response.getEntityInputStream();
+        
+        InputStream is = response.readEntity(InputStream.class);
         
         KarteBean karte = (KarteBean)
                 getConverter().fromJson(is, KarteBean.class);
@@ -83,16 +82,14 @@ public class  DocumentDelegater extends BusinessDelegater {
         // DocInfo から DocumentModel(KarteEntry) に移す
         karteModel.toPersist();
 
-        String json = getConverter().toJson(karteModel);
+        Entity entity = toJsonEntity(karteModel);
 
         String path = "karte/document";
-        ClientResponse response = getClientRequest(path, null)
-                .accept(MEDIATYPE_TEXT_UTF8)
-                .type(MEDIATYPE_JSON_UTF8)
-                .post(ClientResponse.class, json);
+        Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
+                .post(entity, Response.class);
 
         int status = response.getStatus();
-        String entityStr = (String) response.getEntity(String.class);
+        String entityStr = (String) response.readEntity(String.class);
         debug(status, entityStr);
         isHTTP200(status);
 
@@ -107,16 +104,15 @@ public class  DocumentDelegater extends BusinessDelegater {
     public List<DocumentModel> getDocuments(List<Long> ids) throws Exception {
         
         String path = "karte/document";
-        MultivaluedMap<String, String> qmap = new MultivaluedMapImpl();
+        MultivaluedMap<String, String> qmap = new MultivaluedHashMap();
         qmap.add("ids", getConverter().fromList(ids));
 
-        ClientResponse response = getClientRequest(path, qmap)
-                .accept(MEDIATYPE_JSON_UTF8)
-                .get(ClientResponse.class);
+        Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
+                .get(Response.class);
 
         int status = response.getStatus();
         isHTTP200(status);
-        InputStream is = response.getEntityInputStream();
+        InputStream is = response.readEntity(InputStream.class);
 
         TypeReference typeRef = new TypeReference<List<DocumentModel>>(){};
         List<DocumentModel> list = (List<DocumentModel>)
@@ -145,18 +141,17 @@ public class  DocumentDelegater extends BusinessDelegater {
     private List<DocInfoModel> getKarteList(DocumentSearchSpec spec) throws Exception {
         
         String path = "karte/docinfo/" + String.valueOf(spec.getKarteId());
-        MultivaluedMap<String, String> qmap = new MultivaluedMapImpl();
+        MultivaluedMap<String, String> qmap = new MultivaluedHashMap();
         qmap.add("fromDate", toRestFormat(spec.getFromDate()));
         qmap.add("toDate", toRestFormat(spec.getToDate()));
         qmap.add("includeModified", String.valueOf(spec.isIncludeModifid()));
 
-        ClientResponse response = getClientRequest(path, qmap)
-                .accept(MEDIATYPE_JSON_UTF8)
-                .get(ClientResponse.class);
+        Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
+                .get(Response.class);
 
         int status = response.getStatus();
         isHTTP200(status);
-        InputStream is = response.getEntityInputStream();
+        InputStream is = response.readEntity(InputStream.class);
 
         TypeReference typeRef = new TypeReference<List<DocInfoModel>>(){};
         List<DocInfoModel> list = (List<DocInfoModel>)
@@ -170,21 +165,18 @@ public class  DocumentDelegater extends BusinessDelegater {
         
         String path = "odletter/list/" + String.valueOf(spec.getKarteId());
 
-        ClientResponse response = getClientRequest(path, null)
-                .accept(MEDIATYPE_JSON_UTF8)
-                .get(ClientResponse.class);
+        Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
+                .get(Response.class);
 
         int status = response.getStatus();
-        //String entityStr = (String) response.getEntity(String.class);
-        //debug(status, entityStr);
         isHTTP200(status);
-        InputStream is = response.getEntityInputStream();
+        InputStream is = response.readEntity(InputStream.class);
         
         TypeReference typeRef = new TypeReference<List<LetterModule>>(){};
         List<LetterModule> list = (List<LetterModule>)
                 getConverter().fromJson(is, typeRef);
 
-        List<DocInfoModel> ret = new ArrayList<DocInfoModel>();
+        List<DocInfoModel> ret = new ArrayList<>();
 
         if (list != null && !list.isEmpty()) {
             for (LetterModule module : list) {
@@ -226,9 +218,8 @@ public class  DocumentDelegater extends BusinessDelegater {
         
         String path = "karte/document/" + String.valueOf(pk);
 
-        ClientResponse response = getClientRequest(path, null)
-                .accept(MEDIATYPE_TEXT_UTF8)
-                .delete(ClientResponse.class);
+        Response response = buildRequest(path, null, null)
+                .delete(Response.class);
 
         int status = response.getStatus();
         isHTTP200(status);
@@ -245,14 +236,13 @@ public class  DocumentDelegater extends BusinessDelegater {
         
         try {
             String path = "karte/document/" + String.valueOf(docInfo.getDocPk());
+            Entity entity = toTextEntity(docInfo.getTitle());
 
-            ClientResponse response = getClientRequest(path, null)
-                    .accept(MEDIATYPE_TEXT_UTF8)
-                    .type(MEDIATYPE_TEXT_UTF8)
-                    .put(ClientResponse.class, docInfo.getTitle());
+            Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
+                    .put(entity, Response.class);
 
             int status = response.getStatus();
-            String entityStr = (String) response.getEntity(String.class);
+            String entityStr = (String) response.readEntity(String.class);
 
             debug(status, entityStr);
 
@@ -272,7 +262,7 @@ public class  DocumentDelegater extends BusinessDelegater {
     public List<List<ModuleModel>> getModuleList(ModuleSearchSpec spec) throws Exception {
 
         String path = "karte/modules/" + String.valueOf(spec.getKarteId());
-        MultivaluedMap<String, String> qmap = new MultivaluedMapImpl();
+        MultivaluedMap<String, String> qmap = new MultivaluedHashMap();
 
         Date[] froms = spec.getFromDate();
         Date[] tos = spec.getToDate();
@@ -298,15 +288,12 @@ public class  DocumentDelegater extends BusinessDelegater {
         qmap.add("tos", sb.toString());
         qmap.add("entity", spec.getEntity());
 
-        ClientResponse response = getClientRequest(path, qmap)
-                .accept(MEDIATYPE_JSON_UTF8)
-                .get(ClientResponse.class);
+        Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
+                .get(Response.class);
 
         int status = response.getStatus();
-        //String entityStr = (String) response.getEntity(String.class);
-        //debug(status, entityStr);
         isHTTP200(status);
-        InputStream is = response.getEntityInputStream();
+        InputStream is = response.readEntity(InputStream.class);
 
         TypeReference typeRef = new TypeReference<List<List<ModuleModel>>>(){};
         List<List<ModuleModel>> ret = (List<List<ModuleModel>>) 
@@ -329,15 +316,12 @@ public class  DocumentDelegater extends BusinessDelegater {
 
         String path = "karte/image/" + String.valueOf(id);
 
-        ClientResponse response = getClientRequest(path, null)
-                .accept(MEDIATYPE_JSON_UTF8)
-                .get(ClientResponse.class);
+        Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
+                .get(Response.class);
 
         int status = response.getStatus();
-        //String entityStr = (String) response.getEntity(String.class);
-        //debug(status, entityStr);
         isHTTP200(status);
-        InputStream is = response.getEntityInputStream();
+        InputStream is = response.readEntity(InputStream.class);
 
         SchemaModel model = (SchemaModel) 
                 getConverter().fromJson(is, SchemaModel.class);
@@ -386,7 +370,7 @@ public class  DocumentDelegater extends BusinessDelegater {
         qmap.add("tos", sb.toString());
         
         ClientResponse response = getQueryResource(path, qmap)
-                .accept(MEDIATYPE_JSON_UTF8)
+                .accept(MediaType.APPLICATION_JSON_TYPE)
                 .get(ClientResponse.class);
 
         int status = response.getStatus();
@@ -431,15 +415,13 @@ public class  DocumentDelegater extends BusinessDelegater {
         
         String path = "karte/diagnosis/";
 
-        String json = getConverter().toJson(list);
+        Entity entity = toJsonEntity(list);
 
-        ClientResponse response = getClientRequest(path, null)
-                .accept(MEDIATYPE_TEXT_UTF8)
-                .type(MEDIATYPE_JSON_UTF8)
-                .post(ClientResponse.class, json);
+        Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
+                .post(entity, Response.class);
 
         int status = response.getStatus();
-        String entityStr = (String) response.getEntity(String.class);
+        String entityStr = (String) response.readEntity(String.class);
         debug(status, entityStr);
         isHTTP200(status);
 
@@ -451,17 +433,16 @@ public class  DocumentDelegater extends BusinessDelegater {
     public int updateDiagnosis(List<RegisteredDiagnosisModel> list) throws Exception {
 
         String path = "karte/diagnosis/";
+        
+        Entity entity = toJsonEntity(list);
 
-        String json = getConverter().toJson(list);
-
-        ClientResponse response = getClientRequest(path, null)
-                .type(MEDIATYPE_JSON_UTF8)
-                .put(ClientResponse.class, json);
+        Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
+                .put(entity, Response.class);
 
         int status = response.getStatus();
         isHTTP200(status);
 
-        String entityStr = (String) response.getEntity(String.class);
+        String entityStr = (String) response.readEntity(String.class);
         debug(status, entityStr);
 
         return Integer.parseInt(entityStr);
@@ -471,11 +452,11 @@ public class  DocumentDelegater extends BusinessDelegater {
         
         String path = "karte/diagnosis/";
         
-        MultivaluedMap<String, String> qmap = new MultivaluedMapImpl();
+        MultivaluedMap<String, String> qmap = new MultivaluedHashMap();
         qmap.add("ids", getConverter().fromList(ids));
 
-        ClientResponse response = getClientRequest(path, qmap)
-                .delete(ClientResponse.class);
+        Response response = buildRequest(path, qmap, null)
+                .delete(Response.class);
 
         int status = response.getStatus();
         debug(status, "delete response");
@@ -493,19 +474,16 @@ public class  DocumentDelegater extends BusinessDelegater {
             long karteId, Date fromDate, boolean activeOnly) throws Exception {
         
         String path = "karte/diagnosis/" + String.valueOf(karteId);
-        MultivaluedMap<String, String> qmap = new MultivaluedMapImpl();
+        MultivaluedMap<String, String> qmap = new MultivaluedHashMap();
         qmap.add("fromDate", toRestFormat(fromDate));
         qmap.add("activeOnly", String.valueOf(activeOnly));
 
-        ClientResponse response = getClientRequest(path, qmap)
-                .accept(MEDIATYPE_JSON_UTF8)
-                .get(ClientResponse.class);
+        Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
+                .get(Response.class);
 
         int status = response.getStatus();
-        //String entityStr = (String) response.getEntity(String.class);
-        //debug(status, entityStr);
         isHTTP200(status);
-        InputStream is = response.getEntityInputStream();
+        InputStream is = response.readEntity(InputStream.class);
 
         TypeReference typeRef = new TypeReference<List<RegisteredDiagnosisModel>>(){};
         List<RegisteredDiagnosisModel> list = (List<RegisteredDiagnosisModel>)
@@ -519,15 +497,13 @@ public class  DocumentDelegater extends BusinessDelegater {
         
         String path = "/karte/observations";
 
-        String json = getConverter().toJson(observations);
+        Entity entity = toJsonEntity(observations);
 
-        ClientResponse response = getClientRequest(path, null)
-                .accept(MEDIATYPE_TEXT_UTF8)
-                .type(MEDIATYPE_JSON_UTF8)
-                .post(ClientResponse.class, json);
+        Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
+                .post(entity, Response.class);
 
         int status = response.getStatus();
-        String entityStr = (String) response.getEntity(String.class);
+        String entityStr = (String) response.readEntity(String.class);
         debug(status, entityStr);
         isHTTP200(status);
 
@@ -540,11 +516,11 @@ public class  DocumentDelegater extends BusinessDelegater {
         
         String path = "/karte/observations";
         
-        MultivaluedMap<String, String> qmap = new MultivaluedMapImpl();
+        MultivaluedMap<String, String> qmap = new MultivaluedHashMap();
         qmap.add("ids", getConverter().fromList(ids));
 
-        ClientResponse response = getClientRequest(path, qmap)
-                .delete(ClientResponse.class);
+        Response response = buildRequest(path, qmap, null)
+                .delete(Response.class);
 
         int status = response.getStatus();
         debug(status, "delete response");
@@ -559,15 +535,13 @@ public class  DocumentDelegater extends BusinessDelegater {
         
         String path = "/karte/memo";
 
-        String json = getConverter().toJson(pm);
+        Entity entity = toJsonEntity(pm);
 
-        ClientResponse response = getClientRequest(path, null)
-                .accept(MEDIATYPE_TEXT_UTF8)
-                .type(MEDIATYPE_JSON_UTF8)
-                .put(ClientResponse.class, json);
+        Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
+                .put(entity, Response.class);
 
         int status = response.getStatus();
-        String entityStr = (String) response.getEntity(String.class);
+        String entityStr = (String) response.readEntity(String.class);
         debug(status, entityStr);
         isHTTP200(status);
 
@@ -580,7 +554,7 @@ public class  DocumentDelegater extends BusinessDelegater {
         
         String path = "karte/appo/" + String.valueOf(spec.getKarteId());
 
-        MultivaluedMap<String, String> qmap = new MultivaluedMapImpl();
+        MultivaluedMap<String, String> qmap = new MultivaluedHashMap();
         Date[] froms = spec.getFromDate();
         Date[] tos = spec.getToDate();
 
@@ -604,15 +578,12 @@ public class  DocumentDelegater extends BusinessDelegater {
         }
         qmap.add("tos", sb.toString());
 
-        ClientResponse response = getClientRequest(path, qmap)
-                .accept(MEDIATYPE_JSON_UTF8)
-                .get(ClientResponse.class);
+        Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
+                .get(Response.class);
 
         int status = response.getStatus();
-        //String entityStr = (String) response.getEntity(String.class);
-        //debug(status, entityStr);
         isHTTP200(status);
-        InputStream is = response.getEntityInputStream();
+        InputStream is = response.readEntity(InputStream.class);
 
         TypeReference typeRef = new TypeReference<List<List<AppointmentModel>>>(){};
         List<List<AppointmentModel>> ret = (List<List<AppointmentModel>>)
@@ -631,9 +602,8 @@ public class  DocumentDelegater extends BusinessDelegater {
         sb.append(state);
         String path = sb.toString();
 
-        ClientResponse response = getClientRequest(path, null)
-                    .accept(MEDIATYPE_TEXT_UTF8)
-                    .put(ClientResponse.class);
+        Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
+                    .put(null, Response.class);
 
         int status = response.getStatus();
         debug(status, "put response");

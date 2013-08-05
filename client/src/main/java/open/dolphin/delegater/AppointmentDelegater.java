@@ -1,7 +1,9 @@
 package open.dolphin.delegater;
 
-import com.sun.jersey.api.client.ClientResponse;
 import java.util.List;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import open.dolphin.infomodel.AppointmentModel;
 
 /**
@@ -29,15 +31,13 @@ public final class AppointmentDelegater extends BusinessDelegater {
     public int putAppointments(List<AppointmentModel> list) throws Exception {
 
         String path = "appo/";
-        String json = getConverter().toJson(list);
-
-        ClientResponse response = getClientRequest(path, null)
-                .accept(MEDIATYPE_TEXT_UTF8)
-                .type(MEDIATYPE_JSON_UTF8)
-                .put(ClientResponse.class, json);
+        Entity entity = toJsonEntity(list);
+        
+        Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
+                .put(entity, Response.class);
 
         int status = response.getStatus();
-        String entityStr = (String) response.getEntity(String.class);
+        String entityStr = (String) response.readEntity(String.class);
         debug(status, entityStr);
         isHTTP200(status);
 

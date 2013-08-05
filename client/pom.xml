@@ -21,12 +21,6 @@
             <name>www.dcm4che.org/maven2</name>
             <url>http://www.dcm4che.org/maven2/</url>
         </repository>
-<!--
-        <repository>
-            <id>athou-repo</id>
-            <url>https://github.com/Athou/maven-repository/raw/master/repo</url>
-        </repository>
--->
     </repositories>
 
     <dependencies>
@@ -75,9 +69,9 @@
             <version>9.2-1002-jdbc4</version>
         </dependency>
         <dependency>
-            <groupId>com.sun.jersey</groupId>
+            <groupId>org.glassfish.jersey.core</groupId>
             <artifactId>jersey-client</artifactId>
-            <version>1.17.1</version>
+            <version>2.1</version>
             <type>jar</type>
         </dependency>
 <!--

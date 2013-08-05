@@ -1,9 +1,11 @@
 package open.dolphin.delegater;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.sun.jersey.api.client.ClientResponse;
 import java.io.InputStream;
 import java.util.List;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import open.dolphin.infomodel.PatientVisitModel;
 
 /**
@@ -40,16 +42,15 @@ public class PVTDelegater extends BusinessDelegater {
     public int addPvt(PatientVisitModel pvtModel) throws Exception {
         
         // convert
-        String json = getConverter().toJson(pvtModel);
+        Entity entity = toJsonEntity(pvtModel);
 
         // resource post
         String path = RES_PVT;
-        ClientResponse response = getClientRequest(path, null)
-                .type(MEDIATYPE_JSON_UTF8)
-                .post(ClientResponse.class, json);
+        Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
+                .post(entity, Response.class);
 
         int status = response.getStatus();
-        String enityStr = (String) response.getEntity(String.class);
+        String enityStr = (String) response.readEntity(String.class);
         debug(status, enityStr);
         isHTTP200(status);
 
@@ -62,9 +63,8 @@ public class PVTDelegater extends BusinessDelegater {
         
         String path = RES_PVT + String.valueOf(id);
 
-        ClientResponse response = getClientRequest(path, null)
-                .accept(MEDIATYPE_TEXT_UTF8)
-                .delete(ClientResponse.class);
+        Response response = buildRequest(path, null, null)
+                .delete(Response.class);
 
         int status = response.getStatus();
         String enityStr = "delete response";
@@ -81,15 +81,12 @@ public class PVTDelegater extends BusinessDelegater {
         sb.append("pvtList");
         String path = sb.toString();
 
-        ClientResponse response = getClientRequest(path, null)
-                .accept(MEDIATYPE_JSON_UTF8)
-                .get(ClientResponse.class);
+        Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
+                .get(Response.class);
 
         int status = response.getStatus();
-        //String entityStr = (String) response.getEntity(String.class);
-        //debug(status, entityStr);
         isHTTP200(status);
-        InputStream is = response.getEntityInputStream();
+        InputStream is = response.readEntity(InputStream.class);
 
         TypeReference typeRef = new TypeReference<List<PatientVisitModel>>(){};
         List<PatientVisitModel> pvtList = (List<PatientVisitModel>)

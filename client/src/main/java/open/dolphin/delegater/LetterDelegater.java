@@ -1,9 +1,11 @@
 package open.dolphin.delegater;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.sun.jersey.api.client.ClientResponse;
 import java.io.InputStream;
 import java.util.List;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import open.dolphin.infomodel.LetterModule;
 
 /**
@@ -32,21 +34,15 @@ public class LetterDelegater extends BusinessDelegater {
     
     public long saveOrUpdateLetter(LetterModule model) throws Exception {
 
-        String json = getConverter().toJson(model);
+       String path = PATH_FOR_LETTER;
+       
+       Entity entity = toJsonEntity(model);
 
-        if (json == null) {
-            return 0L;
-        }
-
-        String path = PATH_FOR_LETTER;
-
-        ClientResponse response = getClientRequest(path, null)
-                .accept(MEDIATYPE_TEXT_UTF8)    
-                .type(MEDIATYPE_JSON_UTF8)
-                .put(ClientResponse.class, json);
+        Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)    
+                .put(entity, Response.class);
 
         int status = response.getStatus();
-        String entityStr = (String) response.getEntity(String.class);
+        String entityStr = (String) response.readEntity(String.class);
         debug(status, entityStr);
         isHTTP200(status);
 
@@ -58,15 +54,12 @@ public class LetterDelegater extends BusinessDelegater {
         
         String path = PATH_FOR_LETTER + String.valueOf(letterPk);
 
-        ClientResponse response = getClientRequest(path, null)
-                .accept(MEDIATYPE_JSON_UTF8)
-                .get(ClientResponse.class);
+        Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
+                .get(Response.class);
 
         int status = response.getStatus();
-        //String entityStr = (String) response.getEntity(String.class);
-        //debug(status, entityStr);
         isHTTP200(status);
-        InputStream is = response.getEntityInputStream();
+        InputStream is = response.readEntity(InputStream.class);
 
         LetterModule ret = (LetterModule)
                 getConverter().fromJson(is, LetterModule.class);
@@ -79,15 +72,12 @@ public class LetterDelegater extends BusinessDelegater {
         
         String path = PATH_FOR_LETTER_LIST + String.valueOf(kartePk);
 
-        ClientResponse response = getClientRequest(path, null)
-                .accept(MEDIATYPE_JSON_UTF8)
-                .get(ClientResponse.class);
+        Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
+                .get(Response.class);
 
         int status = response.getStatus();
-        //String entityStr = (String) response.getEntity(String.class);
-        //debug(status, entityStr);
         isHTTP200(status);
-        InputStream is = response.getEntityInputStream();
+        InputStream is = response.readEntity(InputStream.class);
 
         TypeReference typeRef = new TypeReference<List<LetterModule>>(){};
         List<LetterModule> ret = (List<LetterModule>)
@@ -101,9 +91,8 @@ public class LetterDelegater extends BusinessDelegater {
 
         String path = PATH_FOR_LETTER + String.valueOf(pk);
 
-        ClientResponse response = getClientRequest(path, null)
-                .accept(MEDIATYPE_TEXT_UTF8)
-                .delete(ClientResponse.class);
+        Response response = buildRequest(path, null, null)
+                .delete(Response.class);
 
         int status = response.getStatus();
         debug(status, "delete response");
