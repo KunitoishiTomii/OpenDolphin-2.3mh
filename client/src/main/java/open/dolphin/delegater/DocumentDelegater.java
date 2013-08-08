@@ -60,13 +60,12 @@ public class  DocumentDelegater extends BusinessDelegater {
         Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
                 .get(Response.class);
 
-        int status = response.getStatus();
-        isHTTP200(status);
-        
+        checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-        
         KarteBean karte = (KarteBean)
                 getConverter().fromJson(is, KarteBean.class);
+        
+        response.close();
 
         return karte;
     }
@@ -88,10 +87,11 @@ public class  DocumentDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
                 .post(entity, Response.class);
 
-        int status = response.getStatus();
-        String entityStr = (String) response.readEntity(String.class);
+        int status = checkHttpStatus(response);
+        String entityStr = response.readEntity(String.class);
         debug(status, entityStr);
-        isHTTP200(status);
+        
+        response.close();
 
         return Long.parseLong(entityStr);
     }
@@ -110,13 +110,13 @@ public class  DocumentDelegater extends BusinessDelegater {
         Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
                 .get(Response.class);
 
-        int status = response.getStatus();
-        isHTTP200(status);
+        checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-
         TypeReference typeRef = new TypeReference<List<DocumentModel>>(){};
         List<DocumentModel> list = (List<DocumentModel>)
                 getConverter().fromGzippedJson(is, typeRef);
+        
+        response.close();
 
         return list;
     }
@@ -149,13 +149,13 @@ public class  DocumentDelegater extends BusinessDelegater {
         Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
                 .get(Response.class);
 
-        int status = response.getStatus();
-        isHTTP200(status);
+        checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-
         TypeReference typeRef = new TypeReference<List<DocInfoModel>>(){};
         List<DocInfoModel> list = (List<DocInfoModel>)
                 getConverter().fromGzippedJson(is, typeRef);
+        
+        response.close();
         
         return list;
     }
@@ -168,13 +168,14 @@ public class  DocumentDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
                 .get(Response.class);
 
-        int status = response.getStatus();
-        isHTTP200(status);
+        checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
         
         TypeReference typeRef = new TypeReference<List<LetterModule>>(){};
         List<LetterModule> list = (List<LetterModule>)
                 getConverter().fromJson(is, typeRef);
+        
+        response.close();
 
         List<DocInfoModel> ret = new ArrayList<>();
 
@@ -221,8 +222,9 @@ public class  DocumentDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, null)
                 .delete(Response.class);
 
-        int status = response.getStatus();
-        isHTTP200(status);
+        checkHttpStatus(response);
+        
+        response.close();
 
         return 1;
     }
@@ -240,11 +242,12 @@ public class  DocumentDelegater extends BusinessDelegater {
 
             Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
                     .put(entity, Response.class);
-
-            int status = response.getStatus();
-            String entityStr = (String) response.readEntity(String.class);
-
+            
+            int status = checkHttpStatus(response);
+            String entityStr = response.readEntity(String.class);
             debug(status, entityStr);
+            
+            response.close();
 
             return Integer.parseInt(entityStr);
             
@@ -291,14 +294,14 @@ public class  DocumentDelegater extends BusinessDelegater {
         Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
                 .get(Response.class);
 
-        int status = response.getStatus();
-        isHTTP200(status);
+        checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-
         TypeReference typeRef = new TypeReference<List<List<ModuleModel>>>(){};
         List<List<ModuleModel>> ret = (List<List<ModuleModel>>) 
                 getConverter().fromJson(is, typeRef);
 
+        response.close();
+        
         for (List<ModuleModel> list : ret) {
             for (ModuleModel module : list) {
                 module.setModel((InfoModel)BeanUtils.xmlDecode(module.getBeanBytes()));
@@ -319,12 +322,12 @@ public class  DocumentDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
                 .get(Response.class);
 
-        int status = response.getStatus();
-        isHTTP200(status);
+        checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-
         SchemaModel model = (SchemaModel) 
                 getConverter().fromJson(is, SchemaModel.class);
+        
+        response.close();
 
         byte[] bytes = model.getJpegByte();
         ImageIcon icon = new ImageIcon(bytes);
@@ -420,10 +423,11 @@ public class  DocumentDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
                 .post(entity, Response.class);
 
-        int status = response.getStatus();
-        String entityStr = (String) response.readEntity(String.class);
+        int status = checkHttpStatus(response);
+        String entityStr = response.readEntity(String.class);
         debug(status, entityStr);
-        isHTTP200(status);
+        
+        response.close();
 
         List<Long> ret = getConverter().toLongList(entityStr);
 
@@ -439,11 +443,12 @@ public class  DocumentDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
                 .put(entity, Response.class);
 
-        int status = response.getStatus();
-        isHTTP200(status);
+        int status = checkHttpStatus(response);
 
-        String entityStr = (String) response.readEntity(String.class);
+        String entityStr = response.readEntity(String.class);
         debug(status, entityStr);
+        
+        response.close();
 
         return Integer.parseInt(entityStr);
     }
@@ -458,9 +463,10 @@ public class  DocumentDelegater extends BusinessDelegater {
         Response response = buildRequest(path, qmap, null)
                 .delete(Response.class);
 
-        int status = response.getStatus();
+        int status = checkHttpStatus(response);
         debug(status, "delete response");
-        isHTTP200(status);
+        
+        response.close();
 
         return ids.size();
     }
@@ -481,13 +487,13 @@ public class  DocumentDelegater extends BusinessDelegater {
         Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
                 .get(Response.class);
 
-        int status = response.getStatus();
-        isHTTP200(status);
+        checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-
         TypeReference typeRef = new TypeReference<List<RegisteredDiagnosisModel>>(){};
         List<RegisteredDiagnosisModel> list = (List<RegisteredDiagnosisModel>)
                 getConverter().fromJson(is, typeRef);
+        
+        response.close();
 
         return list;
     }
@@ -502,10 +508,11 @@ public class  DocumentDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
                 .post(entity, Response.class);
 
-        int status = response.getStatus();
-        String entityStr = (String) response.readEntity(String.class);
+        int status = checkHttpStatus(response);
+        String entityStr = response.readEntity(String.class);
         debug(status, entityStr);
-        isHTTP200(status);
+        
+        response.close();
 
         List<Long> list = getConverter().toLongList(entityStr);
 
@@ -522,9 +529,10 @@ public class  DocumentDelegater extends BusinessDelegater {
         Response response = buildRequest(path, qmap, null)
                 .delete(Response.class);
 
-        int status = response.getStatus();
+        int status = checkHttpStatus(response);
         debug(status, "delete response");
-        isHTTP200(status);
+        
+        response.close();
 
         return ids.size();
     }
@@ -540,10 +548,11 @@ public class  DocumentDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
                 .put(entity, Response.class);
 
-        int status = response.getStatus();
-        String entityStr = (String) response.readEntity(String.class);
+        int status = checkHttpStatus(response);
+        String entityStr = response.readEntity(String.class);
         debug(status, entityStr);
-        isHTTP200(status);
+        
+        response.close();
 
         return Integer.parseInt(entityStr);
     }
@@ -581,13 +590,13 @@ public class  DocumentDelegater extends BusinessDelegater {
         Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
                 .get(Response.class);
 
-        int status = response.getStatus();
-        isHTTP200(status);
+        checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-
         TypeReference typeRef = new TypeReference<List<List<AppointmentModel>>>(){};
         List<List<AppointmentModel>> ret = (List<List<AppointmentModel>>)
                 getConverter().fromJson(is, typeRef);
+        
+        response.close();
 
         return ret;
     }
@@ -605,9 +614,10 @@ public class  DocumentDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
                     .put(null, Response.class);
 
-        int status = response.getStatus();
+        int status = checkHttpStatus(response);
         debug(status, "put response");
-        isHTTP200(status);
+        
+        response.close();
     }
     
     @Override

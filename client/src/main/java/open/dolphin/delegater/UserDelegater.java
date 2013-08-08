@@ -72,12 +72,12 @@ public class UserDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
                    .get(Response.class);
 
-        int status = response.getStatus();
-        isHTTP200(status);
+        checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-
         UserModel userModel = (UserModel) 
                 getConverter().fromJson(is, UserModel.class);
+        
+        response.close();
 
         return userModel;
     }
@@ -89,13 +89,13 @@ public class UserDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
                    .get(Response.class);
 
-        int status = response.getStatus();
-        isHTTP200(status);
+        checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-
         TypeReference typeRef = new TypeReference<List<UserModel>>(){};
         List<UserModel> list  = (List<UserModel>) 
                 getConverter().fromJson(is, typeRef);
+        
+        response.close();
 
         return list;
     }
@@ -108,10 +108,11 @@ public class UserDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
                 .post(entity, Response.class);
 
-        int status = response.getStatus();
-        String entityStr = (String) response.readEntity(String.class);
+        int status = checkHttpStatus(response);
+        String entityStr = response.readEntity(String.class);
         debug(status, entityStr);
-        isHTTP200(status);
+        
+        response.close();
         
         int cnt = Integer.parseInt(entityStr);
 
@@ -126,10 +127,11 @@ public class UserDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)   
                 .put(entity, Response.class);
 
-        int status = response.getStatus();
-        String entityStr = (String) response.readEntity(String.class);
+        int status = checkHttpStatus(response);
+        String entityStr = response.readEntity(String.class);
         debug(status, entityStr);
-        isHTTP200(status);
+        
+        response.close();
 
         int cnt = Integer.parseInt(entityStr);
 
@@ -143,9 +145,10 @@ public class UserDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, null)
                 .delete(Response.class);
 
-        int status = response.getStatus();
+        int status = checkHttpStatus(response);
         debug(status, "delete response");
-        isHTTP200(status);
+        
+        response.close();
 
         return 1;
     }
@@ -159,10 +162,11 @@ public class UserDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
                 .put(entity, Response.class);
 
-        int status = response.getStatus();
-        String entityStr = (String) response.readEntity(String.class);
+        int status = checkHttpStatus(response);
+        String entityStr = response.readEntity(String.class);
         debug(status, entityStr);
-        isHTTP200(status);
+        
+        response.close();
 
         int cnt = Integer.parseInt(entityStr);
 
@@ -180,10 +184,11 @@ public class UserDelegater extends BusinessDelegater {
         
         Response response = buildRequest(path, qmap, MediaType.TEXT_PLAIN_TYPE)
                 .get(Response.class);
-        int status = response.getStatus();
-        String currentUUID = (String) response.readEntity(String.class);
+        int status = checkHttpStatus(response);
+        String currentUUID = response.readEntity(String.class);
         debug(status, currentUUID);
-        isHTTP200(status);
+        
+        response.close();
         
         return currentUUID;
     }
@@ -198,10 +203,11 @@ public class UserDelegater extends BusinessDelegater {
         
         Response response = buildRequest(path, qmap, MediaType.TEXT_PLAIN_TYPE)
                 .get(Response.class);
-        int status = response.getStatus();
-        String oldUUID = (String) response.readEntity(String.class);
+        int status = checkHttpStatus(response);
+        String oldUUID = response.readEntity(String.class);
         debug(status, oldUUID);
-        isHTTP200(status);
+        
+        response.close();
         
         return oldUUID;
     }

@@ -37,10 +37,11 @@ public class ChartEventDelegater extends BusinessDelegater {
         Response response = buildRequest(PUT_EVENT_PATH, null, MediaType.TEXT_PLAIN_TYPE)
                 .put(entity, Response.class);
 
-        int status = response.getStatus();
-        String enityStr = (String) response.readEntity(String.class);
+        int status = checkHttpStatus(response);
+        String enityStr = response.readEntity(String.class);
         debug(status, enityStr);
-        isHTTP200(status);
+        
+        response.close();
 
         return Integer.parseInt(enityStr);
     }

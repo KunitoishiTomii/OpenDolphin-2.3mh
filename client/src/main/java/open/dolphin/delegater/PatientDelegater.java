@@ -56,10 +56,11 @@ public class  PatientDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
                 .post(entity, Response.class);
 
-        int status = response.getStatus();
-        String entityStr = (String) response.readEntity(String.class);
+        int status = checkHttpStatus(response);
+        String entityStr = response.readEntity(String.class);
         debug(status, entityStr);
-        isHTTP200(status);
+        
+        response.close();
 
         return Long.valueOf(entityStr);
     }
@@ -76,12 +77,12 @@ public class  PatientDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
                 .get(Response.class);
 
-        int status = response.getStatus();
-        isHTTP200(status);
+        checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-
         PatientModel patient = (PatientModel)
                 getConverter().fromJson(is, PatientModel.class);
+        
+        response.close();
 
         return patient;
     }
@@ -123,13 +124,13 @@ public class  PatientDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
                 .get(Response.class);
 
-        int status = response.getStatus();
-        isHTTP200(status);
+        checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-
         TypeReference typeRef = new TypeReference<List<PatientModel>>(){};
         List<PatientModel> list = (List<PatientModel>)
                 getConverter().fromJson(is, typeRef);
+        
+        response.close();
 
         return list;
     }
@@ -148,10 +149,11 @@ public class  PatientDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)    
                 .put(entity, Response.class);
 
-        int status = response.getStatus();
-        String entityStr = (String) response.readEntity(String.class);
+        int status = checkHttpStatus(response);
+        String entityStr = response.readEntity(String.class);
         debug(status, entityStr);
-        isHTTP200(status);
+        
+        response.close();
 
         return Integer.parseInt(entityStr);
     }
@@ -168,13 +170,13 @@ public class  PatientDelegater extends BusinessDelegater {
         Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
                 .get(Response.class);
 
-        int status = response.getStatus();
-        isHTTP200(status);
+        checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-
         TypeReference typeRef = new TypeReference<List<PatientModel>>(){};
         List<PatientModel> list = (List<PatientModel>)
                 getConverter().fromJson(is, typeRef);
+        
+        response.close();
 
         return list;
     }
@@ -188,13 +190,13 @@ public class  PatientDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
                 .get(Response.class);
 
-        int status = response.getStatus();
-        isHTTP200(status);
+        checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-
         TypeReference typeRef = new TypeReference<List<HealthInsuranceModel>>(){};
         List<HealthInsuranceModel> list = (List<HealthInsuranceModel>)
                 getConverter().fromJson(is, typeRef);
+        
+        response.close();
 
         pm.setHealthInsurances(list);
         // 忘れがちｗ

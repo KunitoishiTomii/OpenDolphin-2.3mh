@@ -45,14 +45,14 @@ public class LaboDelegater extends BusinessDelegater {
         Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
                 .get(Response.class);
 
-        int status = response.getStatus();
-        isHTTP200(status);
+        checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-
         TypeReference typeRef = new TypeReference<List<PatientLiteModel>>(){};
         List<PatientLiteModel> list = (List<PatientLiteModel>)
                 getConverter().fromJson(is, typeRef);
 
+        response.close();
+        
         return list;
     }
     
@@ -70,12 +70,12 @@ public class LaboDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
                 .post(entity, Response.class);
 
-        int status = response.getStatus();
-        isHTTP200(status);
+        checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-
         PatientModel patient = (PatientModel)
                 getConverter().fromJson(is, PatientModel.class);
+        
+        response.close();
 
         return patient;
     }
@@ -98,13 +98,13 @@ public class LaboDelegater extends BusinessDelegater {
         Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
                 .get(Response.class);
 
-        int status = response.getStatus();
-        isHTTP200(status);
+        checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-
         TypeReference typeRef = new TypeReference<List<NLaboModule>>(){};
         List<NLaboModule> list = (List<NLaboModule>)
                 getConverter().fromJson(is, typeRef);
+        
+        response.close();
 
         return list;
     }
@@ -119,12 +119,12 @@ public class LaboDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
                 .post(entity, Response.class);
 
-        int status = response.getStatus();
-        isHTTP200(status);
+        checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-
         PatientModel patient = (PatientModel) 
                 getConverter().fromJson(is, PatientModel.class);
+        
+        response.close();
 
         decodeHealthInsurance(patient);
 
@@ -139,9 +139,10 @@ public class LaboDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, null)
                 .delete(Response.class);
 
-        int status = response.getStatus();
+        int status = checkHttpStatus(response);
         debug(status, "delete response");
-        isHTTP200(status);
+        
+        response.close();
 
         return 1;
     }
@@ -153,9 +154,10 @@ public class LaboDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, null)
                 .delete(Response.class);
 
-        int status = response.getStatus();
+        int status = checkHttpStatus(response);
         debug(status, "delete response");
-        isHTTP200(status);
+        
+        response.close();
 
         return 1;
     }

@@ -41,10 +41,11 @@ public class LetterDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)    
                 .put(entity, Response.class);
 
-        int status = response.getStatus();
-        String entityStr = (String) response.readEntity(String.class);
+        int status = checkHttpStatus(response);
+        String entityStr = response.readEntity(String.class);
         debug(status, entityStr);
-        isHTTP200(status);
+        
+        response.close();
 
         long pk = Long.parseLong(entityStr);
         return pk;
@@ -57,12 +58,12 @@ public class LetterDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
                 .get(Response.class);
 
-        int status = response.getStatus();
-        isHTTP200(status);
+        checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-
         LetterModule ret = (LetterModule)
                 getConverter().fromJson(is, LetterModule.class);
+        
+        response.close();
 
         return ret;
     }
@@ -75,13 +76,13 @@ public class LetterDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
                 .get(Response.class);
 
-        int status = response.getStatus();
-        isHTTP200(status);
+        checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-
         TypeReference typeRef = new TypeReference<List<LetterModule>>(){};
         List<LetterModule> ret = (List<LetterModule>)
                 getConverter().fromJson(is, typeRef);
+        
+        response.close();
 
         return ret;
     }
@@ -94,9 +95,10 @@ public class LetterDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, null)
                 .delete(Response.class);
 
-        int status = response.getStatus();
+        int status = checkHttpStatus(response);
         debug(status, "delete response");
-        isHTTP200(status);
+        
+        response.close();
     }
     
     @Override

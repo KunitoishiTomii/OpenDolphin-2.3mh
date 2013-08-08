@@ -7,6 +7,7 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
 import open.dolphin.client.ClientContext;
 import open.dolphin.infomodel.*;
 import open.dolphin.util.BeanUtils;
@@ -104,10 +105,13 @@ public class BusinessDelegater {
         }
     }
     
-    protected void isHTTP200(int status) throws Exception {
+    protected int checkHttpStatus(Response response) throws Exception {
+        int status = response.getStatus();
         if (status / 100 != 2) {
             String msg = "HTTP" + String.valueOf(status);
+            response.close();
             throw new Exception(msg);
         }
+        return status;
     }
 }

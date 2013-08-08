@@ -49,13 +49,13 @@ public class MasudaDelegater extends BusinessDelegater {
         Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
                 .get(Response.class);
 
-        int status = response.getStatus();
-        isHTTP200(status);
+        checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-
         TypeReference typeRef = new TypeReference<List<RoutineMedModel>>(){};
         List<RoutineMedModel> list = (List<RoutineMedModel>) 
                 getConverter().fromJson(is, typeRef);
+        
+        response.close();
 
         // いつもデコード忘れるｗ
         for (RoutineMedModel model : list) {
@@ -74,12 +74,13 @@ public class MasudaDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
                 .get(Response.class);
 
-        int status = response.getStatus();
-        isHTTP200(status);
+        checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-
         RoutineMedModel model = (RoutineMedModel)
                 getConverter().fromJson(is, RoutineMedModel.class);
+        
+        response.close();
+        
         if (model == null) {
             return null;
         }
@@ -98,9 +99,10 @@ public class MasudaDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, null)
                     .delete(Response.class);
 
-        int status = response.getStatus();
+        int status = checkHttpStatus(response);
         debug(status, "delete response");
-        isHTTP200(status);
+        
+        response.close();
     }
     
     public void addRoutineMedModel(RoutineMedModel model) throws Exception {
@@ -112,10 +114,11 @@ public class MasudaDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
                 .post(entity, Response.class);
 
-        int status = response.getStatus();
-        String enityStr = (String) response.readEntity(String.class);
+        int status = checkHttpStatus(response);
+        String enityStr = response.readEntity(String.class);
         debug(status, enityStr);
-        isHTTP200(status);
+        
+        response.close();
     }
     
     public void updateRoutineMedModel(RoutineMedModel model) throws Exception {
@@ -127,10 +130,11 @@ public class MasudaDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
                 .put(entity, Response.class);
 
-        int status = response.getStatus();
-        String enityStr = (String) response.readEntity(String.class);
+        int status = checkHttpStatus(response);
+        String enityStr = response.readEntity(String.class);
         debug(status, enityStr);
-        isHTTP200(status);
+        
+        response.close();
     }
     
     // 中止項目
@@ -141,13 +145,13 @@ public class MasudaDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
                 .get(Response.class);
 
-        int status = response.getStatus();
-        isHTTP200(status);
+        checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-
         TypeReference typeRef = new TypeReference<List<DisconItemModel>>(){};
         List<DisconItemModel> list = (List<DisconItemModel>)
                 getConverter().fromJson(is, typeRef);
+        
+        response.close();
 
         return list;
     }
@@ -161,10 +165,11 @@ public class MasudaDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
                 .post(entity, Response.class);
 
-        int status = response.getStatus();
-        String enityStr = (String) response.readEntity(String.class);
+        int status = checkHttpStatus(response);
+        String enityStr = response.readEntity(String.class);
         debug(status, enityStr);
-        isHTTP200(status);
+        
+        response.close();
     }
 
     public void removeDisconItemModel(DisconItemModel model) throws Exception {
@@ -174,9 +179,10 @@ public class MasudaDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, null)
                 .delete(Response.class);
 
-        int status = response.getStatus();
+        int status = checkHttpStatus(response);
         debug(status, "delete response");
-        isHTTP200(status);
+        
+        response.close();
     }
 
     public void updateDisconItemModel(DisconItemModel model) throws Exception {
@@ -188,10 +194,11 @@ public class MasudaDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
                 .put(entity, Response.class);
 
-        int status = response.getStatus();
-        String enityStr = (String) response.readEntity(String.class);
+        int status = checkHttpStatus(response);
+        String enityStr = response.readEntity(String.class);
         debug(status, enityStr);
-        isHTTP200(status);
+        
+        response.close();
     }
 
     // 採用薬
@@ -202,13 +209,13 @@ public class MasudaDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
                 .get(Response.class);
 
-        int status = response.getStatus();
-        isHTTP200(status);
+        checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-
         TypeReference typeRef = new TypeReference<List<UsingDrugModel>>(){};
         List<UsingDrugModel> list = (List<UsingDrugModel>)
                 getConverter().fromJson(is, typeRef);
+        
+        response.close();
 
         return list;
     }
@@ -222,10 +229,11 @@ public class MasudaDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
                     .post(entity, Response.class);
 
-        int status = response.getStatus();
-        String enityStr = (String) response.readEntity(String.class);
+        int status = checkHttpStatus(response);
+        String enityStr = response.readEntity(String.class);
         debug(status, enityStr);
-        isHTTP200(status);
+        
+        response.close();
     }
 
     public void removeUsingDrugModel(UsingDrugModel model) throws Exception {
@@ -235,9 +243,10 @@ public class MasudaDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, null)
                     .delete(Response.class);
 
-        int status = response.getStatus();
+        int status = checkHttpStatus(response);
         debug(status, "delete response");
-        isHTTP200(status);
+        
+        response.close();
     }
 
     public void updateUsingDrugModel(UsingDrugModel model) throws Exception {
@@ -249,10 +258,11 @@ public class MasudaDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
                     .put(entity, Response.class);
 
-        int status = response.getStatus();
-        String enityStr = (String) response.readEntity(String.class);
+        int status = checkHttpStatus(response);
+        String enityStr = response.readEntity(String.class);
         debug(status, enityStr);
-        isHTTP200(status);
+        
+        response.close();
     }
 
     // 指定したEntityのModuleModelをがさっと取ってくる
@@ -273,13 +283,13 @@ public class MasudaDelegater extends BusinessDelegater {
         Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
                 .get(Response.class);
 
-        int status = response.getStatus();
-        isHTTP200(status);
+        checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-
         TypeReference typeRef = new TypeReference<List<ModuleModel>>(){};
         List<ModuleModel> list = (List<ModuleModel>)
                 getConverter().fromJson(is, typeRef);
+        
+        response.close();
 
         for (ModuleModel module : list) {
             module.setModel((InfoModel) BeanUtils.xmlDecode(module.getBeanBytes()));
@@ -300,13 +310,13 @@ public class MasudaDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
                 .get(Response.class);
 
-        int status = response.getStatus();
-        isHTTP200(status);
+        checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-
         PatientVisitModel model = (PatientVisitModel)
                 getConverter().fromJson(is, PatientVisitModel.class);
-
+        
+        response.close();
+        
         return model;
     }
 
@@ -325,13 +335,13 @@ public class MasudaDelegater extends BusinessDelegater {
         Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
                 .get(Response.class);
 
-        int status = response.getStatus();
-        isHTTP200(status);
+        checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-
         TypeReference typeRef = new TypeReference<List<DocInfoModel>>(){};
         List<DocInfoModel> list = (List<DocInfoModel>)
                 getConverter().fromJson(is, typeRef);
+        
+        response.close();
 
         return list;
     }
@@ -348,10 +358,11 @@ public class MasudaDelegater extends BusinessDelegater {
         Response response = buildRequest(path, qmap, MediaType.TEXT_PLAIN_TYPE)
                 .get(Response.class);
 
-        int status = response.getStatus();
-        String entityStr = (String) response.readEntity(String.class);
+        int status = checkHttpStatus(response);
+        String entityStr = response.readEntity(String.class);
         debug(status, entityStr);
-        isHTTP200(status);
+        
+        response.close();
 
         return entityStr;
     }
@@ -368,13 +379,13 @@ public class MasudaDelegater extends BusinessDelegater {
         Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
                 .get(Response.class);
 
-        int status = response.getStatus();
-        isHTTP200(status);
+        checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-
         TypeReference typeRef = new TypeReference<List<PatientModel>>(){};
         List<PatientModel> list = (List<PatientModel>)
                 getConverter().fromJson(is, typeRef);
+        
+        response.close();
 
         return list;
     }
@@ -394,13 +405,13 @@ public class MasudaDelegater extends BusinessDelegater {
         Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
                 .get(Response.class);
 
-        int status = response.getStatus();
-        isHTTP200(status);
+        checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-
         SearchResultModel model = (SearchResultModel)
                 getConverter().fromJson(is, SearchResultModel.class);
 
+        response.close();
+        
         return model;
     }
 
@@ -416,13 +427,13 @@ public class MasudaDelegater extends BusinessDelegater {
         Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
                 .get(Response.class);
 
-        int status = response.getStatus();
-        isHTTP200(status);
+        checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-
         TypeReference typeRef = new TypeReference<List<ExamHistoryModel>>(){};
         List<ExamHistoryModel> list = (List<ExamHistoryModel>)
                 getConverter().fromJson(is, typeRef);
+        
+        response.close();
 
         return list;
     }
@@ -440,14 +451,14 @@ public class MasudaDelegater extends BusinessDelegater {
         Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
                 .get(Response.class);
 
-        int status = response.getStatus();
-        isHTTP200(status);
+        checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-
         TypeReference typeRef = new TypeReference<List<PatientModel>>(){};
         List<PatientModel> list = (List<PatientModel>)
                 getConverter().fromJson(is, typeRef);
 
+        response.close();
+        
         return list;
     }
 
@@ -459,14 +470,14 @@ public class MasudaDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
                 .get(Response.class);
 
-        int status = response.getStatus();
-        isHTTP200(status);
+        checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-
         TypeReference typeRef = new TypeReference<List<InFacilityLaboItem>>(){};
         List<InFacilityLaboItem> list = (List<InFacilityLaboItem>)
                 getConverter().fromJson(is, typeRef);
 
+        response.close();
+        
         return list;
     }
     
@@ -479,11 +490,11 @@ public class MasudaDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
                 .put(entity, Response.class);
 
-        int status = response.getStatus();
-        String enityStr = (String) response.readEntity(String.class);
+        int status = checkHttpStatus(response);
+        String enityStr = response.readEntity(String.class);
         debug(status, enityStr);
-        isHTTP200(status);
-
+        
+        response.close();
     }
     
     // 電子点数表　未使用
@@ -491,15 +502,16 @@ public class MasudaDelegater extends BusinessDelegater {
         
         String path = RES_BASE + "etensu/update/";
 
-       Entity entity = toJsonEntity(list);
+        Entity entity = toJsonEntity(list);
 
         Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
                 .post(entity, Response.class);
 
-        int status = response.getStatus();
-        String ret = (String) response.readEntity(String.class);
+        int status = checkHttpStatus(response);
+        String ret = response.readEntity(String.class);
         debug(status, ret);
-        isHTTP200(status);
+        
+        response.close();
 
         return ret;
     }
@@ -515,10 +527,11 @@ public class MasudaDelegater extends BusinessDelegater {
         Response response = buildRequest(path, qmap, MediaType.TEXT_PLAIN_TYPE)
                 .get(Response.class);
 
-        int status = response.getStatus();
-        String ret = (String) response.readEntity(String.class);
+        int status = checkHttpStatus(response);
+        String ret = response.readEntity(String.class);
         debug(status, ret);
-        isHTTP200(status);
+        
+        response.close();
 
         return ret;
     }
@@ -537,14 +550,14 @@ public class MasudaDelegater extends BusinessDelegater {
         Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
                 .get(Response.class);
 
-        int status = response.getStatus();
-        isHTTP200(status);
+        checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-
         TypeReference typeRef = new TypeReference<List<SanteiHistoryModel>>(){};
         List<SanteiHistoryModel> list = (List<SanteiHistoryModel>)
                 getConverter().fromJson(is, typeRef);
 
+        response.close();
+        
         return list;
     }
     
@@ -561,13 +574,13 @@ public class MasudaDelegater extends BusinessDelegater {
         Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
                 .get(Response.class);
 
-        int status = response.getStatus();
-        isHTTP200(status);
+        checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-
         TypeReference typeRef = new TypeReference<List<List<RpModel>>>(){};
         List<List<RpModel>> list = (List<List<RpModel>>)
                 getConverter().fromJson(is, typeRef);
+        
+        response.close();
 
         return list;
     }
@@ -581,10 +594,11 @@ public class MasudaDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
                 .post(entity, Response.class);
 
-        int status = response.getStatus();
-        String enityStr = (String) response.readEntity(String.class);
+        int status = checkHttpStatus(response);
+        String enityStr = response.readEntity(String.class);
         debug(status, enityStr);
-        isHTTP200(status);
+        
+        response.close();
     }
     
     public List<UserPropertyModel> getUserProperties(String userId) throws Exception {
@@ -594,13 +608,13 @@ public class MasudaDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
                 .get(Response.class);
 
-        int status = response.getStatus();
-        isHTTP200(status);
+        checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-
         TypeReference typeRef = new TypeReference<List<UserPropertyModel>>(){};
         List<UserPropertyModel> list = (List<UserPropertyModel>) 
                 getConverter().fromJson(is, typeRef);
+        
+        response.close();
 
         return list;
     }
@@ -616,13 +630,13 @@ public class MasudaDelegater extends BusinessDelegater {
         Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
                 .get(Response.class);
 
-        int status = response.getStatus();
-        isHTTP200(status);
+        checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-
         TypeReference typeRef = new TypeReference<List<PatientModel>>(){};
         List<PatientModel> list = (List<PatientModel>) 
                 getConverter().fromJson(is, typeRef);
+        
+        response.close();
 
         return list;
     }

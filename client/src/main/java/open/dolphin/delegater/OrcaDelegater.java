@@ -42,12 +42,12 @@ public class OrcaDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
                 .post(entity, Response.class);
 
-        int status = response.getStatus();
-        isHTTP200(status);
+        checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-
         sqlModel = (OrcaSqlModel) 
                 getConverter().fromJson(is, OrcaSqlModel.class);
+        
+        response.close();
 
         return sqlModel;
     }
@@ -82,12 +82,12 @@ public class OrcaDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, null)
                 .post(entity, Response.class);
 
-        int status = response.getStatus();
-        isHTTP200(status);
+        checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-        
         ClaimMessageModel resModel = (ClaimMessageModel)
                 getConverter().fromJson(is, ClaimMessageModel.class);
+        
+        response.close();
 
         String errMsg = resModel.getErrorMsg();
         boolean noError = NO_ERROR.equals(resModel.getErrorCode());

@@ -35,11 +35,12 @@ public final class AppointmentDelegater extends BusinessDelegater {
         
         Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
                 .put(entity, Response.class);
-
-        int status = response.getStatus();
-        String entityStr = (String) response.readEntity(String.class);
+        
+        int status = checkHttpStatus(response);
+        String entityStr = response.readEntity(String.class);
         debug(status, entityStr);
-        isHTTP200(status);
+        
+        response.close();
 
         return Integer.parseInt(entityStr);
     }

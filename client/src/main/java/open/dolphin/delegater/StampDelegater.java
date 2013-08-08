@@ -59,10 +59,11 @@ public class StampDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)    
                 .put(entity, Response.class);
 
-        int status = response.getStatus();
-        String entityStr = (String) response.readEntity(String.class);
+        int status = checkHttpStatus(response);
+        String entityStr = response.readEntity(String.class);
         debug(status, entityStr);
-        isHTTP200(status);
+        
+        response.close();
 
         long pk = Long.parseLong(entityStr);
         return pk;
@@ -75,12 +76,12 @@ public class StampDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
                 .get(Response.class);
 
-        int status = response.getStatus();
-        isHTTP200(status);
+        checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-
         UserStampTreeModel ret = (UserStampTreeModel) getConverter()
                 .fromJson(is, UserStampTreeModel.class);
+        
+        response.close();
 
         List<IStampTreeModel> treeList = new ArrayList<IStampTreeModel>();
         List<IStampTreeModel> list = ret.getTreeList();
@@ -122,10 +123,11 @@ public class StampDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
                 .post(entity, Response.class);
 
-        int status = response.getStatus();
-        String entityStr = (String) response.readEntity(String.class);
+        int status = checkHttpStatus(response);
+        String entityStr = response.readEntity(String.class);
         debug(status, entityStr);
-        isHTTP200(status);
+        
+        response.close();
 
         return Long.valueOf(entityStr);
     }
@@ -165,10 +167,11 @@ public class StampDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
                 .put(entity, Response.class);
 
-        int status = response.getStatus();
-        String entityStr = (String) response.readEntity(String.class);
+        int status = checkHttpStatus(response);
+        String entityStr = response.readEntity(String.class);
         debug(status, entityStr);
-        isHTTP200(status);
+        
+        response.close();
 
         return Integer.valueOf(entityStr);
      }
@@ -189,9 +192,10 @@ public class StampDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
                 .put(entity, Response.class);
 
-        int status = response.getStatus();
+        int status = checkHttpStatus(response);
         debug(status, "put response");
-        isHTTP200(status);
+        
+        response.close();
 
         return 1;
     }
@@ -203,13 +207,13 @@ public class StampDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
                 .get(Response.class);
 
-        int status = response.getStatus();
-        isHTTP200(status);
+        checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-
         TypeReference typeRef = new TypeReference<List<PublishedTreeModel>>(){};
         List<PublishedTreeModel> ret = (List<PublishedTreeModel>)
                 getConverter().fromJson(is, typeRef);
+        
+        response.close();
 
         return ret;
     }
@@ -244,10 +248,11 @@ public class StampDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)    
                 .put(entity, Response.class);
 
-        int status = response.getStatus();
-        String entityStr = (String) response.readEntity(String.class);
+        int status = checkHttpStatus(response);
+        String entityStr = response.readEntity(String.class);
         debug(status, entityStr);
-        isHTTP200(status);
+        
+        response.close();
 
         String[] pks = entityStr.split(",");
         List<Long> ret = new ArrayList<Long>(pks.length);
@@ -280,9 +285,10 @@ public class StampDelegater extends BusinessDelegater {
         Response response = buildRequest(path, qmap, null)
                 .delete(Response.class);
 
-        int status = response.getStatus();
+        int status = checkHttpStatus(response);
         debug(status, "delete response");
-        isHTTP200(status);
+        
+        response.close();
 
         return 1;
     }
@@ -308,10 +314,11 @@ public class StampDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
                 .put(entity, Response.class);
 
-        int status = response.getStatus();
-        String entityStr = (String) response.readEntity(String.class);
+        int status = checkHttpStatus(response);
+        String entityStr = response.readEntity(String.class);
         debug(status, entityStr);
-        isHTTP200(status);
+        
+        response.close();
 
         String[] params = entityStr.split(",");
         List<String> ret = Arrays.asList(params);
@@ -335,10 +342,11 @@ public class StampDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)    
                 .put(entity, Response.class);
 
-        int status = response.getStatus();
-        String entityStr = (String) response.readEntity(String.class);
+        int status = checkHttpStatus(response);
+        String entityStr = response.readEntity(String.class);
         debug(status, entityStr);
-        isHTTP200(status);
+        
+        response.close();
 
         return entityStr;
     }
@@ -375,12 +383,12 @@ public class StampDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
                 .get(Response.class);
 
-        int status = response.getStatus();
-        isHTTP200(status);
+        checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-
         ret = (StampModel)
                 getConverter().fromJson(is, StampModel.class);
+        
+        response.close();
 
         // キャッシュに登録する
         stampCache.put(stampId, ret);
@@ -421,13 +429,13 @@ public class StampDelegater extends BusinessDelegater {
             Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
                     .get(Response.class);
 
-            int status = response.getStatus();
-            isHTTP200(status);
+            checkHttpStatus(response);
             InputStream is = response.readEntity(InputStream.class);
-
             TypeReference typeRef = new TypeReference<List<StampModel>>(){};
             List<StampModel> smList = (List<StampModel>)
                         getConverter().fromJson(is, typeRef);
+            
+            response.close();
 
             // キャッシュに登録する
             for (StampModel sm : smList) {
@@ -459,9 +467,10 @@ public class StampDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, null)
                 .delete(Response.class);
 
-        int status = response.getStatus();
+        int status = checkHttpStatus(response);
         debug(status, "delete response");
-        isHTTP200(status);
+        
+        response.close();
 
         return 1;
     }
@@ -485,9 +494,10 @@ public class StampDelegater extends BusinessDelegater {
         Response response = buildRequest(path, qmap, null)
                 .delete(Response.class);
 
-        int status = response.getStatus();
+        int status = checkHttpStatus(response);
         debug(status, "delete response");
-        isHTTP200(status);
+        
+        response.close();
 
         return ids.size();
     }
@@ -507,9 +517,10 @@ public class StampDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)    
                 .post(entity, Response.class);
 
-        int status = response.getStatus();
+        int status = checkHttpStatus(response);
         debug(status, "delete response");
-        isHTTP200(status);
+        
+        response.close();
         
         int cnt = Integer.valueOf(response.readEntity(String.class));
         
@@ -524,13 +535,13 @@ public class StampDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
                 .get(Response.class);
 
-        int status = response.getStatus();
-        isHTTP200(status);
+        checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-
         TypeReference typeRef = new TypeReference<List<StampModel>>(){};
         List<StampModel> smList = (List<StampModel>) 
                 getConverter().fromGzippedJson(is, typeRef);
+        
+        response.close();
         
         return smList;
     }

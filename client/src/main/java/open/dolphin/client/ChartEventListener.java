@@ -245,13 +245,19 @@ public class ChartEventListener {
         @Override
         public void run() {
             
-            if (response == null || response.getStatus() / 100 != 2) {
+            if (response == null) {
+                return;
+            }
+            if (response.getStatus() / 100 != 2) {
+                response.close();
                 return;
             }
             
             InputStream is = response.readEntity(InputStream.class);
             ChartEventModel evt = (ChartEventModel) 
                     JsonConverter.getInstance().fromJson(is, ChartEventModel.class);
+            
+            response.close();
             
             if (evt == null) {
                 return;

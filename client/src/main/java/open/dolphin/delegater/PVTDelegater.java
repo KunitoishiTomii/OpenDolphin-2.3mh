@@ -49,10 +49,11 @@ public class PVTDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
                 .post(entity, Response.class);
 
-        int status = response.getStatus();
-        String enityStr = (String) response.readEntity(String.class);
+        int status = checkHttpStatus(response);
+        String enityStr = response.readEntity(String.class);
         debug(status, enityStr);
-        isHTTP200(status);
+        
+        response.close();
 
         // result = count
         int cnt = Integer.parseInt(enityStr);
@@ -66,10 +67,11 @@ public class PVTDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, null)
                 .delete(Response.class);
 
-        int status = response.getStatus();
+        int status = checkHttpStatus(response);
         String enityStr = "delete response";
         debug(status, enityStr);
-        isHTTP200(status);
+        
+        response.close();
 
         return 1;
      }
@@ -84,13 +86,13 @@ public class PVTDelegater extends BusinessDelegater {
         Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
                 .get(Response.class);
 
-        int status = response.getStatus();
-        isHTTP200(status);
+        checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-
         TypeReference typeRef = new TypeReference<List<PatientVisitModel>>(){};
         List<PatientVisitModel> pvtList = (List<PatientVisitModel>)
                 getConverter().fromJson(is, typeRef);
+        
+        response.close();
 
         // 保険をデコード
         decodePvtHealthInsurance(pvtList);
