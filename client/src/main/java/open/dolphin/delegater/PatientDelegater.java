@@ -203,6 +203,24 @@ public class  PatientDelegater extends BusinessDelegater {
         decodeHealthInsurance(pm);
     }
     
+    public List<PatientModel> getPast100DayPatients(int pastDay) throws Exception {
+        
+        String path = BASE_RESOURCE + "past100day/" + String.valueOf(pastDay);
+        
+        Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
+                .get(Response.class);
+
+        checkHttpStatus(response);
+        InputStream is = response.readEntity(InputStream.class);
+        TypeReference typeRef = new TypeReference<List<PatientModel>>(){};
+        List<PatientModel> list = (List<PatientModel>)
+                getConverter().fromJson(is, typeRef);
+        
+        response.close();
+
+        return list;
+    }
+    
     @Override
     protected void debug(int status, String entity) {
         if (debug || DEBUG) {

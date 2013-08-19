@@ -2,6 +2,7 @@ package open.dolphin.session;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.GregorianCalendar;
 import java.util.List;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
@@ -10,6 +11,7 @@ import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import open.dolphin.infomodel.ChartEventModel;
 import open.dolphin.infomodel.HealthInsuranceModel;
+import open.dolphin.infomodel.ModelUtils;
 import open.dolphin.infomodel.PatientModel;
 import open.dolphin.infomodel.PatientVisitModel;
 
@@ -166,13 +168,55 @@ public class PatientServiceBean {
             setHealthInsurances(patient);
             ret.add(patient);
 //masuda^   最終受診日設定
-           patient.setPvtDate(pvt.getPvtDate());
-//masuda$
+            //patient.setPvtDate(pvt.getPvtDate());
         }
+        if (!ret.isEmpty()) {
+            setPvtDate(fid, ret);
+        }
+ //masuda$       
 
         return ret;
     }
+    
+    
+//masuda^   過去１００日の受診者を検索する
+    public List<PatientModel> getPast100DayPatients(String fid, int pastDay) {
+        
+        final String sql = "from PatientVisitModel p where p.facilityId = :fid and p.pvtDate > :date";
+        
+        GregorianCalendar gc = new GregorianCalendar();
+        gc.add(GregorianCalendar.DATE, -pastDay);
+        String mmlDate = ModelUtils.getDateAsString(gc.getTime());
+        List<PatientVisitModel> list =
+                em.createQuery(sql)
+                .setParameter(FID, fid)
+                .setParameter(DATE, mmlDate)
+                .getResultList();
 
+        List<PatientModel> ret = new ArrayList<PatientModel>();
+
+        for (PatientVisitModel pvt : list) {
+            PatientModel patient = pvt.getPatientModel();
+            int index = ret.indexOf(patient);
+            if (index == -1) {
+                // リストにないならPatientModelをリストに登録する
+                ret.add(patient);
+                patient.setPvtDate(pvt.getPvtDate());
+                // ダミーの保険を設定する
+                patient.setHealthInsurances(null);
+            } else {
+                // pvtDateが新しい場合は更新する
+                PatientModel exist = ret.get(ret.indexOf(patient));
+                if (patient.getPvtDate2().after(exist.getPvtDate2())) {
+                    exist.setPvtDate(patient.getPvtDate());
+                }
+            }
+        }
+     
+        return ret;
+    }
+//masuda$
+    
     /**
      * 患者ID(BUSINESS KEY)を指定して患者オブジェクトを返す。
      *

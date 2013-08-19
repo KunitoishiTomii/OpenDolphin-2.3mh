@@ -174,7 +174,21 @@ public class PatientResource extends AbstractResource {
         return Response.ok(so).build();
     }
 
-
+//masuda^
+    @GET
+    @Path("past100day/{pastDay}/")
+    @Produces(MEDIATYPE_JSON_UTF8)
+    public Response getPast100DayPatients(@PathParam("pastDay") int pastDay) {
+        
+        String fid = getRemoteFacility();
+        List<PatientModel> list = patientServiceBean.getPast100DayPatients(fid, pastDay);
+        
+        StreamingOutput so = getJsonOutStream(list);
+        
+        return Response.ok(so).build();
+    }
+//masuda$
+    
     @Override
     protected void debug(String msg) {
         if (debug || DEBUG) {
