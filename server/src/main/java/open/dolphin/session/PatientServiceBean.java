@@ -2,6 +2,8 @@ package open.dolphin.session;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.GregorianCalendar;
 import java.util.List;
 import javax.ejb.Stateless;
@@ -197,23 +199,43 @@ public class PatientServiceBean {
 
         for (PatientVisitModel pvt : list) {
             PatientModel patient = pvt.getPatientModel();
+            // PatientModelに受診日を設定
+            patient.setPvtDate(pvt.getPvtDate());
             int index = ret.indexOf(patient);
             if (index == -1) {
-                // リストにないならPatientModelをリストに登録する
-                ret.add(patient);
-                patient.setPvtDate(pvt.getPvtDate());
                 // ダミーの保険を設定する
                 patient.setHealthInsurances(null);
+                // リストにないならPatientModelをリストに登録する
+                ret.add(patient);
             } else {
                 // pvtDateが新しい場合は更新する
-                PatientModel exist = ret.get(ret.indexOf(patient));
+                PatientModel exist = ret.get(index);
                 if (patient.getPvtDate2().after(exist.getPvtDate2())) {
                     exist.setPvtDate(patient.getPvtDate());
                 }
             }
         }
+        
+        // 受診が途絶えている順でソートする
+        Collections.sort(ret, new PvtDateComparator());
      
         return ret;
+    }
+    
+    private class PvtDateComparator implements Comparator {
+
+        @Override
+        public int compare(Object o1, Object o2) {
+            PatientModel pm1 = (PatientModel) o1;
+            PatientModel pm2 = (PatientModel) o2;
+            if (pm1.getPvtDate2().after(pm2.getPvtDate2())) {
+                return 1;
+            } else if (pm1.getPvtDate2().before(pm2.getPvtDate2())) {
+                return -1;
+            }
+            return 0;
+        }
+        
     }
 //masuda$
     
