@@ -54,7 +54,7 @@ public class  PatientDelegater extends BusinessDelegater {
         String path = BASE_RESOURCE;
 
         Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
-                .post(entity, Response.class);
+                .post(entity);
 
         int status = checkHttpStatus(response);
         String entityStr = response.readEntity(String.class);
@@ -75,7 +75,7 @@ public class  PatientDelegater extends BusinessDelegater {
         String path = ID_RESOURCE;
 
         Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
-                .get(Response.class);
+                .get();
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
@@ -122,7 +122,7 @@ public class  PatientDelegater extends BusinessDelegater {
         String path = sb.toString();
 
         Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
-                .get(Response.class);
+                .get();
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
@@ -147,7 +147,7 @@ public class  PatientDelegater extends BusinessDelegater {
         String path = BASE_RESOURCE;
 
         Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)    
-                .put(entity, Response.class);
+                .put(entity);
 
         int status = checkHttpStatus(response);
         String entityStr = response.readEntity(String.class);
@@ -168,7 +168,7 @@ public class  PatientDelegater extends BusinessDelegater {
         qmap.add("ids", ids);
 
         Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
-                .get(Response.class);
+                .get();
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
@@ -188,7 +188,7 @@ public class  PatientDelegater extends BusinessDelegater {
         String path = BASE_RESOURCE + "insurances/" + String.valueOf(pk);
 
         Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
-                .get(Response.class);
+                .get();
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
@@ -208,7 +208,7 @@ public class  PatientDelegater extends BusinessDelegater {
         String path = BASE_RESOURCE + "past100day/" + String.valueOf(pastDay);
         
         Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
-                .get(Response.class);
+                .get();
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);

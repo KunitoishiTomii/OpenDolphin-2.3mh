@@ -47,7 +47,7 @@ public class MasudaDelegater extends BusinessDelegater {
         qmap.add("maxResults", String.valueOf(maxResults));
 
         Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
-                .get(Response.class);
+                .get();
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
@@ -72,7 +72,7 @@ public class MasudaDelegater extends BusinessDelegater {
         String path = RES_BASE + "routineMed/" + String.valueOf(id);
 
         Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
-                .get(Response.class);
+                .get();
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
@@ -97,7 +97,7 @@ public class MasudaDelegater extends BusinessDelegater {
         String path = RES_BASE + "routineMed/" + String.valueOf(model.getId());
 
         Response response = buildRequest(path, null, null)
-                    .delete(Response.class);
+                    .delete();
 
         int status = checkHttpStatus(response);
         debug(status, "delete response");
@@ -112,7 +112,7 @@ public class MasudaDelegater extends BusinessDelegater {
         Entity entity = toJsonEntity(model);
 
         Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
-                .post(entity, Response.class);
+                .post(entity);
 
         int status = checkHttpStatus(response);
         String enityStr = response.readEntity(String.class);
@@ -128,7 +128,7 @@ public class MasudaDelegater extends BusinessDelegater {
         Entity entity = toJsonEntity(model);
 
         Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
-                .put(entity, Response.class);
+                .put(entity);
 
         int status = checkHttpStatus(response);
         String enityStr = response.readEntity(String.class);
@@ -143,7 +143,7 @@ public class MasudaDelegater extends BusinessDelegater {
         String path = RES_BASE + "discon";
 
         Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
-                .get(Response.class);
+                .get();
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
@@ -163,7 +163,7 @@ public class MasudaDelegater extends BusinessDelegater {
         Entity entity = toJsonEntity(model);
 
         Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
-                .post(entity, Response.class);
+                .post(entity);
 
         int status = checkHttpStatus(response);
         String enityStr = response.readEntity(String.class);
@@ -177,7 +177,7 @@ public class MasudaDelegater extends BusinessDelegater {
         String path = RES_BASE + "discon/" + String.valueOf(model.getId());
 
         Response response = buildRequest(path, null, null)
-                .delete(Response.class);
+                .delete();
 
         int status = checkHttpStatus(response);
         debug(status, "delete response");
@@ -192,7 +192,7 @@ public class MasudaDelegater extends BusinessDelegater {
         Entity entity = toJsonEntity(model);
 
         Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
-                .put(entity, Response.class);
+                .put(entity);
 
         int status = checkHttpStatus(response);
         String enityStr = response.readEntity(String.class);
@@ -207,7 +207,7 @@ public class MasudaDelegater extends BusinessDelegater {
         String path = RES_BASE + "usingDrug";
 
         Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
-                .get(Response.class);
+                .get();
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
@@ -227,7 +227,7 @@ public class MasudaDelegater extends BusinessDelegater {
         Entity entity = toJsonEntity(model);
 
         Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
-                    .post(entity, Response.class);
+                    .post(entity);
 
         int status = checkHttpStatus(response);
         String enityStr = response.readEntity(String.class);
@@ -241,7 +241,7 @@ public class MasudaDelegater extends BusinessDelegater {
         String path = RES_BASE + "usingDrug/" + String.valueOf(model.getId());
 
         Response response = buildRequest(path, null, null)
-                    .delete(Response.class);
+                    .delete();
 
         int status = checkHttpStatus(response);
         debug(status, "delete response");
@@ -256,7 +256,7 @@ public class MasudaDelegater extends BusinessDelegater {
         Entity entity = toJsonEntity(model);
         
         Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
-                    .put(entity, Response.class);
+                    .put(entity);
 
         int status = checkHttpStatus(response);
         String enityStr = response.readEntity(String.class);
@@ -281,7 +281,7 @@ public class MasudaDelegater extends BusinessDelegater {
         qmap.add("entities", getConverter().fromList(entities));
 
         Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
-                .get(Response.class);
+                .get();
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
@@ -308,7 +308,7 @@ public class MasudaDelegater extends BusinessDelegater {
         String path = RES_BASE + "lastPvt/" + ptId;
 
         Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
-                .get(Response.class);
+                .get();
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
@@ -333,7 +333,7 @@ public class MasudaDelegater extends BusinessDelegater {
         qmap.add("ids", getConverter().fromList(docPkList));
 
         Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
-                .get(Response.class);
+                .get();
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
@@ -356,7 +356,7 @@ public class MasudaDelegater extends BusinessDelegater {
         qmap.add("maxResults", String.valueOf(maxResults));
 
         Response response = buildRequest(path, qmap, MediaType.TEXT_PLAIN_TYPE)
-                .get(Response.class);
+                .get();
 
         int status = checkHttpStatus(response);
         String entityStr = response.readEntity(String.class);
@@ -377,7 +377,7 @@ public class MasudaDelegater extends BusinessDelegater {
         qmap.add("text", text);
 
         Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
-                .get(Response.class);
+                .get();
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
@@ -403,7 +403,7 @@ public class MasudaDelegater extends BusinessDelegater {
         qmap.add("pcOnly", String.valueOf(progressCourseOnly));
 
         Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
-                .get(Response.class);
+                .get();
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
@@ -425,7 +425,7 @@ public class MasudaDelegater extends BusinessDelegater {
         qmap.add("toDate", toRestFormat(toDate));
 
         Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
-                .get(Response.class);
+                .get();
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
@@ -449,7 +449,7 @@ public class MasudaDelegater extends BusinessDelegater {
         qmap.add("yoyuu", String.valueOf(yoyuu));
 
         Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
-                .get(Response.class);
+                .get();
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
@@ -468,7 +468,7 @@ public class MasudaDelegater extends BusinessDelegater {
         String path = RES_BASE + "inFacilityLabo/list";
         
         Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
-                .get(Response.class);
+                .get();
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
@@ -488,7 +488,7 @@ public class MasudaDelegater extends BusinessDelegater {
         Entity entity = toJsonEntity(list);
 
         Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
-                .put(entity, Response.class);
+                .put(entity);
 
         int status = checkHttpStatus(response);
         String enityStr = response.readEntity(String.class);
@@ -505,7 +505,7 @@ public class MasudaDelegater extends BusinessDelegater {
         Entity entity = toJsonEntity(list);
 
         Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
-                .post(entity, Response.class);
+                .post(entity);
 
         int status = checkHttpStatus(response);
         String ret = response.readEntity(String.class);
@@ -525,7 +525,7 @@ public class MasudaDelegater extends BusinessDelegater {
         qmap.add("maxResults", String.valueOf(maxResults));
 
         Response response = buildRequest(path, qmap, MediaType.TEXT_PLAIN_TYPE)
-                .get(Response.class);
+                .get();
 
         int status = checkHttpStatus(response);
         String ret = response.readEntity(String.class);
@@ -548,7 +548,7 @@ public class MasudaDelegater extends BusinessDelegater {
         }
 
         Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
-                .get(Response.class);
+                .get();
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
@@ -572,7 +572,7 @@ public class MasudaDelegater extends BusinessDelegater {
         qmap.add("lastOnly", String.valueOf(lastOnly));
 
         Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
-                .get(Response.class);
+                .get();
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
@@ -592,7 +592,7 @@ public class MasudaDelegater extends BusinessDelegater {
         Entity entity = toJsonEntity(list);
 
         Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
-                .post(entity, Response.class);
+                .post(entity);
 
         int status = checkHttpStatus(response);
         String enityStr = response.readEntity(String.class);
@@ -606,7 +606,7 @@ public class MasudaDelegater extends BusinessDelegater {
         String path = RES_BASE + "userProperty/" + userId;
 
         Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
-                .get(Response.class);
+                .get();
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
@@ -628,7 +628,7 @@ public class MasudaDelegater extends BusinessDelegater {
         qmap.add("fromDate", toRestFormat(fromDate));
 
         Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
-                .get(Response.class);
+                .get();
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);

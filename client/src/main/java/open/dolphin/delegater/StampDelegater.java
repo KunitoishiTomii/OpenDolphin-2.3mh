@@ -57,7 +57,7 @@ public class StampDelegater extends BusinessDelegater {
         // resource post
         String path = RES_STAMP_TREE;
         Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)    
-                .put(entity, Response.class);
+                .put(entity);
 
         int status = checkHttpStatus(response);
         String entityStr = response.readEntity(String.class);
@@ -74,7 +74,7 @@ public class StampDelegater extends BusinessDelegater {
         String path = RES_STAMP_TREE + String.valueOf(userPK);
         
         Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
-                .get(Response.class);
+                .get();
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
@@ -121,7 +121,7 @@ public class StampDelegater extends BusinessDelegater {
         String path = RES_STAMP_TREE + "published";
 
         Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
-                .post(entity, Response.class);
+                .post(entity);
 
         int status = checkHttpStatus(response);
         String entityStr = response.readEntity(String.class);
@@ -165,7 +165,7 @@ public class StampDelegater extends BusinessDelegater {
         String path = RES_STAMP_TREE + "published";
 
         Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
-                .put(entity, Response.class);
+                .put(entity);
 
         int status = checkHttpStatus(response);
         String entityStr = response.readEntity(String.class);
@@ -190,7 +190,7 @@ public class StampDelegater extends BusinessDelegater {
         String path = RES_STAMP_TREE + "published/cancel/";
 
         Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
-                .put(entity, Response.class);
+                .put(entity);
 
         int status = checkHttpStatus(response);
         debug(status, "put response");
@@ -205,7 +205,7 @@ public class StampDelegater extends BusinessDelegater {
         String path = RES_STAMP_TREE + "published";
 
         Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
-                .get(Response.class);
+                .get();
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
@@ -246,7 +246,7 @@ public class StampDelegater extends BusinessDelegater {
         String path = RES_STAMP_TREE + "subscribed";
 
         Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)    
-                .put(entity, Response.class);
+                .put(entity);
 
         int status = checkHttpStatus(response);
         String entityStr = response.readEntity(String.class);
@@ -283,7 +283,7 @@ public class StampDelegater extends BusinessDelegater {
         qmap.add("ids", sb.toString());
 
         Response response = buildRequest(path, qmap, null)
-                .delete(Response.class);
+                .delete();
 
         int status = checkHttpStatus(response);
         debug(status, "delete response");
@@ -312,7 +312,7 @@ public class StampDelegater extends BusinessDelegater {
         String path = RES_STAMP + "list";
 
         Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
-                .put(entity, Response.class);
+                .put(entity);
 
         int status = checkHttpStatus(response);
         String entityStr = response.readEntity(String.class);
@@ -340,7 +340,7 @@ public class StampDelegater extends BusinessDelegater {
         String path = RES_STAMP + "id";
 
         Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)    
-                .put(entity, Response.class);
+                .put(entity);
 
         int status = checkHttpStatus(response);
         String entityStr = response.readEntity(String.class);
@@ -381,7 +381,7 @@ public class StampDelegater extends BusinessDelegater {
         String path = RES_STAMP + "id/" +  stampId;
 
         Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
-                .get(Response.class);
+                .get();
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
@@ -427,7 +427,7 @@ public class StampDelegater extends BusinessDelegater {
             qmap.add("ids", sb.toString());
 
             Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
-                    .get(Response.class);
+                    .get();
 
             checkHttpStatus(response);
             InputStream is = response.readEntity(InputStream.class);
@@ -465,7 +465,7 @@ public class StampDelegater extends BusinessDelegater {
         String path = RES_STAMP + "id/" + stampId;
 
         Response response = buildRequest(path, null, null)
-                .delete(Response.class);
+                .delete();
 
         int status = checkHttpStatus(response);
         debug(status, "delete response");
@@ -492,7 +492,7 @@ public class StampDelegater extends BusinessDelegater {
         qmap.add("ids", getConverter().fromList(ids));
 
         Response response = buildRequest(path, qmap, null)
-                .delete(Response.class);
+                .delete();
 
         int status = checkHttpStatus(response);
         debug(status, "delete response");
@@ -515,7 +515,7 @@ public class StampDelegater extends BusinessDelegater {
         Entity entity = toJsonEntity(ids);
 
         Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)    
-                .post(entity, Response.class);
+                .post(entity);
 
         int status = checkHttpStatus(response);
         debug(status, "delete response");
@@ -533,7 +533,7 @@ public class StampDelegater extends BusinessDelegater {
         String path = RES_STAMP + "allStamps/" + String.valueOf(userId);
         
         Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
-                .get(Response.class);
+                .get();
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);

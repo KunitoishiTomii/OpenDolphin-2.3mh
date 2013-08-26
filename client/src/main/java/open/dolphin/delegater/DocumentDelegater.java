@@ -58,7 +58,7 @@ public class  DocumentDelegater extends BusinessDelegater {
         qmap.add("fromDate", toRestFormat(fromDate));
 
         Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
-                .get(Response.class);
+                .get();
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
@@ -85,7 +85,7 @@ public class  DocumentDelegater extends BusinessDelegater {
 
         String path = "karte/document";
         Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
-                .post(entity, Response.class);
+                .post(entity);
 
         int status = checkHttpStatus(response);
         String entityStr = response.readEntity(String.class);
@@ -108,7 +108,7 @@ public class  DocumentDelegater extends BusinessDelegater {
         qmap.add("ids", getConverter().fromList(ids));
 
         Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
-                .get(Response.class);
+                .get();
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
@@ -147,7 +147,7 @@ public class  DocumentDelegater extends BusinessDelegater {
         qmap.add("includeModified", String.valueOf(spec.isIncludeModifid()));
 
         Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
-                .get(Response.class);
+                .get();
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
@@ -166,7 +166,7 @@ public class  DocumentDelegater extends BusinessDelegater {
         String path = "odletter/list/" + String.valueOf(spec.getKarteId());
 
         Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
-                .get(Response.class);
+                .get();
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
@@ -220,7 +220,7 @@ public class  DocumentDelegater extends BusinessDelegater {
         String path = "karte/document/" + String.valueOf(pk);
 
         Response response = buildRequest(path, null, null)
-                .delete(Response.class);
+                .delete();
 
         checkHttpStatus(response);
         
@@ -241,7 +241,7 @@ public class  DocumentDelegater extends BusinessDelegater {
             Entity entity = toTextEntity(docInfo.getTitle());
 
             Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
-                    .put(entity, Response.class);
+                    .put(entity);
             
             int status = checkHttpStatus(response);
             String entityStr = response.readEntity(String.class);
@@ -292,7 +292,7 @@ public class  DocumentDelegater extends BusinessDelegater {
         qmap.add("entity", spec.getEntity());
 
         Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
-                .get(Response.class);
+                .get();
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
@@ -320,7 +320,7 @@ public class  DocumentDelegater extends BusinessDelegater {
         String path = "karte/image/" + String.valueOf(id);
 
         Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
-                .get(Response.class);
+                .get();
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
@@ -421,7 +421,7 @@ public class  DocumentDelegater extends BusinessDelegater {
         Entity entity = toJsonEntity(list);
 
         Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
-                .post(entity, Response.class);
+                .post(entity);
 
         int status = checkHttpStatus(response);
         String entityStr = response.readEntity(String.class);
@@ -441,7 +441,7 @@ public class  DocumentDelegater extends BusinessDelegater {
         Entity entity = toJsonEntity(list);
 
         Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
-                .put(entity, Response.class);
+                .put(entity);
 
         int status = checkHttpStatus(response);
 
@@ -461,7 +461,7 @@ public class  DocumentDelegater extends BusinessDelegater {
         qmap.add("ids", getConverter().fromList(ids));
 
         Response response = buildRequest(path, qmap, null)
-                .delete(Response.class);
+                .delete();
 
         int status = checkHttpStatus(response);
         debug(status, "delete response");
@@ -485,7 +485,7 @@ public class  DocumentDelegater extends BusinessDelegater {
         qmap.add("activeOnly", String.valueOf(activeOnly));
 
         Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
-                .get(Response.class);
+                .get();
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
@@ -506,7 +506,7 @@ public class  DocumentDelegater extends BusinessDelegater {
         Entity entity = toJsonEntity(observations);
 
         Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
-                .post(entity, Response.class);
+                .post(entity);
 
         int status = checkHttpStatus(response);
         String entityStr = response.readEntity(String.class);
@@ -527,7 +527,7 @@ public class  DocumentDelegater extends BusinessDelegater {
         qmap.add("ids", getConverter().fromList(ids));
 
         Response response = buildRequest(path, qmap, null)
-                .delete(Response.class);
+                .delete();
 
         int status = checkHttpStatus(response);
         debug(status, "delete response");
@@ -546,7 +546,7 @@ public class  DocumentDelegater extends BusinessDelegater {
         Entity entity = toJsonEntity(pm);
 
         Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
-                .put(entity, Response.class);
+                .put(entity);
 
         int status = checkHttpStatus(response);
         String entityStr = response.readEntity(String.class);
@@ -588,7 +588,7 @@ public class  DocumentDelegater extends BusinessDelegater {
         qmap.add("tos", sb.toString());
 
         Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
-                .get(Response.class);
+                .get();
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
@@ -612,7 +612,7 @@ public class  DocumentDelegater extends BusinessDelegater {
         String path = sb.toString();
 
         Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
-                    .put(null, Response.class);
+                    .put(null);
 
         int status = checkHttpStatus(response);
         debug(status, "put response");

@@ -35,7 +35,7 @@ public class ChartEventDelegater extends BusinessDelegater {
         Entity entity = toJsonEntity(evt);
 
         Response response = buildRequest(PUT_EVENT_PATH, null, MediaType.TEXT_PLAIN_TYPE)
-                .put(entity, Response.class);
+                .put(entity);
 
         int status = checkHttpStatus(response);
         String enityStr = response.readEntity(String.class);
@@ -51,7 +51,7 @@ public class ChartEventDelegater extends BusinessDelegater {
         Future<Response> future = 
                 buildAsyncRequest(SUBSCRIBE_PATH, MediaType.APPLICATION_JSON_TYPE)
                 .async()
-                .get(Response.class);
+                .get();
 
         return future;
     }

@@ -40,7 +40,7 @@ public class OrcaDelegater extends BusinessDelegater {
 
         String path = "orca/query";
         Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
-                .post(entity, Response.class);
+                .post(entity);
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
@@ -80,7 +80,7 @@ public class OrcaDelegater extends BusinessDelegater {
         Entity entity = toJsonEntity(model);
         
         Response response = buildRequest(path, null, null)
-                .post(entity, Response.class);
+                .post(entity);
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);

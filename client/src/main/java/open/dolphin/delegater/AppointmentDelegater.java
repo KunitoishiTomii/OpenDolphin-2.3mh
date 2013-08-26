@@ -34,7 +34,7 @@ public final class AppointmentDelegater extends BusinessDelegater {
         Entity entity = toJsonEntity(list);
         
         Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
-                .put(entity, Response.class);
+                .put(entity);
         
         int status = checkHttpStatus(response);
         String entityStr = response.readEntity(String.class);

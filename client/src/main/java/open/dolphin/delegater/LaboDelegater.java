@@ -43,7 +43,7 @@ public class LaboDelegater extends BusinessDelegater {
         qmap.add("ids", getConverter().fromList(idList));
 
         Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
-                .get(Response.class);
+                .get();
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
@@ -68,7 +68,7 @@ public class LaboDelegater extends BusinessDelegater {
         Entity entity = toJsonEntity(value);
 
         Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
-                .post(entity, Response.class);
+                .post(entity);
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
@@ -96,7 +96,7 @@ public class LaboDelegater extends BusinessDelegater {
         qmap.add("maxResult", String.valueOf(maxResult));
 
         Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
-                .get(Response.class);
+                .get();
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
@@ -117,7 +117,7 @@ public class LaboDelegater extends BusinessDelegater {
         Entity entity = toJsonEntity(value);
 
         Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
-                .post(entity, Response.class);
+                .post(entity);
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
@@ -137,7 +137,7 @@ public class LaboDelegater extends BusinessDelegater {
         String path = "lab/module/id/" + String.valueOf(id);
 
         Response response = buildRequest(path, null, null)
-                .delete(Response.class);
+                .delete();
 
         int status = checkHttpStatus(response);
         debug(status, "delete response");
@@ -152,7 +152,7 @@ public class LaboDelegater extends BusinessDelegater {
         String path = "lab/mmlModule/id/" + String.valueOf(id);
 
         Response response = buildRequest(path, null, null)
-                .delete(Response.class);
+                .delete();
 
         int status = checkHttpStatus(response);
         debug(status, "delete response");

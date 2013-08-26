@@ -70,7 +70,7 @@ public class UserDelegater extends BusinessDelegater {
         String path = sb.toString();
 
         Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
-                   .get(Response.class);
+                   .get();
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
@@ -87,7 +87,7 @@ public class UserDelegater extends BusinessDelegater {
         String path = RES_USER;
 
         Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
-                   .get(Response.class);
+                   .get();
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
@@ -106,7 +106,7 @@ public class UserDelegater extends BusinessDelegater {
         Entity entity = toJsonEntity(userModel);
 
         Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
-                .post(entity, Response.class);
+                .post(entity);
 
         int status = checkHttpStatus(response);
         String entityStr = response.readEntity(String.class);
@@ -125,7 +125,7 @@ public class UserDelegater extends BusinessDelegater {
         Entity entity = toJsonEntity(userModel);
 
         Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)   
-                .put(entity, Response.class);
+                .put(entity);
 
         int status = checkHttpStatus(response);
         String entityStr = response.readEntity(String.class);
@@ -143,7 +143,7 @@ public class UserDelegater extends BusinessDelegater {
         String path = RES_USER + uid;
 
         Response response = buildRequest(path, null, null)
-                .delete(Response.class);
+                .delete();
 
         int status = checkHttpStatus(response);
         debug(status, "delete response");
@@ -160,7 +160,7 @@ public class UserDelegater extends BusinessDelegater {
         Entity entity = toJsonEntity(userModel);
 
         Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
-                .put(entity, Response.class);
+                .put(entity);
 
         int status = checkHttpStatus(response);
         String entityStr = response.readEntity(String.class);
@@ -183,7 +183,7 @@ public class UserDelegater extends BusinessDelegater {
         qmap.add("force", String.valueOf(force));
         
         Response response = buildRequest(path, qmap, MediaType.TEXT_PLAIN_TYPE)
-                .get(Response.class);
+                .get();
         int status = checkHttpStatus(response);
         String currentUUID = response.readEntity(String.class);
         debug(status, currentUUID);
@@ -202,7 +202,7 @@ public class UserDelegater extends BusinessDelegater {
         qmap.add("clientUUID", clientUUID);
         
         Response response = buildRequest(path, qmap, MediaType.TEXT_PLAIN_TYPE)
-                .get(Response.class);
+                .get();
         int status = checkHttpStatus(response);
         String oldUUID = response.readEntity(String.class);
         debug(status, oldUUID);

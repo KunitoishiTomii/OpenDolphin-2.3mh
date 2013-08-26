@@ -84,7 +84,7 @@ public class OrcaApiDelegater implements IOrcaApi {
         qmap.add(CLASS, "01");
 
         Response response = buildRequest(path, qmap)
-                .post(entity, Response.class);
+                .post(entity);
 
         int status = checkHttpStatus(response);
         String resXml = response.readEntity(String.class);
@@ -124,7 +124,7 @@ public class OrcaApiDelegater implements IOrcaApi {
         qmap.add(CLASS, "01");
 
         Response response = buildRequest(path, qmap)
-                .post(entity, Response.class);
+                .post(entity);
 
         int status = checkHttpStatus(response);
         String resXml = response.readEntity(String.class);
@@ -162,7 +162,7 @@ public class OrcaApiDelegater implements IOrcaApi {
         qmap.add(CLASS, "02");
 
         Response response = buildRequest(path, qmap)
-                .post(entity, Response.class);
+                .post(entity);
 
         int status = checkHttpStatus(response);
         String resXml =  response.readEntity(String.class);

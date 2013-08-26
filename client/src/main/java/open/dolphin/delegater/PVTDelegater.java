@@ -47,7 +47,7 @@ public class PVTDelegater extends BusinessDelegater {
         // resource post
         String path = RES_PVT;
         Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
-                .post(entity, Response.class);
+                .post(entity);
 
         int status = checkHttpStatus(response);
         String enityStr = response.readEntity(String.class);
@@ -65,7 +65,7 @@ public class PVTDelegater extends BusinessDelegater {
         String path = RES_PVT + String.valueOf(id);
 
         Response response = buildRequest(path, null, null)
-                .delete(Response.class);
+                .delete();
 
         int status = checkHttpStatus(response);
         String enityStr = "delete response";
@@ -84,7 +84,7 @@ public class PVTDelegater extends BusinessDelegater {
         String path = sb.toString();
 
         Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
-                .get(Response.class);
+                .get();
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
