@@ -29,8 +29,12 @@ import open.dolphin.helper.WindowSupport;
  */
 public class ImageBox extends AbstractMainTool {
     
+    private static final String RES_BASE = "/open/dolphin/resources/schema/";
+    private static final String IMG_FILE_FRMT = "%02d-%03d.JPG";
     private static final String[] FOLDER_NAMES = {
         "1-全身・躯幹", "2-頭頚部", "3-上肢", "4-下肢"};
+    private static final int[] IMAGE_COUNTS = {
+        20, 29, 20, 20};
 
     private static final int DEFAULT_IMAGE_WIDTH 	= 80; //120
     private static final int DEFAULT_IMAGE_HEIGHT 	= 80;
@@ -52,121 +56,7 @@ public class ImageBox extends AbstractMainTool {
 //pns^  SchemaBox でもメニューを出すため
     private MenuSupport mediator;
 //pns$
-    private static final FolderImagePair[] DEFAULT_IMAGES = {
-        new FolderImagePair(FOLDER_NAMES[0], "01-001.JPG"),
-        new FolderImagePair(FOLDER_NAMES[0], "01-002.JPG"),
-        new FolderImagePair(FOLDER_NAMES[0], "01-003.JPG"),
-        new FolderImagePair(FOLDER_NAMES[0], "01-004.JPG"),
-        new FolderImagePair(FOLDER_NAMES[0], "01-005.JPG"),
-        new FolderImagePair(FOLDER_NAMES[0], "01-006.JPG"),
-        new FolderImagePair(FOLDER_NAMES[0], "01-007.JPG"),
-        new FolderImagePair(FOLDER_NAMES[0], "01-008.JPG"),
-        new FolderImagePair(FOLDER_NAMES[0], "01-009.JPG"),
-        new FolderImagePair(FOLDER_NAMES[0], "01-010.JPG"),
-        new FolderImagePair(FOLDER_NAMES[0], "01-011.JPG"),
-        new FolderImagePair(FOLDER_NAMES[0], "01-012.JPG"),
-        new FolderImagePair(FOLDER_NAMES[0], "01-013.JPG"),
-        new FolderImagePair(FOLDER_NAMES[0], "01-014.JPG"),
-        new FolderImagePair(FOLDER_NAMES[0], "01-015.JPG"),
-        new FolderImagePair(FOLDER_NAMES[0], "01-016.JPG"),
-        new FolderImagePair(FOLDER_NAMES[0], "01-017.JPG"),
-        new FolderImagePair(FOLDER_NAMES[0], "01-018.JPG"),
-        new FolderImagePair(FOLDER_NAMES[0], "01-019.JPG"),
-        new FolderImagePair(FOLDER_NAMES[0], "01-020.JPG"),
-        
-        new FolderImagePair(FOLDER_NAMES[1], "02-001.JPG"),
-        new FolderImagePair(FOLDER_NAMES[1], "02-002.JPG"),
-        new FolderImagePair(FOLDER_NAMES[1], "02-003.JPG"),
-        new FolderImagePair(FOLDER_NAMES[1], "02-004.JPG"),
-        new FolderImagePair(FOLDER_NAMES[1], "02-005.JPG"),
-        new FolderImagePair(FOLDER_NAMES[1], "02-006.JPG"),
-        new FolderImagePair(FOLDER_NAMES[1], "02-007.JPG"),
-        new FolderImagePair(FOLDER_NAMES[1], "02-008.JPG"),
-        new FolderImagePair(FOLDER_NAMES[1], "02-009.JPG"),
-        new FolderImagePair(FOLDER_NAMES[1], "02-010.JPG"),
-        new FolderImagePair(FOLDER_NAMES[1], "02-011.JPG"),
-        new FolderImagePair(FOLDER_NAMES[1], "02-012.JPG"),
-        new FolderImagePair(FOLDER_NAMES[1], "02-013.JPG"),
-        new FolderImagePair(FOLDER_NAMES[1], "02-014.JPG"),
-        new FolderImagePair(FOLDER_NAMES[1], "02-015.JPG"),
-        new FolderImagePair(FOLDER_NAMES[1], "02-016.JPG"),
-        new FolderImagePair(FOLDER_NAMES[1], "02-017.JPG"),
-        new FolderImagePair(FOLDER_NAMES[1], "02-018.JPG"),
-        new FolderImagePair(FOLDER_NAMES[1], "02-019.JPG"),
-        new FolderImagePair(FOLDER_NAMES[1], "02-020.JPG"),
-        new FolderImagePair(FOLDER_NAMES[1], "02-021.JPG"),
-        new FolderImagePair(FOLDER_NAMES[1], "02-022.JPG"),
-        new FolderImagePair(FOLDER_NAMES[1], "02-023.JPG"),
-        new FolderImagePair(FOLDER_NAMES[1], "02-024.JPG"),
-        new FolderImagePair(FOLDER_NAMES[1], "02-025.JPG"),
-        new FolderImagePair(FOLDER_NAMES[1], "02-026.JPG"),
-        new FolderImagePair(FOLDER_NAMES[1], "02-027.JPG"),
-        new FolderImagePair(FOLDER_NAMES[1], "02-028.JPG"),
-        new FolderImagePair(FOLDER_NAMES[1], "02-029.JPG"),
-        
-        new FolderImagePair(FOLDER_NAMES[2], "03-001.JPG"),
-        new FolderImagePair(FOLDER_NAMES[2], "03-002.JPG"),
-        new FolderImagePair(FOLDER_NAMES[2], "03-003.JPG"),
-        new FolderImagePair(FOLDER_NAMES[2], "03-004.JPG"),
-        new FolderImagePair(FOLDER_NAMES[2], "03-005.JPG"),
-        new FolderImagePair(FOLDER_NAMES[2], "03-006.JPG"),
-        new FolderImagePair(FOLDER_NAMES[2], "03-007.JPG"),
-        new FolderImagePair(FOLDER_NAMES[2], "03-008.JPG"),
-        new FolderImagePair(FOLDER_NAMES[2], "03-009.JPG"),
-        new FolderImagePair(FOLDER_NAMES[2], "03-010.JPG"),
-        new FolderImagePair(FOLDER_NAMES[2], "03-011.JPG"),
-        new FolderImagePair(FOLDER_NAMES[2], "03-012.JPG"),
-        new FolderImagePair(FOLDER_NAMES[2], "03-013.JPG"),
-        new FolderImagePair(FOLDER_NAMES[2], "03-014.JPG"),
-        new FolderImagePair(FOLDER_NAMES[2], "03-015.JPG"),
-        new FolderImagePair(FOLDER_NAMES[2], "03-016.JPG"),
-        new FolderImagePair(FOLDER_NAMES[2], "03-017.JPG"),
-        new FolderImagePair(FOLDER_NAMES[2], "03-018.JPG"),
-        new FolderImagePair(FOLDER_NAMES[2], "03-019.JPG"),
-        new FolderImagePair(FOLDER_NAMES[2], "03-020.JPG"),
-        
-        new FolderImagePair(FOLDER_NAMES[3], "04-001.JPG"),
-        new FolderImagePair(FOLDER_NAMES[3], "04-002.JPG"),
-        new FolderImagePair(FOLDER_NAMES[3], "04-003.JPG"),
-        new FolderImagePair(FOLDER_NAMES[3], "04-004.JPG"),
-        new FolderImagePair(FOLDER_NAMES[3], "04-005.JPG"),
-        new FolderImagePair(FOLDER_NAMES[3], "04-006.JPG"),
-        new FolderImagePair(FOLDER_NAMES[3], "04-007.JPG"),
-        new FolderImagePair(FOLDER_NAMES[3], "04-008.JPG"),
-        new FolderImagePair(FOLDER_NAMES[3], "04-009.JPG"),
-        new FolderImagePair(FOLDER_NAMES[3], "04-010.JPG"),
-        new FolderImagePair(FOLDER_NAMES[3], "04-011.JPG"),
-        new FolderImagePair(FOLDER_NAMES[3], "04-012.JPG"),
-        new FolderImagePair(FOLDER_NAMES[3], "04-013.JPG"),
-        new FolderImagePair(FOLDER_NAMES[3], "04-014.JPG"),
-        new FolderImagePair(FOLDER_NAMES[3], "04-015.JPG"),
-        new FolderImagePair(FOLDER_NAMES[3], "04-016.JPG"),
-        new FolderImagePair(FOLDER_NAMES[3], "04-017.JPG"),
-        new FolderImagePair(FOLDER_NAMES[3], "04-018.JPG"),
-        new FolderImagePair(FOLDER_NAMES[3], "04-019.JPG"),
-        new FolderImagePair(FOLDER_NAMES[3], "04-020.JPG"),
-    };
     
-    private static final String RES_BASE = "/open/dolphin/resources/schema/";
-    
-    private static class FolderImagePair {
-
-        private String folder;
-        private String fileName;
-
-        private FolderImagePair(String folder, String fileName) {
-            this.folder = folder;
-            this.fileName = fileName;
-        }
-
-        private String getFolderName() {
-            return folder;
-        }
-
-        private String getFileName() {
-            return fileName;
-        }
-    }
     
     @Override
     public void start() {
@@ -284,22 +174,24 @@ public class ImageBox extends AbstractMainTool {
         Map<String, List<URL>> map = new LinkedHashMap<>();
         
         // デフォルトイメージ
-        for (FolderImagePair pair : DEFAULT_IMAGES) {
-            String folderName = pair.getFolderName();
-            String fileName = pair.getFileName();
-            List<URL> urlList = map.get(folderName);
-            if (urlList == null) {
-                urlList = new ArrayList<>();
-            }
-            
-            try {
-                URL url = getClass().getResource(RES_BASE + fileName);
-                if (url != null) {
-                    urlList.add(url);
+        for (int i = 0; i < FOLDER_NAMES.length; ++i) {
+            String folderName = FOLDER_NAMES[i];
+            for (int j = 0; j < IMAGE_COUNTS[i]; ++j) {
+                String fileName = String.format(IMG_FILE_FRMT, i + 1, j + 1);
+                List<URL> urlList = map.get(folderName);
+                if (urlList == null) {
+                    urlList = new ArrayList<>();
                 }
-            } catch (Exception e) {
+
+                try {
+                    URL url = getClass().getResource(RES_BASE + fileName);
+                    if (url != null) {
+                        urlList.add(url);
+                    }
+                } catch (Exception e) {
+                }
+                map.put(folderName, urlList);
             }
-            map.put(folderName, urlList);
         }
 
         // ユーザーイメージ
