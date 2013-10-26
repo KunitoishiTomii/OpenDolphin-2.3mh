@@ -2,7 +2,6 @@ package open.dolphin.client;
 
 import java.awt.BorderLayout;
 import java.awt.Image;
-import java.awt.Insets;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;

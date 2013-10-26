@@ -1,15 +1,16 @@
 package open.dolphin.impl.orcaapi;
 
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.WebResource;
-import com.sun.jersey.core.util.MultivaluedMapImpl;
 import java.io.IOException;
 import java.io.StringReader;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.Invocation;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
 import open.dolphin.client.ClientContext;
 import open.dolphin.client.KarteSenderResult;
 import open.dolphin.dao.SyskanriInfo;
@@ -29,10 +30,8 @@ import org.jdom2.output.XMLOutputter;
  */
 public class OrcaApiDelegater implements IOrcaApi {
     
-    private static final String CHARSET_UTF8 = "; charset=UTF-8";
-    private static final String MEDIATYPE_XML_UTF8 = MediaType.APPLICATION_XML + CHARSET_UTF8;
     private static final String ORCA_API = "ORCA API";
-
+    
     private static final OrcaApiDelegater instance;
 
     private boolean DEBUG;
@@ -79,19 +78,19 @@ public class OrcaApiDelegater implements IOrcaApi {
                 ? new Document(new OrcaApiElement2.MedicalMod(model))
                 : new Document(new OrcaApiElement.MedicalMod(model));
         final String xml = outputter.outputString(post);
+        final Entity entity = Entity.entity(xml, MediaType.APPLICATION_XML_TYPE);
 
-        MultivaluedMap<String, String> qmap = new MultivaluedMapImpl();
+        MultivaluedMap<String, String> qmap = new MultivaluedHashMap();
         qmap.add(CLASS, "01");
 
-        ClientResponse response = getClientRequest(path, qmap)
-                .accept(MEDIATYPE_XML_UTF8)
-                .type(MEDIATYPE_XML_UTF8)
-                .post(ClientResponse.class, xml);
+        Response response = buildRequest(path, qmap)
+                .post(entity);
 
-        int status = response.getStatus();
-        String resXml = (String) response.getEntity(String.class);
+        int status = checkHttpStatus(response);
+        String resXml = response.readEntity(String.class);
         debug(status, resXml);
-        isHTTP200(status);
+        
+        response.close();
 
         KarteSenderResult result;
         try {
@@ -118,19 +117,20 @@ public class OrcaApiDelegater implements IOrcaApi {
         final String xml = xml2
                 ? createSystem01ManagereqXml2()
                 : createSystem01ManagereqXml();
+        
+        final Entity entity = Entity.entity(xml, MediaType.APPLICATION_XML_TYPE);
 
-        MultivaluedMap<String, String> qmap = new MultivaluedMapImpl();
+        MultivaluedMap<String, String> qmap = new MultivaluedHashMap();
         qmap.add(CLASS, "01");
 
-        ClientResponse response = getClientRequest(path, qmap)
-                .accept(MEDIATYPE_XML_UTF8)
-                .type(MEDIATYPE_XML_UTF8)
-                .post(ClientResponse.class, xml);
+        Response response = buildRequest(path, qmap)
+                .post(entity);
 
-        int status = response.getStatus();
-        String resXml = (String) response.getEntity(String.class);
+        int status = checkHttpStatus(response);
+        String resXml = response.readEntity(String.class);
         debug(status, resXml);
-        isHTTP200(status);
+        
+        response.close();
 
         try {
             Document res = builder.build(new StringReader(resXml));
@@ -155,19 +155,20 @@ public class OrcaApiDelegater implements IOrcaApi {
         final String xml = xml2
                 ? createSystem01ManagereqXml2()
                 : createSystem01ManagereqXml();
+        
+        final Entity entity = Entity.entity(xml, MediaType.APPLICATION_XML_TYPE);
 
-        MultivaluedMap<String, String> qmap = new MultivaluedMapImpl();
+        MultivaluedMap<String, String> qmap = new MultivaluedHashMap();
         qmap.add(CLASS, "02");
 
-        ClientResponse response = getClientRequest(path, qmap)
-                .accept(MEDIATYPE_XML_UTF8)
-                .type(MEDIATYPE_XML_UTF8)
-                .post(ClientResponse.class, xml);
+        Response response = buildRequest(path, qmap)
+                .post(entity);
 
-        int status = response.getStatus();
-        String resXml = (String) response.getEntity(String.class);
+        int status = checkHttpStatus(response);
+        String resXml =  response.readEntity(String.class);
         debug(status, resXml);
-        isHTTP200(status);
+        
+        response.close();
 
         try {
             Document res = builder.build(new StringReader(resXml));
@@ -217,16 +218,19 @@ public class OrcaApiDelegater implements IOrcaApi {
         String xml = outputter.outputString(post);
         return xml;
     }
-
-    private WebResource.Builder getClientRequest(String path, MultivaluedMap<String, String> qmap) {
-        return OrcaApiClient.getInstance().getResource(path, qmap);
+    
+    private Invocation.Builder buildRequest(String path, MultivaluedMap<String, String> qmap) {
+        return OrcaApiClient.getInstance().buildRequest(path, qmap);
     }
     
-    private void isHTTP200(int status) throws Exception {
+    private int checkHttpStatus(Response response) throws Exception {
+        int status = response.getStatus();
         if (status / 100 != 2) {
             String msg = "HTTP" + String.valueOf(status);
+            response.close();
             throw new Exception(msg);
         }
+        return status;
     }
     
     private void debug(int status, String entity) {

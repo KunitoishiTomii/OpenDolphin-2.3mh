@@ -339,7 +339,13 @@ public class RoutineMedImpl extends AbstractChartDocument {
                 panelList.add(rmp);
             }
         }
-        medPanel.repaint();
+        //medPanel.repaint();
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                scrlMedPanel.getViewport().setViewPosition(new Point(0,0));
+            }
+        });
     }
     
     private void delete() {

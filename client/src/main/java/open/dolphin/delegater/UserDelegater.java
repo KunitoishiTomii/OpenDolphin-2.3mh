@@ -1,12 +1,13 @@
 package open.dolphin.delegater;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.core.util.MultivaluedMapImpl;
 import java.io.InputStream;
 import java.util.List;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
-import open.dolphin.client.Dolphin;
+import javax.ws.rs.core.Response;
 import open.dolphin.infomodel.IInfoModel;
 import open.dolphin.infomodel.UserModel;
 import open.dolphin.project.Project;
@@ -68,18 +69,15 @@ public class UserDelegater extends BusinessDelegater {
         sb.append(userPK);
         String path = sb.toString();
 
-        ClientResponse response = getClientRequest(path, null)
-                   .accept(MEDIATYPE_JSON_UTF8)
-                   .get(ClientResponse.class);
+        Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
+                   .get();
 
-        int status = response.getStatus();
-        //String entityStr = (String) response.getEntity(String.class);
-        //debug(status, entityStr);
-        isHTTP200(status);
-        InputStream is = response.getEntityInputStream();
-
+        checkHttpStatus(response);
+        InputStream is = response.readEntity(InputStream.class);
         UserModel userModel = (UserModel) 
                 getConverter().fromJson(is, UserModel.class);
+        
+        response.close();
 
         return userModel;
     }
@@ -88,19 +86,16 @@ public class UserDelegater extends BusinessDelegater {
         
         String path = RES_USER;
 
-        ClientResponse response = getClientRequest(path, null)
-                   .accept(MEDIATYPE_JSON_UTF8)
-                   .get(ClientResponse.class);
+        Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
+                   .get();
 
-        int status = response.getStatus();
-        //String entityStr = (String) response.getEntity(String.class);
-        //debug(status, entityStr);
-        isHTTP200(status);
-        InputStream is = response.getEntityInputStream();
-
+        checkHttpStatus(response);
+        InputStream is = response.readEntity(InputStream.class);
         TypeReference typeRef = new TypeReference<List<UserModel>>(){};
         List<UserModel> list  = (List<UserModel>) 
                 getConverter().fromJson(is, typeRef);
+        
+        response.close();
 
         return list;
     }
@@ -108,17 +103,16 @@ public class UserDelegater extends BusinessDelegater {
     public int addUser(UserModel userModel) throws Exception {
 
         String path = RES_USER;
-        String json = getConverter().toJson(userModel);
+        Entity entity = toJsonEntity(userModel);
 
-        ClientResponse response = getClientRequest(path, null)
-                .accept(MEDIATYPE_TEXT_UTF8)
-                .type(MEDIATYPE_JSON_UTF8)
-                .post(ClientResponse.class, json);
+        Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
+                .post(entity);
 
-        int status = response.getStatus();
-        String entityStr = (String) response.getEntity(String.class);
+        int status = checkHttpStatus(response);
+        String entityStr = response.readEntity(String.class);
         debug(status, entityStr);
-        isHTTP200(status);
+        
+        response.close();
         
         int cnt = Integer.parseInt(entityStr);
 
@@ -128,17 +122,16 @@ public class UserDelegater extends BusinessDelegater {
     public int updateUser(UserModel userModel) throws Exception {
 
         String path = RES_USER;
-        String json = getConverter().toJson(userModel);
+        Entity entity = toJsonEntity(userModel);
 
-        ClientResponse response = getClientRequest(path, null)
-                .accept(MEDIATYPE_TEXT_UTF8)   
-                .type(MEDIATYPE_JSON_UTF8)
-                .put(ClientResponse.class, json);
+        Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)   
+                .put(entity);
 
-        int status = response.getStatus();
-        String entityStr = (String) response.getEntity(String.class);
+        int status = checkHttpStatus(response);
+        String entityStr = response.readEntity(String.class);
         debug(status, entityStr);
-        isHTTP200(status);
+        
+        response.close();
 
         int cnt = Integer.parseInt(entityStr);
 
@@ -149,13 +142,13 @@ public class UserDelegater extends BusinessDelegater {
         
         String path = RES_USER + uid;
 
-        ClientResponse response = getClientRequest(path, null)
-                .accept(MEDIATYPE_TEXT_UTF8)
-                .delete(ClientResponse.class);
+        Response response = buildRequest(path, null, null)
+                .delete();
 
-        int status = response.getStatus();
+        int status = checkHttpStatus(response);
         debug(status, "delete response");
-        isHTTP200(status);
+        
+        response.close();
 
         return 1;
     }
@@ -164,17 +157,16 @@ public class UserDelegater extends BusinessDelegater {
 
         String path = RES_USER + "facility";
 
-        String json = getConverter().toJson(userModel);
+        Entity entity = toJsonEntity(userModel);
 
-        ClientResponse response = getClientRequest(path, null)
-                .accept(MEDIATYPE_TEXT_UTF8)
-                .type(MEDIATYPE_JSON_UTF8)
-                .put(ClientResponse.class, json);
+        Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
+                .put(entity);
 
-        int status = response.getStatus();
-        String entityStr = (String) response.getEntity(String.class);
+        int status = checkHttpStatus(response);
+        String entityStr = response.readEntity(String.class);
         debug(status, entityStr);
-        isHTTP200(status);
+        
+        response.close();
 
         int cnt = Integer.parseInt(entityStr);
 
@@ -185,18 +177,18 @@ public class UserDelegater extends BusinessDelegater {
         
         String path = RES_USER + "login";
         
-        MultivaluedMap<String, String> qmap = new MultivaluedMapImpl();
+        MultivaluedMap<String, String> qmap = new MultivaluedHashMap();
         qmap.add("fidUid", fidUid);
         qmap.add("clientUUID", clientUUID);
         qmap.add("force", String.valueOf(force));
         
-        ClientResponse response = getClientRequest(path, qmap)
-                .accept(MEDIATYPE_TEXT_UTF8)
-                .get(ClientResponse.class);
-        int status = response.getStatus();
-        String currentUUID = (String) response.getEntity(String.class);
+        Response response = buildRequest(path, qmap, MediaType.TEXT_PLAIN_TYPE)
+                .get();
+        int status = checkHttpStatus(response);
+        String currentUUID = response.readEntity(String.class);
         debug(status, currentUUID);
-        isHTTP200(status);
+        
+        response.close();
         
         return currentUUID;
     }
@@ -205,17 +197,17 @@ public class UserDelegater extends BusinessDelegater {
         
         String path = RES_USER + "logout";
         
-        MultivaluedMap<String, String> qmap = new MultivaluedMapImpl();
+        MultivaluedMap<String, String> qmap = new MultivaluedHashMap();
         qmap.add("fidUid", fidUid);
         qmap.add("clientUUID", clientUUID);
         
-        ClientResponse response = getClientRequest(path, qmap)
-                .accept(MEDIATYPE_TEXT_UTF8)
-                .get(ClientResponse.class);
-        int status = response.getStatus();
-        String oldUUID = (String) response.getEntity(String.class);
+        Response response = buildRequest(path, qmap, MediaType.TEXT_PLAIN_TYPE)
+                .get();
+        int status = checkHttpStatus(response);
+        String oldUUID = response.readEntity(String.class);
         debug(status, oldUUID);
-        isHTTP200(status);
+        
+        response.close();
         
         return oldUUID;
     }

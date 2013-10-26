@@ -1,7 +1,9 @@
 package open.dolphin.delegater;
 
-import com.sun.jersey.api.client.ClientResponse;
 import java.util.concurrent.Future;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import open.dolphin.infomodel.ChartEventModel;
 
 /**
@@ -30,25 +32,26 @@ public class ChartEventDelegater extends BusinessDelegater {
     
     public int putChartEvent(ChartEventModel evt) throws Exception {
         
-        String json = getConverter().toJson(evt);
+        Entity entity = toJsonEntity(evt);
 
-        ClientResponse response = getClientRequest(PUT_EVENT_PATH, null)
-                .type(MEDIATYPE_JSON_UTF8)
-                .put(ClientResponse.class, json);
+        Response response = buildRequest(PUT_EVENT_PATH, null, MediaType.TEXT_PLAIN_TYPE)
+                .put(entity);
 
-        int status = response.getStatus();
-        String enityStr = (String) response.getEntity(String.class);
+        int status = checkHttpStatus(response);
+        String enityStr = response.readEntity(String.class);
         debug(status, enityStr);
-        isHTTP200(status);
+        
+        response.close();
 
         return Integer.parseInt(enityStr);
     }
 
-    public Future<ClientResponse> subscribe() throws Exception {
+    public Future<Response> subscribe() throws Exception {
         
-        Future<ClientResponse> future = getAsyncClientRequest(SUBSCRIBE_PATH)
-                .accept(MEDIATYPE_JSON_UTF8)
-                .get(ClientResponse.class);
+        Future<Response> future = 
+                buildAsyncRequest(SUBSCRIBE_PATH, MediaType.APPLICATION_JSON_TYPE)
+                .async()
+                .get();
 
         return future;
     }

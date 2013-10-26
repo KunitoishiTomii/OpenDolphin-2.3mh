@@ -1,7 +1,9 @@
 package open.dolphin.delegater;
 
-import com.sun.jersey.api.client.ClientResponse;
 import java.io.InputStream;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import open.dolphin.client.ClaimMessageEvent;
 import open.dolphin.client.KarteSenderResult;
 import open.dolphin.impl.claim.ClaimSender;
@@ -34,22 +36,18 @@ public class OrcaDelegater extends BusinessDelegater {
     
     public OrcaSqlModel executeQuery(OrcaSqlModel sqlModel) throws Exception {
         
-        String json = getConverter().toJson(sqlModel);
+        Entity entity = toJsonEntity(sqlModel);
 
         String path = "orca/query";
-        ClientResponse response = getClientRequest(path, null)
-                .accept(MEDIATYPE_JSON_UTF8)
-                .type(MEDIATYPE_JSON_UTF8)
-                .post(ClientResponse.class, json);
+        Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
+                .post(entity);
 
-        int status = response.getStatus();
-        //String entityStr = (String) response.getEntity(String.class);
-        //debug(status, entityStr);
-        isHTTP200(status);
-        InputStream is = response.getEntityInputStream();
-
+        checkHttpStatus(response);
+        InputStream is = response.readEntity(InputStream.class);
         sqlModel = (OrcaSqlModel) 
                 getConverter().fromJson(is, OrcaSqlModel.class);
+        
+        response.close();
 
         return sqlModel;
     }
@@ -79,20 +77,17 @@ public class OrcaDelegater extends BusinessDelegater {
         ClaimMessageModel model = toClaimMessageModel(evt);
 
         String path = "orca/claim";
-        String json = getConverter().toJson(model);
-        ClientResponse response = getClientRequest(path, null)
-                .accept(MEDIATYPE_JSON_UTF8)
-                .type(MEDIATYPE_JSON_UTF8)
-                .post(ClientResponse.class, json);
-
-        int status = response.getStatus();
-        //String entityStr = (String) response.getEntity(String.class);
-        //debug(status, entityStr);
-        isHTTP200(status);
-        InputStream is = response.getEntityInputStream();
+        Entity entity = toJsonEntity(model);
         
+        Response response = buildRequest(path, null, null)
+                .post(entity);
+
+        checkHttpStatus(response);
+        InputStream is = response.readEntity(InputStream.class);
         ClaimMessageModel resModel = (ClaimMessageModel)
                 getConverter().fromJson(is, ClaimMessageModel.class);
+        
+        response.close();
 
         String errMsg = resModel.getErrorMsg();
         boolean noError = NO_ERROR.equals(resModel.getErrorCode());

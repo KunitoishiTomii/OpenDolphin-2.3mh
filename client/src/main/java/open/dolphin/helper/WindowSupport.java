@@ -4,10 +4,10 @@ import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.SortedSet;
-import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.*;
 import javax.swing.event.MenuEvent;
@@ -30,14 +30,14 @@ public class WindowSupport implements MenuListener {
             ClientContext.getClientContextStub().getImageIcon("dolphinIcon.png");
     
     // WindowSupportのリスト　フォーカス処理にも使用
-    private static final SortedSet<WindowSupport> allWindows;
+    private static final List<WindowSupport> allWindows;
     // allChartsはChartImplから移動
     private static final List<ChartImpl> allCharts;
     // allEditorFramesはEditorFrameから移動
     private static final List<EditorFrame> allEditorFrames;
     
     static {
-        allWindows = new ConcurrentSkipListSet<>(new WindowComparator());
+        allWindows = new CopyOnWriteArrayList<>();
         allEditorFrames = new CopyOnWriteArrayList<>();
         allCharts = new CopyOnWriteArrayList<>();
     }
@@ -189,7 +189,9 @@ public class WindowSupport implements MenuListener {
         wm.removeAll();
         
         // リストから新規に生成する
-        for (WindowSupport ws : allWindows) {
+        List<WindowSupport> wsList = new ArrayList<>(allWindows);
+        Collections.sort(wsList, new WindowComparator());
+        for (WindowSupport ws : wsList) {
             Action action = ws.getWindowAction();
             wm.add(action);
         }

@@ -43,13 +43,13 @@ public class PatientSearchImpl extends AbstractMainComponent {
 
     private final String NAME = "患者検索";
     private static final String[] COLUMN_NAMES 
-            = {"ID", "氏名", "カナ", "性別", "生年月日", "受診日", "状態"};
+            = {"ID", "氏名", "カナ", "性別", "生年月日", "受診日", "日数", "状態"};
     private final String[] PROPERTY_NAMES 
-            = {"patientId", "fullName", "kanaName", "genderDesc", "ageBirthday", "pvtDateTrimTime", "isOpened"};
+            = {"patientId", "fullName", "kanaName", "genderDesc", "ageBirthday", "pvtDateTrimTime", "getElapsedDay", "isOpened"};
     private static final Class[] COLUMN_CLASSES = {
         String.class, String.class, String.class, String.class, String.class, 
-        String.class, String.class};
-    private final int[] COLUMN_WIDTH = {50, 100, 120, 30, 100, 80, 20};
+        String.class, Integer.class, String.class};
+    private final int[] COLUMN_WIDTH = {50, 100, 120, 30, 100, 80, 20, 20};
     private final int START_NUM_ROWS = 1;
    
     // カラム仕様名
@@ -85,6 +85,9 @@ public class PatientSearchImpl extends AbstractMainComponent {
     
     private String clientUUID;
     private ChartEventListener cel;
+    
+    // 過去患者検索期間
+    private static final int pastDay = 100;
 
     
     /** Creates new PatientSearch */
@@ -413,6 +416,15 @@ public class PatientSearchImpl extends AbstractMainComponent {
                         @Override
                         public void actionPerformed(ActionEvent e) {
                             checkShohougire();
+                        }
+                    });
+                    mi = new JMenuItem(String.format("過去%d日受診者検索", pastDay));
+                    popup.add(mi);
+                    mi.addActionListener(new ActionListener() {
+
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            getPast100DayPatients();
                         }
                     });
                     popup.show(e.getComponent(), e.getX(), e.getY());
@@ -878,6 +890,41 @@ public class PatientSearchImpl extends AbstractMainComponent {
                 getContext().getGlassPane().setText("処方切れ患者を検索中です。");
                 CheckMedication cm = new CheckMedication();
                 List<PatientModel> result = cm.getShohougirePatient();
+                return result;
+            }
+
+            @Override
+            @SuppressWarnings("unchecked")
+            protected void done(){
+                try {
+                    List<PatientModel> result = get();
+                    if (result != null) {
+                        setPvtDateMethodTrimDate(false);
+                        tableModel.setDataProvider(result);
+                    } else {
+                        tableModel.clear();
+                    }
+                } catch (InterruptedException ex) {
+                } catch (ExecutionException ex) {
+                } finally{
+                    doStopProgress();
+                    updateStatusLabel();
+                }
+            }
+        };
+        worker.execute();
+    }
+    
+    // 過去１００日の受診者検索
+    public void getPast100DayPatients() {
+        
+        SwingWorker worker = new SwingWorker<List<PatientModel>, Void>() {
+
+            @Override
+            protected List<PatientModel> doInBackground() throws Exception {
+                doStartProgress();
+                getContext().getGlassPane().setText(String.format("過去%d日間の受診患者を検索中です。", pastDay));
+                List<PatientModel> result = PatientDelegater.getInstance().getPast100DayPatients(pastDay);
                 return result;
             }
 

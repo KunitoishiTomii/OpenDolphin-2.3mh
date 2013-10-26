@@ -1,12 +1,13 @@
 package open.dolphin.delegater;
 
-import com.sun.jersey.api.client.AsyncWebResource;
-import com.sun.jersey.api.client.WebResource;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.Invocation;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
 import open.dolphin.client.ClientContext;
 import open.dolphin.infomodel.*;
 import open.dolphin.util.BeanUtils;
@@ -24,12 +25,6 @@ public class BusinessDelegater {
 
     protected static final String CAMMA = ",";
     
-//masuda^
-    private static final String CHARSET_UTF8 = "; charset=UTF-8";
-    protected static final String MEDIATYPE_JSON_UTF8 = MediaType.APPLICATION_JSON + CHARSET_UTF8;
-    protected static final String MEDIATYPE_TEXT_UTF8 = MediaType.TEXT_PLAIN + CHARSET_UTF8;
-//masuda$
-    
     protected Logger logger;
 
     protected boolean DEBUG;
@@ -38,13 +33,13 @@ public class BusinessDelegater {
         logger = ClientContext.getDelegaterLogger();
         DEBUG = (logger.getLevel() == Level.DEBUG);
     }
-
-    protected WebResource.Builder getClientRequest(String path, MultivaluedMap<String, String> qmap) {
-        return JerseyClient.getInstance().getResource(path, qmap);
+    
+    protected Invocation.Builder buildRequest(String path, MultivaluedMap<String, String> qmap, MediaType mt) {
+        return JerseyClient.getInstance().buildRequest(path, qmap, mt);
     }
     
-    protected AsyncWebResource.Builder getAsyncClientRequest(String path) {
-        return JerseyClient.getInstance().getAsyncResource(path);
+    protected Invocation.Builder buildAsyncRequest(String path, MediaType mt) {
+        return JerseyClient.getInstance().buildAsyncRequest(path, mt);
     }
 
     protected void debug(int status, String entity) {
@@ -55,6 +50,14 @@ public class BusinessDelegater {
     
     protected JsonConverter getConverter() {
         return JsonConverter.getInstance();
+    }
+    
+    protected Entity toJsonEntity(Object obj) {
+        return Entity.json(getConverter().toJson(obj));
+    }
+    
+    protected Entity toTextEntity(String text) {
+        return Entity.text(text);
     }
 
     protected String toRestFormat(Date date) {
@@ -102,10 +105,13 @@ public class BusinessDelegater {
         }
     }
     
-    protected void isHTTP200(int status) throws Exception {
+    protected int checkHttpStatus(Response response) throws Exception {
+        int status = response.getStatus();
         if (status / 100 != 2) {
             String msg = "HTTP" + String.valueOf(status);
+            response.close();
             throw new Exception(msg);
         }
+        return status;
     }
 }

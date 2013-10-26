@@ -1,24 +1,24 @@
 package open.dolphin.delegater;
 
-import com.sun.jersey.api.client.AsyncWebResource;
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.WebResource;
-import com.sun.jersey.api.client.config.ClientConfig;
-import com.sun.jersey.api.client.config.DefaultClientConfig;
-import com.sun.jersey.client.urlconnection.HTTPSProperties;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.List;
+import java.util.Map;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Invocation;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import open.dolphin.client.Dolphin;
 import open.dolphin.util.HashUtil;
+import org.glassfish.jersey.client.ClientProperties;
 
 /**
  * JerseyClient
@@ -31,17 +31,19 @@ public class JerseyClient {
     private static final String USER_NAME = "userName";
     private static final String PASSWORD = "password";
     private static final String CLIENT_UUID = "clientUUID";
-    private static final int TIMEOUT1 = 30;
+    private static final int TIMEOUT1 = 30; // 30sec
+    private static final String ENCODING = "UTF-8";
     
     private String clientUUID;
     private String baseURI;
     private String userName;
     private String password;
     
+    // 非同期通信を分けるほうがよいのかどうか不明だが
     private Client client;
-    private Client client2;
-    private WebResource webResource;
-    private AsyncWebResource asyncResource;
+    private Client asyncClient;
+    private WebTarget webTarget;
+    private WebTarget asyncWebTarget;
     
     static {
         instance = new JerseyClient();
@@ -49,21 +51,17 @@ public class JerseyClient {
 
     private JerseyClient() {
         clientUUID = Dolphin.getInstance().getClientUUID();
-        ClientConfig config = new DefaultClientConfig();
-        setupOreOreSSL(config);
-
-        client = Client.create(config);
-        client2 = Client.create(config);
+        setupSslClients();
     }
 
     public static JerseyClient getInstance() {
         return instance;
     }
 
-    public void setUpAuthentication(String username, String password, boolean hashPass) {
+    public void setUpAuthentication(String username, String passwd, boolean hashPass) {
         try {
             this.userName = username;
-            this.password = hashPass ? password : HashUtil.MD5(password);
+            this.password = hashPass ? passwd : HashUtil.MD5(passwd);
         } catch (Exception e) {
             e.printStackTrace(System.err);
         }
@@ -81,48 +79,69 @@ public class JerseyClient {
         if (baseURI == null || baseURI.equals(oldURI)) {
             return;
         }
-
-        int readTimeout = TIMEOUT1 * 1000;
-        client.setReadTimeout(readTimeout);
-        webResource = client.resource(baseURI);
-
-        // pvt同期用のクライアントを別に用意する
-        asyncResource = client2.asyncResource(baseURI);
+        
+        webTarget = client.target(baseURI);
+        asyncWebTarget = asyncClient.target(baseURI);
     }
 
-    // QueryParam付のWebResource
-    public WebResource.Builder getResource(String path, MultivaluedMap<String, String> qmap) {
-
+    public Invocation.Builder buildRequest(String path, MultivaluedMap<String, String> qmap, MediaType mt) {
+        
+        WebTarget target = webTarget.path(path);
+        
+        // Jersey2.1、めんどくさいなぁ…
         if (qmap != null) {
-            return webResource.path(path).queryParams(qmap)
-                    .header(USER_NAME, userName).header(PASSWORD, password);
-        } else {
-            return webResource.path(path)
-                    .header(USER_NAME, userName).header(PASSWORD, password);
+            for (Map.Entry<String, List<String>> entry : qmap.entrySet()) {
+                for (String value : entry.getValue()) {
+                    target = target.queryParam(entry.getKey(), value);
+                }
+            }
         }
+        
+        Invocation.Builder builder = (mt != null)
+                ? target.request(mt).acceptEncoding(ENCODING)
+                : target.request();
+        
+        builder.header(USER_NAME, userName)
+                .header(PASSWORD, password);
+        
+        return builder;
     }
     
-    // pvt同期用のクライアント
-
-    public AsyncWebResource.Builder getAsyncResource(String path) {
-        return asyncResource.path(path)
-                .header(USER_NAME, userName)
+    public Invocation.Builder buildAsyncRequest(String path, MediaType mt) {
+        
+        WebTarget target = asyncWebTarget.path(path);
+        
+        Invocation.Builder builder = (mt != null)
+                ? target.request(mt).acceptEncoding(ENCODING)
+                : target.request();
+        
+        builder.header(USER_NAME, userName)
                 .header(PASSWORD, password)
                 .header(CLIENT_UUID, clientUUID);
+        
+        return builder;
     }
-    
+
     // オレオレSSL復活ｗ
-    private void setupOreOreSSL(ClientConfig config) {
+    private void setupSslClients() {
         try {
-            SSLContext ctx = SSLContext.getInstance("TLS");
+            SSLContext ssl = SSLContext.getInstance("TLS");
             TrustManager[] certs = {new OreOreTrustManager()};
-            ctx.init(null, certs, new SecureRandom());
+            ssl.init(null, certs, new SecureRandom());
             HostnameVerifier verifier = new OreOreHostnameVerifier();
-            HTTPSProperties prop = new HTTPSProperties(verifier, ctx);
-            config.getProperties().put(HTTPSProperties.PROPERTY_HTTPS_PROPERTIES, prop);
-        } catch (NoSuchAlgorithmException ex) {
-        } catch (KeyManagementException ex) {
+
+            client =  ClientBuilder.newBuilder().sslContext(ssl).hostnameVerifier(verifier).build();
+            asyncClient = ClientBuilder.newBuilder().sslContext(ssl).hostnameVerifier(verifier).build();
+            
+        } catch (Exception  ex) {
+            client = ClientBuilder.newClient();
+            asyncClient = ClientBuilder.newClient();
         }
+        
+        // 同期通信はタイムアウトを設定
+        int readTimeout = TIMEOUT1 * 1000;
+        client.property(ClientProperties.READ_TIMEOUT, readTimeout);
+        
     }
 
     private class OreOreHostnameVerifier implements HostnameVerifier {
@@ -133,6 +152,7 @@ public class JerseyClient {
         }
         
     }
+    
     private class OreOreTrustManager implements X509TrustManager {
 
         @Override

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import javax.persistence.*;
 
@@ -17,6 +18,8 @@ import javax.persistence.*;
 @Entity
 @Table(name = "d_patient")
 public class PatientModel extends InfoModel {
+    
+    private static final long DAY_IN_MILLISEC = 1000 * 60 * 60 * 24;
     
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -139,12 +142,24 @@ public class PatientModel extends InfoModel {
     // 受診日。患者検索で使用
     @Transient
     private String pvtDate;
+    
+    @Transient
+    private Date pvtDate2;
 
     public String getPvtDate() {
         return pvtDate;
     }
     public void setPvtDate(String pvtDate) {
         this.pvtDate = pvtDate;
+        pvtDate2 = ModelUtils.getDateAsObject(pvtDate);
+    }
+    public Date getPvtDate2() {
+        return pvtDate2;
+    }
+    public int getElapsedDay() {
+        long now = System.currentTimeMillis();
+        int ret = (int) ((now - pvtDate2.getTime()) / DAY_IN_MILLISEC);
+        return ret;
     }
     public String getPvtDateTrimTime() {
         return ModelUtils.trimTime(pvtDate);

@@ -1,12 +1,14 @@
 package open.dolphin.delegater;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.core.util.MultivaluedMapImpl;
 import java.io.InputStream;
 import java.util.Date;
 import java.util.List;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
 import open.dolphin.infomodel.*;
 import open.dolphin.util.BeanUtils;
 
@@ -40,23 +42,20 @@ public class MasudaDelegater extends BusinessDelegater {
 
         String path = RES_BASE + "routineMed/list/" + String.valueOf(karteId);
 
-        MultivaluedMap<String, String> qmap = new MultivaluedMapImpl();
+        MultivaluedMap<String, String> qmap = new MultivaluedHashMap();
         qmap.add("firstResult", String.valueOf(firstResult));
         qmap.add("maxResults", String.valueOf(maxResults));
 
-        ClientResponse response = getClientRequest(path, qmap)
-                .accept(MEDIATYPE_JSON_UTF8)
-                .get(ClientResponse.class);
+        Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
+                .get();
 
-        int status = response.getStatus();
-        //String entityStr = (String) response.getEntity(String.class);
-        //debug(status, entityStr);
-        isHTTP200(status);
-        InputStream is = response.getEntityInputStream();
-
+        checkHttpStatus(response);
+        InputStream is = response.readEntity(InputStream.class);
         TypeReference typeRef = new TypeReference<List<RoutineMedModel>>(){};
         List<RoutineMedModel> list = (List<RoutineMedModel>) 
                 getConverter().fromJson(is, typeRef);
+        
+        response.close();
 
         // いつもデコード忘れるｗ
         for (RoutineMedModel model : list) {
@@ -72,18 +71,16 @@ public class MasudaDelegater extends BusinessDelegater {
 
         String path = RES_BASE + "routineMed/" + String.valueOf(id);
 
-        ClientResponse response = getClientRequest(path, null)
-                .accept(MEDIATYPE_JSON_UTF8)
-                .get(ClientResponse.class);
+        Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
+                .get();
 
-        int status = response.getStatus();
-        //String entityStr = (String) response.getEntity(String.class);
-        //debug(status, entityStr);
-        isHTTP200(status);
-        InputStream is = response.getEntityInputStream();
-
+        checkHttpStatus(response);
+        InputStream is = response.readEntity(InputStream.class);
         RoutineMedModel model = (RoutineMedModel)
                 getConverter().fromJson(is, RoutineMedModel.class);
+        
+        response.close();
+        
         if (model == null) {
             return null;
         }
@@ -99,45 +96,45 @@ public class MasudaDelegater extends BusinessDelegater {
 
         String path = RES_BASE + "routineMed/" + String.valueOf(model.getId());
 
-        ClientResponse response = getClientRequest(path, null)
-                    .accept(MEDIATYPE_TEXT_UTF8)
-                    .delete(ClientResponse.class);
+        Response response = buildRequest(path, null, null)
+                    .delete();
 
-        int status = response.getStatus();
+        int status = checkHttpStatus(response);
         debug(status, "delete response");
-        isHTTP200(status);
+        
+        response.close();
     }
     
     public void addRoutineMedModel(RoutineMedModel model) throws Exception {
         
         String path = RES_BASE + "routineMed";
 
-        String json = getConverter().toJson(model);
+        Entity entity = toJsonEntity(model);
 
-        ClientResponse response = getClientRequest(path, null)
-                .type(MEDIATYPE_JSON_UTF8)
-                .post(ClientResponse.class, json);
+        Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
+                .post(entity);
 
-        int status = response.getStatus();
-        String enityStr = (String) response.getEntity(String.class);
+        int status = checkHttpStatus(response);
+        String enityStr = response.readEntity(String.class);
         debug(status, enityStr);
-        isHTTP200(status);
+        
+        response.close();
     }
     
     public void updateRoutineMedModel(RoutineMedModel model) throws Exception {
         
         String path = RES_BASE + "routineMed";
 
-        String json = getConverter().toJson(model);
+        Entity entity = toJsonEntity(model);
 
-        ClientResponse response = getClientRequest(path, null)
-                .type(MEDIATYPE_JSON_UTF8)
-                .put(ClientResponse.class, json);
+        Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
+                .put(entity);
 
-        int status = response.getStatus();
-        String enityStr = (String) response.getEntity(String.class);
+        int status = checkHttpStatus(response);
+        String enityStr = response.readEntity(String.class);
         debug(status, enityStr);
-        isHTTP200(status);
+        
+        response.close();
     }
     
     // 中止項目
@@ -145,19 +142,16 @@ public class MasudaDelegater extends BusinessDelegater {
         
         String path = RES_BASE + "discon";
 
-        ClientResponse response = getClientRequest(path, null)
-                .accept(MEDIATYPE_JSON_UTF8)
-                .get(ClientResponse.class);
+        Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
+                .get();
 
-        int status = response.getStatus();
-        //String entityStr = (String) response.getEntity(String.class);
-        //debug(status, entityStr);
-        isHTTP200(status);
-        InputStream is = response.getEntityInputStream();
-
+        checkHttpStatus(response);
+        InputStream is = response.readEntity(InputStream.class);
         TypeReference typeRef = new TypeReference<List<DisconItemModel>>(){};
         List<DisconItemModel> list = (List<DisconItemModel>)
                 getConverter().fromJson(is, typeRef);
+        
+        response.close();
 
         return list;
     }
@@ -166,45 +160,45 @@ public class MasudaDelegater extends BusinessDelegater {
         
         String path = RES_BASE + "discon";
 
-        String json = getConverter().toJson(model);
+        Entity entity = toJsonEntity(model);
 
-        ClientResponse response = getClientRequest(path, null)
-                .type(MEDIATYPE_JSON_UTF8)
-                .post(ClientResponse.class, json);
+        Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
+                .post(entity);
 
-        int status = response.getStatus();
-        String enityStr = (String) response.getEntity(String.class);
+        int status = checkHttpStatus(response);
+        String enityStr = response.readEntity(String.class);
         debug(status, enityStr);
-        isHTTP200(status);
+        
+        response.close();
     }
 
     public void removeDisconItemModel(DisconItemModel model) throws Exception {
         
         String path = RES_BASE + "discon/" + String.valueOf(model.getId());
 
-        ClientResponse response = getClientRequest(path, null)
-                .accept(MEDIATYPE_TEXT_UTF8)
-                .delete(ClientResponse.class);
+        Response response = buildRequest(path, null, null)
+                .delete();
 
-        int status = response.getStatus();
+        int status = checkHttpStatus(response);
         debug(status, "delete response");
-        isHTTP200(status);
+        
+        response.close();
     }
 
     public void updateDisconItemModel(DisconItemModel model) throws Exception {
         
         String path = RES_BASE + "discon";
 
-        String json = getConverter().toJson(model);
+        Entity entity = toJsonEntity(model);
 
-        ClientResponse response = getClientRequest(path, null)
-                .type(MEDIATYPE_JSON_UTF8)
-                .put(ClientResponse.class, json);
+        Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
+                .put(entity);
 
-        int status = response.getStatus();
-        String enityStr = (String) response.getEntity(String.class);
+        int status = checkHttpStatus(response);
+        String enityStr = response.readEntity(String.class);
         debug(status, enityStr);
-        isHTTP200(status);
+        
+        response.close();
     }
 
     // 採用薬
@@ -212,19 +206,16 @@ public class MasudaDelegater extends BusinessDelegater {
         
         String path = RES_BASE + "usingDrug";
 
-        ClientResponse response = getClientRequest(path, null)
-                .accept(MEDIATYPE_JSON_UTF8)
-                .get(ClientResponse.class);
+        Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
+                .get();
 
-        int status = response.getStatus();
-        //String entityStr = (String) response.getEntity(String.class);
-        //debug(status, entityStr);
-        isHTTP200(status);
-        InputStream is = response.getEntityInputStream();
-
+        checkHttpStatus(response);
+        InputStream is = response.readEntity(InputStream.class);
         TypeReference typeRef = new TypeReference<List<UsingDrugModel>>(){};
         List<UsingDrugModel> list = (List<UsingDrugModel>)
                 getConverter().fromJson(is, typeRef);
+        
+        response.close();
 
         return list;
     }
@@ -233,45 +224,45 @@ public class MasudaDelegater extends BusinessDelegater {
         
         String path = RES_BASE + "usingDrug";
 
-        String json = getConverter().toJson(model);
+        Entity entity = toJsonEntity(model);
 
-        ClientResponse response = getClientRequest(path, null)
-                    .type(MEDIATYPE_JSON_UTF8)
-                    .post(ClientResponse.class, json);
+        Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
+                    .post(entity);
 
-        int status = response.getStatus();
-        String enityStr = (String) response.getEntity(String.class);
+        int status = checkHttpStatus(response);
+        String enityStr = response.readEntity(String.class);
         debug(status, enityStr);
-        isHTTP200(status);
+        
+        response.close();
     }
 
     public void removeUsingDrugModel(UsingDrugModel model) throws Exception {
         
         String path = RES_BASE + "usingDrug/" + String.valueOf(model.getId());
 
-        ClientResponse response = getClientRequest(path, null)
-                    .accept(MEDIATYPE_TEXT_UTF8)
-                    .delete(ClientResponse.class);
+        Response response = buildRequest(path, null, null)
+                    .delete();
 
-        int status = response.getStatus();
+        int status = checkHttpStatus(response);
         debug(status, "delete response");
-        isHTTP200(status);
+        
+        response.close();
     }
 
     public void updateUsingDrugModel(UsingDrugModel model) throws Exception {
         
         String path = RES_BASE + "usingDrug";
 
-        String json = getConverter().toJson(model);
+        Entity entity = toJsonEntity(model);
+        
+        Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
+                    .put(entity);
 
-        ClientResponse response = getClientRequest(path, null)
-                    .type(MEDIATYPE_JSON_UTF8)
-                    .put(ClientResponse.class, json);
-
-        int status = response.getStatus();
-        String enityStr = (String) response.getEntity(String.class);
+        int status = checkHttpStatus(response);
+        String enityStr = response.readEntity(String.class);
         debug(status, enityStr);
-        isHTTP200(status);
+        
+        response.close();
     }
 
     // 指定したEntityのModuleModelをがさっと取ってくる
@@ -284,24 +275,21 @@ public class MasudaDelegater extends BusinessDelegater {
 
         String path = RES_BASE + "moduleSearch/" + String.valueOf(karteId);
         
-        MultivaluedMap<String, String> qmap = new MultivaluedMapImpl();
+        MultivaluedMap<String, String> qmap = new MultivaluedHashMap();
         qmap.add("fromDate", toRestFormat(fromDate));
         qmap.add("toDate", toRestFormat(toDate));
         qmap.add("entities", getConverter().fromList(entities));
 
-        ClientResponse response = getClientRequest(path, qmap)
-                .accept(MEDIATYPE_JSON_UTF8)
-                .get(ClientResponse.class);
+        Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
+                .get();
 
-        int status = response.getStatus();
-        //String entityStr = (String) response.getEntity(String.class);
-        //debug(status, entityStr);
-        isHTTP200(status);
-        InputStream is = response.getEntityInputStream();
-
+        checkHttpStatus(response);
+        InputStream is = response.readEntity(InputStream.class);
         TypeReference typeRef = new TypeReference<List<ModuleModel>>(){};
         List<ModuleModel> list = (List<ModuleModel>)
                 getConverter().fromJson(is, typeRef);
+        
+        response.close();
 
         for (ModuleModel module : list) {
             module.setModel((InfoModel) BeanUtils.xmlDecode(module.getBeanBytes()));
@@ -319,19 +307,16 @@ public class MasudaDelegater extends BusinessDelegater {
 
         String path = RES_BASE + "lastPvt/" + ptId;
 
-        ClientResponse response = getClientRequest(path, null)
-                .accept(MEDIATYPE_JSON_UTF8)
-                .get(ClientResponse.class);
+        Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
+                .get();
 
-        int status = response.getStatus();
-        //String entityStr = (String) response.getEntity(String.class);
-        //debug(status, entityStr);
-        isHTTP200(status);
-        InputStream is = response.getEntityInputStream();
-
+        checkHttpStatus(response);
+        InputStream is = response.readEntity(InputStream.class);
         PatientVisitModel model = (PatientVisitModel)
                 getConverter().fromJson(is, PatientVisitModel.class);
-
+        
+        response.close();
+        
         return model;
     }
 
@@ -344,22 +329,19 @@ public class MasudaDelegater extends BusinessDelegater {
 
         String path = RES_BASE + "docList";
         
-        MultivaluedMap<String, String> qmap = new MultivaluedMapImpl();
+        MultivaluedMap<String, String> qmap = new MultivaluedHashMap();
         qmap.add("ids", getConverter().fromList(docPkList));
 
-        ClientResponse response = getClientRequest(path, qmap)
-                .accept(MEDIATYPE_JSON_UTF8)
-                .get(ClientResponse.class);
+        Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
+                .get();
 
-        int status = response.getStatus();
-        //String entityStr = (String) response.getEntity(String.class);
-        //debug(status, entityStr);
-        isHTTP200(status);
-        InputStream is = response.getEntityInputStream();
-
+        checkHttpStatus(response);
+        InputStream is = response.readEntity(InputStream.class);
         TypeReference typeRef = new TypeReference<List<DocInfoModel>>(){};
         List<DocInfoModel> list = (List<DocInfoModel>)
                 getConverter().fromJson(is, typeRef);
+        
+        response.close();
 
         return list;
     }
@@ -369,18 +351,18 @@ public class MasudaDelegater extends BusinessDelegater {
         
         String path = RES_BASE +"search/makeIndex";
         
-        MultivaluedMap<String, String> qmap = new MultivaluedMapImpl();
+        MultivaluedMap<String, String> qmap = new MultivaluedHashMap();
         qmap.add("fromDocPk", String.valueOf(fromDocPk));
         qmap.add("maxResults", String.valueOf(maxResults));
 
-        ClientResponse response = getClientRequest(path, qmap)
-                .accept(MEDIATYPE_TEXT_UTF8)
-                .get(ClientResponse.class);
+        Response response = buildRequest(path, qmap, MediaType.TEXT_PLAIN_TYPE)
+                .get();
 
-        int status = response.getStatus();
-        String entityStr = (String) response.getEntity(String.class);
+        int status = checkHttpStatus(response);
+        String entityStr = response.readEntity(String.class);
         debug(status, entityStr);
-        isHTTP200(status);
+        
+        response.close();
 
         return entityStr;
     }
@@ -390,23 +372,20 @@ public class MasudaDelegater extends BusinessDelegater {
         
         String path = RES_BASE + "search/hibernate";
         
-        MultivaluedMap<String, String> qmap = new MultivaluedMapImpl();
+        MultivaluedMap<String, String> qmap = new MultivaluedHashMap();
         qmap.add("karteId", String.valueOf(karteId));
         qmap.add("text", text);
 
-        ClientResponse response = getClientRequest(path, qmap)
-                .accept(MEDIATYPE_JSON_UTF8)
-                .get(ClientResponse.class);
+        Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
+                .get();
 
-        int status = response.getStatus();
-        //String entityStr = (String) response.getEntity(String.class);
-        //debug(status, entityStr);
-        isHTTP200(status);
-        InputStream is = response.getEntityInputStream();
-
+        checkHttpStatus(response);
+        InputStream is = response.readEntity(InputStream.class);
         TypeReference typeRef = new TypeReference<List<PatientModel>>(){};
         List<PatientModel> list = (List<PatientModel>)
                 getConverter().fromJson(is, typeRef);
+        
+        response.close();
 
         return list;
     }
@@ -417,25 +396,22 @@ public class MasudaDelegater extends BusinessDelegater {
         
         String path = RES_BASE + "search/grep";
         
-        MultivaluedMap<String, String> qmap = new MultivaluedMapImpl();
+        MultivaluedMap<String, String> qmap = new MultivaluedHashMap();
         qmap.add("text", text);
         qmap.add("fromId", String.valueOf(fromId));
         qmap.add("maxResult", String.valueOf(maxResult));
         qmap.add("pcOnly", String.valueOf(progressCourseOnly));
 
-        ClientResponse response = getClientRequest(path, qmap)
-                .accept(MEDIATYPE_JSON_UTF8)
-                .get(ClientResponse.class);
+        Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
+                .get();
 
-        int status = response.getStatus();
-        //String entityStr = (String) response.getEntity(String.class);
-        //debug(status, entityStr);
-        isHTTP200(status);
-        InputStream is = response.getEntityInputStream();
-
+        checkHttpStatus(response);
+        InputStream is = response.readEntity(InputStream.class);
         SearchResultModel model = (SearchResultModel)
                 getConverter().fromJson(is, SearchResultModel.class);
 
+        response.close();
+        
         return model;
     }
 
@@ -444,23 +420,20 @@ public class MasudaDelegater extends BusinessDelegater {
         
         String path = RES_BASE + "examHistory/" + String.valueOf(karteId);
         
-        MultivaluedMap<String, String> qmap = new MultivaluedMapImpl();
+        MultivaluedMap<String, String> qmap = new MultivaluedHashMap();
         qmap.add("fromDate", toRestFormat(fromDate));
         qmap.add("toDate", toRestFormat(toDate));
 
-        ClientResponse response = getClientRequest(path, qmap)
-                .accept(MEDIATYPE_JSON_UTF8)
-                .get(ClientResponse.class);
+        Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
+                .get();
 
-        int status = response.getStatus();
-        //String entityStr = (String) response.getEntity(String.class);
-        //debug(status, entityStr);
-        isHTTP200(status);
-        InputStream is = response.getEntityInputStream();
-
+        checkHttpStatus(response);
+        InputStream is = response.readEntity(InputStream.class);
         TypeReference typeRef = new TypeReference<List<ExamHistoryModel>>(){};
         List<ExamHistoryModel> list = (List<ExamHistoryModel>)
                 getConverter().fromJson(is, typeRef);
+        
+        response.close();
 
         return list;
     }
@@ -470,25 +443,22 @@ public class MasudaDelegater extends BusinessDelegater {
         
         String path = RES_BASE + "outOfMed";
         
-        MultivaluedMap<String, String> qmap = new MultivaluedMapImpl();
+        MultivaluedMap<String, String> qmap = new MultivaluedHashMap();
         qmap.add("fromDate", toRestFormat(fromDate));
         qmap.add("toDate", toRestFormat(toDate));
         qmap.add("yoyuu", String.valueOf(yoyuu));
 
-        ClientResponse response = getClientRequest(path, qmap)
-                .accept(MEDIATYPE_JSON_UTF8)
-                .get(ClientResponse.class);
+        Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
+                .get();
 
-        int status = response.getStatus();
-        //String entityStr = (String) response.getEntity(String.class);
-        //debug(status, entityStr);
-        isHTTP200(status);
-        InputStream is = response.getEntityInputStream();
-
+        checkHttpStatus(response);
+        InputStream is = response.readEntity(InputStream.class);
         TypeReference typeRef = new TypeReference<List<PatientModel>>(){};
         List<PatientModel> list = (List<PatientModel>)
                 getConverter().fromJson(is, typeRef);
 
+        response.close();
+        
         return list;
     }
 
@@ -497,20 +467,17 @@ public class MasudaDelegater extends BusinessDelegater {
         
         String path = RES_BASE + "inFacilityLabo/list";
         
-        ClientResponse response = getClientRequest(path, null)
-                .accept(MEDIATYPE_JSON_UTF8)
-                .get(ClientResponse.class);
+        Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
+                .get();
 
-        int status = response.getStatus();
-        //String entityStr = (String) response.getEntity(String.class);
-        //debug(status, entityStr);
-        isHTTP200(status);
-        InputStream is = response.getEntityInputStream();
-
+        checkHttpStatus(response);
+        InputStream is = response.readEntity(InputStream.class);
         TypeReference typeRef = new TypeReference<List<InFacilityLaboItem>>(){};
         List<InFacilityLaboItem> list = (List<InFacilityLaboItem>)
                 getConverter().fromJson(is, typeRef);
 
+        response.close();
+        
         return list;
     }
     
@@ -518,17 +485,16 @@ public class MasudaDelegater extends BusinessDelegater {
         
         String path = RES_BASE + "inFacilityLabo/list";
 
-        String json = getConverter().toJson(list);
+        Entity entity = toJsonEntity(list);
 
-        ClientResponse response = getClientRequest(path, null)
-                .type(MEDIATYPE_JSON_UTF8)
-                .put(ClientResponse.class, json);
+        Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
+                .put(entity);
 
-        int status = response.getStatus();
-        String enityStr = (String) response.getEntity(String.class);
+        int status = checkHttpStatus(response);
+        String enityStr = response.readEntity(String.class);
         debug(status, enityStr);
-        isHTTP200(status);
-
+        
+        response.close();
     }
     
     // 電子点数表　未使用
@@ -536,16 +502,16 @@ public class MasudaDelegater extends BusinessDelegater {
         
         String path = RES_BASE + "etensu/update/";
 
-        String json = getConverter().toJson(list);
+        Entity entity = toJsonEntity(list);
 
-        ClientResponse response = getClientRequest(path, null)
-                .type(MEDIATYPE_JSON_UTF8)
-                .post(ClientResponse.class, json);
+        Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
+                .post(entity);
 
-        int status = response.getStatus();
-        String ret = (String) response.getEntity(String.class);
+        int status = checkHttpStatus(response);
+        String ret = response.readEntity(String.class);
         debug(status, ret);
-        isHTTP200(status);
+        
+        response.close();
 
         return ret;
     }
@@ -554,18 +520,18 @@ public class MasudaDelegater extends BusinessDelegater {
         
         String path = RES_BASE + "santeiHistory/init";
 
-        MultivaluedMap<String, String> qmap = new MultivaluedMapImpl();
+        MultivaluedMap<String, String> qmap = new MultivaluedHashMap();
         qmap.add("fromId", String.valueOf(fromId));
         qmap.add("maxResults", String.valueOf(maxResults));
 
-        ClientResponse response = getClientRequest(path, qmap)
-                .accept(MEDIATYPE_TEXT_UTF8)
-                .get(ClientResponse.class);
+        Response response = buildRequest(path, qmap, MediaType.TEXT_PLAIN_TYPE)
+                .get();
 
-        int status = response.getStatus();
-        String ret = (String) response.getEntity(String.class);
+        int status = checkHttpStatus(response);
+        String ret = response.readEntity(String.class);
         debug(status, ret);
-        isHTTP200(status);
+        
+        response.close();
 
         return ret;
     }
@@ -574,27 +540,24 @@ public class MasudaDelegater extends BusinessDelegater {
             long karteId, Date fromDate, Date toDate, List<String> srycds) throws Exception {
         
         String path = RES_BASE + "santeiHistory/" + String.valueOf(karteId);
-        MultivaluedMap<String, String> qmap = new MultivaluedMapImpl();
+        MultivaluedMap<String, String> qmap = new MultivaluedHashMap();
         qmap.add("fromDate", toRestFormat(fromDate));
         qmap.add("toDate", toRestFormat(toDate));
         if (srycds != null) {
             qmap.add("srycds", getConverter().fromList(srycds));
         }
 
-        ClientResponse response = getClientRequest(path, qmap)
-                .accept(MEDIATYPE_JSON_UTF8)
-                .get(ClientResponse.class);
+        Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
+                .get();
 
-        int status = response.getStatus();
-        //String entityStr = (String) response.getEntity(String.class);
-        //debug(status, entityStr);
-        isHTTP200(status);
-        InputStream is = response.getEntityInputStream();
-
+        checkHttpStatus(response);
+        InputStream is = response.readEntity(InputStream.class);
         TypeReference typeRef = new TypeReference<List<SanteiHistoryModel>>(){};
         List<SanteiHistoryModel> list = (List<SanteiHistoryModel>)
                 getConverter().fromJson(is, typeRef);
 
+        response.close();
+        
         return list;
     }
     
@@ -603,24 +566,21 @@ public class MasudaDelegater extends BusinessDelegater {
             long karteId, Date fromDate, Date toDate, boolean lastOnly) throws Exception {
         
         String path = RES_BASE + "rpHistory/list/" + String.valueOf(karteId);
-        MultivaluedMap<String, String> qmap = new MultivaluedMapImpl();
+        MultivaluedMap<String, String> qmap = new MultivaluedHashMap();
         qmap.add("fromDate", toRestFormat(fromDate));
         qmap.add("toDate", toRestFormat(toDate));
         qmap.add("lastOnly", String.valueOf(lastOnly));
 
-        ClientResponse response = getClientRequest(path, qmap)
-                .accept(MEDIATYPE_JSON_UTF8)
-                .get(ClientResponse.class);
+        Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
+                .get();
 
-        int status = response.getStatus();
-        //String entityStr = (String) response.getEntity(String.class);
-        //debug(status, entityStr);
-        isHTTP200(status);
-        InputStream is = response.getEntityInputStream();
-
+        checkHttpStatus(response);
+        InputStream is = response.readEntity(InputStream.class);
         TypeReference typeRef = new TypeReference<List<List<RpModel>>>(){};
         List<List<RpModel>> list = (List<List<RpModel>>)
                 getConverter().fromJson(is, typeRef);
+        
+        response.close();
 
         return list;
     }
@@ -629,35 +589,32 @@ public class MasudaDelegater extends BusinessDelegater {
         
         String path = RES_BASE + "userProperty/" + userId;
 
-        String json = getConverter().toJson(list);
+        Entity entity = toJsonEntity(list);
 
-        ClientResponse response = getClientRequest(path, null)
-                .type(MEDIATYPE_JSON_UTF8)
-                .post(ClientResponse.class, json);
+        Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
+                .post(entity);
 
-        int status = response.getStatus();
-        String enityStr = (String) response.getEntity(String.class);
+        int status = checkHttpStatus(response);
+        String enityStr = response.readEntity(String.class);
         debug(status, enityStr);
-        isHTTP200(status);
+        
+        response.close();
     }
     
     public List<UserPropertyModel> getUserProperties(String userId) throws Exception {
         
         String path = RES_BASE + "userProperty/" + userId;
 
-        ClientResponse response = getClientRequest(path, null)
-                .accept(MEDIATYPE_JSON_UTF8)
-                .get(ClientResponse.class);
+        Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
+                .get();
 
-        int status = response.getStatus();
-        //String entityStr = (String) response.getEntity(String.class);
-        //debug(status, entityStr);
-        isHTTP200(status);
-        InputStream is = response.getEntityInputStream();
-
+        checkHttpStatus(response);
+        InputStream is = response.readEntity(InputStream.class);
         TypeReference typeRef = new TypeReference<List<UserPropertyModel>>(){};
         List<UserPropertyModel> list = (List<UserPropertyModel>) 
                 getConverter().fromJson(is, typeRef);
+        
+        response.close();
 
         return list;
     }
@@ -667,22 +624,19 @@ public class MasudaDelegater extends BusinessDelegater {
         
         String path = RES_BASE + "tempKarte/" + String.valueOf(userPk);
 
-        MultivaluedMap<String, String> qmap = new MultivaluedMapImpl();
+        MultivaluedMap<String, String> qmap = new MultivaluedHashMap();
         qmap.add("fromDate", toRestFormat(fromDate));
 
-        ClientResponse response = getClientRequest(path, qmap)
-                .accept(MEDIATYPE_JSON_UTF8)
-                .get(ClientResponse.class);
+        Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
+                .get();
 
-        int status = response.getStatus();
-        //String entityStr = (String) response.getEntity(String.class);
-        //debug(status, entityStr);
-        isHTTP200(status);
-        InputStream is = response.getEntityInputStream();
-
+        checkHttpStatus(response);
+        InputStream is = response.readEntity(InputStream.class);
         TypeReference typeRef = new TypeReference<List<PatientModel>>(){};
         List<PatientModel> list = (List<PatientModel>) 
                 getConverter().fromJson(is, typeRef);
+        
+        response.close();
 
         return list;
     }
