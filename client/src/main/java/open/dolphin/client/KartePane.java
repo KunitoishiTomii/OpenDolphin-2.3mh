@@ -43,7 +43,7 @@ import open.dolphin.tr.*;
 import open.dolphin.util.BeanUtils;
 import open.dolphin.util.DicomImageEntry;
 import open.dolphin.util.ImageTool;
-import open.dolphin.util.PopupMenuUtil;
+import open.dolphin.util.NonHidePopupMenu;
 import org.apache.log4j.Logger;
 
 /**
@@ -96,21 +96,6 @@ public class KartePane implements DocumentListener, MouseListener,
     // 保存後及びブラウズ時の編集不可を表すカラー
     private Color uneditableColor = UNEDITABLE_COLOR;
 
-//masuda^
-    // このペインからDragg及びDroppされたスタンプの情報
-    //private ComponentHolder[] drragedStamp;
-    //private int draggedCount;
-    //private int droppedCount;
-    
-    // DocumentModelのステータス, KarteViewerのポップアップ制御で利用
-    private String docStatus;
-    public String getDocStatus() {
-        return docStatus;
-    }
-    public void setDocStatus(String status) {
-        docStatus = status;
-    }
-//masuda$
     private Logger logger;
 
     /** 
@@ -222,7 +207,6 @@ public class KartePane implements DocumentListener, MouseListener,
         if (this.textPane != null) {
             KarteStyledDocument doc = new KarteStyledDocument();
             this.textPane.setDocument(doc);
-            this.textPane.putClientProperty(GUIConst.PROP_KARTE_COMPOSITOR, this);
 
             doc.setParent(this);
         }
@@ -460,7 +444,7 @@ public class KartePane implements DocumentListener, MouseListener,
     protected JPopupMenu createMenus() {
 
         //final JPopupMenu contextMenu = new JPopupMenu();
-        final JPopupMenu contextMenu = PopupMenuUtil.createPopupMenu();
+        final JPopupMenu contextMenu = new NonHidePopupMenu();
         
         // cut, copy, paste メニューを追加する
         contextMenu.add(mediator.getAction(GUIConst.ACTION_CUT));

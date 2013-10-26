@@ -6,7 +6,6 @@ import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.*;
-import java.beans.EventHandler;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -37,8 +36,6 @@ public class WatingListImpl extends AbstractMainComponent {
     private static final String NAME = "受付リスト";
     // 担当分のみを表示するかどうかの preference key
     private static final String ASSIGNED_ONLY = "assignedOnly";
-    // 修正送信アイコンの配列インデックス
-    private static final int INDEX_MODIFY_SEND_ICON = 1;
     // 担当医未定の ORCA 医師ID
     private static final String UN_ASSIGNED_ID = "18080";
     
@@ -106,42 +103,35 @@ public class WatingListImpl extends AbstractMainComponent {
     private int selectedRow;
     // View class
     private WatingListView view;
-    // 更新時刻フォーマッタ
-    private SimpleDateFormat timeFormatter;
     
-    // Chart State
-    private Integer[] chartBitArray = {
-        new Integer(PatientVisitModel.BIT_OPEN), 
-        new Integer(PatientVisitModel.BIT_MODIFY_CLAIM),
-        new Integer(PatientVisitModel.BIT_SAVE_CLAIM)};
-    // Chart State を表示するアイコン
-    private ImageIcon[] chartIconArray = {
-        OPEN_ICON, 
-        ClientContext.getImageIconAlias("icon_karte_modified_small"), 
-        ClientContext.getImageIconAlias("icon_sent_claim_small")};
-    // State ComboBox
-    //private Integer[] userBitArray = {0, 3, 4, 5, 6};
-    private Integer[] userBitArray = {
-        0,
-        PatientVisitModel.BIT_TREATMENT,
-        PatientVisitModel.BIT_HURRY,
-        PatientVisitModel.BIT_GO_OUT,
-        PatientVisitModel.BIT_CANCEL,
-        PatientVisitModel.BIT_SAVE_CLAIM};
-    private ImageIcon[] userIconArray = {
-        null, 
-        ClientContext.getImageIconAlias("icon_under_treatment_small"), 
-        ClientContext.getImageIconAlias("icon_emergency_small"), 
-        ClientContext.getImageIconAlias("icon_under_shopping_small"), 
-        ClientContext.getImageIconAlias("icon_cancel_small"),
-        ClientContext.getImageIconAlias("icon_sent_claim_small")};
-    private ImageIcon modifySendIcon;
+    // 状態ビット・アイコン配列
+    private BitAndIconPair[] bitAndIconPairs = {
+        new BitAndIconPair(PatientVisitModel.BIT_OPEN, 
+            OPEN_ICON),
+        new BitAndIconPair(PatientVisitModel.BIT_SAVE_CLAIM, 
+            ClientContext.getImageIconAlias("icon_sent_claim_small")),
+        new BitAndIconPair(PatientVisitModel.BIT_MODIFY_CLAIM, 
+            ClientContext.getImageIconAlias("icon_karte_modified_small")),
+        new BitAndIconPair(PatientVisitModel.BIT_TREATMENT, 
+            ClientContext.getImageIconAlias("icon_under_treatment_small")),
+        new BitAndIconPair(PatientVisitModel.BIT_HURRY, 
+            ClientContext.getImageIconAlias("icon_emergency_small")),
+        new BitAndIconPair(PatientVisitModel.BIT_GO_OUT, 
+            ClientContext.getImageIconAlias("icon_under_shopping_small")),
+        new BitAndIconPair(PatientVisitModel.BIT_CANCEL, 
+            ClientContext.getImageIconAlias("icon_cancel_small"))
+    };
+    
+    // 修正送信アイコンの配列インデックス
+    private static final int INDEX_MODIFY_SEND_ICON = 2;
+    // save_claim, modify_claim
+    private static final int[] SAVED_BITS = {1, 2};
+    // others
+    private static final int[] USER_BITS = {1, 2, 3, 4, 5, 6};
     
     // Status　情報　メインウィンドウの左下に表示される内容
     private String statusInfo;
 
-    // State 設定用のcombobox model
-    private BitAndIconPair[] stateComboArray;
     // State 設定用のcombobox
     private JComboBox stateCmb;
     private AbstractAction copyAction;
@@ -204,29 +194,21 @@ public class WatingListImpl extends AbstractMainComponent {
         memoColumn = columnHelper.getColumnPosition("getMemo");
         stateColumn = columnHelper.getColumnPosition("getStateInteger");
         numberColumn = columnHelper.getColumnPosition("getNumber");
-
         
         // 修正送信アイコンを決める
-        if (Project.getBoolean("change.icon.modify.send", true)) {
-            modifySendIcon = ClientContext.getImageIconAlias("icon_karte_modified_small");
-        } else {
-            modifySendIcon = ClientContext.getImageIconAlias("icon_sent_claim_small");
-        }
-        chartIconArray[INDEX_MODIFY_SEND_ICON] = modifySendIcon;
-
-        stateComboArray = new BitAndIconPair[userBitArray.length];
-        for (int i = 0; i < userBitArray.length; i++) {
-            stateComboArray[i] = new BitAndIconPair(userBitArray[i], userIconArray[i]);
-        }
-        stateCmb = new JComboBox(stateComboArray);
+        ImageIcon modifySendIcon = Project.getBoolean("change.icon.modify.send", true)
+                ? ClientContext.getImageIconAlias("icon_karte_modified_small")
+                : ClientContext.getImageIconAlias("icon_sent_claim_small");
+        bitAndIconPairs[INDEX_MODIFY_SEND_ICON].setIcon(modifySendIcon);
+        
+        stateCmb = new JComboBox();
         ComboBoxRenderer renderer = new ComboBoxRenderer();
         renderer.setPreferredSize(new Dimension(30, ClientContext.getHigherRowHeight()));
         stateCmb.setRenderer(renderer);
-        stateCmb.setMaximumRowCount(userBitArray.length);
 
         sexRenderer = Project.getBoolean("sexRenderer", false);
         ageDisplay = Project.getBoolean("ageDisplay", true);
-        timeFormatter = new SimpleDateFormat("HH:mm");
+
         NamedThreadFactory factory = new NamedThreadFactory(getClass().getSimpleName());
         executor = Executors.newSingleThreadScheduledExecutor(factory);
         
@@ -260,36 +242,47 @@ public class WatingListImpl extends AbstractMainComponent {
             @Override
             public boolean isCellEditable(int row, int col) {
 
-                boolean canEdit = true;
-
-                // メモか状態カラムの場合
-                canEdit = canEdit && ((col == memoColumn) || (col == stateColumn));
-
-                // null でない場合
-                canEdit = canEdit && (getObject(row) != null);
-
-                if (!canEdit) {
+                // nullなら編集不可
+                if (getObject(row) == null) {
+                    return false;
+                }
+                
+                // メモは編集可
+                if (col == memoColumn) {
+                    return true;
+                }
+                // 状態カラムでないなら不可
+                if (col != stateColumn) {
                     return false;
                 }
 
                 // statusをチェックする
                 PatientVisitModel pvt = getObject(row);
-
-                if (pvt.getStateBit(PatientVisitModel.BIT_CANCEL)) {
-                    // cancel case
-                    canEdit = false;
-
-                } else {
-                    // Chartビットがたっている場合は不可
-                    for (int i = 0; i < chartBitArray.length; i++) {
-                        if (pvt.getStateBit(chartBitArray[i])) {
-                            canEdit = false;
-                            break;
-                        }
+                
+                // sendClaim / modifyClaim
+                if (pvt.getStateBit(PatientVisitModel.BIT_SAVE_CLAIM)
+                        || pvt.getStateBit(PatientVisitModel.BIT_MODIFY_CLAIM)) {
+                    stateCmb.removeAllItems();
+                    for (int i : SAVED_BITS) {
+                        stateCmb.addItem(bitAndIconPairs[i]);
                     }
+                    return true;
+                }
+                
+                // クローズ・処置中・急ぎ・外出
+                if (pvt.getState() == 0
+                        || pvt.getStateBit(PatientVisitModel.BIT_TREATMENT)
+                        || pvt.getStateBit(PatientVisitModel.BIT_HURRY)
+                        || pvt.getStateBit(PatientVisitModel.BIT_GO_OUT)) {
+                    stateCmb.removeAllItems();
+                    stateCmb.addItem(new BitAndIconPair(PatientVisitModel.BIT_OPEN, null));
+                    for (int i : USER_BITS) {
+                        stateCmb.addItem(bitAndIconPairs[i]);
+                    }
+                    return true;
                 }
 
-                return canEdit;
+                return false;
             }
 
             @Override
@@ -361,16 +354,20 @@ public class WatingListImpl extends AbstractMainComponent {
                             return;
                         }
                     }
+                    
+                    // UNFINISHED以外をクリア
+                    int oldState = pvt.getState();
+                    pvt.setState(oldState & (1 << PatientVisitModel.BIT_UNFINISHED));
 
-                    // unset all
-                    pvt.setState(0);
-
-                    // set the bit
+                    // set the bit、BIT_OPENは除外
                     if (theBit != 0) {
                         pvt.setStateBit(theBit, true);
                     }
-
-                    cel.publishPvtState(pvt);
+                    
+                    // 変更あればpublish
+                    if (oldState != pvt.getState()) {
+                        cel.publishPvtState(pvt);
+                    }
                 }
             }
         };
@@ -537,6 +534,10 @@ public class WatingListImpl extends AbstractMainComponent {
         }
         // ChartStateListenerから除去する
         cel.removeListener(this);
+        
+        if (executor != null) {
+            executor.shutdownNow();
+        }
     }
 
 
@@ -552,7 +553,7 @@ public class WatingListImpl extends AbstractMainComponent {
     /**
      * レンダラをトグルで切り替える。
      */
-    public void switchRenderere() {
+    private void switchRendererer() {
         sexRenderer = !sexRenderer;
         Project.setBoolean("sexRenderer", sexRenderer);
         if (pvtTable != null) {
@@ -633,7 +634,7 @@ public class WatingListImpl extends AbstractMainComponent {
         getContext().enabledAction(GUIConst.ACTION_OPEN_KARTE, enabled);
     }
 
-    public void openKarte() {
+    private void openKarte() {
 
         PatientVisitModel pvt = getSelectedPvt();
         if (pvt == null) {
@@ -693,30 +694,56 @@ public class WatingListImpl extends AbstractMainComponent {
                 PatientVisitModel obj = getSelectedPvt();
                 
                 if (row == selectedRow && obj != null && !obj.getStateBit(PatientVisitModel.BIT_CANCEL)) {
-                    String pop1 = "カルテを開く";
-                    contextMenu.add(new JMenuItem(
-                            new ReflectAction(pop1, WatingListImpl.this, "openKarte")));
+                    JMenuItem mi1 = new JMenuItem(new AbstractAction("カルテを開く"){
+
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            openKarte();
+                        }
+                    });
+                    contextMenu.add(mi1);
                     contextMenu.addSeparator();
                     contextMenu.add(new JMenuItem(copyAction));
                     // pvt削除は誰も開いていない場合のみ
                     if (obj.getPatientModel().getOwnerUUID() == null) {
-                        contextMenu.add(new JMenuItem(
-                                new ReflectAction("受付削除", WatingListImpl.this, "removePvt")));
+                        JMenuItem mi2 = new JMenuItem(new AbstractAction("受付削除"){
+
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                removePvt();
+                            }
+                        });
+                        contextMenu.add(mi2);
                     }
                     contextMenu.addSeparator();
                 }
                 
                 // pvt cancelのundo
                 if (row == selectedRow && obj != null && obj.getStateBit(PatientVisitModel.BIT_CANCEL)) {
-                    contextMenu.add(new JMenuItem(
-                            new ReflectAction("キャンセル取消", WatingListImpl.this, "undoCancelPvt")));
+                    JMenuItem mi3 = new JMenuItem(new AbstractAction("キャンセル取消"){
+
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            undoCancelPvt();
+                        }
+                    });
+                    contextMenu.add(mi3);
                     contextMenu.addSeparator();
                 }
-                
-                JRadioButtonMenuItem oddEven = new JRadioButtonMenuItem(
-                        new ReflectAction(pop3, WatingListImpl.this, "switchRenderere"));
-                JRadioButtonMenuItem sex = new JRadioButtonMenuItem(
-                        new ReflectAction(pop4, WatingListImpl.this, "switchRenderere"));
+                JRadioButtonMenuItem oddEven = new JRadioButtonMenuItem(new AbstractAction(pop3){
+
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                       switchRendererer();
+                    }
+                });
+                JRadioButtonMenuItem sex =  new JRadioButtonMenuItem(new AbstractAction(pop4){
+
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                       switchRendererer();
+                    }
+                });
                 ButtonGroup bg = new ButtonGroup();
                 bg.add(oddEven);
                 bg.add(sex);
@@ -727,12 +754,16 @@ public class WatingListImpl extends AbstractMainComponent {
                 } else {
                     oddEven.setSelected(true);
                 }
+                
+                JCheckBoxMenuItem item = new JCheckBoxMenuItem(new AbstractAction(pop5){
 
-                JCheckBoxMenuItem item = new JCheckBoxMenuItem(pop5);
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        switchAgeDisplay();
+                    }
+                });
                 contextMenu.add(item);
                 item.setSelected(ageDisplay);
-                item.addActionListener(
-                        EventHandler.create(ActionListener.class, WatingListImpl.this, "switchAgeDisplay"));
 
                 // 担当分のみ表示: getOrcaId() != nullでメニュー
                 if (orcaId != null) {
@@ -784,12 +815,10 @@ public class WatingListImpl extends AbstractMainComponent {
     private void changeModiSendIcon() {
 
         // 修正送信アイコンを決める
-        if (Project.getBoolean("change.icon.modify.send", true)) {
-            modifySendIcon = ClientContext.getImageIconAlias("icon_karte_modified_small");
-        } else {
-            modifySendIcon = ClientContext.getImageIconAlias("icon_sent_claim_small");
-        }
-        chartIconArray[INDEX_MODIFY_SEND_ICON] = modifySendIcon;
+        ImageIcon modifySendIcon = Project.getBoolean("change.icon.modify.send", true)
+                ? ClientContext.getImageIconAlias("icon_karte_modified_small")
+                : ClientContext.getImageIconAlias("icon_sent_claim_small");
+        bitAndIconPairs[INDEX_MODIFY_SEND_ICON].setIcon(modifySendIcon);
 
         // 表示を更新する
         pvtTableModel.fireTableDataChanged();
@@ -830,7 +859,7 @@ public class WatingListImpl extends AbstractMainComponent {
     /**
      * 選択した患者の受付キャンセルをundoする。masuda
      */
-    public void undoCancelPvt() {
+    private void undoCancelPvt() {
 
         final PatientVisitModel pvtModel = getSelectedPvt();
 
@@ -849,7 +878,7 @@ public class WatingListImpl extends AbstractMainComponent {
     /**
      * 選択した患者の受付を削除する。masuda
      */
-    public void removePvt() {
+    private void removePvt() {
 
         final PatientVisitModel pvtModel = getSelectedPvt();
 
@@ -914,75 +943,78 @@ public class WatingListImpl extends AbstractMainComponent {
             super.getTableCellRendererComponent(table, value, isSelected, isFocused, row, col);
             
             PatientVisitModel pvt = (PatientVisitModel) sorter.getObject(row);
-            Color fore = (pvt != null && pvt.getStateBit(PatientVisitModel.BIT_CANCEL))
+            if (pvt == null) {
+                return this;
+            }
+            
+            // キャンセルの場合はグレーに
+            Color fore = (pvt.getStateBit(PatientVisitModel.BIT_CANCEL))
                     ? CANCEL_PVT_COLOR 
                     : table.getForeground();
             this.setForeground(fore);
             
             // 選択状態の場合はStripeTableCellRendererの配色を上書きしない
-            if (pvt != null && !isSelected) {
+            if (!isSelected) {
                 if (isSexRenderer()) {
                     if (IInfoModel.MALE.equals(pvt.getPatientModel().getGender())) {
-                        this.setBackground(MALE_COLOR);
+                        setBackground(MALE_COLOR);
                     } else if (IInfoModel.FEMALE.equals(pvt.getPatientModel().getGender())) {
-                        this.setBackground(FEMALE_COLOR);
+                        setBackground(FEMALE_COLOR);
                     }
                 }
                 // 病名の状態に応じて背景色を変更 pns
                 if (!pvt.getStateBit(PatientVisitModel.BIT_CANCEL)) {
                     // 初診
                     if (pvt.isShoshin()) {
-                        this.setBackground(SHOSHIN_COLOR);
+                        setBackground(SHOSHIN_COLOR);
                     }
                     // 病名ついてない
                     if (!pvt.hasByomei()) {
-                        this.setBackground(DIAGNOSIS_EMPTY_COLOR);
+                        setBackground(DIAGNOSIS_EMPTY_COLOR);
+                    }
+                    // set background to unfinished color
+                    if (pvt.getStateBit(PatientVisitModel.BIT_UNFINISHED)) {
+                        setBackground(KARTE_EMPTY_COLOR);
                     }
                 }
             }
             
 //minagawa^
             Object identifier = pvtTable.getColumnModel().getColumn(col).getIdentifier();
-            //if (value != null && col == stateColumn) {
             if (value != null && COLUMN_IDENTIFIER_STATE.equals(identifier)) {
 //minagawa$
                 ImageIcon icon = null;
-
-                // 最初に chart bit をテストする
-                for (int i = 0; i < chartBitArray.length; i++) {
-                    if (pvt.getStateBit(chartBitArray[i])) {
-                        if (i == PatientVisitModel.BIT_OPEN && 
-                                !clientUUID.equals(pvt.getPatientModel().getOwnerUUID())) {
-                            icon = NETWORK_ICON;
-                        } else {
-                            icon = chartIconArray[i];
-                        }
-                        break;
+                
+                // 状態アイコン　ラベル付きbreak文を使ってみる
+                bitLoop:
+                for (int i = 0; i < bitAndIconPairs.length; ++i) {
+                    if (!pvt.getStateBit(bitAndIconPairs[i].getBit())) {
+                        continue;
                     }
-                }
-
-                // user bit をテストする
-                if (icon == null) {
-
-                    // bit 0 はパス
-                    for (int i = 1; i < userBitArray.length; i++) {
-                        if (pvt.getStateBit(userBitArray[i])) {
-                            icon = userIconArray[i];
+                    switch (i) {
+                        case PatientVisitModel.BIT_OPEN:
+                            if (clientUUID.equals(pvt.getPatientModel().getOwnerUUID())) {
+                                icon = bitAndIconPairs[i].getIcon();
+                            } else {
+                                icon = NETWORK_ICON;
+                            }
+                            break bitLoop;
+                        case PatientVisitModel.BIT_SAVE_CLAIM:
+                            // SAVE_CLAIMとMODIFY_CLAIMは同時に立っていることがある
+                            icon = bitAndIconPairs[i].getIcon();
                             break;
-                        }
+                        default:
+                            icon = bitAndIconPairs[i].getIcon();
+                            break bitLoop;
                     }
                 }
-
-                if (pvt.getStateBit(PatientVisitModel.BIT_UNFINISHED)) {
-                    setBackground(KARTE_EMPTY_COLOR);
-                }
-
-                this.setIcon(icon);
-                this.setText("");
+                
+                setIcon(icon);
+                setText("");
 
             } else {
                 setIcon(null);
-                this.setText(value == null ? "" : value.toString());
+                setText(value == null ? "" : value.toString());
             }
             return this;
         }
@@ -1077,6 +1109,13 @@ public class WatingListImpl extends AbstractMainComponent {
         public ImageIcon getIcon() {
             return icon;
         }
+        
+        public void setBit(Integer bit) {
+            this.bit = bit;
+        }
+        public void setIcon(ImageIcon icon) {
+            this.icon = icon;
+        }
     }
     
     // 左下のstatus infoを設定する
@@ -1093,10 +1132,12 @@ public class WatingListImpl extends AbstractMainComponent {
     // 更新時間・待ち人数などを設定する
     private void updatePvtInfo() {
 
+        SimpleDateFormat timeFormatter = new SimpleDateFormat("HH:mm");
+
         String waitingTime = "00:00";
         Date now = new Date();
 
-        final StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder();
         sb.append(timeFormatter.format(now));
         sb.append(" | ");
         sb.append("来院数");
@@ -1104,11 +1145,20 @@ public class WatingListImpl extends AbstractMainComponent {
         sb.append(" 待ち");
         sb.append(String.valueOf(waitingPvtCount));
         sb.append(" 待時間 ");
-        if (waitingPvtDate != null && now.after(waitingPvtDate)){
+        if (waitingPvtDate != null && now.after(waitingPvtDate)) {
             waitingTime = DurationFormatUtils.formatPeriod(waitingPvtDate.getTime(), now.getTime(), "HH:mm");
         }
         sb.append(waitingTime);
-        view.getPvtInfoLbl().setText(sb.toString());
+        final String info = sb.toString();
+        
+        SwingUtilities.invokeLater(new Runnable(){
+
+            @Override
+            public void run() {
+                view.getPvtInfoLbl().setText(info);
+            }
+        });
+        
     }
 
 //pns^

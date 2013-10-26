@@ -70,7 +70,7 @@ public class ListDicomObject implements Comparable {
     }
 
     
-    // Nameの文字化け対策
+    // Nameの文字化け対策 by katou
     private String getNameString() {
         String  strAll;
         String  strPart;

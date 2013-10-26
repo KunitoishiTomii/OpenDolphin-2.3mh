@@ -13,8 +13,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.*;
@@ -25,6 +27,7 @@ import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.MenuEvent;
+import open.dolphin.dao.SqlDaoBean;
 import open.dolphin.delegater.PatientDelegater;
 import open.dolphin.delegater.StampDelegater;
 import open.dolphin.delegater.UserDelegater;
@@ -52,7 +55,7 @@ import open.dolphin.stampbox.StampBoxPlugin;
  *
  * @author Kazushi Minagawa, Digital Globe, Inc.
  */
-public class Dolphin implements MainWindow {
+public class Dolphin implements MainWindow, IChartEventListener {
 
     // Window と Menu サポート
     private WindowSupport windowSupport;
@@ -104,7 +107,7 @@ public class Dolphin implements MainWindow {
     private PacsService pacsService;
 
     // 状態変化リスナー
-    private ChartEventListener scl;
+    private ChartEventListener cel;
     
     // clientのUUID
     private String clientUUID;
@@ -177,7 +180,6 @@ public class Dolphin implements MainWindow {
         });
         login.start();
     }
-
     
     // 排他処理、another implementation
     private void registerLogin() {
@@ -211,6 +213,7 @@ public class Dolphin implements MainWindow {
         } catch (Exception ex) {
         }
     }
+
     /**
      * 起動時のバックグラウンドで実行されるべきタスクを行う。
      */
@@ -437,7 +440,7 @@ public class Dolphin implements MainWindow {
 
             @Override
             public void windowClosing(WindowEvent e) {
-                processExit();
+                processExit(false);
             }
         });
         ComponentMemory cm = new ComponentMemory(myFrame, loc, size, Dolphin.this);
@@ -476,8 +479,9 @@ public class Dolphin implements MainWindow {
         FocusPropertyChangeListener.getInstance().register();
 
         // ChartStateListenerを開始する
-        scl = ChartEventListener.getInstance();
-        scl.start();
+        cel = ChartEventListener.getInstance();
+        cel.start();
+        cel.addListener(this);
 //masuda$
         
         //----------------------------------------
@@ -1089,25 +1093,30 @@ public class Dolphin implements MainWindow {
 
         return dirty;
     }
-
+    
+    // MenuFactoryからよばれる
     public void processExit() {
+        processExit(false);
+    }
 
-        if (isDirty()) {
-            alertDirty();
-            return;
-        }
-        
+    private void processExit(boolean force) {
+        if (!force) {
+            if (isDirty()) {
+                alertDirty();
+                return;
+            }
 //pns^
-        int ans = JOptionPane.showConfirmDialog(null,
-                "本当に終了しますか",
-                "終了確認",
-                JOptionPane.YES_NO_OPTION,
-                JOptionPane.WARNING_MESSAGE);
-        if (ans != JOptionPane.YES_OPTION) {
-            this.getFrame().toFront();
-            return;
-        }
+            int ans = JOptionPane.showConfirmDialog(null,
+                    "本当に終了しますか",
+                    "終了確認",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.WARNING_MESSAGE);
+            if (ans != JOptionPane.YES_OPTION) {
+                this.getFrame().toFront();
+                return;
+            }
 //pns$
+        }
 //masuda^   終了時は強制的に開いたままのChartImplとEditorFrameを閉じちゃう
         for (Chart chart : WindowSupport.getAllEditorFrames()) {
             chart.stop();
@@ -1118,7 +1127,7 @@ public class Dolphin implements MainWindow {
 
         // FocusProperetyChangeListenerを破棄する
         FocusPropertyChangeListener.getInstance().dispose();
-//masuda$
+
         
         // ログアウト処理
         try {
@@ -1127,27 +1136,14 @@ public class Dolphin implements MainWindow {
             if (clientUUID.equals(uuid)) {
                 saveStampTree();
             } else {
-/*
-                // ダイアログで確認する
-                String[] options = {"保存しない", "強制保存"};
-                String msg = "他端末で同一ユーザーがスタンプ箱を保存した可能性があります。\n"
-                        + "不整合を避けるためスタンプ箱は保存しないことをお勧めします。";
-                int val = JOptionPane.showOptionDialog(
-                        null, msg, "スタンプ箱保存",
-                        JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE, null, options, options[0]);
-                switch (val) {
-                    case 1:     // 強制保存"
-                        saveStampTree();
-                        break;
-                    default:
-                        shutdown();
-                        break;
-                }
-*/
                 shutdown();
             }
         } catch (Exception ex) {
         }
+        
+        // DAO DataSourceを閉じる
+        SqlDaoBean.closeDao();
+//masuda$        
     }
 
     private void saveStampTree() {
@@ -1221,7 +1217,7 @@ public class Dolphin implements MainWindow {
 
         worker.execute();
     }
-
+    
     /**
      * 未保存のドキュメントがある場合の警告を表示する。
      */
@@ -1303,8 +1299,9 @@ public class Dolphin implements MainWindow {
         }
         
         // ChartStateListenerを中止する
-        if (scl != null) {
-            scl.stop();
+        if (cel != null) {
+            cel.removeListener(this);
+            cel.stop();
         }
 
         ClientContext.getBootLogger().debug("アプリケーションを終了します");
@@ -1391,6 +1388,17 @@ public class Dolphin implements MainWindow {
     public void browseGitHub() {
         ResourceBundle resource = ClientContext.getBundle(this.getClass());
         browseURL(resource.getString("menu.githubUrl"));
+    }
+    
+    public void broadcastMsg() {
+        ChartEventModel evt = new ChartEventModel();
+        evt.setEventType(ChartEventModel.EVENT.MSG_BROADCAST);
+        evt.setMsgUUID(UUID.randomUUID().toString());
+        evt.setMsgTitle("ブロードキャスト　テスト");
+        evt.setMsgOwner(getHostName());
+        evt.setMsgContent("メンテナンスするぞ。早く仕事終えやがれ！");
+        evt.setMsgOpts(new String[]{"わかった", "やだね"});
+        cel.publishMsg(evt);
     }
 
     /**
@@ -1511,6 +1519,7 @@ public class Dolphin implements MainWindow {
                 GUIConst.ACTION_BROWS_MEDXML,
                 GUIConst.ACTION_SHOW_ABOUT,
 //masuda^   中止項目と採用薬編集
+                GUIConst.ACTION_BROADCAST_MSG,
                 GUIConst.ACTION_BROWS_GITHUB,
                 GUIConst.ACTION_EDIT_DISCONITEM,
                 GUIConst.ACTION_EDIT_USINGDRUG,
@@ -1655,7 +1664,7 @@ public class Dolphin implements MainWindow {
 
             @Override
             public void handleQuitRequestWith(com.apple.eawt.AppEvent.QuitEvent qe, com.apple.eawt.QuitResponse qr) {
-                processExit();
+                processExit(false);
             }
         });
     }
@@ -1675,7 +1684,7 @@ public class Dolphin implements MainWindow {
         final String msg = "LAFの設定を変更しました。再起動してください。";
         final String title = ClientContext.getFrameTitle("設定変更");
         JOptionPane.showMessageDialog(null, msg, title, JOptionPane.WARNING_MESSAGE);
-        processExit();
+        processExit(false);
 
     }
     
@@ -1735,6 +1744,85 @@ public class Dolphin implements MainWindow {
             tempKarte.setVisible(true);
         } catch (Exception ex) {
         }
+    }
+    
+    
+    // broadcast messaging test
+    @Override
+    public void onEvent(ChartEventModel evt) throws Exception {
+        
+        if (clientUUID.equals(evt.getIssuerUUID())) {
+            return;
+        }
+        
+        ChartEventModel.EVENT eventType = evt.getEventType();
+        
+        switch (eventType) {
+            case MSG_BROADCAST:
+                showBroadcastMsg(evt);
+                break;
+            case MSG_REPLY:
+                processReplyMsg(evt);
+                break;
+            case REQUEST_REBOOT:
+                processExit(true);
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void showBroadcastMsg(ChartEventModel evt) {
+        
+        String[] msgOpts = evt.getMsgOpts();
+        String msgTitle = evt.getMsgTitle();
+        String msgOwner = evt.getMsgOwner();
+        String msgContent = evt.getMsgContent();
+        StringBuilder sb = new StringBuilder();
+        sb.append(msgOwner).append("からのメッセージ\n");
+        sb.append(msgContent);
+        String msg = sb.toString();
+
+        // ダイアログ表示
+        int val = JOptionPane.showOptionDialog(null, msg, msgTitle,
+                JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE, null, msgOpts, msgOpts[0]);
+        
+        // 返事作成
+        String reply = (val == -1) ? msgOpts[0] : msgOpts[val];
+        String replyToUUID = evt.getMsgUUID();
+        String replyMsgUUID = UUID.randomUUID().toString();
+        String replyMsgOwner = getHostName();
+        String replyTitle = "お返事";
+        
+        ChartEventModel evtReply = new ChartEventModel();
+        evtReply.setEventType(ChartEventModel.EVENT.MSG_REPLY);
+        evtReply.setMsgOwner(replyMsgOwner);
+        evtReply.setMsgUUID(replyMsgUUID);
+        evtReply.setReplyToUUID(replyToUUID);
+        evtReply.setMsgTitle(replyTitle);
+        evtReply.setMsgContent(reply);
+        
+        cel.publishMsg(evtReply);
+    }
+    
+    private void processReplyMsg(ChartEventModel evt) {
+        
+        String msgOwner = evt.getMsgOwner();
+        String msgContent = evt.getMsgContent();
+        String msgTitle =evt.getMsgTitle();
+        StringBuilder sb = new StringBuilder();
+        sb.append(msgOwner).append("からの返事\n");
+        sb.append(msgContent).append("!!");
+        String msg = sb.toString();
+        JOptionPane.showMessageDialog(null, msg, msgTitle, JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private String getHostName() {
+        try {
+            return InetAddress.getLocalHost().getHostName();
+        } catch (UnknownHostException ex) {
+        }
+        return "Unknown host name.";
     }
 //masuda$
 }

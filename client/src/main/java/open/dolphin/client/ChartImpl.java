@@ -2,7 +2,6 @@ package open.dolphin.client;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.beans.EventHandler;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -647,17 +646,30 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
                     JPopupMenu popup = new JPopupMenu();
                     PVTHealthInsuranceModel[] insurances = getHealthInsurances();
                     for (PVTHealthInsuranceModel hm : insurances) {
+//masuda    reflectionはキライ
+/*
                         ReflectActionListener ra = new ReflectActionListener(mediator,
                                 "applyInsurance",
                                 new Class[]{hm.getClass()},
                                 new Object[]{hm});
+*/
                         JMenuItem mi = new JMenuItem(hm.toString());
-                        mi.addActionListener(ra);
+                        addActionListener(mi, hm);
                         popup.add(mi);
                     }
-
+                    
                     popup.show(e.getComponent(), e.getX(), e.getY());
                 }
+            }
+            
+            private void addActionListener(final JMenuItem mi, final PVTHealthInsuranceModel hm) {
+                ActionListener al = new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        mediator.applyInsurance(hm);
+                    }
+                };
+                mi.addActionListener(al);
             }
         });
         toolBar.add(insBtn);
@@ -924,7 +936,13 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
         //
         // tab に プラグインを遅延生成するためのの ChangeListener を追加する
         //
-        tab.addChangeListener(EventHandler.create(ChangeListener.class, this, "tabChanged", ""));
+        tab.addChangeListener(new ChangeListener(){
+
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                tabChanged(e);
+            }
+        });
 
         return tab;
     }
