@@ -9,6 +9,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import javax.ws.rs.client.InvocationCallback;
 import javax.ws.rs.core.Response;
 import open.dolphin.delegater.ChartEventDelegater;
 import open.dolphin.infomodel.*;
@@ -35,7 +36,8 @@ public class ChartEventListener {
     private List<IChartEventListener> listeners;
     
     // ChartEvent監視タスク
-    private EventListenThread listenThread;
+    //private EventListenThread listenThread;
+    private ChartEventCallback eventCallback;
     
     // 状態変化を各listenerに通知するタスク
     private ExecutorService onEventExec;
@@ -146,12 +148,15 @@ public class ChartEventListener {
     public void start() {
         NamedThreadFactory factory = new NamedThreadFactory("ChartEvent Handle Task");
         onEventExec = Executors.newSingleThreadExecutor(factory);
-        listenThread = new EventListenThread();
-        listenThread.start();
+        //listenThread = new EventListenThread();
+        //listenThread.start();
+        eventCallback = new ChartEventCallback();
+        eventCallback.start();
     }
 
     public void stop() {
-        listenThread.halt();
+        //listenThread.halt();
+        eventCallback.halt();
         shutdownExecutor();
     }
 
@@ -200,6 +205,42 @@ public class ChartEventListener {
                 } catch (Exception e) {
                     //e.printStackTrace(System.err);
                 }
+            }
+        }
+    }
+    
+    // InvocationCallbackを使ってみる
+    private class ChartEventCallback implements InvocationCallback<Response> {
+        
+        private Future<Response> future;
+        private boolean isRunning;
+
+        private void start() {
+            isRunning = true;
+            subscribe();
+        }
+        
+        private void halt() {
+            isRunning = false;
+            if (future != null) {
+                future.cancel(true);
+            }
+        }
+
+        private void subscribe() {
+            future = ChartEventDelegater.getInstance().subscribe(this);
+        }
+
+        @Override
+        public void completed(Response response) {
+            onEventExec.execute(new RemoteOnEventTask(response));
+            subscribe();
+        }
+
+        @Override
+        public void failed(Throwable thrwbl) {
+            if (isRunning) {
+                subscribe();
             }
         }
     }
