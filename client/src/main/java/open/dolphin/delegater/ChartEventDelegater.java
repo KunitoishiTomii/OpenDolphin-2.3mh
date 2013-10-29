@@ -59,10 +59,12 @@ public class ChartEventDelegater extends BusinessDelegater {
     
     public Future<Response> subscribe(InvocationCallback<Response> callback) {
         
-        return buildAsyncRequest(SUBSCRIBE_PATH)
+        Future<Response> future = buildAsyncRequest(SUBSCRIBE_PATH)
                 .accept(MEDIATYPE_JSON_UTF8)
                 .async()
                 .get(callback);
+        
+        return future;
     }
 
     @Override
