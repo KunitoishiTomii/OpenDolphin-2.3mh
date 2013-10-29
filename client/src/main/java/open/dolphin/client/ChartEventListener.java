@@ -211,7 +211,7 @@ public class ChartEventListener {
     
     // InvocationCallbackを使ってみる
     private class ChartEventCallback implements InvocationCallback<Response> {
-        
+
         private Future<Response> future;
         private boolean isRunning;
 
@@ -219,7 +219,7 @@ public class ChartEventListener {
             isRunning = true;
             subscribe();
         }
-        
+
         private void halt() {
             isRunning = false;
             if (future != null) {
@@ -228,7 +228,9 @@ public class ChartEventListener {
         }
 
         private void subscribe() {
-            future = ChartEventDelegater.getInstance().subscribe(this);
+            if (isRunning) {
+                future = ChartEventDelegater.getInstance().subscribe(this);
+            }
         }
 
         @Override
@@ -239,9 +241,7 @@ public class ChartEventListener {
 
         @Override
         public void failed(Throwable thrwbl) {
-            if (isRunning) {
-                subscribe();
-            }
+            subscribe();
         }
     }
 
