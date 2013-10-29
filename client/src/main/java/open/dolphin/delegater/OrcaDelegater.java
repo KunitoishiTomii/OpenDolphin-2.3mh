@@ -2,7 +2,6 @@ package open.dolphin.delegater;
 
 import java.io.InputStream;
 import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import open.dolphin.client.ClaimMessageEvent;
 import open.dolphin.client.KarteSenderResult;
@@ -39,7 +38,8 @@ public class OrcaDelegater extends BusinessDelegater {
         Entity entity = toJsonEntity(sqlModel);
 
         String path = "orca/query";
-        Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
+        Response response = buildRequest(path, null)
+                .accept(MEDIATYPE_JSON_UTF8)
                 .post(entity);
 
         checkHttpStatus(response);
@@ -79,7 +79,7 @@ public class OrcaDelegater extends BusinessDelegater {
         String path = "orca/claim";
         Entity entity = toJsonEntity(model);
         
-        Response response = buildRequest(path, null, null)
+        Response response = buildRequest(path, null)
                 .post(entity);
 
         checkHttpStatus(response);

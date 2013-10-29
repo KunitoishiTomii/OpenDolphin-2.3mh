@@ -25,6 +25,12 @@ public class BusinessDelegater {
 
     protected static final String CAMMA = ",";
     
+    private static final String UTF8 = "UTF-8";
+    protected static final MediaType MEDIATYPE_JSON_UTF8
+            = MediaType.APPLICATION_JSON_TYPE.withCharset(UTF8);
+    protected static final MediaType MEDIATYPE_TEXT_UTF8 
+            = MediaType.TEXT_PLAIN_TYPE.withCharset(UTF8);
+    
     protected Logger logger;
 
     protected boolean DEBUG;
@@ -34,12 +40,12 @@ public class BusinessDelegater {
         DEBUG = (logger.getLevel() == Level.DEBUG);
     }
     
-    protected Invocation.Builder buildRequest(String path, MultivaluedMap<String, String> qmap, MediaType mt) {
-        return JerseyClient.getInstance().buildRequest(path, qmap, mt);
+    protected Invocation.Builder buildRequest(String path, MultivaluedMap<String, String> qmap) {
+        return JerseyClient.getInstance().buildRequest(path, qmap);
     }
-    
-    protected Invocation.Builder buildAsyncRequest(String path, MediaType mt) {
-        return JerseyClient.getInstance().buildAsyncRequest(path, mt);
+
+    protected Invocation.Builder buildAsyncRequest(String path) {
+        return JerseyClient.getInstance().buildAsyncRequest(path);
     }
 
     protected void debug(int status, String entity) {
@@ -53,11 +59,11 @@ public class BusinessDelegater {
     }
     
     protected Entity toJsonEntity(Object obj) {
-        return Entity.json(getConverter().toJson(obj));
+        return Entity.entity(getConverter().toJson(obj), MEDIATYPE_JSON_UTF8);
     }
     
     protected Entity toTextEntity(String text) {
-        return Entity.text(text);
+        return Entity.entity(text, MEDIATYPE_TEXT_UTF8);
     }
 
     protected String toRestFormat(Date date) {

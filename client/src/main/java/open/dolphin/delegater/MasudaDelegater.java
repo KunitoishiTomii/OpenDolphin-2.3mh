@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.util.Date;
 import java.util.List;
 import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
@@ -46,7 +45,8 @@ public class MasudaDelegater extends BusinessDelegater {
         qmap.add("firstResult", String.valueOf(firstResult));
         qmap.add("maxResults", String.valueOf(maxResults));
 
-        Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
+        Response response = buildRequest(path, qmap)
+                .accept(MEDIATYPE_JSON_UTF8)
                 .get();
 
         checkHttpStatus(response);
@@ -71,7 +71,8 @@ public class MasudaDelegater extends BusinessDelegater {
 
         String path = RES_BASE + "routineMed/" + String.valueOf(id);
 
-        Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
+        Response response = buildRequest(path, null)
+                .accept(MEDIATYPE_JSON_UTF8)
                 .get();
 
         checkHttpStatus(response);
@@ -96,8 +97,7 @@ public class MasudaDelegater extends BusinessDelegater {
 
         String path = RES_BASE + "routineMed/" + String.valueOf(model.getId());
 
-        Response response = buildRequest(path, null, null)
-                    .delete();
+        Response response = buildRequest(path, null).delete();
 
         int status = checkHttpStatus(response);
         debug(status, "delete response");
@@ -111,7 +111,8 @@ public class MasudaDelegater extends BusinessDelegater {
 
         Entity entity = toJsonEntity(model);
 
-        Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
+        Response response = buildRequest(path, null)
+                .accept(MEDIATYPE_TEXT_UTF8)
                 .post(entity);
 
         int status = checkHttpStatus(response);
@@ -127,7 +128,8 @@ public class MasudaDelegater extends BusinessDelegater {
 
         Entity entity = toJsonEntity(model);
 
-        Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
+        Response response = buildRequest(path, null)
+                .accept(MEDIATYPE_TEXT_UTF8)
                 .put(entity);
 
         int status = checkHttpStatus(response);
@@ -142,7 +144,8 @@ public class MasudaDelegater extends BusinessDelegater {
         
         String path = RES_BASE + "discon";
 
-        Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
+        Response response = buildRequest(path, null)
+                .accept(MEDIATYPE_JSON_UTF8)
                 .get();
 
         checkHttpStatus(response);
@@ -162,7 +165,8 @@ public class MasudaDelegater extends BusinessDelegater {
 
         Entity entity = toJsonEntity(model);
 
-        Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
+        Response response = buildRequest(path, null)
+                .accept(MEDIATYPE_TEXT_UTF8)
                 .post(entity);
 
         int status = checkHttpStatus(response);
@@ -176,8 +180,7 @@ public class MasudaDelegater extends BusinessDelegater {
         
         String path = RES_BASE + "discon/" + String.valueOf(model.getId());
 
-        Response response = buildRequest(path, null, null)
-                .delete();
+        Response response = buildRequest(path, null).delete();
 
         int status = checkHttpStatus(response);
         debug(status, "delete response");
@@ -191,7 +194,8 @@ public class MasudaDelegater extends BusinessDelegater {
 
         Entity entity = toJsonEntity(model);
 
-        Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
+        Response response = buildRequest(path, null)
+                .accept(MEDIATYPE_TEXT_UTF8)
                 .put(entity);
 
         int status = checkHttpStatus(response);
@@ -206,7 +210,8 @@ public class MasudaDelegater extends BusinessDelegater {
         
         String path = RES_BASE + "usingDrug";
 
-        Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
+        Response response = buildRequest(path, null)
+                .accept(MEDIATYPE_JSON_UTF8)
                 .get();
 
         checkHttpStatus(response);
@@ -226,8 +231,9 @@ public class MasudaDelegater extends BusinessDelegater {
 
         Entity entity = toJsonEntity(model);
 
-        Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
-                    .post(entity);
+        Response response = buildRequest(path, null)
+                .accept(MEDIATYPE_TEXT_UTF8)
+                .post(entity);
 
         int status = checkHttpStatus(response);
         String enityStr = response.readEntity(String.class);
@@ -240,8 +246,7 @@ public class MasudaDelegater extends BusinessDelegater {
         
         String path = RES_BASE + "usingDrug/" + String.valueOf(model.getId());
 
-        Response response = buildRequest(path, null, null)
-                    .delete();
+        Response response = buildRequest(path, null).delete();
 
         int status = checkHttpStatus(response);
         debug(status, "delete response");
@@ -255,8 +260,9 @@ public class MasudaDelegater extends BusinessDelegater {
 
         Entity entity = toJsonEntity(model);
         
-        Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
-                    .put(entity);
+        Response response = buildRequest(path, null)
+                .accept(MEDIATYPE_TEXT_UTF8)
+                .put(entity);
 
         int status = checkHttpStatus(response);
         String enityStr = response.readEntity(String.class);
@@ -280,7 +286,8 @@ public class MasudaDelegater extends BusinessDelegater {
         qmap.add("toDate", toRestFormat(toDate));
         qmap.add("entities", getConverter().fromList(entities));
 
-        Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
+        Response response = buildRequest(path, qmap)
+                .accept(MEDIATYPE_JSON_UTF8)
                 .get();
 
         checkHttpStatus(response);
@@ -307,7 +314,8 @@ public class MasudaDelegater extends BusinessDelegater {
 
         String path = RES_BASE + "lastPvt/" + ptId;
 
-        Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
+        Response response = buildRequest(path, null)
+                .accept(MEDIATYPE_JSON_UTF8)
                 .get();
 
         checkHttpStatus(response);
@@ -332,7 +340,8 @@ public class MasudaDelegater extends BusinessDelegater {
         MultivaluedMap<String, String> qmap = new MultivaluedHashMap();
         qmap.add("ids", getConverter().fromList(docPkList));
 
-        Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
+        Response response = buildRequest(path, qmap)
+                .accept(MEDIATYPE_JSON_UTF8)
                 .get();
 
         checkHttpStatus(response);
@@ -355,7 +364,8 @@ public class MasudaDelegater extends BusinessDelegater {
         qmap.add("fromDocPk", String.valueOf(fromDocPk));
         qmap.add("maxResults", String.valueOf(maxResults));
 
-        Response response = buildRequest(path, qmap, MediaType.TEXT_PLAIN_TYPE)
+        Response response = buildRequest(path, qmap)
+                .accept(MEDIATYPE_TEXT_UTF8)
                 .get();
 
         int status = checkHttpStatus(response);
@@ -376,7 +386,8 @@ public class MasudaDelegater extends BusinessDelegater {
         qmap.add("karteId", String.valueOf(karteId));
         qmap.add("text", text);
 
-        Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
+        Response response = buildRequest(path, qmap)
+                .accept(MEDIATYPE_JSON_UTF8)
                 .get();
 
         checkHttpStatus(response);
@@ -402,7 +413,8 @@ public class MasudaDelegater extends BusinessDelegater {
         qmap.add("maxResult", String.valueOf(maxResult));
         qmap.add("pcOnly", String.valueOf(progressCourseOnly));
 
-        Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
+        Response response = buildRequest(path, qmap)
+                .accept(MEDIATYPE_JSON_UTF8)
                 .get();
 
         checkHttpStatus(response);
@@ -424,7 +436,8 @@ public class MasudaDelegater extends BusinessDelegater {
         qmap.add("fromDate", toRestFormat(fromDate));
         qmap.add("toDate", toRestFormat(toDate));
 
-        Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
+        Response response = buildRequest(path, qmap)
+                .accept(MEDIATYPE_JSON_UTF8)
                 .get();
 
         checkHttpStatus(response);
@@ -448,7 +461,8 @@ public class MasudaDelegater extends BusinessDelegater {
         qmap.add("toDate", toRestFormat(toDate));
         qmap.add("yoyuu", String.valueOf(yoyuu));
 
-        Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
+        Response response = buildRequest(path, qmap)
+                .accept(MEDIATYPE_JSON_UTF8)
                 .get();
 
         checkHttpStatus(response);
@@ -467,7 +481,8 @@ public class MasudaDelegater extends BusinessDelegater {
         
         String path = RES_BASE + "inFacilityLabo/list";
         
-        Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
+        Response response = buildRequest(path, null)
+                .accept(MEDIATYPE_JSON_UTF8)
                 .get();
 
         checkHttpStatus(response);
@@ -487,7 +502,8 @@ public class MasudaDelegater extends BusinessDelegater {
 
         Entity entity = toJsonEntity(list);
 
-        Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
+        Response response = buildRequest(path, null)
+                .accept(MEDIATYPE_TEXT_UTF8)
                 .put(entity);
 
         int status = checkHttpStatus(response);
@@ -504,7 +520,8 @@ public class MasudaDelegater extends BusinessDelegater {
 
         Entity entity = toJsonEntity(list);
 
-        Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
+        Response response = buildRequest(path, null)
+                .accept(MEDIATYPE_TEXT_UTF8)
                 .post(entity);
 
         int status = checkHttpStatus(response);
@@ -524,7 +541,8 @@ public class MasudaDelegater extends BusinessDelegater {
         qmap.add("fromId", String.valueOf(fromId));
         qmap.add("maxResults", String.valueOf(maxResults));
 
-        Response response = buildRequest(path, qmap, MediaType.TEXT_PLAIN_TYPE)
+        Response response = buildRequest(path, qmap)
+                .accept(MEDIATYPE_TEXT_UTF8)
                 .get();
 
         int status = checkHttpStatus(response);
@@ -547,7 +565,8 @@ public class MasudaDelegater extends BusinessDelegater {
             qmap.add("srycds", getConverter().fromList(srycds));
         }
 
-        Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
+        Response response = buildRequest(path, qmap)
+                .accept(MEDIATYPE_JSON_UTF8)
                 .get();
 
         checkHttpStatus(response);
@@ -571,7 +590,8 @@ public class MasudaDelegater extends BusinessDelegater {
         qmap.add("toDate", toRestFormat(toDate));
         qmap.add("lastOnly", String.valueOf(lastOnly));
 
-        Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
+        Response response = buildRequest(path, qmap)
+                .accept(MEDIATYPE_JSON_UTF8)
                 .get();
 
         checkHttpStatus(response);
@@ -591,7 +611,8 @@ public class MasudaDelegater extends BusinessDelegater {
 
         Entity entity = toJsonEntity(list);
 
-        Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
+        Response response = buildRequest(path, null)
+                .accept(MEDIATYPE_TEXT_UTF8)
                 .post(entity);
 
         int status = checkHttpStatus(response);
@@ -605,7 +626,8 @@ public class MasudaDelegater extends BusinessDelegater {
         
         String path = RES_BASE + "userProperty/" + userId;
 
-        Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
+        Response response = buildRequest(path, null)
+                .accept(MEDIATYPE_JSON_UTF8)
                 .get();
 
         checkHttpStatus(response);
@@ -627,7 +649,8 @@ public class MasudaDelegater extends BusinessDelegater {
         MultivaluedMap<String, String> qmap = new MultivaluedHashMap();
         qmap.add("fromDate", toRestFormat(fromDate));
 
-        Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
+        Response response = buildRequest(path, qmap)
+                .accept(MEDIATYPE_JSON_UTF8)
                 .get();
 
         checkHttpStatus(response);

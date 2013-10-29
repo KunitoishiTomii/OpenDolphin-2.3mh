@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import java.io.InputStream;
 import java.util.List;
 import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import open.dolphin.infomodel.PatientVisitModel;
 
@@ -46,7 +45,8 @@ public class PVTDelegater extends BusinessDelegater {
 
         // resource post
         String path = RES_PVT;
-        Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
+        Response response = buildRequest(path, null)
+                .accept(MEDIATYPE_TEXT_UTF8)
                 .post(entity);
 
         int status = checkHttpStatus(response);
@@ -64,8 +64,7 @@ public class PVTDelegater extends BusinessDelegater {
         
         String path = RES_PVT + String.valueOf(id);
 
-        Response response = buildRequest(path, null, null)
-                .delete();
+        Response response = buildRequest(path, null).delete();
 
         int status = checkHttpStatus(response);
         String enityStr = "delete response";
@@ -83,7 +82,8 @@ public class PVTDelegater extends BusinessDelegater {
         sb.append("pvtList");
         String path = sb.toString();
 
-        Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
+        Response response = buildRequest(path, null)
+                .accept(MEDIATYPE_JSON_UTF8)
                 .get();
 
         checkHttpStatus(response);

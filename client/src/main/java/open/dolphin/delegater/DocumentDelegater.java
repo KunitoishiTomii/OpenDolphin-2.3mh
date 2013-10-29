@@ -7,7 +7,6 @@ import java.util.Date;
 import java.util.List;
 import javax.swing.ImageIcon;
 import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
@@ -57,7 +56,8 @@ public class  DocumentDelegater extends BusinessDelegater {
         MultivaluedMap<String, String> qmap= new MultivaluedHashMap();
         qmap.add("fromDate", toRestFormat(fromDate));
 
-        Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
+        Response response = buildRequest(path, qmap)
+                .accept(MEDIATYPE_JSON_UTF8)
                 .get();
 
         checkHttpStatus(response);
@@ -84,7 +84,8 @@ public class  DocumentDelegater extends BusinessDelegater {
         Entity entity = toJsonEntity(karteModel);
 
         String path = "karte/document";
-        Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
+        Response response = buildRequest(path, null)
+                .accept(MEDIATYPE_TEXT_UTF8)
                 .post(entity);
 
         int status = checkHttpStatus(response);
@@ -107,7 +108,8 @@ public class  DocumentDelegater extends BusinessDelegater {
         MultivaluedMap<String, String> qmap = new MultivaluedHashMap();
         qmap.add("ids", getConverter().fromList(ids));
 
-        Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
+        Response response = buildRequest(path, qmap)
+                .accept(MEDIATYPE_JSON_UTF8)
                 .get();
 
         checkHttpStatus(response);
@@ -146,7 +148,8 @@ public class  DocumentDelegater extends BusinessDelegater {
         qmap.add("toDate", toRestFormat(spec.getToDate()));
         qmap.add("includeModified", String.valueOf(spec.isIncludeModifid()));
 
-        Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
+        Response response = buildRequest(path, qmap)
+                .accept(MEDIATYPE_JSON_UTF8)
                 .get();
 
         checkHttpStatus(response);
@@ -165,7 +168,8 @@ public class  DocumentDelegater extends BusinessDelegater {
         
         String path = "odletter/list/" + String.valueOf(spec.getKarteId());
 
-        Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
+        Response response = buildRequest(path, null)
+                .accept(MEDIATYPE_JSON_UTF8)
                 .get();
 
         checkHttpStatus(response);
@@ -219,8 +223,7 @@ public class  DocumentDelegater extends BusinessDelegater {
         
         String path = "karte/document/" + String.valueOf(pk);
 
-        Response response = buildRequest(path, null, null)
-                .delete();
+        Response response = buildRequest(path, null).delete();
 
         checkHttpStatus(response);
         
@@ -240,7 +243,8 @@ public class  DocumentDelegater extends BusinessDelegater {
             String path = "karte/document/" + String.valueOf(docInfo.getDocPk());
             Entity entity = toTextEntity(docInfo.getTitle());
 
-            Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
+            Response response = buildRequest(path, null)
+                    .accept(MEDIATYPE_TEXT_UTF8)
                     .put(entity);
             
             int status = checkHttpStatus(response);
@@ -291,7 +295,8 @@ public class  DocumentDelegater extends BusinessDelegater {
         qmap.add("tos", sb.toString());
         qmap.add("entity", spec.getEntity());
 
-        Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
+        Response response = buildRequest(path, qmap)
+                .accept(MEDIATYPE_JSON_UTF8)
                 .get();
 
         checkHttpStatus(response);
@@ -319,7 +324,8 @@ public class  DocumentDelegater extends BusinessDelegater {
 
         String path = "karte/image/" + String.valueOf(id);
 
-        Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
+        Response response = buildRequest(path, null)
+                .accept(MEDIATYPE_JSON_UTF8)
                 .get();
 
         checkHttpStatus(response);
@@ -420,7 +426,8 @@ public class  DocumentDelegater extends BusinessDelegater {
 
         Entity entity = toJsonEntity(list);
 
-        Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
+        Response response = buildRequest(path, null)
+                .accept(MEDIATYPE_TEXT_UTF8)
                 .post(entity);
 
         int status = checkHttpStatus(response);
@@ -440,7 +447,8 @@ public class  DocumentDelegater extends BusinessDelegater {
         
         Entity entity = toJsonEntity(list);
 
-        Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
+        Response response = buildRequest(path, null)
+                .accept(MEDIATYPE_TEXT_UTF8)
                 .put(entity);
 
         int status = checkHttpStatus(response);
@@ -460,8 +468,7 @@ public class  DocumentDelegater extends BusinessDelegater {
         MultivaluedMap<String, String> qmap = new MultivaluedHashMap();
         qmap.add("ids", getConverter().fromList(ids));
 
-        Response response = buildRequest(path, qmap, null)
-                .delete();
+        Response response = buildRequest(path, qmap).delete();
 
         int status = checkHttpStatus(response);
         debug(status, "delete response");
@@ -484,7 +491,8 @@ public class  DocumentDelegater extends BusinessDelegater {
         qmap.add("fromDate", toRestFormat(fromDate));
         qmap.add("activeOnly", String.valueOf(activeOnly));
 
-        Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
+        Response response = buildRequest(path, qmap)
+                .accept(MEDIATYPE_JSON_UTF8)
                 .get();
 
         checkHttpStatus(response);
@@ -505,7 +513,8 @@ public class  DocumentDelegater extends BusinessDelegater {
 
         Entity entity = toJsonEntity(observations);
 
-        Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
+        Response response = buildRequest(path, null)
+                .accept(MEDIATYPE_TEXT_UTF8)
                 .post(entity);
 
         int status = checkHttpStatus(response);
@@ -526,8 +535,7 @@ public class  DocumentDelegater extends BusinessDelegater {
         MultivaluedMap<String, String> qmap = new MultivaluedHashMap();
         qmap.add("ids", getConverter().fromList(ids));
 
-        Response response = buildRequest(path, qmap, null)
-                .delete();
+        Response response = buildRequest(path, qmap).delete();
 
         int status = checkHttpStatus(response);
         debug(status, "delete response");
@@ -545,7 +553,8 @@ public class  DocumentDelegater extends BusinessDelegater {
 
         Entity entity = toJsonEntity(pm);
 
-        Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
+        Response response = buildRequest(path, null)
+                .accept(MEDIATYPE_TEXT_UTF8)
                 .put(entity);
 
         int status = checkHttpStatus(response);
@@ -587,7 +596,8 @@ public class  DocumentDelegater extends BusinessDelegater {
         }
         qmap.add("tos", sb.toString());
 
-        Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
+        Response response = buildRequest(path, qmap)
+                .accept(MEDIATYPE_JSON_UTF8)
                 .get();
 
         checkHttpStatus(response);
@@ -611,8 +621,9 @@ public class  DocumentDelegater extends BusinessDelegater {
         sb.append(state);
         String path = sb.toString();
 
-        Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
-                    .put(null);
+        Response response = buildRequest(path, null)
+                .accept(MEDIATYPE_TEXT_UTF8)
+                .put(null);
 
         int status = checkHttpStatus(response);
         debug(status, "put response");

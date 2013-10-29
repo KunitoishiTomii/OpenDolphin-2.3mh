@@ -2,7 +2,6 @@ package open.dolphin.delegater;
 
 import java.util.List;
 import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import open.dolphin.infomodel.AppointmentModel;
 
@@ -33,7 +32,8 @@ public final class AppointmentDelegater extends BusinessDelegater {
         String path = "appo/";
         Entity entity = toJsonEntity(list);
         
-        Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)
+        Response response = buildRequest(path, null)
+                .accept(MEDIATYPE_TEXT_UTF8)
                 .put(entity);
         
         int status = checkHttpStatus(response);

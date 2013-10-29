@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import java.io.InputStream;
 import java.util.List;
 import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import open.dolphin.infomodel.LetterModule;
 
@@ -38,7 +37,8 @@ public class LetterDelegater extends BusinessDelegater {
        
        Entity entity = toJsonEntity(model);
 
-        Response response = buildRequest(path, null, MediaType.TEXT_PLAIN_TYPE)    
+        Response response = buildRequest(path, null)
+                .accept(MEDIATYPE_TEXT_UTF8)
                 .put(entity);
 
         int status = checkHttpStatus(response);
@@ -55,7 +55,8 @@ public class LetterDelegater extends BusinessDelegater {
         
         String path = PATH_FOR_LETTER + String.valueOf(letterPk);
 
-        Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
+        Response response = buildRequest(path, null)
+                .accept(MEDIATYPE_JSON_UTF8)
                 .get();
 
         checkHttpStatus(response);
@@ -73,7 +74,8 @@ public class LetterDelegater extends BusinessDelegater {
         
         String path = PATH_FOR_LETTER_LIST + String.valueOf(kartePk);
 
-        Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
+        Response response = buildRequest(path, null)
+                .accept(MEDIATYPE_JSON_UTF8)
                 .get();
 
         checkHttpStatus(response);
@@ -92,8 +94,7 @@ public class LetterDelegater extends BusinessDelegater {
 
         String path = PATH_FOR_LETTER + String.valueOf(pk);
 
-        Response response = buildRequest(path, null, null)
-                .delete();
+        Response response = buildRequest(path, null).delete();
 
         int status = checkHttpStatus(response);
         debug(status, "delete response");

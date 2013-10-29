@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import java.io.InputStream;
 import java.util.List;
 import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
@@ -42,7 +41,8 @@ public class LaboDelegater extends BusinessDelegater {
         MultivaluedMap<String, String> qmap = new MultivaluedHashMap();
         qmap.add("ids", getConverter().fromList(idList));
 
-        Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
+        Response response = buildRequest(path, qmap)
+                .accept(MEDIATYPE_JSON_UTF8)
                 .get();
 
         checkHttpStatus(response);
@@ -67,7 +67,8 @@ public class LaboDelegater extends BusinessDelegater {
 
         Entity entity = toJsonEntity(value);
 
-        Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
+        Response response = buildRequest(path, null)
+                .accept(MEDIATYPE_JSON_UTF8)
                 .post(entity);
 
         checkHttpStatus(response);
@@ -95,7 +96,8 @@ public class LaboDelegater extends BusinessDelegater {
         qmap.add("firstResult", String.valueOf(firstResult));
         qmap.add("maxResult", String.valueOf(maxResult));
 
-        Response response = buildRequest(path, qmap, MediaType.APPLICATION_JSON_TYPE)
+        Response response = buildRequest(path, qmap)
+                .accept(MEDIATYPE_JSON_UTF8)
                 .get();
 
         checkHttpStatus(response);
@@ -116,7 +118,8 @@ public class LaboDelegater extends BusinessDelegater {
 
         Entity entity = toJsonEntity(value);
 
-        Response response = buildRequest(path, null, MediaType.APPLICATION_JSON_TYPE)
+        Response response = buildRequest(path, null)
+                .accept(MEDIATYPE_JSON_UTF8)
                 .post(entity);
 
         checkHttpStatus(response);
@@ -136,8 +139,7 @@ public class LaboDelegater extends BusinessDelegater {
 
         String path = "lab/module/id/" + String.valueOf(id);
 
-        Response response = buildRequest(path, null, null)
-                .delete();
+        Response response = buildRequest(path, null).delete();
 
         int status = checkHttpStatus(response);
         debug(status, "delete response");
@@ -151,8 +153,7 @@ public class LaboDelegater extends BusinessDelegater {
 
         String path = "lab/mmlModule/id/" + String.valueOf(id);
 
-        Response response = buildRequest(path, null, null)
-                .delete();
+        Response response = buildRequest(path, null).delete();
 
         int status = checkHttpStatus(response);
         debug(status, "delete response");

@@ -14,11 +14,15 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.UriBuilder;
 import open.dolphin.client.Dolphin;
+import open.dolphin.project.Project;
+import open.dolphin.setting.MiscSettingPanel;
 import open.dolphin.util.HashUtil;
 import org.glassfish.jersey.client.ClientProperties;
+import org.glassfish.jersey.client.JerseyClientBuilder;
+import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 
 /**
  * JerseyClient
@@ -28,22 +32,21 @@ import org.glassfish.jersey.client.ClientProperties;
 public class JerseyClient {
 
     private static final JerseyClient instance;
-    private static final String USER_NAME = "userName";
-    private static final String PASSWORD = "password";
+    
     private static final String CLIENT_UUID = "clientUUID";
     private static final int TIMEOUT1 = 30; // 30sec
-    private static final String ENCODING = "UTF-8";
     
     private String clientUUID;
     private String baseURI;
-    private String userName;
-    private String password;
     
     // 非同期通信を分けるほうがよいのかどうか不明だが
     private Client client;
     private Client asyncClient;
     private WebTarget webTarget;
     private WebTarget asyncWebTarget;
+    
+    // Authentication filter
+    private DolphinAuthFilter authFilter;
     
     static {
         instance = new JerseyClient();
@@ -59,12 +62,9 @@ public class JerseyClient {
     }
 
     public void setUpAuthentication(String username, String passwd, boolean hashPass) {
-        try {
-            this.userName = username;
-            this.password = hashPass ? passwd : HashUtil.MD5(passwd);
-        } catch (Exception e) {
-            e.printStackTrace(System.err);
-        }
+        String password = hashPass ? passwd : HashUtil.MD5(passwd);
+        authFilter.setUserName(username);
+        authFilter.setPassword(password);
     }
 
     public String getBaseURI() {
@@ -84,7 +84,7 @@ public class JerseyClient {
         asyncWebTarget = asyncClient.target(baseURI);
     }
 
-    public Invocation.Builder buildRequest(String path, MultivaluedMap<String, String> qmap, MediaType mt) {
+    public Invocation.Builder buildRequest(String path, MultivaluedMap<String, String> qmap) {
         
         WebTarget target = webTarget.path(path);
         
@@ -97,51 +97,56 @@ public class JerseyClient {
             }
         }
         
-        Invocation.Builder builder = (mt != null)
-                ? target.request(mt).acceptEncoding(ENCODING)
-                : target.request();
-        
-        builder.header(USER_NAME, userName)
-                .header(PASSWORD, password);
+        Invocation.Builder builder = target.request();
         
         return builder;
     }
     
-    public Invocation.Builder buildAsyncRequest(String path, MediaType mt) {
-        
+    public Invocation.Builder buildAsyncRequest(String path) {
+    
         WebTarget target = asyncWebTarget.path(path);
-        
-        Invocation.Builder builder = (mt != null)
-                ? target.request(mt).acceptEncoding(ENCODING)
-                : target.request();
-        
-        builder.header(USER_NAME, userName)
-                .header(PASSWORD, password)
-                .header(CLIENT_UUID, clientUUID);
+        Invocation.Builder builder = target.request();
+        // cometはclientUUIDもセットする
+        builder.header(CLIENT_UUID, clientUUID);
         
         return builder;
     }
 
     // オレオレSSL復活ｗ
     private void setupSslClients() {
+        
+        boolean useJersey = Project.getBoolean(MiscSettingPanel.USE_JERSEY, MiscSettingPanel.DEFAULT_USE_JERSEY);
+
         try {
             SSLContext ssl = SSLContext.getInstance("TLS");
             TrustManager[] certs = {new OreOreTrustManager()};
             ssl.init(null, certs, new SecureRandom());
             HostnameVerifier verifier = new OreOreHostnameVerifier();
-
-            client =  ClientBuilder.newBuilder().sslContext(ssl).hostnameVerifier(verifier).build();
-            asyncClient = ClientBuilder.newBuilder().sslContext(ssl).hostnameVerifier(verifier).build();
             
-        } catch (Exception  ex) {
-            client = ClientBuilder.newClient();
-            asyncClient = ClientBuilder.newClient();
+            client = createNewBuilder(useJersey).sslContext(ssl).hostnameVerifier(verifier).build();
+            asyncClient = createNewBuilder(useJersey).sslContext(ssl).hostnameVerifier(verifier).build();
+
+        } catch (Exception ex) {
+            client = createNewBuilder(useJersey).build();
+            asyncClient = createNewBuilder(useJersey).build();
         }
-        
-        // 同期通信はタイムアウトを設定
+
+        // 同期通信はタイムアウトを設定(Jerseyのみ。RESTEasyはやり方わからず…)
         int readTimeout = TIMEOUT1 * 1000;
         client.property(ClientProperties.READ_TIMEOUT, readTimeout);
         
+        // DolphnAuthFilterを設定する
+        authFilter = new DolphinAuthFilter();
+        client.register(authFilter);
+        asyncClient.register(authFilter);
+    }
+    
+    private ClientBuilder createNewBuilder(boolean useJersey) {
+
+        ClientBuilder clientBuilder = useJersey
+                ? new JerseyClientBuilder()
+                : new ResteasyClientBuilder();
+        return clientBuilder;
     }
 
     private class OreOreHostnameVerifier implements HostnameVerifier {

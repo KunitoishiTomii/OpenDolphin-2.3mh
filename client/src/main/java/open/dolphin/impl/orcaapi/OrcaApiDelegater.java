@@ -7,7 +7,6 @@ import java.util.Date;
 import java.util.List;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
@@ -78,7 +77,7 @@ public class OrcaApiDelegater implements IOrcaApi {
                 ? new Document(new OrcaApiElement2.MedicalMod(model))
                 : new Document(new OrcaApiElement.MedicalMod(model));
         final String xml = outputter.outputString(post);
-        final Entity entity = Entity.entity(xml, MediaType.APPLICATION_XML_TYPE);
+        final Entity entity = toXmlEntity(xml);
 
         MultivaluedMap<String, String> qmap = new MultivaluedHashMap();
         qmap.add(CLASS, "01");
@@ -118,7 +117,7 @@ public class OrcaApiDelegater implements IOrcaApi {
                 ? createSystem01ManagereqXml2()
                 : createSystem01ManagereqXml();
         
-        final Entity entity = Entity.entity(xml, MediaType.APPLICATION_XML_TYPE);
+        final Entity entity = toXmlEntity(xml);
 
         MultivaluedMap<String, String> qmap = new MultivaluedHashMap();
         qmap.add(CLASS, "01");
@@ -156,7 +155,7 @@ public class OrcaApiDelegater implements IOrcaApi {
                 ? createSystem01ManagereqXml2()
                 : createSystem01ManagereqXml();
         
-        final Entity entity = Entity.entity(xml, MediaType.APPLICATION_XML_TYPE);
+        final Entity entity = toXmlEntity(xml);
 
         MultivaluedMap<String, String> qmap = new MultivaluedHashMap();
         qmap.add(CLASS, "02");
@@ -181,6 +180,10 @@ public class OrcaApiDelegater implements IOrcaApi {
         } catch (JDOMException ex) {
         } catch (IOException ex) {
         }
+    }
+    
+    private Entity toXmlEntity(String xml) {
+        return Entity.entity(xml, MEDIATYPE_XML_UTF8);
     }
     
     private String createSystem01ManagereqXml() {
