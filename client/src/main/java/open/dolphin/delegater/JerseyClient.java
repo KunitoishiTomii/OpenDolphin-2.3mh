@@ -15,7 +15,6 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.UriBuilder;
 import open.dolphin.client.Dolphin;
 import open.dolphin.project.Project;
 import open.dolphin.setting.MiscSettingPanel;
