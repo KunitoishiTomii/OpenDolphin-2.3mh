@@ -3,17 +3,19 @@ package open.dolphin.session;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.Logger;
+import javax.ejb.Asynchronous;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.servlet.AsyncContext;
 import open.dolphin.infomodel.*;
+import open.dolphin.mbean.AsyncResponseModel;
 import open.dolphin.mbean.ServletContextHolder;
 import open.dolphin.rest.ChartEventResource;
 
 /**
  * ChartEventServiceBean
+ *
  * @author masuda, Masuda Naika
  */
 @Stateless
@@ -28,6 +30,9 @@ public class ChartEventServiceBean {
     
     @Inject
     private ServletContextHolder contextHolder;
+    
+    @Inject
+    private ChartEventResource chartEventResource;
 
     @PersistenceContext
     private EntityManager em;
@@ -37,29 +42,28 @@ public class ChartEventServiceBean {
 
         String fid = evt.getFacilityId();
 
-        List<AsyncContext> acList = contextHolder.getAsyncContextList();
-        synchronized (acList) {
-            for (Iterator<AsyncContext> itr = acList.iterator(); itr.hasNext();) {
-                
-                AsyncContext ac = itr.next();
-                String acFid = (String) ac.getRequest().getAttribute(IInfoModel.FID);
-                String acUUID = (String) ac.getRequest().getAttribute(IInfoModel.CLIENT_UUID);
-                String issuerUUID = evt.getIssuerUUID();
-                
-                // 同一施設かつChartEventModelの発行者でないクライアントに通知する
-                // fid == nullなら全部にブロードキャストする
-                if (fid == null || (fid.equals(acFid) && !acUUID.equals(issuerUUID))) {
-                    itr.remove();
-                    try {
-                        ac.getRequest().setAttribute(ChartEventResource.KEY_NAME, evt);
-                        ac.dispatch(ChartEventResource.DISPATCH_URL);
-                    } catch (Exception ex) {
-                        logger.warning("Exception in ac.dispatch.");
-                    }
-                }
+        List<AsyncResponseModel> arList = contextHolder.getAsyncResponseList();
+        
+        for (AsyncResponseModel arModel : arList) {
+
+            String acFid = arModel.getFid();
+            String acUUID = arModel.getClientUUID();
+            String issuerUUID = evt.getIssuerUUID();
+
+            // 同一施設かつChartEventModelの発行者でないクライアントに通知する
+            // fid == nullなら全部にブロードキャストする
+            if (fid == null || (fid.equals(acFid) && !acUUID.equals(issuerUUID))) {
+                deliverChartEvent(arModel, evt);
             }
+            
         }
     }
+    
+    @Asynchronous
+    private void deliverChartEvent(AsyncResponseModel arModel, ChartEventModel evt) {
+        chartEventResource.deliverChartEvent(arModel, evt);
+    }
+
     
     public String getServerUUID() {
         return contextHolder.getServerUUID();
