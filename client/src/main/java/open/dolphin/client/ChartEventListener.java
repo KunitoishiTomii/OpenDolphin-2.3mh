@@ -36,8 +36,8 @@ public class ChartEventListener {
     private List<IChartEventListener> listeners;
     
     // ChartEvent監視タスク
-    //private EventListenThread listenThread;
-    private ChartEventCallback eventCallback;
+    private EventListenThread listenThread;
+    //private ChartEventCallback eventCallback;
     
     // 状態変化を各listenerに通知するタスク
     private ExecutorService onEventExec;
@@ -65,7 +65,7 @@ public class ChartEventListener {
         userId = Project.getUserModel().getUserId();
         jmariCode = Project.getString(Project.JMARI_CODE);
         facilityId = Project.getFacilityId();
-        listeners = new ArrayList<IChartEventListener>();
+        listeners = new ArrayList<>();
     }
     
     public String getClientUUID() {
@@ -148,15 +148,15 @@ public class ChartEventListener {
     public void start() {
         NamedThreadFactory factory = new NamedThreadFactory("ChartEvent Handle Task");
         onEventExec = Executors.newSingleThreadExecutor(factory);
-        //listenThread = new EventListenThread();
-        //listenThread.start();
-        eventCallback = new ChartEventCallback();
-        eventCallback.start();
+        listenThread = new EventListenThread();
+        listenThread.start();
+        //eventCallback = new ChartEventCallback();
+        //eventCallback.start();
     }
 
     public void stop() {
-        //listenThread.halt();
-        eventCallback.halt();
+        listenThread.halt();
+        //eventCallback.halt();
         shutdownExecutor();
     }
 
@@ -209,7 +209,7 @@ public class ChartEventListener {
         }
     }
     
-    // InvocationCallbackを使ってみる
+    // InvocationCallbackを使ってみるが、completedが終了するとresponseを閉じてしまうのでボツ
     private class ChartEventCallback implements InvocationCallback<Response> {
 
         private Future<Response> future;
@@ -248,7 +248,7 @@ public class ChartEventListener {
     // 自クライアントの状態変更後、サーバーに通知するタスク
     private class LocalOnEventTask implements Runnable {
         
-        private ChartEventModel evt;
+        private final ChartEventModel evt;
         
         private LocalOnEventTask(ChartEventModel evt) {
             this.evt = evt;
@@ -277,7 +277,7 @@ public class ChartEventListener {
     // 状態変化通知メッセージをデシリアライズし各リスナに処理を分配する
     private class RemoteOnEventTask implements Runnable {
         
-        private Response response;
+        private final Response response;
         
         private RemoteOnEventTask(Response response) {
             this.response = response;
@@ -336,7 +336,7 @@ public class ChartEventListener {
 
         if (c != null && !c.isEmpty()) {
 
-            List<PVTHealthInsuranceModel> list = new ArrayList<PVTHealthInsuranceModel>(c.size());
+            List<PVTHealthInsuranceModel> list = new ArrayList<>(c.size());
 
             for (HealthInsuranceModel model : c) {
                 try {
