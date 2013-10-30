@@ -31,7 +31,8 @@ public class ExamHistory {
     private DocumentHistory docHistory;     // 文書履歴
     private ChartImpl context;
     private PatientInspector patientInspector;
-
+    
+    private static final long MILLISEC_IN_MONTH = 1000 * 60 * 60 * 24 * 30L;
     public static final String ExamHistoryTitle = "検査";
     
     // カラム仕様ヘルパー
@@ -257,15 +258,24 @@ public class ExamHistory {
                                 : list.get(0).getExamDate();
                     }
 
-                    int index = patientInspector.getTabbedPane().indexOfTab(ExamHistoryTitle);
+                    //int index = patientInspector.getTabbedPane().indexOfTab(ExamHistoryTitle);
+                    JTabbedPane tabbedPane = patientInspector.getTabbedPane();
+                    int index = tabbedPane.indexOfComponent(view);
 
                     // 最終検査から３か月経過していたらタブの文字を赤にする
+                    Date now = new Date();
                     GregorianCalendar gc = new GregorianCalendar();
+                    gc.setTime(now);
                     gc.add(GregorianCalendar.MONTH, -3);
                     if (lastExamDate.before(gc.getTime())) {
-                        patientInspector.getTabbedPane().setForegroundAt(index, Color.RED);
+                        tabbedPane.setForegroundAt(index, Color.RED);
+                        long t = now.getTime() - lastExamDate.getTime();
+                        int monthPast = (int) (t / MILLISEC_IN_MONTH);
+                        String pastStr = monthPast > 12 ? ">１年" : String.valueOf(monthPast) + "ヶ月";
+                        tabbedPane.setTitleAt(index, String.valueOf(pastStr));
                     } else {
-                        patientInspector.getTabbedPane().setForegroundAt(index, Color.BLACK);
+                        tabbedPane.setForegroundAt(index, Color.BLACK);
+                        tabbedPane.setTitleAt(index, ExamHistoryTitle);
                     }
                     tableModel.setDataProvider(list);
 
