@@ -1,5 +1,7 @@
 package open.dolphin.delegater;
 
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -11,7 +13,6 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MultivaluedMap;
@@ -19,23 +20,28 @@ import open.dolphin.client.Dolphin;
 import open.dolphin.project.Project;
 import open.dolphin.setting.MiscSettingPanel;
 import open.dolphin.util.HashUtil;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.HttpParams;
 import org.glassfish.jersey.client.ClientProperties;
+import org.glassfish.jersey.client.JerseyClient;
 import org.glassfish.jersey.client.JerseyClientBuilder;
+import org.jboss.resteasy.client.jaxrs.ResteasyClient;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
+import org.jboss.resteasy.client.jaxrs.engines.ApacheHttpClient4Engine;
 
 /**
- * JerseyClient
+ * RestClient
  * @author Kazushi Minagawa. Digital Globe, Inc.
  * @author modified by masuda, Masuda Naika
  */
-public class JerseyClient {
+public class RestClient {
 
-    private static final JerseyClient instance;
+    private static final RestClient instance;
     
     private static final String CLIENT_UUID = "clientUUID";
-    private static final int TIMEOUT1 = 30; // 30sec
+    private static final int TIMEOUT_IN_MILLISEC = 30 * 1000; // 30sec
     
-    private String clientUUID;
+    private final String clientUUID;
     private String baseURI;
     
     // 非同期通信を分けるほうがよいのかどうか不明だが
@@ -48,15 +54,15 @@ public class JerseyClient {
     private DolphinAuthFilter authFilter;
     
     static {
-        instance = new JerseyClient();
+        instance = new RestClient();
     }
 
-    private JerseyClient() {
+    private RestClient() {
         clientUUID = Dolphin.getInstance().getClientUUID();
         setupSslClients();
     }
 
-    public static JerseyClient getInstance() {
+    public static RestClient getInstance() {
         return instance;
     }
 
@@ -122,30 +128,60 @@ public class JerseyClient {
             ssl.init(null, certs, new SecureRandom());
             HostnameVerifier verifier = new OreOreHostnameVerifier();
             
-            client = createNewBuilder(useJersey).sslContext(ssl).hostnameVerifier(verifier).build();
-            asyncClient = createNewBuilder(useJersey).sslContext(ssl).hostnameVerifier(verifier).build();
+            client = createClient(useJersey, ssl, verifier, true);
+            asyncClient = createClient(useJersey, ssl, verifier, false);
 
-        } catch (Exception ex) {
-            client = createNewBuilder(useJersey).build();
-            asyncClient = createNewBuilder(useJersey).build();
+        } catch (KeyManagementException | NoSuchAlgorithmException ex) {
+            client = createClient(useJersey, null, null, true);
+            asyncClient = createClient(useJersey, null, null, false);
         }
 
-        // 同期通信はタイムアウトを設定(Jerseyのみ。RESTEasyはやり方わからず…)
-        int readTimeout = TIMEOUT1 * 1000;
-        client.property(ClientProperties.READ_TIMEOUT, readTimeout);
-        
         // DolphnAuthFilterを設定する
         authFilter = new DolphinAuthFilter();
         client.register(authFilter);
         asyncClient.register(authFilter);
     }
     
-    private ClientBuilder createNewBuilder(boolean useJersey) {
+    // Clientを作成する
+    private Client createClient(boolean useJersey, SSLContext ssl, HostnameVerifier verifier, boolean enableTimeout) {
 
-        ClientBuilder clientBuilder = useJersey
-                ? new JerseyClientBuilder()
-                : new ResteasyClientBuilder();
-        return clientBuilder;
+        Client ret = useJersey
+                ? createJerseyClient(ssl, verifier, enableTimeout)
+                : createResteasyClient(ssl, verifier, enableTimeout);
+        
+        return ret;
+    }
+    
+    // JerseyClientを作成する
+    private Client createJerseyClient(SSLContext ssl, HostnameVerifier verifier, boolean enableTimeout) {
+        
+        JerseyClient jerseyClient = (ssl != null && verifier != null)
+                ? new JerseyClientBuilder().sslContext(ssl).hostnameVerifier(verifier).build()
+                : new JerseyClientBuilder().build();
+        
+        // read timeoutを設定する
+        if (enableTimeout) {
+            jerseyClient.getConfiguration().property(ClientProperties.READ_TIMEOUT, TIMEOUT_IN_MILLISEC);
+        }
+        
+        return jerseyClient;
+    }
+    
+    // ResteasyClientを作成する
+    private Client createResteasyClient(SSLContext ssl, HostnameVerifier verifier, boolean enableTimeout) {
+        
+        ResteasyClient resteasyClient = (ssl != null && verifier != null)
+                ? new ResteasyClientBuilder().sslContext(ssl).hostnameVerifier(verifier).build()
+                : new ResteasyClientBuilder().build();
+        
+        // read timeoutを設定する、めんどくちゃ
+        if (enableTimeout && resteasyClient.httpEngine() instanceof ApacheHttpClient4Engine) {
+            ApacheHttpClient4Engine engine = (ApacheHttpClient4Engine) resteasyClient.httpEngine();
+            HttpParams params = engine.getHttpClient().getParams();
+            HttpConnectionParams.setConnectionTimeout(params, TIMEOUT_IN_MILLISEC);
+        }
+
+        return resteasyClient;
     }
 
     private class OreOreHostnameVerifier implements HostnameVerifier {

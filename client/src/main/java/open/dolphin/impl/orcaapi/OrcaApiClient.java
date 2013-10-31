@@ -14,7 +14,7 @@ import org.jboss.resteasy.client.jaxrs.BasicAuthentication;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 
 /**
- * ORCA API用のJersey Client
+ * ORCA API用のRest Client
  * 
  * @author masuda, Masuda Naika
  */

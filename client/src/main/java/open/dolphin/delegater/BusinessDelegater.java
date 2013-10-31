@@ -41,11 +41,11 @@ public class BusinessDelegater {
     }
     
     protected Invocation.Builder buildRequest(String path, MultivaluedMap<String, String> qmap) {
-        return JerseyClient.getInstance().buildRequest(path, qmap);
+        return RestClient.getInstance().buildRequest(path, qmap);
     }
 
     protected Invocation.Builder buildAsyncRequest(String path) {
-        return JerseyClient.getInstance().buildAsyncRequest(path);
+        return RestClient.getInstance().buildAsyncRequest(path);
     }
 
     protected void debug(int status, String entity) {
