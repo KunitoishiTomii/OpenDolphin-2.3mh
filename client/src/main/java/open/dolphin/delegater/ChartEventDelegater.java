@@ -17,7 +17,6 @@ public class ChartEventDelegater extends BusinessDelegater {
     private static final String SUBSCRIBE_PATH = RES_CE + "subscribe";
     private static final String PUT_EVENT_PATH = RES_CE + "event";
     
-    private static final String CLIENT_UUID = "clientUUID";
     private final String clientUUID;
     
     private static final boolean debug = false;

@@ -292,7 +292,7 @@ public class StampDelegater extends BusinessDelegater {
 
         Response response = getWebTarget()
                 .path(path)
-                .queryParam("ids", sb.toString())
+                .queryParam(IDS, sb.toString())
                 .request()
                 .delete();
 
@@ -443,7 +443,7 @@ public class StampDelegater extends BusinessDelegater {
 
             Response response = getWebTarget()
                     .path(path)
-                    .queryParam("ids", sb.toString())
+                    .queryParam(IDS, sb.toString())
                     .request(MEDIATYPE_JSON_UTF8)
                     .get();
 
@@ -511,7 +511,7 @@ public class StampDelegater extends BusinessDelegater {
 
         Response response = getWebTarget()
                 .path(path)
-                .queryParam("ids", getConverter().fromList(ids))
+                .queryParam(IDS, getConverter().fromList(ids))
                 .request()
                 .delete();
 

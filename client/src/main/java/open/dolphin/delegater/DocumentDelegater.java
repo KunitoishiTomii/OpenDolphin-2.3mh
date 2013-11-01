@@ -54,7 +54,7 @@ public class  DocumentDelegater extends BusinessDelegater {
 
         Response response = getWebTarget()
                 .path(path)
-                .queryParam("fromDate", toRestFormat(fromDate))
+                .queryParam(FROM_DATE, toRestFormat(fromDate))
                 .request(MEDIATYPE_JSON_UTF8)
                 .get();
 
@@ -107,7 +107,7 @@ public class  DocumentDelegater extends BusinessDelegater {
 
         Response response = getWebTarget()
                 .path(path)
-                .queryParam("ids", getConverter().fromList(ids))
+                .queryParam(IDS, getConverter().fromList(ids))
                 .request(MEDIATYPE_JSON_UTF8)
                 .get();
 
@@ -145,9 +145,9 @@ public class  DocumentDelegater extends BusinessDelegater {
 
         Response response = getWebTarget()
                 .path(path)
-                .queryParam("fromDate", toRestFormat(spec.getFromDate()))
-                .queryParam("toDate", toRestFormat(spec.getToDate()))
-                .queryParam("includeModified", String.valueOf(spec.isIncludeModifid()))
+                .queryParam(FROM_DATE, toRestFormat(spec.getFromDate()))
+                .queryParam(TO_DATE, toRestFormat(spec.getToDate()))
+                .queryParam(INCLUDE_MODIFIED, String.valueOf(spec.isIncludeModifid()))
                 .request(MEDIATYPE_JSON_UTF8)
                 .get();
 
@@ -299,9 +299,9 @@ public class  DocumentDelegater extends BusinessDelegater {
 
         Response response = getWebTarget()
                 .path(path)
-                .queryParam("froms", fromsStr)
-                .queryParam("tos", tosStr)
-                .queryParam("entity", spec.getEntity())
+                .queryParam(FROMS, fromsStr)
+                .queryParam(TOS, tosStr)
+                .queryParam(ENTITY, spec.getEntity())
                 .request(MEDIATYPE_JSON_UTF8)
                 .get();
 
@@ -476,7 +476,7 @@ public class  DocumentDelegater extends BusinessDelegater {
         
         Response response = getWebTarget()
                 .path(path)
-                .queryParam("ids", getConverter().fromList(ids))
+                .queryParam(IDS, getConverter().fromList(ids))
                 .request()
                 .delete();
 
@@ -500,8 +500,8 @@ public class  DocumentDelegater extends BusinessDelegater {
 
         Response response = getWebTarget()
                 .path(path)
-                .queryParam("fromDate", toRestFormat(fromDate))
-                .queryParam("activeOnly", String.valueOf(activeOnly))
+                .queryParam(FROM_DATE, toRestFormat(fromDate))
+                .queryParam(ACTIVE_ONLY, String.valueOf(activeOnly))
                 .request(MEDIATYPE_JSON_UTF8)
                 .get();
 
@@ -545,7 +545,7 @@ public class  DocumentDelegater extends BusinessDelegater {
         
         Response response = getWebTarget()
                 .path(path)
-                .queryParam("ids", getConverter().fromList(ids))
+                .queryParam(IDS, getConverter().fromList(ids))
                 .request()
                 .delete();
 
@@ -610,8 +610,8 @@ public class  DocumentDelegater extends BusinessDelegater {
 
         Response response = getWebTarget()
                 .path(path)
-                .queryParam("froms", fromsStr)
-                .queryParam("tos", tosStr)
+                .queryParam(FROMS, fromsStr)
+                .queryParam(TOS, tosStr)
                 .request(MEDIATYPE_JSON_UTF8)
                 .get();
 

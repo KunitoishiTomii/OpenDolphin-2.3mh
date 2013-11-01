@@ -20,11 +20,8 @@ import org.apache.log4j.Logger;
  * @author Kazushi Minagawa, Digital Globe, Inc.
  * @author modified by masuda, Masuda Naika
  */
-public class BusinessDelegater {
+public class BusinessDelegater implements IRestConstants {
 
-    protected static final String CAMMA = ",";
-    
-    private static final String UTF8 = "UTF-8";
     protected static final MediaType MEDIATYPE_JSON_UTF8
             = MediaType.APPLICATION_JSON_TYPE.withCharset(UTF8);
     protected static final MediaType MEDIATYPE_TEXT_UTF8 

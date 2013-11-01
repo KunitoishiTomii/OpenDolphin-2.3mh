@@ -40,8 +40,8 @@ public class TouchaResource extends AbstractResource {
     @Path("labo/{ptId}")
     @Produces(MEDIATYPE_JSON_UTF8)
     public Response getLabo(@PathParam("ptId") String ptId,
-            @QueryParam("firstResult") int firstResult,
-            @QueryParam("maxResults") int maxResults) {
+            @QueryParam(FIRST_RESULT) int firstResult,
+            @QueryParam(MAX_RESULTS) int maxResults) {
         
         String fid = getRemoteFacility();
         String html = touchaServiceBean.getLaboHtml(fid, ptId, firstResult, maxResults);
@@ -68,7 +68,7 @@ public class TouchaResource extends AbstractResource {
     @Produces(MEDIATYPE_JSON_UTF8)
     public Response getPvtList(
             @PathParam("pvtDate") String pvtDate, 
-            @QueryParam("direction") String direction) {
+            @QueryParam(DIRECTION) String direction) {
         
         String fid = getRemoteFacility();
         PatientVisitModelList model= touchaServiceBean.getPvtList(fid, pvtDate, direction);
@@ -82,9 +82,9 @@ public class TouchaResource extends AbstractResource {
     @Path("document/{docPk}")
     @Produces(MEDIATYPE_JSON_UTF8)
     public Response getDocument(@PathParam("docPk") String docPkStr,
-            @QueryParam("patientId") String ptId,
-            @QueryParam("docDate") String docDateStr,
-            @QueryParam("direction") String direction) {
+            @QueryParam(PATIENT_ID) String ptId,
+            @QueryParam(DOC_DATE) String docDateStr,
+            @QueryParam(DIRECTION) String direction) {
         
         String fid = getRemoteFacility();
         DocumentModelS model = touchaServiceBean.getDocHtml(fid, ptId, docPkStr, docDateStr, direction);
@@ -109,7 +109,7 @@ public class TouchaResource extends AbstractResource {
     @GET
     @Path("search")
     @Produces(MEDIATYPE_JSON_UTF8)
-    public Response getSearchResults(@QueryParam("text") String text ,@QueryParam("type") String type) {
+    public Response getSearchResults(@QueryParam(TEXT) String text ,@QueryParam(TYPE) String type) {
         
         String fid = getRemoteFacility();
         List<PatientModelS> list = touchaServiceBean.getSearchResults(fid, text, type);

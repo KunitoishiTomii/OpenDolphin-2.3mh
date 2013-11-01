@@ -184,9 +184,9 @@ public class UserDelegater extends BusinessDelegater {
 
         Response response = getWebTarget()
                 .path(path)
-                .queryParam("fidUid", fidUid)
-                .queryParam("clientUUID", clientUUID)
-                .queryParam("force", String.valueOf(force))
+                .queryParam(FID_UID, fidUid)
+                .queryParam(CLIENT_UUID, clientUUID)
+                .queryParam(FORCE, String.valueOf(force))
                 .request(MEDIATYPE_TEXT_UTF8)
                 .get();
         
@@ -205,8 +205,8 @@ public class UserDelegater extends BusinessDelegater {
         
         Response response = getWebTarget()
                 .path(path)
-                .queryParam("fidUid", fidUid)
-                .queryParam("clientUUID", clientUUID)
+                .queryParam(FID_UID, fidUid)
+                .queryParam(CLIENT_UUID, clientUUID)
                 .request(MEDIATYPE_TEXT_UTF8)
                 .get();
         int status = checkHttpStatus(response);

@@ -42,8 +42,8 @@ public class MasudaDelegater extends BusinessDelegater {
 
         Response response = getWebTarget()
                 .path(path)
-                .queryParam("firstResult", String.valueOf(firstResult))
-                .queryParam("maxResults", String.valueOf(maxResults))
+                .queryParam(FIRST_RESULT, String.valueOf(firstResult))
+                .queryParam(MAX_RESULTS, String.valueOf(maxResults))
                 .request(MEDIATYPE_JSON_UTF8)
                 .get();
 
@@ -299,9 +299,9 @@ public class MasudaDelegater extends BusinessDelegater {
 
         Response response = getWebTarget()
                 .path(path)
-                .queryParam("fromDate", toRestFormat(fromDate))
-                .queryParam("toDate", toRestFormat(toDate))
-                .queryParam("entities", getConverter().fromList(entities))
+                .queryParam(FROM_DATE, toRestFormat(fromDate))
+                .queryParam(TO_DATE, toRestFormat(toDate))
+                .queryParam(ENTITIES, getConverter().fromList(entities))
                 .request(MEDIATYPE_JSON_UTF8)
                 .get();
 
@@ -355,7 +355,7 @@ public class MasudaDelegater extends BusinessDelegater {
         
         Response response = getWebTarget()
                 .path(path)
-                .queryParam("ids", getConverter().fromList(docPkList))
+                .queryParam(IDS, getConverter().fromList(docPkList))
                 .request(MEDIATYPE_JSON_UTF8)
                 .get();
 
@@ -377,8 +377,8 @@ public class MasudaDelegater extends BusinessDelegater {
 
         Response response = getWebTarget()
                 .path(path)
-                .queryParam("fromDocPk", String.valueOf(fromDocPk))
-                .queryParam("maxResults", String.valueOf(maxResults))
+                .queryParam(FROM_DOC_PK, String.valueOf(fromDocPk))
+                .queryParam(MAX_RESULTS, String.valueOf(maxResults))
                 .request(MEDIATYPE_TEXT_UTF8)
                 .get();
 
@@ -398,8 +398,8 @@ public class MasudaDelegater extends BusinessDelegater {
         
         Response response = getWebTarget()
                 .path(path)
-                .queryParam("karteId", String.valueOf(karteId))
-                .queryParam("text", text)
+                .queryParam(KARTE_ID, String.valueOf(karteId))
+                .queryParam(TEXT, text)
                 .request(MEDIATYPE_JSON_UTF8)
                 .get();
 
@@ -422,10 +422,10 @@ public class MasudaDelegater extends BusinessDelegater {
 
         Response response = getWebTarget()
                 .path(path)
-                .queryParam("text", text)
-                .queryParam("fromId", String.valueOf(fromId))
-                .queryParam("maxResult", String.valueOf(maxResult))
-                .queryParam("pcOnly", String.valueOf(progressCourseOnly))
+                .queryParam(TEXT, text)
+                .queryParam(FROM_ID, String.valueOf(fromId))
+                .queryParam(MAX_RESULTS, String.valueOf(maxResult))
+                .queryParam(PC_ONLY, String.valueOf(progressCourseOnly))
                 .request(MEDIATYPE_JSON_UTF8)
                 .get();
 
@@ -446,8 +446,8 @@ public class MasudaDelegater extends BusinessDelegater {
 
         Response response = getWebTarget()
                 .path(path)
-                .queryParam("fromDate", toRestFormat(fromDate))
-                .queryParam("toDate", toRestFormat(toDate))
+                .queryParam(FROM_DATE, toRestFormat(fromDate))
+                .queryParam(TO_DATE, toRestFormat(toDate))
                 .request(MEDIATYPE_JSON_UTF8)
                 .get();
 
@@ -469,9 +469,9 @@ public class MasudaDelegater extends BusinessDelegater {
 
         Response response = getWebTarget()
                 .path(path)
-                .queryParam("fromDate", toRestFormat(fromDate))
-                .queryParam("toDate", toRestFormat(toDate))
-                .queryParam("yoyuu", String.valueOf(yoyuu))
+                .queryParam(FROM_DATE, toRestFormat(fromDate))
+                .queryParam(TO_DATE, toRestFormat(toDate))
+                .queryParam(YOYUU, String.valueOf(yoyuu))
                 .request(MEDIATYPE_JSON_UTF8)
                 .get();
 
@@ -552,8 +552,8 @@ public class MasudaDelegater extends BusinessDelegater {
 
         Response response = getWebTarget()
                 .path(path)
-                .queryParam("fromId", String.valueOf(fromId))
-                .queryParam("maxResults", String.valueOf(maxResults))
+                .queryParam(FROM_ID, String.valueOf(fromId))
+                .queryParam(MAX_RESULTS, String.valueOf(maxResults))
                 .request(MEDIATYPE_TEXT_UTF8)
                 .get();
 
@@ -573,11 +573,11 @@ public class MasudaDelegater extends BusinessDelegater {
 
         WebTarget target = getWebTarget()
                 .path(path)
-                .queryParam("fromDate", toRestFormat(fromDate))
-                .queryParam("toDate", toRestFormat(toDate));
+                .queryParam(FROM_DATE, toRestFormat(fromDate))
+                .queryParam(TO_DATE, toRestFormat(toDate));
 
         if (srycds != null) {
-            target = target.queryParam("srycds", getConverter().fromList(srycds));
+            target = target.queryParam(SRYCDS, getConverter().fromList(srycds));
         }
 
         Response response = target
@@ -603,9 +603,9 @@ public class MasudaDelegater extends BusinessDelegater {
 
         Response response = getWebTarget()
                 .path(path)
-                .queryParam("fromDate", toRestFormat(fromDate))
-                .queryParam("toDate", toRestFormat(toDate))
-                .queryParam("lastOnly", String.valueOf(lastOnly))
+                .queryParam(FROM_DATE, toRestFormat(fromDate))
+                .queryParam(TO_DATE, toRestFormat(toDate))
+                .queryParam(LAST_ONLY, String.valueOf(lastOnly))
                 .request(MEDIATYPE_JSON_UTF8)
                 .get();
 
@@ -665,7 +665,7 @@ public class MasudaDelegater extends BusinessDelegater {
 
         Response response = getWebTarget()
                 .path(path)
-                .queryParam("fromDate", toRestFormat(fromDate))
+                .queryParam(FROM_DATE, toRestFormat(fromDate))
                 .request(MEDIATYPE_JSON_UTF8)
                 .get();
 

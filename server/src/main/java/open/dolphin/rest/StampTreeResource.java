@@ -146,7 +146,7 @@ public class StampTreeResource extends AbstractResource {
 
     @DELETE
     @Path("subscribed")
-    public void unsubscribeTrees(@QueryParam("ids") String ids) {
+    public void unsubscribeTrees(@QueryParam(IDS) String ids) {
 
         List<Long> list = getConverter().toLongList(ids);
 

@@ -171,7 +171,7 @@ public class  PatientDelegater extends BusinessDelegater {
 
         Response response = getWebTarget()
                 .path(path)
-                .queryParam("ids", ids)
+                .queryParam(IDS, ids)
                 .request(MEDIATYPE_JSON_UTF8)
                 .get();
 
