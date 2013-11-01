@@ -5,18 +5,13 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.List;
-import java.util.Map;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import javax.ws.rs.client.Client;
-import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.MultivaluedMap;
-import open.dolphin.client.Dolphin;
 import open.dolphin.project.Project;
 import open.dolphin.setting.MiscSettingPanel;
 import open.dolphin.util.HashUtil;
@@ -38,10 +33,8 @@ public class RestClient {
 
     private static final RestClient instance;
     
-    private static final String CLIENT_UUID = "clientUUID";
     private static final int TIMEOUT_IN_MILLISEC = 30 * 1000; // 30sec
     
-    private final String clientUUID;
     private String baseURI;
     
     // 非同期通信を分けるほうがよいのかどうか不明だが
@@ -58,7 +51,6 @@ public class RestClient {
     }
 
     private RestClient() {
-        clientUUID = Dolphin.getInstance().getClientUUID();
         setupSslClients();
     }
 
@@ -88,35 +80,16 @@ public class RestClient {
         webTarget = client.target(baseURI);
         asyncWebTarget = asyncClient.target(baseURI);
     }
-
-    public Invocation.Builder buildRequest(String path, MultivaluedMap<String, String> qmap) {
-        
-        WebTarget target = webTarget.path(path);
-        
-        // Jersey2.1、めんどくさいなぁ…
-        if (qmap != null) {
-            for (Map.Entry<String, List<String>> entry : qmap.entrySet()) {
-                for (String value : entry.getValue()) {
-                    target = target.queryParam(entry.getKey(), value);
-                }
-            }
-        }
-        
-        Invocation.Builder builder = target.request();
-        
-        return builder;
+    
+    public WebTarget getWebTarget() {
+        return webTarget;
     }
     
-    public Invocation.Builder buildAsyncRequest(String path) {
-    
-        WebTarget target = asyncWebTarget.path(path);
-        Invocation.Builder builder = target.request();
-        // cometはclientUUIDもセットする
-        builder.header(CLIENT_UUID, clientUUID);
-        
-        return builder;
+    public WebTarget getAsyncWebTarget() {
+        return asyncWebTarget;
     }
 
+    
     // オレオレSSL復活ｗ
     private void setupSslClients() {
         

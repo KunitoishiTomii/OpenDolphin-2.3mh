@@ -4,8 +4,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import java.io.InputStream;
 import java.util.List;
 import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import open.dolphin.infomodel.IInfoModel;
 import open.dolphin.infomodel.UserModel;
@@ -64,8 +62,9 @@ public class UserDelegater extends BusinessDelegater {
         sb.append(userPK);
         String path = sb.toString();
 
-        Response response = buildRequest(path, null)
-                .accept(MEDIATYPE_JSON_UTF8)
+        Response response = getWebTarget()
+                .path(path)
+                .request(MEDIATYPE_JSON_UTF8)
                 .get();
 
         checkHttpStatus(response);
@@ -82,8 +81,9 @@ public class UserDelegater extends BusinessDelegater {
         
         String path = RES_USER;
 
-        Response response = buildRequest(path, null)
-                .accept(MEDIATYPE_JSON_UTF8)
+        Response response = getWebTarget()
+                .path(path)
+                .request(MEDIATYPE_JSON_UTF8)
                 .get();
 
         checkHttpStatus(response);
@@ -102,8 +102,9 @@ public class UserDelegater extends BusinessDelegater {
         String path = RES_USER;
         Entity entity = toJsonEntity(userModel);
 
-        Response response = buildRequest(path, null)
-                .accept(MEDIATYPE_TEXT_UTF8)
+        Response response = getWebTarget()
+                .path(path)
+                .request(MEDIATYPE_TEXT_UTF8)
                 .post(entity);
 
         int status = checkHttpStatus(response);
@@ -122,8 +123,9 @@ public class UserDelegater extends BusinessDelegater {
         String path = RES_USER;
         Entity entity = toJsonEntity(userModel);
 
-        Response response = buildRequest(path, null)   
-                .accept(MEDIATYPE_TEXT_UTF8)
+        Response response = getWebTarget()
+                .path(path) 
+                .request(MEDIATYPE_TEXT_UTF8)
                 .put(entity);
 
         int status = checkHttpStatus(response);
@@ -141,7 +143,10 @@ public class UserDelegater extends BusinessDelegater {
         
         String path = RES_USER + uid;
 
-        Response response = buildRequest(path, null).delete();
+        Response response = getWebTarget()
+                .path(path)
+                .request()
+                .delete();
 
         int status = checkHttpStatus(response);
         debug(status, "delete response");
@@ -157,8 +162,9 @@ public class UserDelegater extends BusinessDelegater {
 
         Entity entity = toJsonEntity(userModel);
 
-        Response response = buildRequest(path, null)
-                .accept(MEDIATYPE_TEXT_UTF8)
+        Response response = getWebTarget()
+                .path(path)
+                .request(MEDIATYPE_TEXT_UTF8)
                 .put(entity);
 
         int status = checkHttpStatus(response);
@@ -175,15 +181,15 @@ public class UserDelegater extends BusinessDelegater {
     public String login(String fidUid, String clientUUID, boolean force) throws Exception {
         
         String path = RES_USER + "login";
-        
-        MultivaluedMap<String, String> qmap = new MultivaluedHashMap();
-        qmap.add("fidUid", fidUid);
-        qmap.add("clientUUID", clientUUID);
-        qmap.add("force", String.valueOf(force));
-        
-        Response response = buildRequest(path, qmap)
-                .accept(MEDIATYPE_TEXT_UTF8)
+
+        Response response = getWebTarget()
+                .path(path)
+                .queryParam("fidUid", fidUid)
+                .queryParam("clientUUID", clientUUID)
+                .queryParam("force", String.valueOf(force))
+                .request(MEDIATYPE_TEXT_UTF8)
                 .get();
+        
         int status = checkHttpStatus(response);
         String currentUUID = response.readEntity(String.class);
         debug(status, currentUUID);
@@ -197,12 +203,11 @@ public class UserDelegater extends BusinessDelegater {
         
         String path = RES_USER + "logout";
         
-        MultivaluedMap<String, String> qmap = new MultivaluedHashMap();
-        qmap.add("fidUid", fidUid);
-        qmap.add("clientUUID", clientUUID);
-        
-        Response response = buildRequest(path, qmap)
-                .accept(MEDIATYPE_TEXT_UTF8)
+        Response response = getWebTarget()
+                .path(path)
+                .queryParam("fidUid", fidUid)
+                .queryParam("clientUUID", clientUUID)
+                .request(MEDIATYPE_TEXT_UTF8)
                 .get();
         int status = checkHttpStatus(response);
         String oldUUID = response.readEntity(String.class);

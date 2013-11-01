@@ -20,7 +20,7 @@ public class OrcaDelegater extends BusinessDelegater {
     private static final String NO_ERROR = "00";
     private static final String SERVER_CLAIM = "SERVER CLAIM";
     
-    private static OrcaDelegater instance;
+    private static final OrcaDelegater instance;
     
     static {
         instance = new OrcaDelegater();
@@ -38,8 +38,9 @@ public class OrcaDelegater extends BusinessDelegater {
         Entity entity = toJsonEntity(sqlModel);
 
         String path = "orca/query";
-        Response response = buildRequest(path, null)
-                .accept(MEDIATYPE_JSON_UTF8)
+        Response response = getWebTarget()
+                .path(path)
+                .request(MEDIATYPE_JSON_UTF8)
                 .post(entity);
 
         checkHttpStatus(response);
@@ -79,7 +80,9 @@ public class OrcaDelegater extends BusinessDelegater {
         String path = "orca/claim";
         Entity entity = toJsonEntity(model);
         
-        Response response = buildRequest(path, null)
+        Response response = getWebTarget()
+                .path(path)
+                .request(MEDIATYPE_JSON_UTF8)
                 .post(entity);
 
         checkHttpStatus(response);

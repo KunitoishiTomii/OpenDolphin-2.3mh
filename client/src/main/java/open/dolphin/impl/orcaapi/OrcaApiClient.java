@@ -1,11 +1,7 @@
 package open.dolphin.impl.orcaapi;
 
-import java.util.List;
-import java.util.Map;
 import javax.ws.rs.client.Client;
-import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.MultivaluedMap;
 import open.dolphin.project.Project;
 import open.dolphin.setting.MiscSettingPanel;
 import org.glassfish.jersey.client.JerseyClientBuilder;
@@ -59,20 +55,8 @@ public class OrcaApiClient implements IOrcaApi {
             webTarget.register(new BasicAuthentication(username, password));
         }
     }
-
-    public Invocation.Builder buildRequest(String path, MultivaluedMap<String, String> qmap) {
-        
-        WebTarget target = webTarget.path(path);
-        
-        // めんどくさいなぁ…
-        if (qmap != null) {
-            for (Map.Entry<String, List<String>> entry : qmap.entrySet()) {
-                for (String value : entry.getValue()) {
-                    target = target.queryParam(entry.getKey(), value);
-                }
-            }
-        }
-        
-        return target.request(MEDIATYPE_XML_UTF8);
+    
+    public WebTarget getWebTarget() {
+        return webTarget;
     }
 }

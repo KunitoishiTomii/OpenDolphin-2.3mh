@@ -4,8 +4,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import java.io.InputStream;
 import java.util.List;
 import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import open.dolphin.infomodel.LaboModuleValue;
 import open.dolphin.infomodel.NLaboModule;
@@ -37,12 +35,11 @@ public class LaboDelegater extends BusinessDelegater {
     public List<PatientLiteModel> getConstrainedPatients(List<String> idList) throws Exception {
 
         String path = "lab/patient";
-        
-        MultivaluedMap<String, String> qmap = new MultivaluedHashMap();
-        qmap.add("ids", getConverter().fromList(idList));
 
-        Response response = buildRequest(path, qmap)
-                .accept(MEDIATYPE_JSON_UTF8)
+        Response response = getWebTarget()
+                .path(path)
+                .queryParam("ids", getConverter().fromList(idList))
+                .request(MEDIATYPE_JSON_UTF8)
                 .get();
 
         checkHttpStatus(response);
@@ -67,8 +64,9 @@ public class LaboDelegater extends BusinessDelegater {
 
         Entity entity = toJsonEntity(value);
 
-        Response response = buildRequest(path, null)
-                .accept(MEDIATYPE_JSON_UTF8)
+        Response response = getWebTarget()
+                .path(path)
+                .request(MEDIATYPE_JSON_UTF8)
                 .post(entity);
 
         checkHttpStatus(response);
@@ -91,13 +89,12 @@ public class LaboDelegater extends BusinessDelegater {
     public List<NLaboModule> getLaboTest(String patientId, int firstResult, int maxResult) throws Exception {
 
         String path = "lab/module/" + patientId;
-        
-        MultivaluedMap<String, String> qmap = new MultivaluedHashMap();
-        qmap.add("firstResult", String.valueOf(firstResult));
-        qmap.add("maxResult", String.valueOf(maxResult));
 
-        Response response = buildRequest(path, qmap)
-                .accept(MEDIATYPE_JSON_UTF8)
+        Response response = getWebTarget()
+                .path(path)
+                .queryParam("firstResult", String.valueOf(firstResult))
+                .queryParam("maxResult", String.valueOf(maxResult))
+                .request(MEDIATYPE_JSON_UTF8)
                 .get();
 
         checkHttpStatus(response);
@@ -118,8 +115,9 @@ public class LaboDelegater extends BusinessDelegater {
 
         Entity entity = toJsonEntity(value);
 
-        Response response = buildRequest(path, null)
-                .accept(MEDIATYPE_JSON_UTF8)
+        Response response = getWebTarget()
+                .path(path)
+                .request(MEDIATYPE_JSON_UTF8)
                 .post(entity);
 
         checkHttpStatus(response);
@@ -139,7 +137,10 @@ public class LaboDelegater extends BusinessDelegater {
 
         String path = "lab/module/id/" + String.valueOf(id);
 
-        Response response = buildRequest(path, null).delete();
+        Response response = getWebTarget()
+                .path(path)
+                .request()
+                .delete();
 
         int status = checkHttpStatus(response);
         debug(status, "delete response");
@@ -153,7 +154,10 @@ public class LaboDelegater extends BusinessDelegater {
 
         String path = "lab/mmlModule/id/" + String.valueOf(id);
 
-        Response response = buildRequest(path, null).delete();
+        Response response = getWebTarget()
+                .path(path)
+                .request()
+                .delete();
 
         int status = checkHttpStatus(response);
         debug(status, "delete response");

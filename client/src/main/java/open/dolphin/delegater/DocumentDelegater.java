@@ -7,8 +7,6 @@ import java.util.Date;
 import java.util.List;
 import javax.swing.ImageIcon;
 import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import open.dolphin.client.ImageEntry;
 import open.dolphin.dto.DocumentSearchSpec;
@@ -53,11 +51,11 @@ public class  DocumentDelegater extends BusinessDelegater {
     public KarteBean getKarte(long patientPK, Date fromDate) throws Exception {
         
         String path = "karte/" + String.valueOf(patientPK);
-        MultivaluedMap<String, String> qmap= new MultivaluedHashMap();
-        qmap.add("fromDate", toRestFormat(fromDate));
 
-        Response response = buildRequest(path, qmap)
-                .accept(MEDIATYPE_JSON_UTF8)
+        Response response = getWebTarget()
+                .path(path)
+                .queryParam("fromDate", toRestFormat(fromDate))
+                .request(MEDIATYPE_JSON_UTF8)
                 .get();
 
         checkHttpStatus(response);
@@ -80,12 +78,13 @@ public class  DocumentDelegater extends BusinessDelegater {
         // 確定日、適合開始日、記録日、ステータスを
         // DocInfo から DocumentModel(KarteEntry) に移す
         karteModel.toPersist();
-
         Entity entity = toJsonEntity(karteModel);
-
+        
         String path = "karte/document";
-        Response response = buildRequest(path, null)
-                .accept(MEDIATYPE_TEXT_UTF8)
+        
+        Response response = getWebTarget()
+                .path(path)
+                .request(MEDIATYPE_TEXT_UTF8)
                 .post(entity);
 
         int status = checkHttpStatus(response);
@@ -105,11 +104,11 @@ public class  DocumentDelegater extends BusinessDelegater {
     public List<DocumentModel> getDocuments(List<Long> ids) throws Exception {
         
         String path = "karte/document";
-        MultivaluedMap<String, String> qmap = new MultivaluedHashMap();
-        qmap.add("ids", getConverter().fromList(ids));
 
-        Response response = buildRequest(path, qmap)
-                .accept(MEDIATYPE_JSON_UTF8)
+        Response response = getWebTarget()
+                .path(path)
+                .queryParam("ids", getConverter().fromList(ids))
+                .request(MEDIATYPE_JSON_UTF8)
                 .get();
 
         checkHttpStatus(response);
@@ -143,13 +142,13 @@ public class  DocumentDelegater extends BusinessDelegater {
     private List<DocInfoModel> getKarteList(DocumentSearchSpec spec) throws Exception {
         
         String path = "karte/docinfo/" + String.valueOf(spec.getKarteId());
-        MultivaluedMap<String, String> qmap = new MultivaluedHashMap();
-        qmap.add("fromDate", toRestFormat(spec.getFromDate()));
-        qmap.add("toDate", toRestFormat(spec.getToDate()));
-        qmap.add("includeModified", String.valueOf(spec.isIncludeModifid()));
 
-        Response response = buildRequest(path, qmap)
-                .accept(MEDIATYPE_JSON_UTF8)
+        Response response = getWebTarget()
+                .path(path)
+                .queryParam("fromDate", toRestFormat(spec.getFromDate()))
+                .queryParam("toDate", toRestFormat(spec.getToDate()))
+                .queryParam("includeModified", String.valueOf(spec.isIncludeModifid()))
+                .request(MEDIATYPE_JSON_UTF8)
                 .get();
 
         checkHttpStatus(response);
@@ -168,8 +167,9 @@ public class  DocumentDelegater extends BusinessDelegater {
         
         String path = "odletter/list/" + String.valueOf(spec.getKarteId());
 
-        Response response = buildRequest(path, null)
-                .accept(MEDIATYPE_JSON_UTF8)
+        Response response = getWebTarget()
+                .path(path)
+                .request(MEDIATYPE_JSON_UTF8)
                 .get();
 
         checkHttpStatus(response);
@@ -223,7 +223,10 @@ public class  DocumentDelegater extends BusinessDelegater {
         
         String path = "karte/document/" + String.valueOf(pk);
 
-        Response response = buildRequest(path, null).delete();
+        Response response = getWebTarget()
+                .path(path)
+                .request()
+                .delete();
 
         checkHttpStatus(response);
         
@@ -243,8 +246,9 @@ public class  DocumentDelegater extends BusinessDelegater {
             String path = "karte/document/" + String.valueOf(docInfo.getDocPk());
             Entity entity = toTextEntity(docInfo.getTitle());
 
-            Response response = buildRequest(path, null)
-                    .accept(MEDIATYPE_TEXT_UTF8)
+            Response response = getWebTarget()
+                    .path(path)
+                    .request(MEDIATYPE_TEXT_UTF8)
                     .put(entity);
             
             int status = checkHttpStatus(response);
@@ -269,7 +273,6 @@ public class  DocumentDelegater extends BusinessDelegater {
     public List<List<ModuleModel>> getModuleList(ModuleSearchSpec spec) throws Exception {
 
         String path = "karte/modules/" + String.valueOf(spec.getKarteId());
-        MultivaluedMap<String, String> qmap = new MultivaluedHashMap();
 
         Date[] froms = spec.getFromDate();
         Date[] tos = spec.getToDate();
@@ -282,7 +285,7 @@ public class  DocumentDelegater extends BusinessDelegater {
             }
             sb.append(toRestFormat(froms[i]));
         }
-        qmap.add("froms", sb.toString());
+        String fromsStr = sb.toString();
 
         len = tos.length;
         sb = new StringBuilder();
@@ -292,11 +295,14 @@ public class  DocumentDelegater extends BusinessDelegater {
             }
             sb.append(toRestFormat(tos[i]));
         }
-        qmap.add("tos", sb.toString());
-        qmap.add("entity", spec.getEntity());
+        String tosStr = sb.toString();
 
-        Response response = buildRequest(path, qmap)
-                .accept(MEDIATYPE_JSON_UTF8)
+        Response response = getWebTarget()
+                .path(path)
+                .queryParam("froms", fromsStr)
+                .queryParam("tos", tosStr)
+                .queryParam("entity", spec.getEntity())
+                .request(MEDIATYPE_JSON_UTF8)
                 .get();
 
         checkHttpStatus(response);
@@ -324,8 +330,9 @@ public class  DocumentDelegater extends BusinessDelegater {
 
         String path = "karte/image/" + String.valueOf(id);
 
-        Response response = buildRequest(path, null)
-                .accept(MEDIATYPE_JSON_UTF8)
+        Response response = getWebTarget()
+                .path(path)
+                .request(MEDIATYPE_JSON_UTF8)
                 .get();
 
         checkHttpStatus(response);
@@ -426,8 +433,9 @@ public class  DocumentDelegater extends BusinessDelegater {
 
         Entity entity = toJsonEntity(list);
 
-        Response response = buildRequest(path, null)
-                .accept(MEDIATYPE_TEXT_UTF8)
+        Response response = getWebTarget()
+                .path(path)
+                .request(MEDIATYPE_TEXT_UTF8)
                 .post(entity);
 
         int status = checkHttpStatus(response);
@@ -447,8 +455,9 @@ public class  DocumentDelegater extends BusinessDelegater {
         
         Entity entity = toJsonEntity(list);
 
-        Response response = buildRequest(path, null)
-                .accept(MEDIATYPE_TEXT_UTF8)
+        Response response = getWebTarget()
+                .path(path)
+                .request(MEDIATYPE_TEXT_UTF8)
                 .put(entity);
 
         int status = checkHttpStatus(response);
@@ -465,10 +474,11 @@ public class  DocumentDelegater extends BusinessDelegater {
         
         String path = "karte/diagnosis/";
         
-        MultivaluedMap<String, String> qmap = new MultivaluedHashMap();
-        qmap.add("ids", getConverter().fromList(ids));
-
-        Response response = buildRequest(path, qmap).delete();
+        Response response = getWebTarget()
+                .path(path)
+                .queryParam("ids", getConverter().fromList(ids))
+                .request()
+                .delete();
 
         int status = checkHttpStatus(response);
         debug(status, "delete response");
@@ -487,12 +497,12 @@ public class  DocumentDelegater extends BusinessDelegater {
             long karteId, Date fromDate, boolean activeOnly) throws Exception {
         
         String path = "karte/diagnosis/" + String.valueOf(karteId);
-        MultivaluedMap<String, String> qmap = new MultivaluedHashMap();
-        qmap.add("fromDate", toRestFormat(fromDate));
-        qmap.add("activeOnly", String.valueOf(activeOnly));
 
-        Response response = buildRequest(path, qmap)
-                .accept(MEDIATYPE_JSON_UTF8)
+        Response response = getWebTarget()
+                .path(path)
+                .queryParam("fromDate", toRestFormat(fromDate))
+                .queryParam("activeOnly", String.valueOf(activeOnly))
+                .request(MEDIATYPE_JSON_UTF8)
                 .get();
 
         checkHttpStatus(response);
@@ -513,8 +523,9 @@ public class  DocumentDelegater extends BusinessDelegater {
 
         Entity entity = toJsonEntity(observations);
 
-        Response response = buildRequest(path, null)
-                .accept(MEDIATYPE_TEXT_UTF8)
+        Response response = getWebTarget()
+                .path(path)
+                .request(MEDIATYPE_TEXT_UTF8)
                 .post(entity);
 
         int status = checkHttpStatus(response);
@@ -532,10 +543,11 @@ public class  DocumentDelegater extends BusinessDelegater {
         
         String path = "/karte/observations";
         
-        MultivaluedMap<String, String> qmap = new MultivaluedHashMap();
-        qmap.add("ids", getConverter().fromList(ids));
-
-        Response response = buildRequest(path, qmap).delete();
+        Response response = getWebTarget()
+                .path(path)
+                .queryParam("ids", getConverter().fromList(ids))
+                .request()
+                .delete();
 
         int status = checkHttpStatus(response);
         debug(status, "delete response");
@@ -553,8 +565,9 @@ public class  DocumentDelegater extends BusinessDelegater {
 
         Entity entity = toJsonEntity(pm);
 
-        Response response = buildRequest(path, null)
-                .accept(MEDIATYPE_TEXT_UTF8)
+        Response response = getWebTarget()
+                .path(path)
+                .request(MEDIATYPE_TEXT_UTF8)
                 .put(entity);
 
         int status = checkHttpStatus(response);
@@ -572,7 +585,6 @@ public class  DocumentDelegater extends BusinessDelegater {
         
         String path = "karte/appo/" + String.valueOf(spec.getKarteId());
 
-        MultivaluedMap<String, String> qmap = new MultivaluedHashMap();
         Date[] froms = spec.getFromDate();
         Date[] tos = spec.getToDate();
 
@@ -584,7 +596,7 @@ public class  DocumentDelegater extends BusinessDelegater {
             }
             sb.append(toRestFormat(froms[i]));
         }
-        qmap.add("froms", sb.toString());
+        String fromsStr = sb.toString();
 
         len = tos.length;
         sb = new StringBuilder();
@@ -594,10 +606,13 @@ public class  DocumentDelegater extends BusinessDelegater {
             }
             sb.append(toRestFormat(tos[i]));
         }
-        qmap.add("tos", sb.toString());
+        String tosStr = sb.toString();
 
-        Response response = buildRequest(path, qmap)
-                .accept(MEDIATYPE_JSON_UTF8)
+        Response response = getWebTarget()
+                .path(path)
+                .queryParam("froms", fromsStr)
+                .queryParam("tos", tosStr)
+                .request(MEDIATYPE_JSON_UTF8)
                 .get();
 
         checkHttpStatus(response);
@@ -621,8 +636,9 @@ public class  DocumentDelegater extends BusinessDelegater {
         sb.append(state);
         String path = sb.toString();
 
-        Response response = buildRequest(path, null)
-                .accept(MEDIATYPE_TEXT_UTF8)
+        Response response = getWebTarget()
+                .path(path)
+                .request(MEDIATYPE_TEXT_UTF8)
                 .put(null);
 
         int status = checkHttpStatus(response);

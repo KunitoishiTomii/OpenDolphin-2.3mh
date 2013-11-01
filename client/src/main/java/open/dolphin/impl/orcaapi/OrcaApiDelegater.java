@@ -6,9 +6,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.Invocation;
-import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
 import open.dolphin.client.ClientContext;
 import open.dolphin.client.KarteSenderResult;
@@ -79,10 +77,10 @@ public class OrcaApiDelegater implements IOrcaApi {
         final String xml = outputter.outputString(post);
         final Entity entity = toXmlEntity(xml);
 
-        MultivaluedMap<String, String> qmap = new MultivaluedHashMap();
-        qmap.add(CLASS, "01");
-
-        Response response = buildRequest(path, qmap)
+        Response response = getWebTarget()
+                .path(path)
+                .queryParam(CLASS, "01")
+                .request(MEDIATYPE_XML_UTF8)
                 .post(entity);
 
         int status = checkHttpStatus(response);
@@ -119,10 +117,10 @@ public class OrcaApiDelegater implements IOrcaApi {
         
         final Entity entity = toXmlEntity(xml);
 
-        MultivaluedMap<String, String> qmap = new MultivaluedHashMap();
-        qmap.add(CLASS, "01");
-
-        Response response = buildRequest(path, qmap)
+        Response response = getWebTarget()
+                .path(path)
+                .queryParam(CLASS, "01")
+                .request(MEDIATYPE_XML_UTF8)
                 .post(entity);
 
         int status = checkHttpStatus(response);
@@ -157,10 +155,10 @@ public class OrcaApiDelegater implements IOrcaApi {
         
         final Entity entity = toXmlEntity(xml);
 
-        MultivaluedMap<String, String> qmap = new MultivaluedHashMap();
-        qmap.add(CLASS, "02");
-
-        Response response = buildRequest(path, qmap)
+        Response response = getWebTarget()
+                .path(path)
+                .queryParam(CLASS, "02")
+                .request(MEDIATYPE_XML_UTF8)
                 .post(entity);
 
         int status = checkHttpStatus(response);
@@ -222,8 +220,8 @@ public class OrcaApiDelegater implements IOrcaApi {
         return xml;
     }
     
-    private Invocation.Builder buildRequest(String path, MultivaluedMap<String, String> qmap) {
-        return OrcaApiClient.getInstance().buildRequest(path, qmap);
+    private WebTarget getWebTarget() {
+        return OrcaApiClient.getInstance().getWebTarget();
     }
     
     private int checkHttpStatus(Response response) throws Exception {

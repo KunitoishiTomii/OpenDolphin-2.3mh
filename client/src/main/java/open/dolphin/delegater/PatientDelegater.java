@@ -5,8 +5,6 @@ import java.io.InputStream;
 import java.util.Collection;
 import java.util.List;
 import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import open.dolphin.dto.PatientSearchSpec;
 import open.dolphin.infomodel.HealthInsuranceModel;
@@ -52,8 +50,9 @@ public class  PatientDelegater extends BusinessDelegater {
 
         String path = BASE_RESOURCE;
 
-        Response response = buildRequest(path, null)
-                .accept(MEDIATYPE_TEXT_UTF8)
+        Response response = getWebTarget()
+                .path(path)
+                .request(MEDIATYPE_TEXT_UTF8)
                 .post(entity);
 
         int status = checkHttpStatus(response);
@@ -74,8 +73,9 @@ public class  PatientDelegater extends BusinessDelegater {
         
         String path = ID_RESOURCE;
 
-        Response response = buildRequest(path, null)
-                .accept(MEDIATYPE_JSON_UTF8)
+        Response response = getWebTarget()
+                .path(path)
+                .request(MEDIATYPE_JSON_UTF8)
                 .get();
 
         checkHttpStatus(response);
@@ -122,8 +122,9 @@ public class  PatientDelegater extends BusinessDelegater {
 
         String path = sb.toString();
 
-        Response response = buildRequest(path, null)
-                .accept(MEDIATYPE_JSON_UTF8)
+        Response response = getWebTarget()
+                .path(path)
+                .request(MEDIATYPE_JSON_UTF8)
                 .get();
 
         checkHttpStatus(response);
@@ -148,8 +149,9 @@ public class  PatientDelegater extends BusinessDelegater {
 
         String path = BASE_RESOURCE;
 
-        Response response = buildRequest(path, null) 
-                .accept(MEDIATYPE_TEXT_UTF8)
+        Response response = getWebTarget()
+                .path(path)
+                .request(MEDIATYPE_TEXT_UTF8)
                 .put(entity);
 
         int status = checkHttpStatus(response);
@@ -167,11 +169,10 @@ public class  PatientDelegater extends BusinessDelegater {
         String path = BASE_RESOURCE + "list";
         String ids = getConverter().fromList(patientIdList);
 
-        MultivaluedMap<String, String> qmap = new MultivaluedHashMap();
-        qmap.add("ids", ids);
-
-        Response response = buildRequest(path, qmap)
-                .accept(MEDIATYPE_JSON_UTF8)
+        Response response = getWebTarget()
+                .path(path)
+                .queryParam("ids", ids)
+                .request(MEDIATYPE_JSON_UTF8)
                 .get();
 
         checkHttpStatus(response);
@@ -191,8 +192,9 @@ public class  PatientDelegater extends BusinessDelegater {
         long pk = pm.getId();
         String path = BASE_RESOURCE + "insurances/" + String.valueOf(pk);
 
-        Response response = buildRequest(path, null)
-                .accept(MEDIATYPE_JSON_UTF8)
+        Response response = getWebTarget()
+                .path(path)
+                .request(MEDIATYPE_JSON_UTF8)
                 .get();
 
         checkHttpStatus(response);
@@ -212,8 +214,9 @@ public class  PatientDelegater extends BusinessDelegater {
         
         String path = BASE_RESOURCE + "past100day/" + String.valueOf(pastDay);
         
-        Response response = buildRequest(path, null)
-                .accept(MEDIATYPE_JSON_UTF8)
+        Response response = getWebTarget()
+                .path(path)
+                .request(MEDIATYPE_JSON_UTF8)
                 .get();
 
         checkHttpStatus(response);
