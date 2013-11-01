@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.util.Date;
 import java.util.List;
 import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
 import open.dolphin.infomodel.*;
 import open.dolphin.util.BeanUtils;
@@ -571,9 +570,8 @@ public class MasudaDelegater extends BusinessDelegater {
         
         String path = RES_BASE + "santeiHistory/" + String.valueOf(karteId);
         String srycdsStr = (srycds == null || srycds.isEmpty())
-                ? null
-                : getConverter().fromList(srycds);
-
+                ? null : getConverter().fromList(srycds);
+        
         Response response = getWebTarget()
                 .path(path)
                 .queryParam(FROM_DATE, toRestFormat(fromDate))
