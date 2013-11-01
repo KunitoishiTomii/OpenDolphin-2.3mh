@@ -3,23 +3,22 @@ package open.dolphin.impl.orcaapi;
 import java.util.List;
 import java.util.Map;
 import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import open.dolphin.project.Project;
+import open.dolphin.setting.MiscSettingPanel;
+import org.glassfish.jersey.client.JerseyClientBuilder;
 import org.glassfish.jersey.client.filter.HttpBasicAuthFilter;
+import org.jboss.resteasy.client.jaxrs.BasicAuthentication;
+import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 
 /**
- * ORCA API用のJersey Client
+ * ORCA API用のRest Client
  * 
  * @author masuda, Masuda Naika
  */
-public class OrcaApiClient {
-    
-    private static final String ENCODING = "UTF-8";
-    private static final int API_PORT = 8000;
+public class OrcaApiClient implements IOrcaApi {
     
     private static final OrcaApiClient instance;
     
@@ -48,9 +47,17 @@ public class OrcaApiClient {
         String username = Project.getString(Project.ORCA_USER_ID);
         String password = Project.getString(Project.ORCA_USER_PASSWORD);
         
-        client = ClientBuilder.newClient();
-        webTarget = client.target(uri);
-        webTarget.register(new HttpBasicAuthFilter(username, password));
+        boolean useJersey = Project.getBoolean(MiscSettingPanel.USE_JERSEY, MiscSettingPanel.DEFAULT_USE_JERSEY);
+        
+        if (useJersey) {
+            client = new JerseyClientBuilder().build();
+            webTarget = client.target(uri);
+            webTarget.register(new HttpBasicAuthFilter(username, password));
+        } else {
+            client = new ResteasyClientBuilder().build();
+            webTarget = client.target(uri);
+            webTarget.register(new BasicAuthentication(username, password));
+        }
     }
 
     public Invocation.Builder buildRequest(String path, MultivaluedMap<String, String> qmap) {
@@ -66,6 +73,6 @@ public class OrcaApiClient {
             }
         }
         
-        return target.request(MediaType.APPLICATION_XML_TYPE).acceptEncoding(ENCODING);
+        return target.request(MEDIATYPE_XML_UTF8);
     }
 }

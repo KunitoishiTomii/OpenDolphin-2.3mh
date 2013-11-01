@@ -2,7 +2,7 @@ package open.dolphin.delegater;
 
 import java.util.concurrent.Future;
 import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.MediaType;
+import javax.ws.rs.client.InvocationCallback;
 import javax.ws.rs.core.Response;
 import open.dolphin.infomodel.ChartEventModel;
 
@@ -34,7 +34,8 @@ public class ChartEventDelegater extends BusinessDelegater {
         
         Entity entity = toJsonEntity(evt);
 
-        Response response = buildRequest(PUT_EVENT_PATH, null, MediaType.TEXT_PLAIN_TYPE)
+        Response response = buildRequest(PUT_EVENT_PATH, null)
+                .accept(MEDIATYPE_TEXT_UTF8)
                 .put(entity);
 
         int status = checkHttpStatus(response);
@@ -48,11 +49,21 @@ public class ChartEventDelegater extends BusinessDelegater {
 
     public Future<Response> subscribe() throws Exception {
         
-        Future<Response> future = 
-                buildAsyncRequest(SUBSCRIBE_PATH, MediaType.APPLICATION_JSON_TYPE)
+        Future<Response> future = buildAsyncRequest(SUBSCRIBE_PATH)
+                .accept(MEDIATYPE_JSON_UTF8)
                 .async()
                 .get();
 
+        return future;
+    }
+    
+    public Future<Response> subscribe(InvocationCallback<Response> callback) {
+        
+        Future<Response> future = buildAsyncRequest(SUBSCRIBE_PATH)
+                .accept(MEDIATYPE_JSON_UTF8)
+                .async()
+                .get(callback);
+        
         return future;
     }
 

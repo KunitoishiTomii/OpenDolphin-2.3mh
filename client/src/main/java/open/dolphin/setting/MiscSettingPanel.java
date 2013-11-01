@@ -80,6 +80,7 @@ public class MiscSettingPanel extends AbstractSettingPanel {
     
     public static final String ZEBRA_COLOR = "zebraColor";
     public static final String HL7_FORMAT = "hl7format";
+    public static final String USE_JERSEY = "useJersey";
 
     // preferencesのdefault
     public static final String DEFAULT_LBLPRT_ADDRESS = null;
@@ -127,6 +128,7 @@ public class MiscSettingPanel extends AbstractSettingPanel {
     public static final boolean DEFAULT_PACS_SHOW_IMAGEINFO = true;
     
     public static final String DEFAULT_HL7_FORMAT = "wakayama";
+    public static final boolean DEFAULT_USE_JERSEY = true;
 
     // GUI staff
     private JTextField tf_lblPrtAddress;
@@ -203,6 +205,9 @@ public class MiscSettingPanel extends AbstractSettingPanel {
     private JTextField tf_falcoOutputPath;
     
     private JButton btn_hsInit;
+    
+    private JRadioButton rb_jersey;
+    private JRadioButton rb_resteasy;
 
     
     /** 画面モデル */
@@ -710,11 +715,29 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         gbl.add(btn_hsInit, 0, 0, GridBagConstraints.CENTER);
         JPanel hs = gbl.getProduct();
         
+        // client REST
+        gbl = new GridBagBuilder("クライアントJAX-RS");
+        rb_jersey = new JRadioButton("Jersey");
+        rb_resteasy = new JRadioButton("RESTEasy");
+        ButtonGroup bgRest = new ButtonGroup();
+        bgRest.add(rb_jersey);
+        bgRest.add(rb_resteasy);
+
+        JPanel pnlRest = new JPanel();
+        pnlRest.setLayout(new FlowLayout());
+        pnlRest.add(rb_jersey);
+        pnlRest.add(rb_resteasy);
+
+        gbl.add(pnlRest, 0, row, GridBagConstraints.CENTER);
+        JPanel rest = gbl.getProduct();
+
+        
         // 全体レイアウト
         gbl = new GridBagBuilder();
         gbl.add(color, 0, 0, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
         gbl.add(labo, 0, 1, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
         gbl.add(hs, 0, 2, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
+        gbl.add(rest, 0, 3, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
         JPanel setting3 = gbl.getProduct();
         
         JTabbedPane tabbedPane = new JTabbedPane();
@@ -977,6 +1000,13 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         val = model.falcoOutputPath;
         val = val != null ? val : "";
         tf_falcoOutputPath.setText(val);
+        
+        // rest
+        if (model.useJersey) {
+            rb_jersey.setSelected(true);
+        } else {
+            rb_resteasy.setSelected(true);
+        }
     }
 
     /**
@@ -1055,6 +1085,9 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         model.sendLaboTest = cb_sendLaboTest.isSelected();
         model.falcoFacilityId = tf_falcoFacilityId.getText().trim();
         model.falcoOutputPath = tf_falcoOutputPath.getText().trim();
+        
+        // rest
+        model.useJersey = rb_jersey.isSelected();
     }
 
     /**
@@ -1104,6 +1137,8 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         private String hl7Format;
         private String falcoOutputPath;
         private String falcoFacilityId;
+        
+        private boolean useJersey;
 
         public void populate() {
 
@@ -1165,6 +1200,9 @@ public class MiscSettingPanel extends AbstractSettingPanel {
             hl7Format = Project.getString(HL7_FORMAT, DEFAULT_HL7_FORMAT);
             falcoFacilityId = Project.getString(Project.SEND_LABTEST_FACILITY_ID, "");
             falcoOutputPath = Project.getString(Project.SEND_LABTEST_PATH, "");
+            
+            // rest
+            useJersey = Project.getBoolean(USE_JERSEY, DEFAULT_USE_JERSEY);
         }
 
         public void restore() {
@@ -1221,6 +1259,9 @@ public class MiscSettingPanel extends AbstractSettingPanel {
             Project.setBoolean(Project.SEND_LABTEST, sendLaboTest);
             Project.setString(Project.SEND_LABTEST_FACILITY_ID, falcoFacilityId);
             Project.setString(Project.SEND_LABTEST_PATH, falcoOutputPath);
+            
+            // rest
+            Project.setBoolean(USE_JERSEY, useJersey);
         }
     }
 

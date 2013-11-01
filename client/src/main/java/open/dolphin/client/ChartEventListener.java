@@ -9,6 +9,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import javax.ws.rs.client.InvocationCallback;
 import javax.ws.rs.core.Response;
 import open.dolphin.delegater.ChartEventDelegater;
 import open.dolphin.infomodel.*;
@@ -36,6 +37,7 @@ public class ChartEventListener {
     
     // ChartEvent監視タスク
     private EventListenThread listenThread;
+    //private ChartEventCallback eventCallback;
     
     // 状態変化を各listenerに通知するタスク
     private ExecutorService onEventExec;
@@ -63,7 +65,7 @@ public class ChartEventListener {
         userId = Project.getUserModel().getUserId();
         jmariCode = Project.getString(Project.JMARI_CODE);
         facilityId = Project.getFacilityId();
-        listeners = new ArrayList<IChartEventListener>();
+        listeners = new ArrayList<>();
     }
     
     public String getClientUUID() {
@@ -148,10 +150,13 @@ public class ChartEventListener {
         onEventExec = Executors.newSingleThreadExecutor(factory);
         listenThread = new EventListenThread();
         listenThread.start();
+        //eventCallback = new ChartEventCallback();
+        //eventCallback.start();
     }
 
     public void stop() {
         listenThread.halt();
+        //eventCallback.halt();
         shutdownExecutor();
     }
 
@@ -203,11 +208,47 @@ public class ChartEventListener {
             }
         }
     }
+    
+    // InvocationCallbackを使ってみるが、completedが終了するとresponseを閉じてしまうのでボツ
+    private class ChartEventCallback implements InvocationCallback<Response> {
+
+        private Future<Response> future;
+        private boolean isRunning;
+
+        private void start() {
+            isRunning = true;
+            subscribe();
+        }
+
+        private void halt() {
+            isRunning = false;
+            if (future != null) {
+                future.cancel(true);
+            }
+        }
+
+        private void subscribe() {
+            if (isRunning) {
+                future = ChartEventDelegater.getInstance().subscribe(this);
+            }
+        }
+
+        @Override
+        public void completed(Response response) {
+            onEventExec.execute(new RemoteOnEventTask(response));
+            subscribe();
+        }
+
+        @Override
+        public void failed(Throwable thrwbl) {
+            subscribe();
+        }
+    }
 
     // 自クライアントの状態変更後、サーバーに通知するタスク
     private class LocalOnEventTask implements Runnable {
         
-        private ChartEventModel evt;
+        private final ChartEventModel evt;
         
         private LocalOnEventTask(ChartEventModel evt) {
             this.evt = evt;
@@ -236,7 +277,7 @@ public class ChartEventListener {
     // 状態変化通知メッセージをデシリアライズし各リスナに処理を分配する
     private class RemoteOnEventTask implements Runnable {
         
-        private Response response;
+        private final Response response;
         
         private RemoteOnEventTask(Response response) {
             this.response = response;
@@ -295,7 +336,7 @@ public class ChartEventListener {
 
         if (c != null && !c.isEmpty()) {
 
-            List<PVTHealthInsuranceModel> list = new ArrayList<PVTHealthInsuranceModel>(c.size());
+            List<PVTHealthInsuranceModel> list = new ArrayList<>(c.size());
 
             for (HealthInsuranceModel model : c) {
                 try {

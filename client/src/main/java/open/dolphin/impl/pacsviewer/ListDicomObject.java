@@ -155,15 +155,17 @@ public class ListDicomObject implements Comparable {
 
     @Override
     public int compareTo(Object o) {
-        int sDate = Integer.parseInt(studyDate);
-        ListDicomObject test = (ListDicomObject) o;
-        int tDate = Integer.parseInt(test.getStudyDate());
-        if (sDate == tDate) {
-            return 0;
-        } else if (sDate > tDate) {
-            return 1;
-        } else {
-            return -1;
+        try {
+            int sDate = Integer.parseInt(studyDate);
+            ListDicomObject test = (ListDicomObject) o;
+            int tDate = Integer.parseInt(test.getStudyDate());
+            if (sDate == tDate) {
+                return 0;
+            } else if (sDate < tDate) {
+                return -1;
+            }
+        } catch (Exception ex) {
         }
+        return 1;
     }
 }

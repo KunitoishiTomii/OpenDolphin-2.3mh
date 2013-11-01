@@ -4,12 +4,11 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import javax.inject.Singleton;
-import javax.servlet.AsyncContext;
 import open.dolphin.infomodel.PatientVisitModel;
-
 
 /**
  * サーブレットの諸情報を保持するクラス
+ *
  * @author masuda, Masuda Naika
  */
 @Singleton
@@ -19,17 +18,17 @@ public class ServletContextHolder {
     private GregorianCalendar today;
     private GregorianCalendar tomorrow;
 
-    // AsyncContextのリスト
-    private final List<AsyncContext> acList;
+    // AsyncResponseのリスト
+    private final List<AsyncResponseModel> arList;
     
     // facilityIdとpvtListのマップ
-    private Map<String, List<PatientVisitModel>> pvtListMap;
+    private final Map<String, List<PatientVisitModel>> pvtListMap;
     
     // サーバーのUUID
     private String serverUUID;
     
     // ユーザーのキャッシュ
-    private Map<String, String> userMap;
+    private final Map<String, String> userMap;
     
     // データベースのタイプ
     private String database;
@@ -37,25 +36,13 @@ public class ServletContextHolder {
     
     public ServletContextHolder() {
         serverUUID = UUID.randomUUID().toString();
-        acList = new ArrayList<AsyncContext>();
-        pvtListMap = new ConcurrentHashMap<String, List<PatientVisitModel>>();
-        userMap = new ConcurrentHashMap<String, String>();
+        arList = new CopyOnWriteArrayList<>();
+        pvtListMap = new ConcurrentHashMap<>();
+        userMap = new ConcurrentHashMap<>();
     }
 
-    public List<AsyncContext> getAsyncContextList() {
-        return acList;
-    }
-
-    public void addAsyncContext(AsyncContext ac) {
-        synchronized (acList) {
-            acList.add(ac);
-        }
-    }
-
-    public void removeAsyncContext(AsyncContext ac) {
-        synchronized (acList) {
-            acList.remove(ac);
-        }
+    public List<AsyncResponseModel> getAsyncResponseList() {
+        return arList;
     }
     
     public String getServerUUID() {
@@ -73,7 +60,7 @@ public class ServletContextHolder {
     public List<PatientVisitModel> getPvtList(String fid) {
         List<PatientVisitModel> pvtList = pvtListMap.get(fid);
         if (pvtList == null) {
-            pvtList = new CopyOnWriteArrayList<PatientVisitModel>();
+            pvtList = new CopyOnWriteArrayList<>();
             pvtListMap.put(fid, pvtList);
         }
         return pvtList;

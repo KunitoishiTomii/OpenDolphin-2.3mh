@@ -8,6 +8,7 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import open.dolphin.infomodel.*;
+import org.apache.commons.codec.binary.Base64;
 
 /**
  * KarteHtmlRenderer
@@ -217,7 +218,7 @@ public class KarteHtmlRenderer {
                 byte[] bytes = ImageTool.getScaledBytes(schema.getJpegByte(), imageSize, "jpeg");
                 
                 if (bytes != null) {
-                    String base64 = Base64Utils.getBase64(bytes);
+                    String base64 = Base64.encodeBase64String(bytes);
                     htmlBuff.append("<img src=\"data:image/jpeg;base64,\n");
                     htmlBuff.append(base64);
                     htmlBuff.append("\" alt=\"img\"><br>");
