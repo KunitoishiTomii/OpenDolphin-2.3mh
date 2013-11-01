@@ -1244,6 +1244,9 @@ public abstract class AbstractStampEditor extends StampEditorConst {
         // Bundle の 診療行為区分を保存
         //-----------------------------
         setClassCode(bundle.getClassCode());
+        
+        // 診療区分をデフォルト設定
+        view.setShinkuByShinku(classCode);
 
         // ClaimItemをMasterItemへ変換してテーブルへ追加する
         ClaimItem[] items = bundle.getClaimItem();

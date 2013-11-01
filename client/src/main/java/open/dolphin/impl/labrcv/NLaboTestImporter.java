@@ -357,6 +357,8 @@ public class NLaboTestImporter extends AbstractMainComponent {
                 for (NLaboImportSummary summary : modules) {
 
 //masuda^           // OpenDolphinに登録されていない場合はスキップする　のつはる診療所　白坂先生のご提案
+                    // 2013.4.1 橋本医院オリジナル LaboCodeが入っていないラボデータを受け取ることがあったため、
+                    //          受け取った場合はスキップするように修正
                     if (summary.getKarteId() == null || summary.getLaboCode() == null) {
                         summary.setResult(ERROR);
                         continue;

@@ -29,7 +29,8 @@ public class FileIconMaker {
         {".xlsx", "icon_excel"},
         {".ppt", "icon_power_point"},
         {".pptx", "icon_power_point"},
-        {".odt", "icon_libre_writer"}
+        {".odt", "icon_libre_writer"},
+        {".ods", "icon_excel"}
     };
     
     public static ImageIcon createIcon(Path path, int imageSize) {

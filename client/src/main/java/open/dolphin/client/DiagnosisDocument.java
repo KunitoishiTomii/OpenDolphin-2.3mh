@@ -600,13 +600,16 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
                                     String val = newRd.getEndDate();
                                     if (val == null || val.equals("")) {
                                         // masuda 転帰日の自動入力を月末にする
-                                        GregorianCalendar gc = new GregorianCalendar();
-                                        int year = gc.get(GregorianCalendar.YEAR);
-                                        int month = gc.get(GregorianCalendar.MONTH);
-                                        int day = gc.getActualMaximum(GregorianCalendar.DATE);
-                                        gc.set(year, month, day, 0, 0, 0);
-                                        String today = MMLDate.getDate(gc);
-                                        newRd.setEndDate(today);
+                                        // GregorianCalendar gc = new GregorianCalendar();
+                                        // int year = gc.get(GregorianCalendar.YEAR);
+                                        // int month = gc.get(GregorianCalendar.MONTH);
+                                        // int day = gc.getActualMaximum(GregorianCalendar.DATE);
+                                        // gc.set(year, month, day, 0, 0, 0);
+                                        // String today = MMLDate.getDate(gc);
+                                        // newRd.setEndDate(today);
+                                        // katou 2013/10/30 橋本医院オリジナル
+                                        //       疾患転帰入力の際は来院日を入力するように修正
+                                        newRd.setEndDate(lastVisit);
                                     }
                                 }
                                 newRd.setStatus(DIAGNOSIS_EDITED);
@@ -829,15 +832,12 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
             if (diagCd != null && diagCd.equals(testCd) 
                     && newRd.getId() != rd.getId()) {   // 編集もとは除く
                 int index = tableModel.getDataProvider().indexOf(rd);
-                // activeのみへの対応
-                String msgNonActive = "（非アクティブ）";
-                if (index != -1) {
-                    int sIndex = sorter.modelIndex(index);
-                    diagTable.setRowSelectionInterval(sIndex, sIndex);
-                    msgNonActive = "";
+                if (rd.getEndDate() != null && !rd.getEndDate().equals("")){
+                    // すでに終了日が存在していれば破棄
+                    continue;
                 }
                 String[] options = {"取消", "無視"};
-                String msg = newRd.getDiagnosisName() + "は重複しています。" + msgNonActive;
+                String msg = newRd.getDiagnosisName() + "は重複しています。";
                 int val = JOptionPane.showOptionDialog(getContext().getFrame(), msg, "傷病名エディタ",
                         JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null, options, options[0]);
                 if (val != 1) {
