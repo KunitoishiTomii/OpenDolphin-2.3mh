@@ -570,17 +570,15 @@ public class MasudaDelegater extends BusinessDelegater {
             long karteId, Date fromDate, Date toDate, List<String> srycds) throws Exception {
         
         String path = RES_BASE + "santeiHistory/" + String.valueOf(karteId);
+        String srycdsStr = (srycds == null || srycds.isEmpty())
+                ? null
+                : getConverter().fromList(srycds);
 
-        WebTarget target = getWebTarget()
+        Response response = getWebTarget()
                 .path(path)
                 .queryParam(FROM_DATE, toRestFormat(fromDate))
-                .queryParam(TO_DATE, toRestFormat(toDate));
-
-        if (srycds != null) {
-            target = target.queryParam(SRYCDS, getConverter().fromList(srycds));
-        }
-
-        Response response = target
+                .queryParam(TO_DATE, toRestFormat(toDate))
+                .queryParam(SRYCDS, srycdsStr)
                 .request(MEDIATYPE_JSON_UTF8)
                 .get();
 
