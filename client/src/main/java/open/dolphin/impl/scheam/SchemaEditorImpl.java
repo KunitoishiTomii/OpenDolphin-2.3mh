@@ -207,7 +207,7 @@ public class SchemaEditorImpl implements SchemaEditor {
         boundSupport.removePropertyChangeListener(l);
     }
     
-    private void initComponents(final boolean editable) {
+    private void initComponents(boolean editable) {
         properties = new SchemaEditorProperties();
         drawingList = new ArrayList<DrawingHolder>(5);
         undoMgr = new UndoMgr(this);
@@ -477,16 +477,8 @@ public class SchemaEditorImpl implements SchemaEditor {
         // baseImage から，view の必要 width, height を計算（自動ではうまくいかない）
         properties.computeViewBounds(canvasView, toolView, srcImage);
 
-//masuda^   invokeLater
-        SwingUtilities.invokeLater(new Runnable(){
-
-            @Override
-            public void run() {
-                if (editable) toolView.setVisible(true); // editable でない場合はツールパネルを出さない
-                canvasView.setVisible(true);
-            }
-        });
-//masuda$
+        if (editable) toolView.setVisible(true); // editable でない場合はツールパネルを出さない
+        canvasView.setVisible(true);
     }
     
     private void setLineWidthGUI() {
@@ -503,13 +495,20 @@ public class SchemaEditorImpl implements SchemaEditor {
     }
     
     private void close() {
-        // 選択されているツールボタンの番号を調べる
-        int btnNo = 0;
-        for (Enumeration e = toolBg.getElements(); e.hasMoreElements();) {
-            if(((JToggleButton) e.nextElement()).isSelected()) break;
-            btnNo++;
+        
+//masuda^   ボタン番号保存はtoolViewがvisibleの場合のみ
+        if (toolView.isVisible()) {
+            // 選択されているツールボタンの番号を調べる
+            int btnNo = 0;
+            for (Enumeration e = toolBg.getElements(); e.hasMoreElements();) {
+                if (((JToggleButton) e.nextElement()).isSelected()) {
+                    break;
+                }
+                btnNo++;
+            }
+            properties.setSelectedTButtonNumber(btnNo);
         }
-        properties.setSelectedTButtonNumber(btnNo);
+//masuda$
         properties.setSchemaViewRect(canvasView, toolView);
 
         properties.save(); // プロパティーファイルに書き込み
