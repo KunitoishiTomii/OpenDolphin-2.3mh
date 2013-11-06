@@ -207,7 +207,7 @@ public class SchemaEditorImpl implements SchemaEditor {
         boundSupport.removePropertyChangeListener(l);
     }
     
-    private void initComponents(boolean editable) {
+    private void initComponents(final boolean editable) {
         properties = new SchemaEditorProperties();
         drawingList = new ArrayList<DrawingHolder>(5);
         undoMgr = new UndoMgr(this);
@@ -477,13 +477,12 @@ public class SchemaEditorImpl implements SchemaEditor {
         // baseImage から，view の必要 width, height を計算（自動ではうまくいかない）
         properties.computeViewBounds(canvasView, toolView, srcImage);
 
-        if (editable) toolView.setVisible(true); // editable でない場合はツールパネルを出さない
-        
 //masuda^   invokeLater
         SwingUtilities.invokeLater(new Runnable(){
 
             @Override
             public void run() {
+                if (editable) toolView.setVisible(true); // editable でない場合はツールパネルを出さない
                 canvasView.setVisible(true);
             }
         });
