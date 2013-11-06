@@ -42,7 +42,7 @@ public class StampResource extends AbstractResource {
     @GET
     @Path("list")
     @Produces(MEDIATYPE_JSON_UTF8)
-    public Response getStamps(@QueryParam("ids") String ids) {
+    public Response getStamps(@QueryParam(IDS) String ids) {
 
         List<String> list = getConverter().toStrList(ids);
 
@@ -98,7 +98,7 @@ public class StampResource extends AbstractResource {
 
     @DELETE
     @Path("list")
-    public void deleteStamps(@QueryParam("ids") String ids) {
+    public void deleteStamps(@QueryParam(IDS) String ids) {
 
         List<String> list = getConverter().toStrList(ids);
 

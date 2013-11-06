@@ -150,7 +150,7 @@ public class PatientResource extends AbstractResource {
     @GET
     @Path("list")
     @Produces(MEDIATYPE_JSON_UTF8)
-    public Response getPatientList(@QueryParam("ids") String ids) {
+    public Response getPatientList(@QueryParam(IDS) String ids) {
         
         String fid = getRemoteFacility();
         List<String> idList = getConverter().toStrList(ids);

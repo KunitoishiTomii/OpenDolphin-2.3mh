@@ -30,8 +30,8 @@ public class NLabResource extends AbstractResource {
     @Path("module/{ptId}")
     @Produces(MEDIATYPE_JSON_UTF8)
     public Response getLaboTest(@PathParam("ptId") String pid,
-            @QueryParam("firstResult") Integer firstResult,
-            @QueryParam("maxResult") Integer maxResult) {
+            @QueryParam(FIRST_RESULT) Integer firstResult,
+            @QueryParam(MAX_RESULTS) Integer maxResult) {
 
         StringBuilder sb = new StringBuilder();
         sb.append(getRemoteFacility());
@@ -49,7 +49,7 @@ public class NLabResource extends AbstractResource {
     @GET
     @Path("patient")
     @Produces(MEDIATYPE_JSON_UTF8)
-    public Response getConstrainedPatients(@QueryParam("ids") String ids) {
+    public Response getConstrainedPatients(@QueryParam(IDS) String ids) {
 
         String fid = getRemoteFacility();
 

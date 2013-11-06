@@ -5,8 +5,6 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
 import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import open.dolphin.infomodel.*;
 
@@ -25,7 +23,7 @@ public class StampDelegater extends BusinessDelegater {
     private static final boolean debug = false;
     private static final StampDelegater instance;
     
-    private Map<String, StampModel> stampCache;
+    private final Map<String, StampModel> stampCache;
 
     static {
         instance = new StampDelegater();
@@ -55,8 +53,9 @@ public class StampDelegater extends BusinessDelegater {
 
         // resource post
         String path = RES_STAMP_TREE;
-        Response response = buildRequest(path, null)
-                .accept(MEDIATYPE_TEXT_UTF8)
+        Response response = getWebTarget()
+                .path(path)
+                .request(MEDIATYPE_TEXT_UTF8)
                 .put(entity);
 
         int status = checkHttpStatus(response);
@@ -73,8 +72,9 @@ public class StampDelegater extends BusinessDelegater {
         
         String path = RES_STAMP_TREE + String.valueOf(userPK);
         
-        Response response = buildRequest(path, null)
-                .accept(MEDIATYPE_JSON_UTF8)
+        Response response = getWebTarget()
+                .path(path)
+                .request(MEDIATYPE_JSON_UTF8)
                 .get();
 
         checkHttpStatus(response);
@@ -121,8 +121,9 @@ public class StampDelegater extends BusinessDelegater {
 
         String path = RES_STAMP_TREE + "published";
 
-        Response response = buildRequest(path, null)
-                .accept(MEDIATYPE_TEXT_UTF8)
+        Response response = getWebTarget()
+                .path(path)
+                .request(MEDIATYPE_TEXT_UTF8)
                 .post(entity);
 
         int status = checkHttpStatus(response);
@@ -166,8 +167,9 @@ public class StampDelegater extends BusinessDelegater {
 
         String path = RES_STAMP_TREE + "published";
 
-        Response response = buildRequest(path, null)
-                .accept(MEDIATYPE_TEXT_UTF8)
+        Response response = getWebTarget()
+                .path(path)
+                .request(MEDIATYPE_TEXT_UTF8)
                 .put(entity);
 
         int status = checkHttpStatus(response);
@@ -192,8 +194,9 @@ public class StampDelegater extends BusinessDelegater {
 
         String path = RES_STAMP_TREE + "published/cancel/";
 
-        Response response = buildRequest(path, null)
-                .accept(MEDIATYPE_TEXT_UTF8)
+        Response response = getWebTarget()
+                .path(path)
+                .request(MEDIATYPE_TEXT_UTF8)
                 .put(entity);
 
         int status = checkHttpStatus(response);
@@ -208,8 +211,9 @@ public class StampDelegater extends BusinessDelegater {
         
         String path = RES_STAMP_TREE + "published";
 
-        Response response = buildRequest(path, null)
-                .accept(MEDIATYPE_JSON_UTF8)
+        Response response = getWebTarget()
+                .path(path)
+                .request(MEDIATYPE_JSON_UTF8)
                 .get();
 
         checkHttpStatus(response);
@@ -250,8 +254,9 @@ public class StampDelegater extends BusinessDelegater {
 
         String path = RES_STAMP_TREE + "subscribed";
 
-        Response response = buildRequest(path, null)  
-                .accept(MEDIATYPE_TEXT_UTF8)
+        Response response = getWebTarget()
+                .path(path) 
+                .request(MEDIATYPE_TEXT_UTF8)
                 .put(entity);
 
         int status = checkHttpStatus(response);
@@ -285,10 +290,11 @@ public class StampDelegater extends BusinessDelegater {
             sb.append(String.valueOf(s.getUserModel().getId()));
         }
 
-        MultivaluedMap<String, String> qmap = new MultivaluedHashMap();
-        qmap.add("ids", sb.toString());
-
-        Response response = buildRequest(path, qmap).delete();
+        Response response = getWebTarget()
+                .path(path)
+                .queryParam(IDS, sb.toString())
+                .request()
+                .delete();
 
         int status = checkHttpStatus(response);
         debug(status, "delete response");
@@ -316,8 +322,9 @@ public class StampDelegater extends BusinessDelegater {
         Entity entity = toJsonEntity(list);
         String path = RES_STAMP + "list";
 
-        Response response = buildRequest(path, null)
-                .accept(MEDIATYPE_TEXT_UTF8)
+        Response response = getWebTarget()
+                .path(path)
+                .request(MEDIATYPE_TEXT_UTF8)
                 .put(entity);
 
         int status = checkHttpStatus(response);
@@ -345,8 +352,9 @@ public class StampDelegater extends BusinessDelegater {
         Entity entity = toJsonEntity(model);
         String path = RES_STAMP + "id";
 
-        Response response = buildRequest(path, null)    
-                .accept(MEDIATYPE_TEXT_UTF8)
+        Response response = getWebTarget()
+                .path(path)   
+                .request(MEDIATYPE_TEXT_UTF8)
                 .put(entity);
 
         int status = checkHttpStatus(response);
@@ -387,8 +395,9 @@ public class StampDelegater extends BusinessDelegater {
 
         String path = RES_STAMP + "id/" +  stampId;
 
-        Response response = buildRequest(path, null)
-                .accept(MEDIATYPE_JSON_UTF8)
+        Response response = getWebTarget()
+                .path(path)
+                .request(MEDIATYPE_JSON_UTF8)
                 .get();
 
         checkHttpStatus(response);
@@ -431,11 +440,11 @@ public class StampDelegater extends BusinessDelegater {
                 }
                 sb.append(info.getStampId());
             }
-            MultivaluedMap<String, String> qmap = new MultivaluedHashMap();
-            qmap.add("ids", sb.toString());
 
-            Response response = buildRequest(path, qmap)
-                    .accept(MEDIATYPE_JSON_UTF8)
+            Response response = getWebTarget()
+                    .path(path)
+                    .queryParam(IDS, sb.toString())
+                    .request(MEDIATYPE_JSON_UTF8)
                     .get();
 
             checkHttpStatus(response);
@@ -473,7 +482,10 @@ public class StampDelegater extends BusinessDelegater {
 
         String path = RES_STAMP + "id/" + stampId;
 
-        Response response = buildRequest(path, null).delete();
+        Response response = getWebTarget()
+                .path(path)
+                .request()
+                .delete();
 
         int status = checkHttpStatus(response);
         debug(status, "delete response");
@@ -496,10 +508,12 @@ public class StampDelegater extends BusinessDelegater {
         }
 
         String path = RES_STAMP + "list";
-        MultivaluedMap<String, String> qmap = new MultivaluedHashMap();
-        qmap.add("ids", getConverter().fromList(ids));
 
-        Response response = buildRequest(path, qmap).delete();
+        Response response = getWebTarget()
+                .path(path)
+                .queryParam(IDS, getConverter().fromList(ids))
+                .request()
+                .delete();
 
         int status = checkHttpStatus(response);
         debug(status, "delete response");
@@ -521,8 +535,9 @@ public class StampDelegater extends BusinessDelegater {
         String path = RES_STAMP + "postRemoveStamps";
         Entity entity = toJsonEntity(ids);
 
-        Response response = buildRequest(path, null)
-                .accept(MEDIATYPE_TEXT_UTF8)
+        Response response = getWebTarget()
+                .path(path)
+                .request(MEDIATYPE_TEXT_UTF8)
                 .post(entity);
 
         int status = checkHttpStatus(response);
@@ -540,8 +555,9 @@ public class StampDelegater extends BusinessDelegater {
         
         String path = RES_STAMP + "allStamps/" + String.valueOf(userId);
         
-        Response response = buildRequest(path, null)
-                .accept(MEDIATYPE_JSON_UTF8)
+        Response response = getWebTarget()
+                .path(path)
+                .request(MEDIATYPE_JSON_UTF8)
                 .get();
 
         checkHttpStatus(response);

@@ -37,8 +37,9 @@ public class LetterDelegater extends BusinessDelegater {
        
        Entity entity = toJsonEntity(model);
 
-        Response response = buildRequest(path, null)
-                .accept(MEDIATYPE_TEXT_UTF8)
+        Response response = getWebTarget()
+                .path(path)
+                .request(MEDIATYPE_TEXT_UTF8)
                 .put(entity);
 
         int status = checkHttpStatus(response);
@@ -55,8 +56,9 @@ public class LetterDelegater extends BusinessDelegater {
         
         String path = PATH_FOR_LETTER + String.valueOf(letterPk);
 
-        Response response = buildRequest(path, null)
-                .accept(MEDIATYPE_JSON_UTF8)
+        Response response = getWebTarget()
+                .path(path)
+                .request(MEDIATYPE_JSON_UTF8)
                 .get();
 
         checkHttpStatus(response);
@@ -74,8 +76,9 @@ public class LetterDelegater extends BusinessDelegater {
         
         String path = PATH_FOR_LETTER_LIST + String.valueOf(kartePk);
 
-        Response response = buildRequest(path, null)
-                .accept(MEDIATYPE_JSON_UTF8)
+        Response response = getWebTarget()
+                .path(path)
+                .request(MEDIATYPE_JSON_UTF8)
                 .get();
 
         checkHttpStatus(response);
@@ -94,7 +97,10 @@ public class LetterDelegater extends BusinessDelegater {
 
         String path = PATH_FOR_LETTER + String.valueOf(pk);
 
-        Response response = buildRequest(path, null).delete();
+        Response response = getWebTarget()
+                .path(path)
+                .request()
+                .delete();
 
         int status = checkHttpStatus(response);
         debug(status, "delete response");

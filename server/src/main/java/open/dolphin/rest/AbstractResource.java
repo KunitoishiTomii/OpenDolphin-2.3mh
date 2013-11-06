@@ -12,6 +12,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.StreamingOutput;
 import open.dolphin.infomodel.IInfoModel;
+import open.dolphin.infomodel.IRestConstants;
 import open.dolphin.infomodel.JsonConverter;
 
 /**
@@ -20,12 +21,10 @@ import open.dolphin.infomodel.JsonConverter;
  * @author Kazushi Minagawa, Digital Globe, Inc.
  * @author modified by masuda, Masuda Naika
  */
-public class AbstractResource {
+public class AbstractResource implements IRestConstants {
 
     protected static final boolean DEBUG = false;
     
-    protected static final String CAMMA = ",";
-
     private static final String CHARSET_UTF8 = "; charset=UTF-8";
     protected static final String MEDIATYPE_JSON_UTF8 = MediaType.APPLICATION_JSON + CHARSET_UTF8;
     protected static final String MEDIATYPE_TEXT_UTF8 = MediaType.TEXT_PLAIN + CHARSET_UTF8;

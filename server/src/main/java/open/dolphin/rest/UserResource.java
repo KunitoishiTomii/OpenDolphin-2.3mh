@@ -132,9 +132,9 @@ public class UserResource extends AbstractResource {
     
     @GET
     @Path("login/")
-    public Response login(@QueryParam("fidUid") String fidUid, 
-            @QueryParam("clientUUID") String clientUUID,
-            @QueryParam("force") String forceStr) {
+    public Response login(@QueryParam(FID_UID) String fidUid, 
+            @QueryParam(CLIENT_UUID) String clientUUID,
+            @QueryParam(FORCE) String forceStr) {
         
         boolean force = Boolean.parseBoolean(forceStr);
         String uuid = userServiceBean.login(fidUid, clientUUID, force);
@@ -143,8 +143,8 @@ public class UserResource extends AbstractResource {
     
     @GET
     @Path("logout/")
-    public Response logout(@QueryParam("fidUid") String fidUid, 
-            @QueryParam("clientUUID") String clientUUID) {
+    public Response logout(@QueryParam(FID_UID) String fidUid, 
+            @QueryParam(CLIENT_UUID) String clientUUID) {
         
         String uuid = userServiceBean.logout(fidUid, clientUUID);
         return Response.ok(uuid).build();

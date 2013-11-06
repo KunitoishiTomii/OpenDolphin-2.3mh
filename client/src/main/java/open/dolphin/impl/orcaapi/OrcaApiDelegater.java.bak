@@ -184,6 +184,10 @@ public class OrcaApiDelegater implements IOrcaApi {
         return Entity.entity(xml, MEDIATYPE_XML_UTF8);
     }
     
+    private Entity toXmlEntity(String xml) {
+        return Entity.entity(xml, MEDIATYPE_XML_UTF8);
+    }
+    
     private String createSystem01ManagereqXml() {
         
         final SimpleDateFormat frmt = new SimpleDateFormat("yyyy-MM-dd");

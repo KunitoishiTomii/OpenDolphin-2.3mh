@@ -33,7 +33,7 @@ public class KarteResource extends AbstractResource {
     @Path("{ptId}")
     @Produces(MEDIATYPE_JSON_UTF8)
     public Response getKarte(@PathParam("ptId") Long patientPK, 
-            @QueryParam("fromDate") String fromDateStr) {
+            @QueryParam(FROM_DATE) String fromDateStr) {
 
         Date fromDate = parseDate(fromDateStr);
 
@@ -50,9 +50,9 @@ public class KarteResource extends AbstractResource {
     @Path("docinfo/{id}")
     @Produces(MEDIATYPE_JSON_UTF8)
     public Response getDocumentList(@PathParam("id") Long karteId, 
-            @QueryParam("fromDate") String fromDateStr, 
-            @QueryParam("toDate") String toDateStr, 
-            @QueryParam("includeModified") Boolean includeModified) {
+            @QueryParam(FROM_DATE) String fromDateStr, 
+            @QueryParam(TO_DATE) String toDateStr, 
+            @QueryParam(INCLUDE_MODIFIED) Boolean includeModified) {
 
         Date fromDate = parseDate(fromDateStr);
         Date toDate = parseDate(toDateStr);
@@ -67,7 +67,7 @@ public class KarteResource extends AbstractResource {
     @GET
     @Path("document")
     @Produces(MEDIATYPE_JSON_UTF8)
-    public Response getDocuments(@QueryParam("ids") String ids) {
+    public Response getDocuments(@QueryParam(IDS) String ids) {
 
         List<Long> list = getConverter().toLongList(ids);
 
@@ -126,9 +126,9 @@ public class KarteResource extends AbstractResource {
     @Path("modules/{id}")
     @Produces(MEDIATYPE_JSON_UTF8)
     public Response getModules(@PathParam("id") Long karteId,
-            @QueryParam("froms") String fromStr,
-            @QueryParam("tos") String toStr,
-            @QueryParam("entity") String entity) {
+            @QueryParam(FROMS) String fromStr,
+            @QueryParam(TOS) String toStr,
+            @QueryParam(ENTITY) String entity) {
 
         List<Date> fromList = new ArrayList<Date>();
         List<Date> toList = new ArrayList<Date>();
@@ -153,8 +153,8 @@ public class KarteResource extends AbstractResource {
     @Path("iamges/{id}")
     @Produces(MEDIATYPE_JSON_UTF8)
     public Response getImages(@PathParam("id") Long karteId,
-            @QueryParam("froms") String fromStr,
-            @QueryParam("tos") String toStr) {
+            @QueryParam(FROMS) String fromStr,
+            @QueryParam(TOS) String toStr) {
 
         List<Date> fromList = new ArrayList<Date>();
         List<Date> toList = new ArrayList<Date>();
@@ -193,8 +193,8 @@ public class KarteResource extends AbstractResource {
     @Path("diagnosis/{id}")
     @Produces(MEDIATYPE_JSON_UTF8)
     public Response getDiagnosis(@PathParam("id") Long karteId, 
-            @QueryParam("fromDate") String fromDateStr, 
-            @QueryParam("activeOnly") Boolean activeOnly) {
+            @QueryParam(FROM_DATE) String fromDateStr, 
+            @QueryParam(ACTIVE_ONLY) Boolean activeOnly) {
         
         Date fromDate = parseDate(fromDateStr);
 
@@ -241,7 +241,7 @@ public class KarteResource extends AbstractResource {
 
     @DELETE
     @Path("diagnosis")
-    public void deleteDiagnosis(@QueryParam("ids") String ids) {
+    public void deleteDiagnosis(@QueryParam(IDS) String ids) {
 
         List<Long> list = getConverter().toLongList(ids);
         int result = karteServiceBean.removeDiagnosis(list);
@@ -270,7 +270,7 @@ public class KarteResource extends AbstractResource {
 
     @DELETE
     @Path("observations")
-    public void deleteObservations(@QueryParam("ids") String ids) {
+    public void deleteObservations(@QueryParam(IDS) String ids) {
 
         List<Long> list = getConverter().toLongList(ids);
         int result = karteServiceBean.removeObservations(list);
@@ -298,8 +298,8 @@ public class KarteResource extends AbstractResource {
     @Path("appo/{id}")
     @Produces(MEDIATYPE_JSON_UTF8)
     public Response getAppoinmentList(@PathParam("id") Long karteId,
-            @QueryParam("froms") String fromStr,
-            @QueryParam("tos") String toStr) {
+            @QueryParam(FROMS) String fromStr,
+            @QueryParam(TOS) String toStr) {
 
         List<Date> fromList = new ArrayList<Date>();
         List<Date> toList = new ArrayList<Date>();

@@ -30,8 +30,8 @@ public class MasudaResource extends AbstractResource {
     @Path("routineMed/list/{karteId}")
     @Produces(MEDIATYPE_JSON_UTF8)
     public Response getRoutineMedModels(@PathParam("karteId") Long karteId,
-                @QueryParam("firstResult") Integer firstResult,
-                @QueryParam("maxResults") Integer maxResults) {
+                @QueryParam(FIRST_RESULT) Integer firstResult,
+                @QueryParam(MAX_RESULTS) Integer maxResults) {
         
         List<RoutineMedModel> list = masudaServiceBean.getRoutineMedModels(karteId, firstResult, maxResults);
         
@@ -230,9 +230,9 @@ public class MasudaResource extends AbstractResource {
     @Path("moduleSearch/{karteId}")
     @Produces(MEDIATYPE_JSON_UTF8)
     public Response getModulesEntitySearch(@PathParam("karteId") Long karteId,
-                @QueryParam("fromDate") String fromDateStr,
-                @QueryParam("toDate") String toDateStr,
-                @QueryParam("entities") String entitiesStr) {
+                @QueryParam(FROM_DATE) String fromDateStr,
+                @QueryParam(TO_DATE) String toDateStr,
+                @QueryParam(ENTITIES) String entitiesStr) {
 
         String fid = getRemoteFacility();
 
@@ -267,7 +267,7 @@ public class MasudaResource extends AbstractResource {
     @GET
     @Path("docList")
     @Produces(MEDIATYPE_JSON_UTF8)
-    public Response getDocumentList(@QueryParam("ids") String ids) {
+    public Response getDocumentList(@QueryParam(IDS) String ids) {
 
         List<Long> docPkList = getConverter().toLongList(ids);
 
@@ -282,8 +282,8 @@ public class MasudaResource extends AbstractResource {
     @Path("search/makeIndex")
     @Produces(MEDIATYPE_TEXT_UTF8)
     public Response makeDocumentModelIndex(
-            @QueryParam("fromDocPk") Long fromDocPk, 
-            @QueryParam("maxResults") Integer maxResults) {
+            @QueryParam(FROM_DOC_PK) Long fromDocPk, 
+            @QueryParam(MAX_RESULTS) Integer maxResults) {
 
         String fid = getRemoteFacility();
 
@@ -297,8 +297,8 @@ public class MasudaResource extends AbstractResource {
     @Path("search/hibernate")
     @Produces(MEDIATYPE_JSON_UTF8)
     public Response getKarteFullTextSearch(
-            @QueryParam("karteId") Long karteId,
-            @QueryParam("text") String text) {
+            @QueryParam(KARTE_ID) Long karteId,
+            @QueryParam(TEXT) String text) {
 
         String fid = getRemoteFacility();
 
@@ -313,10 +313,10 @@ public class MasudaResource extends AbstractResource {
     @Path("search/grep")
     @Produces(MEDIATYPE_JSON_UTF8)
     public Response getSearchResult(
-            @QueryParam("text") String text,
-            @QueryParam("fromId") Long fromId,
-            @QueryParam("maxResult") Integer maxResult,
-            @QueryParam("pcOnly") Boolean progressCourseOnly) {
+            @QueryParam(TEXT) String text,
+            @QueryParam(FROM_ID) Long fromId,
+            @QueryParam(MAX_RESULTS) Integer maxResult,
+            @QueryParam(PC_ONLY) Boolean progressCourseOnly) {
 
         String fid = getRemoteFacility();
 
@@ -331,8 +331,8 @@ public class MasudaResource extends AbstractResource {
     @Path("examHistory/{karteId}")
     @Produces(MEDIATYPE_JSON_UTF8)
     public Response getExamHistory(@PathParam("karteId") Long karteId,
-            @QueryParam("fromDate") String fromDateStr,
-            @QueryParam("toDate") String toDateStr) {
+            @QueryParam(FROM_DATE) String fromDateStr,
+            @QueryParam(TO_DATE) String toDateStr) {
         
         String fid = getRemoteFacility();
         Date fromDate = parseDate(fromDateStr);
@@ -349,9 +349,9 @@ public class MasudaResource extends AbstractResource {
     @Path("outOfMed")
     @Produces(MEDIATYPE_JSON_UTF8)
     public Response getOutOfMedStockPatient(
-            @QueryParam("fromDate") String fromDateStr,
-            @QueryParam("toDate") String toDateStr,
-            @QueryParam("yoyuu") Integer yoyuu) {
+            @QueryParam(FROM_DATE) String fromDateStr,
+            @QueryParam(TO_DATE) String toDateStr,
+            @QueryParam(YOYUU) Integer yoyuu) {
 
         String fid = getRemoteFacility();
         Date fromDate = parseDate(fromDateStr);
@@ -413,8 +413,8 @@ public class MasudaResource extends AbstractResource {
     @Path("santeiHistory/init")
     @Produces(MEDIATYPE_TEXT_UTF8)
     public Response initSanteiHistory(
-            @QueryParam("fromId") Long fromIndex,
-            @QueryParam("maxResults") Integer maxResults) {
+            @QueryParam(FROM_ID) Long fromIndex,
+            @QueryParam(MAX_RESULTS) Integer maxResults) {
         
         String fid = getRemoteFacility();
         
@@ -427,9 +427,9 @@ public class MasudaResource extends AbstractResource {
     @Path("santeiHistory/{karteId}")
     @Produces(MEDIATYPE_JSON_UTF8)
     public Response getSanteiHistory(@PathParam("karteId") Long karteId,
-            @QueryParam("fromDate") String fromDateStr,
-            @QueryParam("toDate") String toDateStr,
-            @QueryParam("srycds") String srycds) {
+            @QueryParam(FROM_DATE) String fromDateStr,
+            @QueryParam(TO_DATE) String toDateStr,
+            @QueryParam(SRYCDS) String srycds) {
     
         Date fromDate = parseDate(fromDateStr);
         Date toDate = parseDate(toDateStr);
@@ -449,9 +449,9 @@ public class MasudaResource extends AbstractResource {
     @Path("rpHistory/list/{karteId}")
     @Produces(MEDIATYPE_JSON_UTF8)
     public Response getRpHistory(@PathParam("karteId") Long karteId,
-            @QueryParam("fromDate") String fromDateStr,
-            @QueryParam("toDate") String toDateStr,
-            @QueryParam("lastOnly") Boolean lastOnly) {
+            @QueryParam(FROM_DATE) String fromDateStr,
+            @QueryParam(TO_DATE) String toDateStr,
+            @QueryParam(LAST_ONLY) Boolean lastOnly) {
 
         Date fromDate = parseDate(fromDateStr);
         Date toDate = parseDate(toDateStr);
@@ -522,7 +522,7 @@ public class MasudaResource extends AbstractResource {
     @Path("tempKarte/{userId}")
     @Produces(MEDIATYPE_JSON_UTF8)
     public Response getTempKartePatients(@PathParam("userId") String userPkStr, 
-            @QueryParam("fromDate") String fromDateStr) {
+            @QueryParam(FROM_DATE) String fromDateStr) {
         
         Date fromDate = parseDate(fromDateStr);
         long userPk = Long.valueOf(userPkStr);

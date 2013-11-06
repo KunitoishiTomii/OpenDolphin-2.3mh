@@ -4,6 +4,7 @@ import java.util.concurrent.Future;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.InvocationCallback;
 import javax.ws.rs.core.Response;
+import open.dolphin.client.Dolphin;
 import open.dolphin.infomodel.ChartEventModel;
 
 /**
@@ -16,6 +17,8 @@ public class ChartEventDelegater extends BusinessDelegater {
     private static final String SUBSCRIBE_PATH = RES_CE + "subscribe";
     private static final String PUT_EVENT_PATH = RES_CE + "event";
     
+    private final String clientUUID;
+    
     private static final boolean debug = false;
     private static final ChartEventDelegater instance;
     
@@ -24,6 +27,7 @@ public class ChartEventDelegater extends BusinessDelegater {
     }
     
     private ChartEventDelegater() {
+        clientUUID = Dolphin.getInstance().getClientUUID();
     }
     
     public static ChartEventDelegater getInstance() {
@@ -34,8 +38,9 @@ public class ChartEventDelegater extends BusinessDelegater {
         
         Entity entity = toJsonEntity(evt);
 
-        Response response = buildRequest(PUT_EVENT_PATH, null)
-                .accept(MEDIATYPE_TEXT_UTF8)
+        Response response = getWebTarget()
+                .path(PUT_EVENT_PATH)
+                .request(MEDIATYPE_TEXT_UTF8)
                 .put(entity);
 
         int status = checkHttpStatus(response);
@@ -49,8 +54,10 @@ public class ChartEventDelegater extends BusinessDelegater {
 
     public Future<Response> subscribe() throws Exception {
         
-        Future<Response> future = buildAsyncRequest(SUBSCRIBE_PATH)
-                .accept(MEDIATYPE_JSON_UTF8)
+        Future<Response> future = getAsyncWebTarget()
+                .path(SUBSCRIBE_PATH)
+                .request(MEDIATYPE_JSON_UTF8)
+                .header(CLIENT_UUID, clientUUID)
                 .async()
                 .get();
 
@@ -59,8 +66,10 @@ public class ChartEventDelegater extends BusinessDelegater {
     
     public Future<Response> subscribe(InvocationCallback<Response> callback) {
         
-        Future<Response> future = buildAsyncRequest(SUBSCRIBE_PATH)
-                .accept(MEDIATYPE_JSON_UTF8)
+        Future<Response> future = getAsyncWebTarget()
+                .path(SUBSCRIBE_PATH)
+                .request(MEDIATYPE_JSON_UTF8)
+                .header(CLIENT_UUID, clientUUID)
                 .async()
                 .get(callback);
         

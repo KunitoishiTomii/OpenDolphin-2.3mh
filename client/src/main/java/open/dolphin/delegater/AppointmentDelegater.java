@@ -32,8 +32,9 @@ public final class AppointmentDelegater extends BusinessDelegater {
         String path = "appo/";
         Entity entity = toJsonEntity(list);
         
-        Response response = buildRequest(path, null)
-                .accept(MEDIATYPE_TEXT_UTF8)
+        Response response = getWebTarget()
+                .path(path)
+                .request(MEDIATYPE_TEXT_UTF8)
                 .put(entity);
         
         int status = checkHttpStatus(response);

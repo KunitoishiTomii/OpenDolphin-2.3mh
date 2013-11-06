@@ -4,9 +4,8 @@ import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
 import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.Invocation;
+import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import open.dolphin.client.ClientContext;
 import open.dolphin.infomodel.*;
@@ -21,11 +20,8 @@ import org.apache.log4j.Logger;
  * @author Kazushi Minagawa, Digital Globe, Inc.
  * @author modified by masuda, Masuda Naika
  */
-public class BusinessDelegater {
+public class BusinessDelegater implements IRestConstants {
 
-    protected static final String CAMMA = ",";
-    
-    private static final String UTF8 = "UTF-8";
     protected static final MediaType MEDIATYPE_JSON_UTF8
             = MediaType.APPLICATION_JSON_TYPE.withCharset(UTF8);
     protected static final MediaType MEDIATYPE_TEXT_UTF8 
@@ -40,18 +36,18 @@ public class BusinessDelegater {
         DEBUG = (logger.getLevel() == Level.DEBUG);
     }
     
-    protected Invocation.Builder buildRequest(String path, MultivaluedMap<String, String> qmap) {
-        return RestClient.getInstance().buildRequest(path, qmap);
-    }
-
-    protected Invocation.Builder buildAsyncRequest(String path) {
-        return RestClient.getInstance().buildAsyncRequest(path);
-    }
-
     protected void debug(int status, String entity) {
         logger.debug("---------------------------------------");
         logger.debug("status = " + status);
         logger.debug(entity);
+    }
+    
+    protected WebTarget getWebTarget() {
+        return RestClient.getInstance().getWebTarget();
+    }
+    
+    protected WebTarget getAsyncWebTarget() {
+        return RestClient.getInstance().getAsyncWebTarget();
     }
     
     protected JsonConverter getConverter() {
