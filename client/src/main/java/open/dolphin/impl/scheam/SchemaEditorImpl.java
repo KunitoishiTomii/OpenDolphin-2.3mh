@@ -207,7 +207,7 @@ public class SchemaEditorImpl implements SchemaEditor {
         boundSupport.removePropertyChangeListener(l);
     }
     
-    private void initComponents(final boolean editable) {
+    private void initComponents(boolean editable) {
         properties = new SchemaEditorProperties();
         drawingList = new ArrayList<DrawingHolder>(5);
         undoMgr = new UndoMgr(this);
@@ -217,7 +217,7 @@ public class SchemaEditorImpl implements SchemaEditor {
         canvas.setBorder(BorderFactory.createEmptyBorder());
 
         // 持ってきた SchemaModel の Image を BufferedImage に変換してセット
-        final BufferedImage srcImage = SchemaUtils.imageToBufferedImage(model.getIcon());
+        BufferedImage srcImage = SchemaUtils.imageToBufferedImage(model.getIcon());
         canvas.setBaseImage(srcImage);
 
         // canvas と tool の View (JFrame) を作る
@@ -264,7 +264,7 @@ public class SchemaEditorImpl implements SchemaEditor {
         dotsMediumBtn = toolView.getDotsMediumBtn();
         dotsDenseBtn = toolView.getDotsDenseBtn();
 
-        final JToggleButton[] toolButtons = {
+        JToggleButton[] toolButtons = {
             pencilBtn, eraserBtn, ovalBtn, ovalFillBtn, rectBtn, rectFillBtn, polyBtn, polyFillBtn, textBtn, lineBtn,
             selectBtn, clippingBtn, dotsSparseBtn, dotsMediumBtn, dotsDenseBtn, netSparseBtn, netMediumBtn, netDenseBtn
         };
@@ -462,33 +462,32 @@ public class SchemaEditorImpl implements SchemaEditor {
         // プロパティーファイルの値によりボタンの初期値をセット
         properties.load();
 
-//masuda    InvokeLater
-        SwingUtilities.invokeLater(new Runnable() {
+        // 線の太さ
+        setLineWidthGUI();
+        
+        // 色
+        colorBtn.setIcon(ShapeIconMaker.createRectFillIcon(properties.getFillColor(), SchemaEditorProperties.SHAPEICON_SIZE));
+        // ツールボタン
+        int btnNo = Math.min(properties.getSelectedTButtonNumber(), toolButtons.length-1);
+        toolButtons[btnNo].doClick();
+        // アルファスライダー
+        alphaSlider.setValue((int) (properties.getAlpha() * 100));
+        alphaField.setText(String.format("%.2f", properties.getAlpha()));
+        
+        // baseImage から，view の必要 width, height を計算（自動ではうまくいかない）
+        properties.computeViewBounds(canvasView, toolView, srcImage);
+
+        if (editable) toolView.setVisible(true); // editable でない場合はツールパネルを出さない
+        
+//masuda^   invokeLater
+        SwingUtilities.invokeLater(new Runnable(){
 
             @Override
             public void run() {
-                // 線の太さ
-                setLineWidthGUI();
-
-                // 色
-                colorBtn.setIcon(ShapeIconMaker.createRectFillIcon(properties.getFillColor(), SchemaEditorProperties.SHAPEICON_SIZE));
-                // ツールボタン
-                int btnNo = Math.min(properties.getSelectedTButtonNumber(), toolButtons.length - 1);
-                toolButtons[btnNo].doClick();
-                // アルファスライダー
-                alphaSlider.setValue((int) (properties.getAlpha() * 100));
-                alphaField.setText(String.format("%.2f", properties.getAlpha()));
-
-                // baseImage から，view の必要 width, height を計算（自動ではうまくいかない）
-                properties.computeViewBounds(canvasView, toolView, srcImage);
-
-                if (editable) {
-                    toolView.setVisible(true); // editable でない場合はツールパネルを出さない
-                }
                 canvasView.setVisible(true);
             }
         });
-
+//masuda$
     }
     
     private void setLineWidthGUI() {
