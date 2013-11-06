@@ -504,13 +504,20 @@ public class SchemaEditorImpl implements SchemaEditor {
     }
     
     private void close() {
-        // 選択されているツールボタンの番号を調べる
-        int btnNo = 0;
-        for (Enumeration e = toolBg.getElements(); e.hasMoreElements();) {
-            if(((JToggleButton) e.nextElement()).isSelected()) break;
-            btnNo++;
+        
+//masuda^   ボタン番号保存はtoolViewがvisibleの場合のみ
+        if (toolView.isVisible()) {
+            // 選択されているツールボタンの番号を調べる
+            int btnNo = 0;
+            for (Enumeration e = toolBg.getElements(); e.hasMoreElements();) {
+                if (((JToggleButton) e.nextElement()).isSelected()) {
+                    break;
+                }
+                btnNo++;
+            }
+            properties.setSelectedTButtonNumber(btnNo);
         }
-        properties.setSelectedTButtonNumber(btnNo);
+//masuda$
         properties.setSchemaViewRect(canvasView, toolView);
 
         properties.save(); // プロパティーファイルに書き込み
