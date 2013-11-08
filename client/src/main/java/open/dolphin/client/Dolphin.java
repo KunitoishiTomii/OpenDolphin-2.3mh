@@ -146,9 +146,6 @@ public class Dolphin implements MainWindow, IChartEventListener {
 
         // 排他処理用のUUIDを決める
         clientUUID = UUID.randomUUID().toString();
-        
-        // regist shutdownhook
-        registShutdownHook();
 //masuda$
 
         //------------------------------
@@ -1749,17 +1746,7 @@ public class Dolphin implements MainWindow, IChartEventListener {
         }
     }
     
-    // regist shutdown hook
-    private void registShutdownHook() {
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-
-            @Override
-            public void run() {
-                processExit(true);
-            }
-        });
-    }
-
+    
     // broadcast messaging test
     @Override
     public void onEvent(ChartEventModel evt) throws Exception {
