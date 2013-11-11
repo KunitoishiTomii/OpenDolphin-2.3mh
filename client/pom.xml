@@ -28,13 +28,11 @@
             <groupId>masudanaika</groupId>
             <artifactId>OpenDolphin-common</artifactId>
             <version>2.3</version>
-            <type>jar</type>
         </dependency>
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-core</artifactId>
             <version>4.2.7.SP1</version>
-            <type>jar</type>
         </dependency>
         <dependency>
             <groupId>log4j</groupId>
@@ -46,13 +44,6 @@
             <artifactId>slf4j-log4j12</artifactId>
             <version>1.7.5</version>
         </dependency>
-<!--
-        <dependency>
-            <groupId>org.swinglabs</groupId>
-            <artifactId>swing-layout</artifactId>
-            <version>1.0.3</version>
-        </dependency>
--->
         <dependency>
             <groupId>org.apache.velocity</groupId>
             <artifactId>velocity</artifactId>
@@ -66,14 +57,12 @@
         <dependency>
             <groupId>org.glassfish.jersey.core</groupId>
             <artifactId>jersey-client</artifactId>
-            <version>2.4</version>
-            <type>jar</type>
+            <version>2.4.1</version>
         </dependency>
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-client</artifactId>
             <version>3.0.5.Final</version>
-            <type>jar</type>
         </dependency>
         <dependency>
             <groupId>commons-codec</groupId>
@@ -115,7 +104,6 @@
             <groupId>com.googlecode.juniversalchardet</groupId>
             <artifactId>juniversalchardet</artifactId>
             <version>1.0.3</version>
-            <type>jar</type>
         </dependency>
         <dependency>
             <groupId>org.apache.tomcat</groupId>
@@ -126,31 +114,13 @@
             <groupId>com.jgoodies</groupId>
             <artifactId>jgoodies-looks</artifactId>
             <version>2.5.2</version>
-            <type>jar</type>
         </dependency>
         <dependency>
            <groupId>com.jtattoo</groupId>
            <artifactId>JTattoo</artifactId>
            <version>1.6.9</version>
          </dependency>
-<!-- 
-        <dependency>
-            <groupId>com.seaglasslookandfeel</groupId>
-            <artifactId>seaglasslookandfeel</artifactId>
-            <version>0.2</version>
-        </dependency>
-        <dependency>
-            <groupId>com.github.insubstantial</groupId>
-            <artifactId>substance</artifactId>
-            <version>7.2.1</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>com.alee</groupId>
-            <artifactId>weblookandfeel</artifactId>
-            <version>1.4.0-preview</version>
-        </dependency>
--->
+
 <!-- 以下は自分でローカルリポジトリに追加する -->
         <dependency>
             <groupId>com.lowagie</groupId>

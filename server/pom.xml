@@ -19,20 +19,17 @@
             <groupId>masudanaika</groupId>
             <artifactId>OpenDolphin-common</artifactId>
             <version>2.3</version>
-            <type>jar</type>
          </dependency>
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-core</artifactId>
             <version>4.2.7.SP1</version>
-            <type>jar</type>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-search-orm</artifactId>
             <version>4.4.0.Final</version>
-            <type>jar</type>
             <exclusions>
                 <exclusion>
                     <artifactId>solr-analysis-extras</artifactId>
@@ -44,13 +41,11 @@
             <groupId>org.apache.velocity</groupId>
             <artifactId>velocity</artifactId>
             <version>1.7</version>
-            <type>jar</type>
         </dependency>
         <dependency>
             <groupId>javax</groupId>
             <artifactId>javaee-web-api</artifactId>
             <version>7.0</version>
-            <type>jar</type>
             <scope>provided</scope>
         </dependency>
         <dependency>
