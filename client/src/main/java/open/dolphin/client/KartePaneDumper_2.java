@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
@@ -24,20 +25,21 @@ import org.apache.log4j.Logger;
 public final class KartePaneDumper_2 {
     
     private static final char DQ = '\"';
-    private static final String FOREGROUND = "foreground";
-    private static final String CONTENT = "content";
-    private static final String NAME = "name";
+    private static final String FOREGROUND_NAME = StyleConstants.Foreground.toString();
+    private static final String NAME_NAME = StyleConstants.NameAttribute.toString();
+    private static final String CONTENT_NAME = AbstractDocument.ContentElementName;
+    //private static final String ELEMENT_NAME= AbstractDocument.ElementNameAttribute;    // "$ename"
     
-    private List<ModuleModel> moduleList;
-    private List<SchemaModel> schemaList;
+    private final List<ModuleModel> moduleList;
+    private final List<SchemaModel> schemaList;
     private String spec;
-    private Logger logger;
+    private final Logger logger;
     
-    /** Creates a new instance of TextPaneDumpBuilder */
+    
     public KartePaneDumper_2() {
         logger = ClientContext.getBootLogger();
-        moduleList = new ArrayList<ModuleModel>();
-        schemaList = new ArrayList<SchemaModel>();
+        moduleList = new ArrayList<>();
+        schemaList = new ArrayList<>();
     }
     
     /**
@@ -115,7 +117,7 @@ public final class KartePaneDumper_2 {
         logger.debug("end = " + end);
 
         String elmName = element.getName();
-        boolean contentFlg = CONTENT.equals(elmName);
+        boolean contentFlg = CONTENT_NAME.equals(elmName);
         
         // このエレメントの属性セットを得る
         AttributeSet atts = element.getAttributes();
@@ -147,7 +149,7 @@ public final class KartePaneDumper_2 {
                     }
                     
                     // foreground 属性の場合は再構築の際に利用しやすい形に分解する
-                    if (FOREGROUND.equals(attrName)) {
+                    if (FOREGROUND_NAME.equals(attrName)) {
                         Color c = (Color) atts.getAttribute(StyleConstants.Foreground);
                         logger.debug("color = " + c.toString());
                         addAttribute(attrName, attrBuf);
@@ -181,7 +183,7 @@ public final class KartePaneDumper_2 {
                         } else {
                             // それ以外の属性についてはそのまま記録する
                             // <content start="1" end="2" name="stampHolder">となるのを防ぐ
-                            if (!(contentFlg && NAME.equals(attrName))) {
+                            if (!(contentFlg && NAME_NAME.equals(attrName))) {
                                 addAttribute(attrName, attrBuf);
                                 attrBuf.append(addQuote(attObject.toString()));
                             }
