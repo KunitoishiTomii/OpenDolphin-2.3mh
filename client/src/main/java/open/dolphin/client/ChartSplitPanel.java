@@ -18,15 +18,15 @@ public class ChartSplitPanel extends JPanel {
 
     private static final Dimension DEFAULT_SIZE = new Dimension(100, 100);
     private static final int SP_WIDTH = 7;
-    private final Border SELECTED_BORDER = BorderFactory.createLineBorder(Color.LIGHT_GRAY);
-    private final Border EMPTY_BORDER = BorderFactory.createLineBorder(new Color(0, 0, 0, 0));
-    private final Cursor UD_CURSOR = new Cursor(Cursor.N_RESIZE_CURSOR);
-    private final Cursor LR_CURSOR = new Cursor(Cursor.E_RESIZE_CURSOR);
-    private final Cursor DEFAULT_CURSOR = new Cursor(Cursor.DEFAULT_CURSOR);
-    private final Color COLOR_MARK = Color.GRAY;
-    private final String DEFAULT_LEFT = "278,1098";
-    private final String DEFAULT_INSPECTORS = "260,45,260,375,260,184,260,390,260,100";
-    private final String DEFAULT_RIGHT = "689,1098";
+    private static final Border SELECTED_BORDER = BorderFactory.createLineBorder(Color.LIGHT_GRAY);
+    private static final Border EMPTY_BORDER = BorderFactory.createLineBorder(new Color(0, 0, 0, 0));
+    private static final Cursor UD_CURSOR = new Cursor(Cursor.N_RESIZE_CURSOR);
+    private static final Cursor LR_CURSOR = new Cursor(Cursor.E_RESIZE_CURSOR);
+    private static final Cursor DEFAULT_CURSOR = new Cursor(Cursor.DEFAULT_CURSOR);
+    private static final Color COLOR_MARK = Color.GRAY;
+    private static final String DEFAULT_LEFT = "278,1098";
+    private static final String DEFAULT_INSPECTORS = "260,45,260,375,260,184,260,390,260,100";
+    private static final String DEFAULT_RIGHT = "689,1098";
     private Chart context;
     private JPanel leftPanel;
     private JPanel rightPanel;
