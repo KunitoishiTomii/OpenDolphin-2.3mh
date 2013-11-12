@@ -15,7 +15,7 @@ import open.dolphin.infomodel.SampleDateComparator;
 public class LaboHtmlRenderer {
 
     private static final String[] TR_BG = {"<tr>", "<tr bgcolor=\"aliceblue\">"};
-    private static LaboHtmlRenderer instance;
+    private static final LaboHtmlRenderer instance;
 
     static {
         instance = new LaboHtmlRenderer();
@@ -69,14 +69,18 @@ public class LaboHtmlRenderer {
                         sb.append("<td>");
                         if (value != null) {
                             String out = value.getOut();
-                            if ("H".equals(out)) {
-                                sb.append("<font color=\"red\">");
-                                sb.append(value.getValue()).append("</font>");
-                            } else if ("L".equals(out)) {
-                                sb.append("<font color=\"blue\">");
-                                sb.append(value.getValue()).append("</font>");
-                            } else {
-                                sb.append(value.getValue());
+                            switch (out) {
+                                case "H":
+                                    sb.append("<font color=\"red\">");
+                                    sb.append(value.getValue()).append("</font>");
+                                    break;
+                                case "L":
+                                    sb.append("<font color=\"blue\">");
+                                    sb.append(value.getValue()).append("</font>");
+                                    break;
+                                default:
+                                    sb.append(value.getValue());
+                                    break;
                             }
                            }
                         sb.append("</td>");
@@ -91,7 +95,7 @@ public class LaboHtmlRenderer {
     }
     
     private List<String> getHeader(List<NLaboModule> modules) {
-        List<String> header = new ArrayList<String>();
+        List<String> header = new ArrayList<>();
         header.add("項目");
         for (NLaboModule module : modules) {
             header.add(module.getSampleDate().substring(2));
@@ -101,9 +105,9 @@ public class LaboHtmlRenderer {
 
     private List<LabTestRowObject> getRowList(List<NLaboModule> modules) {
 
-        List<LabTestRowObject> bloodExams = new ArrayList<LabTestRowObject>();
-        List<LabTestRowObject> urineExams = new ArrayList<LabTestRowObject>();
-        List<LabTestRowObject> otherExams = new ArrayList<LabTestRowObject>();
+        List<LabTestRowObject> bloodExams = new ArrayList<>();
+        List<LabTestRowObject> urineExams = new ArrayList<>();
+        List<LabTestRowObject> otherExams = new ArrayList<>();
 
         int moduleIndex = 0;
 
@@ -114,7 +118,7 @@ public class LaboHtmlRenderer {
                 // 検体名を取得する
                 String specimenName = item.getSpecimenName();
                 // 検体で分類してリストを選択する
-                List<LabTestRowObject> rowObjectList = null;
+                List<LabTestRowObject> rowObjectList;
                 if (specimenName != null) {     // null check 橋本先生のご指摘
                     if (specimenName.contains("血")) {
                         rowObjectList = bloodExams;
@@ -169,7 +173,7 @@ public class LaboHtmlRenderer {
             moduleIndex++;
         }
 
-        List<LabTestRowObject> ret = new ArrayList<LabTestRowObject>();
+        List<LabTestRowObject> ret = new ArrayList<>();
 
         if (!bloodExams.isEmpty()) {
             Collections.sort(bloodExams);
