@@ -17,7 +17,6 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import open.dolphin.infomodel.ModuleModel;
 import open.dolphin.infomodel.SchemaModel;
-import open.dolphin.util.XmlUtils;
 import org.apache.log4j.Logger;
 
 /**
@@ -220,7 +219,8 @@ public final class KartePaneDumper_2 {
             logger.debug("text = " + text);
             // 特定の文字列を置換して出力する
             writer.writeStartElement(TEXT_NAME);
-            writer.writeCharacters(XmlUtils.toXml(text));
+            //writer.writeCharacters(XmlUtils.toXml(text));
+            writer.writeCharacters(text);
             writer.writeEndElement();
         }
         
