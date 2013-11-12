@@ -22,13 +22,13 @@ public class NLabServiceBean {
     private static final String QUERY_MODULE_BY_PID_SAMPLEDATE_LABCODE 
             = "from NLaboModule m where m.patientId=:fidPid and m.sampleDate=:sampleDate and m.laboCenterCode=:laboCode";
     private static final String QUERY_MODULE_BY_FIDPID 
-            = "from NLaboModule l where l.patientId=:fidPid order by l.sampleDate desc";
+            = "from NLaboModule l where l.patientId=:fidPid order by l.id desc";
     private static final String QUERY_ITEM_BY_MID 
             = "from NLaboItem l where l.laboModule.id=:mid order by groupCode,parentCode,itemCode";
     private static final String QUERY_ITEM_BY_MID_ORDERBY_SORTKEY 
             = "from NLaboItem l where l.laboModule.id=:mid order by l.sortKey";
     private static final String QUERY_ITEM_BY_FIDPID_ITEMCODE 
-            = "from NLaboItem l where l.patientId=:fidPid and l.itemCode=:itemCode order by l.sampleDate desc";
+            = "from NLaboItem l where l.patientId=:fidPid and l.itemCode=:itemCode order by l.id desc";
 
     private static final String QUERY_INSURANCE_BY_PATIENT_PK 
             = "from HealthInsuranceModel h where h.patient.id=:pk";
