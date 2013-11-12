@@ -1396,8 +1396,8 @@ public class Dolphin implements MainWindow, IChartEventListener {
         evt.setMsgUUID(UUID.randomUUID().toString());
         evt.setMsgTitle("ブロードキャスト　テスト");
         evt.setMsgOwner(getHostName());
-        evt.setMsgContent("メンテナンスするぞ。早く仕事終えやがれ！");
-        evt.setMsgOpts(new String[]{"わかった", "やだね"});
+        evt.setMsgContent("メンテナンスを行いますので、OpenDolphinを閉じてください。");
+        evt.setMsgOpts(new String[]{"OK!", "待って"});
         cel.publishMsg(evt);
     }
 
