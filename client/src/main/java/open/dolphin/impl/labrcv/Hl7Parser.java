@@ -181,14 +181,16 @@ public class Hl7Parser implements LabResultParser {
         if (ymd.length() != 8) {
             return str;
         }
-        String year = ymd.substring(0, 4);
-        String month = ymd.substring(4, 6);
-        String day = ymd.substring(6, 8);
-        StringBuilder sb = new StringBuilder();
-        sb.append(year).append("-");
-        sb.append(month).append("-");
-        sb.append(day);
-        return sb.toString();
+        // katou 2013/11/12 全部12桁で統一！
+        // String year = ymd.substring(0, 4);
+        // String month = ymd.substring(4, 6);
+        // String day = ymd.substring(6, 8);
+        // StringBuilder sb = new StringBuilder();
+        // sb.append(year).append("-");
+        // sb.append(month).append("-");
+        // sb.append(day);
+        // return sb.toString();
+        return str + "0000";
     }
 }
 
