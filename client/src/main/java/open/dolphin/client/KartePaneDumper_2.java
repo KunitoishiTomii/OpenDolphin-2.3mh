@@ -105,11 +105,9 @@ public final class KartePaneDumper_2 {
                 ex.printStackTrace(System.err);
             }
 
-            spec = stringWriter.toString();
-            
             // ドキュメントを閉じる
-            writer.writeEndDocument();
             writer.flush();
+            spec = stringWriter.toString();
 
         } catch (XMLStreamException ex) {
             ex.printStackTrace(System.err);
