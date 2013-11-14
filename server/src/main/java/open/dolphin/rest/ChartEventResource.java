@@ -51,7 +51,7 @@ public class ChartEventResource extends AbstractResource {
             @Override
             public void handleTimeout(AsyncResponse ar) {
                 contextHolder.getAsyncResponseList().remove(arModel);
-                ar.resume(Response.status(Response.Status.SERVICE_UNAVAILABLE));
+                ar.resume(Response.noContent().status(Response.Status.SERVICE_UNAVAILABLE).build());
             }
         });
         
