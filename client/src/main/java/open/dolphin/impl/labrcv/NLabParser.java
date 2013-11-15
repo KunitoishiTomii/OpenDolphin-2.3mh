@@ -8,6 +8,7 @@ import java.util.List;
 import open.dolphin.client.ClientContext;
 import open.dolphin.infomodel.NLaboItem;
 import open.dolphin.infomodel.NLaboModule;
+import org.jboss.logging.Logger;
 
 /**
  * 
@@ -40,6 +41,7 @@ public class NLabParser implements LabResultParser {
         SimpleDateFormat defaultDF = new SimpleDateFormat(DEFAULT_DATE_FORMAT);
         SimpleDateFormat df8 = new SimpleDateFormat(DATE_FORMAT_8);
         SimpleDateFormat df10 = new SimpleDateFormat(DATE_FORMAT_10);
+        SimpleDateFormat df12 = new SimpleDateFormat(DATE_FORMAT_12);
         
         BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(labFile),getEncoding()));
         
@@ -91,14 +93,16 @@ public class NLabParser implements LabResultParser {
                 } else if (sampleDate.length()==10) {
                     // yyyy-MM-dd
                     date = df10.parse(sampleDate);
-
+                } else if (sampleDate.length()==12) {
+                    // yyyyMMddhhmm (2013/11/15 katou: HL7形式のファイルがこのフォーマットで送られるため合わせる)
+                    date = df12.parse(sampleDate);
                 } else if (sampleDate.length()==16) {
                     // yyyy-MM-dd HH:mm
                     date = defaultDF.parse(sampleDate);
                 }
 
                 // yyyy-MM-dd HH:mm
-                sampleDate = defaultDF.format(date);
+                sampleDate = df12.format(date);
 
             } catch (Exception e) {
                 ClientContext.getLaboTestLogger().warn(e);
