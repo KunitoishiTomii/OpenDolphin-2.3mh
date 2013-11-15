@@ -19,7 +19,7 @@ public final class SqlMiscDao extends SqlDaoBean {
     private static final SqlMiscDao instance;
     
     // srycdと検査等実施判断グループ区分のマップ
-    private Map<String, Integer> hokatsuKbnMap;
+    private final Map<String, Integer> hokatsuKbnMap;
 
     static {
         instance = new SqlMiscDao();

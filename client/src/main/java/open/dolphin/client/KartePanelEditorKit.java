@@ -20,7 +20,7 @@ public class KartePanelEditorKit extends StyledEditorKit {
     private static final int crMargin = 20;
 
     private static final KartePanelEditorKit instance;
-    private ViewFactory viewFactory;
+    private final ViewFactory viewFactory;
     
     static {
         instance = new KartePanelEditorKit();
@@ -45,19 +45,21 @@ public class KartePanelEditorKit extends StyledEditorKit {
         public View create(Element elem) {
             
             String kind = elem.getName();
-
-            if (AbstractDocument.ContentElementName.equals(kind)) {
-                return new WrapLabelView(elem);
-            } else if (AbstractDocument.ParagraphElementName.equals(kind)) {
-                return new MyParagraphView(elem);
-            } else if (AbstractDocument.SectionElementName.equals(kind)) {
-                return new BoxView(elem, View.Y_AXIS);
-            } else if (StyleConstants.ComponentElementName.equals(kind)) {
-                return new MyComponentView(elem);
-            } else if (StyleConstants.IconElementName.equals(kind)) {
-                return new IconView(elem);
+            
+            if (kind != null) {
+                switch (kind) {
+                    case AbstractDocument.ContentElementName:
+                        return new WrapLabelView(elem);
+                    case AbstractDocument.ParagraphElementName:
+                        return new MyParagraphView(elem);
+                    case AbstractDocument.SectionElementName:
+                        return new BoxView(elem, View.Y_AXIS);
+                    case StyleConstants.ComponentElementName:
+                        return new MyComponentView(elem);
+                    case StyleConstants.IconElementName:
+                        return new IconView(elem);
+                }
             }
-
             return new LabelView(elem);
         }
     }
@@ -154,7 +156,7 @@ public class KartePanelEditorKit extends StyledEditorKit {
                     }
                     g.setColor(old);
                 }
-            } catch (Exception e) {
+            } catch (BadLocationException e) {
                 e.printStackTrace(System.err);
             }
         }

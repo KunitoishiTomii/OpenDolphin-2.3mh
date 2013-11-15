@@ -1,7 +1,5 @@
 package open.dolphin.stampbox;
 
-import java.io.BufferedReader;
-import java.io.StringReader;
 import java.util.List;
 import javax.swing.DropMode;
 import open.dolphin.infomodel.IInfoModel;
@@ -33,11 +31,10 @@ public class UserStampBox extends AbstractStampBox {
         
         try {
             // Build stampTree
-            BufferedReader reader = new BufferedReader(new StringReader(stampTreeModel.getTreeXml()));
-            DefaultStampTreeBuilder builder = new DefaultStampTreeBuilder();
-            StampTreeDirector director = new StampTreeDirector(builder);
-            List<StampTree> userTrees = director.build(reader);
-            reader.close();
+//masuda^
+            StampTreeXmlParser parser = new StampTreeXmlParser(StampTreeXmlParser.MODE.DEFAULT);
+            List<StampTree> userTrees = parser.parse(stampTreeModel.getTreeXml());
+//masuda$
             stampTreeModel.setTreeXml(null);
             stampTreeModel.setTreeBytes(null);
             
@@ -55,18 +52,22 @@ public class UserStampBox extends AbstractStampBox {
                 stampTree.setStampBox(getContext());
                 StampTreePanel treePanel = new StampTreePanel(stampTree);
                 this.addTab(stampTree.getTreeName(), treePanel);
-                
                 // Text、Path、ORCA のタブ番号を保存する
-                if (stampTree.getEntity().equals(IInfoModel.ENTITY_TEXT)) {
-                    textIndex = index;
-                    stampTree.addMouseListener(popAdapter);
-                } else if (stampTree.getEntity().equals(IInfoModel.ENTITY_PATH)) {
-                    pathIndex = index;
-                    stampTree.addMouseListener(popAdapter);
-                } else if (stampTree.getEntity().equals(IInfoModel.ENTITY_ORCA)) {
-                    orcaIndex = index;
-                } else {
-                    stampTree.addMouseListener(popAdapter);
+                switch (stampTree.getEntity()) {
+                    case IInfoModel.ENTITY_TEXT:
+                        textIndex = index;
+                        stampTree.addMouseListener(popAdapter);
+                        break;
+                    case IInfoModel.ENTITY_PATH:
+                        pathIndex = index;
+                        stampTree.addMouseListener(popAdapter);
+                        break;
+                    case IInfoModel.ENTITY_ORCA:
+                        orcaIndex = index;
+                        break;
+                    default:
+                        stampTree.addMouseListener(popAdapter);
+                        break;
                 }
                 
                 index++;

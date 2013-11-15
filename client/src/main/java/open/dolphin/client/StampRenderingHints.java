@@ -95,7 +95,7 @@ public class StampRenderingHints {
     // velocityから使う↓
     public boolean isNewStamp(String stampName) {
         return "新規スタンプ".equals(stampName) 
-                || "エディタから発行...".equals(stampName) 
+                || IInfoModel.TITLE_FROM_EDITOR.equals(stampName) 
                 || "チェックシート".equals(stampName);
     }
 

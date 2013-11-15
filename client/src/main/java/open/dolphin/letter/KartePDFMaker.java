@@ -18,7 +18,6 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import open.dolphin.client.ClientContext;
-import open.dolphin.client.KartePaneDumper_2;
 import open.dolphin.client.StampRenderingHints;
 import open.dolphin.infomodel.*;
 import open.dolphin.project.Project;
@@ -39,7 +38,7 @@ public class KartePDFMaker extends AbstractPDFMaker {
     //private static final String SECTION_NAME = AbstractDocument.SectionElementName;
     private static final String CONTENT_NAME = AbstractDocument.ContentElementName;
     private static final String PARAGRAPH_NAME = AbstractDocument.ParagraphElementName;
-    private static final String TEXT_NAME = KartePaneDumper_2.TEXT_NAME;
+    private static final String TEXT_NAME ="text";
     
     private static final String NAME_NAME = StyleConstants.NameAttribute.toString();
     private static final String ALIGNMENT_NAME = StyleConstants.Alignment.toString();   // "Alignment" not "alignment"

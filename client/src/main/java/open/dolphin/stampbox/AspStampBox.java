@@ -1,7 +1,5 @@
 package open.dolphin.stampbox;
 
-import java.io.BufferedReader;
-import java.io.StringReader;
 import java.util.List;
 import open.dolphin.tr.AspStampTreeTransferHandler;
 
@@ -18,30 +16,24 @@ public class AspStampBox extends AbstractStampBox {
     
     @Override
     protected void buildStampBox() {
-        
-        try {
-            // Build stampTree
-            BufferedReader reader = new BufferedReader(new StringReader(stampTreeModel.getTreeXml()));
-            ASpStampTreeBuilder builder = new ASpStampTreeBuilder();
-            StampTreeDirector director = new StampTreeDirector(builder);
-            List<StampTree> aspTrees = director.build(reader);
-            reader.close();
-            stampTreeModel.setTreeXml(null);
-            
-            // StampTreeに設定するポップアップメニューとトランスファーハンドラーを生成する
-            AspStampTreeTransferHandler transferHandler = new AspStampTreeTransferHandler();
-            
-            // StampBox(TabbedPane) へリスト順に格納する
-            for (StampTree stampTree : aspTrees) {
-                stampTree.setTransferHandler(transferHandler);
-                stampTree.setAsp(true);
-                stampTree.setStampBox(getContext());
-                StampTreePanel treePanel = new StampTreePanel(stampTree);
-                this.addTab(stampTree.getTreeName(), treePanel);
-            }
-            
-        } catch (Exception e) {
-            e.printStackTrace(System.err);
+
+        // Build stampTree
+//masuda^
+        StampTreeXmlParser parser = new StampTreeXmlParser(StampTreeXmlParser.MODE.ASP);
+        List<StampTree> aspTrees = parser.parse(stampTreeModel.getTreeXml());
+//masuda$
+        stampTreeModel.setTreeXml(null);
+
+        // StampTreeに設定するポップアップメニューとトランスファーハンドラーを生成する
+        AspStampTreeTransferHandler transferHandler = new AspStampTreeTransferHandler();
+
+        // StampBox(TabbedPane) へリスト順に格納する
+        for (StampTree stampTree : aspTrees) {
+            stampTree.setTransferHandler(transferHandler);
+            stampTree.setAsp(true);
+            stampTree.setStampBox(getContext());
+            StampTreePanel treePanel = new StampTreePanel(stampTree);
+            this.addTab(stampTree.getTreeName(), treePanel);
         }
     }
 }

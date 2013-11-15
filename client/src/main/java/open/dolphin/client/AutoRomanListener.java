@@ -10,7 +10,11 @@ import javax.swing.text.JTextComponent;
  */
 public class AutoRomanListener implements FocusListener {
     
-    private static AutoRomanListener instance = new AutoRomanListener();
+    private static final AutoRomanListener instance;
+    
+    static {
+        instance = new AutoRomanListener();
+    }
     
     /** Creates a new instance of AutoRomanListener */
     private AutoRomanListener() {

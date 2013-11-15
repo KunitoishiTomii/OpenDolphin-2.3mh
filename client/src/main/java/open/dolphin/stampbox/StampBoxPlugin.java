@@ -54,7 +54,7 @@ public class StampBoxPlugin extends AbstractMainTool {
     private List<IStampTreeModel> stampTreeModels;  // このスタンプボックスの StmpTreeModel
     
     // Logger
-    private boolean DEBUG;
+    private final boolean DEBUG;
 
 //masuda^   排他処理
     private boolean isEditable;
@@ -777,7 +777,7 @@ public class StampBoxPlugin extends AbstractMainTool {
         // インポートリストに追加する
         //
         if (importedTreeList == null) {
-            importedTreeList = new ArrayList<Long>(5);
+            importedTreeList = new ArrayList<>();
         }
         importedTreeList.add(new Long(importTree.getId()));
     }
@@ -856,10 +856,10 @@ public class StampBoxPlugin extends AbstractMainTool {
         }
 
         // StampTree を表す XML データを生成する
-        DefaultStampTreeXmlBuilder builder = new DefaultStampTreeXmlBuilder();
-        StampTreeXmlDirector director = new StampTreeXmlDirector(builder);
-        String treeXml = director.build(list);
-
+//masuda^
+        StampTreeXmlBuilder builder = new StampTreeXmlBuilder(StampTreeXmlBuilder.MODE.DEFAULT);
+        String treeXml = builder.build(list);
+//masuda$
         // 個人用のStampTreeModelにXMLをセットする
         IStampTreeModel treeTosave = userBox.getStampTreeModel();
         treeTosave.setTreeXml(treeXml);
@@ -917,7 +917,7 @@ public class StampBoxPlugin extends AbstractMainTool {
     public List<StampTree> getAllAllPTrees() {
         
         int cnt = parentBox.getTabCount();
-        ArrayList<StampTree> ret = new ArrayList<StampTree>();
+        ArrayList<StampTree> ret = new ArrayList<>();
         
         for (int i = 0; i < cnt; i++) {
             AbstractStampBox stb = (AbstractStampBox) parentBox.getComponentAt(i);

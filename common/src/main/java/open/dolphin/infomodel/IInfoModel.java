@@ -306,4 +306,6 @@ public interface IInfoModel extends java.io.Serializable, java.lang.Cloneable {
 
     public static final String MEDICAL_CERTIFICATE = "medicalCertificate";
     
+    public static final String TITLE_FROM_EDITOR = "エディタから発行...";
+    
 }

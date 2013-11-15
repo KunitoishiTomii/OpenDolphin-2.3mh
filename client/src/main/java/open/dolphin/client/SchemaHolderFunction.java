@@ -28,7 +28,7 @@ public class SchemaHolderFunction {
     
     private AbstractAction deleteAction;
 
-    private static SchemaHolderFunction instance;
+    private static final SchemaHolderFunction instance;
 
     static {
         instance = new SchemaHolderFunction();
