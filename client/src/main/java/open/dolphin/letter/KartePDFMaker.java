@@ -3,8 +3,6 @@ package open.dolphin.letter;
 import com.lowagie.text.*;
 import com.lowagie.text.pdf.*;
 import java.awt.Color;
-import java.io.BufferedReader;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.MalformedURLException;
@@ -14,13 +12,17 @@ import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.*;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.StyleConstants;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 import open.dolphin.client.ClientContext;
+import open.dolphin.client.KartePaneDumper_2;
 import open.dolphin.client.StampRenderingHints;
 import open.dolphin.infomodel.*;
 import open.dolphin.project.Project;
 import open.dolphin.util.XmlUtils;
-import org.jdom2.JDOMException;
-import org.jdom2.input.SAXBuilder;
 
 
 /**
@@ -31,30 +33,21 @@ import org.jdom2.input.SAXBuilder;
  */
 public class KartePDFMaker extends AbstractPDFMaker {
 
-    // from KarteRenderer_2.java
-    private static final String COMPONENT_ELEMENT_NAME = "component";
     private static final String STAMP_HOLDER = "stampHolder";
     private static final String SCHEMA_HOLDER = "schemaHolder";
-    private static final int TT_SECTION = 0;
-    private static final int TT_PARAGRAPH = 1;
-    private static final int TT_CONTENT = 2;
-    private static final int TT_ICON = 3;
-    private static final int TT_COMPONENT = 4;
-    private static final int TT_PROGRESS_COURSE = 5;
-    private static final String SECTION_NAME = "section";
-    private static final String PARAGRAPH_NAME = "paragraph";
-    private static final String CONTENT_NAME = "content";
     private static final String COMPONENT_NAME = "component";
-    private static final String ICON_NAME = "icon";
-    private static final String ALIGNMENT_NAME = "Alignment";
-    private static final String FOREGROUND_NAME = "foreground";
-    private static final String SIZE_NAME = "size";
-    private static final String BOLD_NAME = "bold";
-    private static final String ITALIC_NAME = "italic";
-    private static final String UNDERLINE_NAME = "underline";
-    private static final String TEXT_NAME = "text";
-    private static final String NAME_NAME = "name";
-    private static final String PROGRESS_COURSE_NAME = "kartePane";
+    //private static final String SECTION_NAME = AbstractDocument.SectionElementName;
+    private static final String CONTENT_NAME = AbstractDocument.ContentElementName;
+    private static final String PARAGRAPH_NAME = AbstractDocument.ParagraphElementName;
+    private static final String TEXT_NAME = KartePaneDumper_2.TEXT_NAME;
+    
+    private static final String NAME_NAME = StyleConstants.NameAttribute.toString();
+    private static final String ALIGNMENT_NAME = StyleConstants.Alignment.toString();   // "Alignment" not "alignment"
+    private static final String FOREGROUND_NAME = StyleConstants.Foreground.toString();
+    private static final String SIZE_NAME = StyleConstants.Size.toString();
+    private static final String BOLD_NAME = StyleConstants.Bold.toString();
+    private static final String ITALIC_NAME = StyleConstants.Italic.toString();
+    private static final String UNDERLINE_NAME = StyleConstants.Underline.toString();
 
     private static final int KARTE_FONT_SIZE = 9;
     private static final int STAMP_FONT_SIZE = 8;
@@ -68,7 +61,7 @@ public class KartePDFMaker extends AbstractPDFMaker {
     private boolean ascending;
     private int bookmarkNumber;   // しおりの内部番号
     
-    private StampRenderingHints hints;
+    private final StampRenderingHints hints;
     
     public KartePDFMaker() {
         hints = StampRenderingHints.getInstance();
@@ -153,21 +146,26 @@ public class KartePDFMaker extends AbstractPDFMaker {
                 // DocumentModelからschema, moduleを取り出す
                 List<SchemaModel> schemas = docModel.getSchema();
                 List<ModuleModel> modules = docModel.getModules();
-                List<ModuleModel> soaModules = new ArrayList<ModuleModel>();
-                List<ModuleModel> pModules = new ArrayList<ModuleModel>();
+                List<ModuleModel> soaModules = new ArrayList<>();
+                List<ModuleModel> pModules = new ArrayList<>();
                 String soaSpec = null;
                 String pSpec = null;
 
                 for (ModuleModel bean : modules) {
                     String role = bean.getModuleInfoBean().getStampRole();
-                    if (role.equals(IInfoModel.ROLE_SOA)) {
-                        soaModules.add(bean);
-                    } else if (role.equals(IInfoModel.ROLE_SOA_SPEC)) {
-                        soaSpec = ((ProgressCourse) bean.getModel()).getFreeText();
-                    } else if (role.equals(IInfoModel.ROLE_P)) {
-                        pModules.add(bean);
-                    } else if (role.equals(IInfoModel.ROLE_P_SPEC)) {
-                        pSpec = ((ProgressCourse) bean.getModel()).getFreeText();
+                    switch (role) {
+                        case IInfoModel.ROLE_SOA:
+                            soaModules.add(bean);
+                            break;
+                        case IInfoModel.ROLE_SOA_SPEC:
+                            soaSpec = ((ProgressCourse) bean.getModel()).getFreeText();
+                            break;
+                        case IInfoModel.ROLE_P:
+                            pModules.add(bean);
+                            break;
+                        case IInfoModel.ROLE_P_SPEC:
+                            pSpec = ((ProgressCourse) bean.getModel()).getFreeText();
+                            break;
                     }
                 }
 
@@ -182,7 +180,9 @@ public class KartePDFMaker extends AbstractPDFMaker {
                 KarteTable table;
                 DocInfoModel docInfo = docModel.getDocInfoModel();
 
-                if (docInfo != null && docInfo.getDocType().equals(IInfoModel.DOCTYPE_S_KARTE)) {
+                if (docInfo != null && 
+                        (IInfoModel.DOCTYPE_S_KARTE.equals(docInfo.getDocType())
+                        || IInfoModel.DOCTYPE_SUMMARY.equals(docInfo.getDocType()))) {
                     table = createTable(docModel, 1);
                     PdfPCell cell = new PdfCellRenderer().render(soaSpec, soaModules, schemas, table);
                     cell.setColspan(2);
@@ -266,13 +266,15 @@ public class KartePDFMaker extends AbstractPDFMaker {
     private String createTitle(DocumentModel docModel) {
 
         StringBuilder sb = new StringBuilder();
-
-        if (IInfoModel.STATUS_DELETE.equals(docModel.getDocInfoModel().getStatus())) {
-            sb.append("削除済／");
-        } else if (IInfoModel.STATUS_MODIFIED.equals(docModel.getDocInfoModel().getStatus())) {
-            sb.append("修正:");
-            sb.append(docModel.getDocInfoModel().getVersionNumber().replace(".0", ""));
-            sb.append("／");
+        switch (docModel.getDocInfoModel().getStatus()) {
+            case IInfoModel.STATUS_DELETE:
+                sb.append("削除済／");
+                break;
+            case IInfoModel.STATUS_MODIFIED:
+                sb.append("修正:");
+                sb.append(docModel.getDocInfoModel().getVersionNumber().replace(".0", ""));
+                sb.append("／");
+                break;
         }
 
         // 確定日を分かりやすい表現に変える
@@ -296,7 +298,7 @@ public class KartePDFMaker extends AbstractPDFMaker {
         String ins = docModel.getDocInfoModel().getHealthInsuranceDesc().trim();
         if (ins != null && !ins.isEmpty()) {
             String items[] = docModel.getDocInfoModel().getHealthInsuranceDesc().split(" ");
-            List<String> itemList = new ArrayList<String>();
+            List<String> itemList = new ArrayList<>();
             for (String item : items) {
                 if (!item.isEmpty()) {
                     itemList.add(item);
@@ -325,7 +327,7 @@ public class KartePDFMaker extends AbstractPDFMaker {
     
     private class KarteTable extends PdfPTable {
 
-        private int col;    // カラム数
+        private final int col;    // カラム数
 
         private KarteTable(int col) {
             super(col);
@@ -344,6 +346,12 @@ public class KartePDFMaker extends AbstractPDFMaker {
         private List<ModuleModel> modules;
         private List<SchemaModel> schemas;
         private KarteTable karteTable;
+        
+        private String foreground;
+        private String size;
+        private String bold;
+        private String italic;
+        private String underline;
 
         private PdfPCell render(String xml, List<ModuleModel> modules, List<SchemaModel> schemas, KarteTable karteTable) {
 
@@ -354,88 +362,53 @@ public class KartePDFMaker extends AbstractPDFMaker {
             // SoaPane, Ppaneが収まるセル
             cell = new PdfPCell();
 
-            SAXBuilder docBuilder = new SAXBuilder();
-
             try {
-                StringReader sr = new StringReader(xml);
-                org.jdom2.Document doc = docBuilder.build(new BufferedReader(sr));
-                org.jdom2.Element root = doc.getRootElement();
-                writeChildren(root);
-            } catch (JDOMException e) {
-                e.printStackTrace(System.err);
-            } catch (IOException e) {
-                e.printStackTrace(System.err);
+                XMLInputFactory factory = XMLInputFactory.newInstance();
+                StringReader stream = new StringReader(xml);
+                XMLStreamReader reader = factory.createXMLStreamReader(stream);
+
+                while (reader.hasNext()) {
+                    int eventType = reader.next();
+                    switch (eventType) {
+                        case XMLStreamReader.START_ELEMENT:
+                            startElement(reader);
+                            break;
+                    }
+                }
+            } catch (XMLStreamException ex) {
             }
+            
             return cell;
         }
+        
+        private void startElement(XMLStreamReader reader) throws XMLStreamException {
+            
+            String eName = reader.getName().getLocalPart();
 
-        private void writeChildren(org.jdom2.Element current) {
-
-            int eType = -1;
-            String eName = current.getName();
-
-            if (eName.equals(PARAGRAPH_NAME)) {
-                eType = TT_PARAGRAPH;
-                startParagraph(current.getAttributeValue(ALIGNMENT_NAME));
-
-            } else if (eName.equals(CONTENT_NAME) && (current.getChild(TEXT_NAME) != null)) {
-                eType = TT_CONTENT;
-                startContent(current.getAttributeValue(FOREGROUND_NAME),
-                        current.getAttributeValue(SIZE_NAME),
-                        current.getAttributeValue(BOLD_NAME),
-                        current.getAttributeValue(ITALIC_NAME),
-                        current.getAttributeValue(UNDERLINE_NAME),
-                        current.getChildText(TEXT_NAME));
-
-            } else if (eName.equals(COMPONENT_NAME)) {
-                eType = TT_COMPONENT;
-                startComponent(current.getAttributeValue(NAME_NAME), // compoenet=number
-                        current.getAttributeValue(COMPONENT_ELEMENT_NAME));
-
-            } else if (eName.equals(ICON_NAME)) {
-                eType = TT_ICON;
-                startIcon(current);
-
-            } else if (eName.equals(PROGRESS_COURSE_NAME)) {
-                eType = TT_PROGRESS_COURSE;
-                startProgressCourse();
-
-            } else if (eName.equals(SECTION_NAME)) {
-                eType = TT_SECTION;
-                startSection();
-            }
-
-            // 子を探索するのはパラグフとトップ要素のみ
-            if (eType == TT_PARAGRAPH || eType == TT_PROGRESS_COURSE || eType == TT_SECTION) {
-
-                List children = current.getChildren();
-                Iterator iterator = children.iterator();
-
-                while (iterator.hasNext()) {
-                    org.jdom2.Element child = (org.jdom2.Element) iterator.next();
-                    writeChildren(child);
-                }
-            }
-
-            switch (eType) {
-
-                case TT_PARAGRAPH:
-                    endParagraph();
+            switch (eName) {
+                case PARAGRAPH_NAME:
+                    String alignStr = reader.getAttributeValue(null, ALIGNMENT_NAME);
+                    startParagraph(alignStr);
                     break;
-                case TT_CONTENT:
-                    endContent();
+                case CONTENT_NAME:
+                    foreground = reader.getAttributeValue(null, FOREGROUND_NAME);
+                    size = reader.getAttributeValue(null, SIZE_NAME);
+                    bold = reader.getAttributeValue(null, BOLD_NAME);
+                    italic = reader.getAttributeValue(null, ITALIC_NAME);
+                    underline = reader.getAttributeValue(null, UNDERLINE_NAME);
                     break;
-                case TT_ICON:
-                    endIcon();
+                case TEXT_NAME:
+                    String text = reader.getElementText();
+                    startContent(foreground, size, bold, italic, underline, text);
                     break;
-                case TT_COMPONENT:
-                    endComponent();
+                case COMPONENT_NAME:
+                    String name = reader.getAttributeValue(null, NAME_NAME);
+                    String number = reader.getAttributeValue(null, COMPONENT_NAME);
+                    startComponent(name, number);
                     break;
-                case TT_PROGRESS_COURSE:
-                    endProgressCourse();
-                    break;
-                case TT_SECTION:
-                    endSection();
+                //case SECTION_NAME:
+                //    break;
+                default:
                     break;
             }
         }
@@ -446,12 +419,16 @@ public class KartePDFMaker extends AbstractPDFMaker {
             cell.addElement(theParagraph);
 
             if (alignStr != null) {
-                if (alignStr.equals("0")) {
-                    theParagraph.setAlignment(Element.ALIGN_LEFT);
-                } else if (alignStr.equals("1")) {
-                    theParagraph.setAlignment(Element.ALIGN_CENTER);
-                } else if (alignStr.equals("2")) {
-                    theParagraph.setAlignment(Element.ALIGN_RIGHT);
+                switch (alignStr) {
+                    case "0":
+                        theParagraph.setAlignment(Element.ALIGN_LEFT);
+                        break;
+                    case "1":
+                        theParagraph.setAlignment(Element.ALIGN_CENTER);
+                        break;
+                    case "2":
+                        theParagraph.setAlignment(Element.ALIGN_RIGHT);
+                        break;
                 }
             }
         }
@@ -463,16 +440,8 @@ public class KartePDFMaker extends AbstractPDFMaker {
             return p;
         }
 
-        private void endParagraph() {
-        }
-
-        private void startContent(
-                String foreground,
-                String size,
-                String bold,
-                String italic,
-                String underline,
-                String text) {
+        private void startContent(String foreground, String size, String bold,
+                String italic, String underline, String text) {
 
             // 特殊文字を戻す
             text = XmlUtils.fromXml(text);
@@ -513,9 +482,6 @@ public class KartePDFMaker extends AbstractPDFMaker {
             }
         }
 
-        private void endContent() {
-        }
-
         // スタンプとシェーマを配置する
         private void startComponent(String name, String number) {
 
@@ -544,27 +510,6 @@ public class KartePDFMaker extends AbstractPDFMaker {
             p.setAlignment(theParagraph.getAlignment());
             theParagraph = p;
             cell.addElement(theParagraph);
-        }
-
-        private void startSection() {
-        }
-
-        private void endSection() {
-        }
-
-        private void endComponent() {
-        }
-
-        private void startProgressCourse() {
-        }
-
-        private void endProgressCourse() {
-        }
-
-        private void startIcon(org.jdom2.Element current) {
-        }
-
-        private void endIcon() {
         }
 
         // SchemaをImage入りのテーブルとして作成する
@@ -610,102 +555,106 @@ public class KartePDFMaker extends AbstractPDFMaker {
 
                 // スタンプの種類別に処理する
                 String entity = stamp.getModuleInfoBean().getEntity();
-
-                if (IInfoModel.ENTITY_LABO_TEST.equals(entity)) {
-                    // 検体検査スタンプ
-                    BundleDolphin model = (BundleDolphin) stamp.getModel();
-                    // スタンプ名
-                    StringBuilder sb = new StringBuilder();
-                    sb.append(model.getOrderName());
-                    sb.append("(");
-                    sb.append(stamp.getModuleInfoBean().getStampName());
-                    sb.append(")");
-                    table.addCell(createStampCell(sb.toString(), 2, true));
-                    // ClassCode
-                    table.addCell(createStampCell(model.getClassCode(), 1, true));
-                    // 項目
-                    table.addCell(createStampCell(model.getItemNames(), 3, false));
-                    // bundleNumber
-                    String number = model.getBundleNumber();
-                    if (number != null && number.startsWith("*")) {
-                        String str = hints.parseBundleNum(model);
-                        table.addCell(createStampCell(str, 3, false));
-                    } else if (number != null && !number.trim().isEmpty() && !"1".equals(number)) {
-                        table.addCell(createStampCell("・回数", 1, false));
-                        table.addCell(createStampCell(number, 1, false));
-                        table.addCell(createStampCell(" 回", 1, false));
-                    }
-                    // メモ
-                    String memo = model.getMemo();
-                    if (memo != null && !memo.trim().isEmpty()) {
-                        table.addCell(createStampCell(memo, 3, false));
-                    }
-
-                } else if (IInfoModel.ENTITY_MED_ORDER.equals(entity)) {
-                    // 処方スタンプ
-                    BundleMed model = (BundleMed) stamp.getModel();
-                    // スタンプ名
-                    StringBuilder sb = new StringBuilder();
-                    sb.append("RP）");
-                    sb.append(stamp.getModuleInfoBean().getStampName());
-                    table.addCell(createStampCell(sb.toString(), 2, true));
-                    // 院内・院外、ClassCode
-                    String str = model.getMemo().replace("処方", "") + "/" + model.getClassCode();
-                    table.addCell(createStampCell(str, 2, true));
-                    // 薬剤項目
-                    for (ClaimItem ci : model.getClaimItem()) {
-                        // コメントコードでは・とｘは表示しない
-                        if (!ci.getCode().matches(ClaimConst.REGEXP_COMMENT_MED)) {
-                            table.addCell(createStampCell("・" + ci.getName(), 1, false));
-                            table.addCell(createStampCell(" x " + ci.getNumber(), 1, false));
-                            table.addCell(createStampCell(ci.getUnit(), 1, false));
-                        } else {
-                            table.addCell(createStampCell(ci.getName(), 1, false));
-                            table.addCell(createStampCell(" ", 1, false));
-                            table.addCell(createStampCell(" ", 1, false));
+                switch (entity) {
+                    case IInfoModel.ENTITY_LABO_TEST: {
+                        // 検体検査スタンプ
+                        BundleDolphin model = (BundleDolphin) stamp.getModel();
+                        // スタンプ名
+                        StringBuilder sb = new StringBuilder();
+                        sb.append(model.getOrderName());
+                        sb.append("(");
+                        sb.append(stamp.getModuleInfoBean().getStampName());
+                        sb.append(")");
+                        table.addCell(createStampCell(sb.toString(), 2, true));
+                        // ClassCode
+                        table.addCell(createStampCell(model.getClassCode(), 1, true));
+                        // 項目
+                        table.addCell(createStampCell(model.getItemNames(), 3, false));
+                        // bundleNumber
+                        String number = model.getBundleNumber();
+                        if (number != null && number.startsWith("*")) {
+                            String str = hints.parseBundleNum(model);
+                            table.addCell(createStampCell(str, 3, false));
+                        } else if (number != null && !number.trim().isEmpty() && !"1".equals(number)) {
+                            table.addCell(createStampCell("・回数", 1, false));
+                            table.addCell(createStampCell(number, 1, false));
+                            table.addCell(createStampCell(" 回", 1, false));
                         }
-                    }
-                    // 用法
-                    table.addCell(createStampCell(model.getAdminDisplayString(), 3, false));
-
-                } else {
-                    // その他スタンプ
-                    BundleDolphin model = (BundleDolphin) stamp.getModel();
-                    // スタンプ名
-                    StringBuilder sb = new StringBuilder();
-                    sb.append(model.getOrderName());
-                    sb.append("(");
-                    sb.append(stamp.getModuleInfoBean().getStampName());
-                    sb.append(")");
-                    table.addCell(createStampCell(sb.toString(), 2, true));
-                    // ClassCode
-                    table.addCell(createStampCell(model.getClassCode(), 1, true));
-                    // 項目
-                    for (ClaimItem ci : model.getClaimItem()) {
-                        if (ci.getNumber() != null) {
-                            table.addCell(createStampCell("・" + ci.getName(), 1, false));
-                            table.addCell(createStampCell(" x " + ci.getNumber(), 1, false));
-                            table.addCell(createStampCell(ci.getUnit(), 1, false));
-                        } else {
-                            table.addCell(createStampCell("・" + ci.getName(), 1, false));
-                            table.addCell(createStampCell(" ", 1, false));
-                            table.addCell(createStampCell(" ", 1, false));
+                        // メモ
+                        String memo = model.getMemo();
+                        if (memo != null && !memo.trim().isEmpty()) {
+                            table.addCell(createStampCell(memo, 3, false));
                         }
+                        break;
                     }
-                    // bundleNumber
-                    String number = model.getBundleNumber();
-                    if (number != null && number.startsWith("*")) {
-                        String str = hints.parseBundleNum(model);
-                        table.addCell(createStampCell(str, 3, false));
-                    } else if (number != null && !number.trim().isEmpty() && !"1".equals(number)) {
-                        table.addCell(createStampCell("・回数", 1, false));
-                        table.addCell(createStampCell(number, 1, false));
-                        table.addCell(createStampCell(" 回", 1, false));
+                    case IInfoModel.ENTITY_MED_ORDER: {
+                        // 処方スタンプ
+                        BundleMed model = (BundleMed) stamp.getModel();
+                        // スタンプ名
+                        StringBuilder sb = new StringBuilder();
+                        sb.append("RP）");
+                        sb.append(stamp.getModuleInfoBean().getStampName());
+                        table.addCell(createStampCell(sb.toString(), 2, true));
+                        // 院内・院外、ClassCode
+                        String str = model.getMemo().replace("処方", "") + "/" + model.getClassCode();
+                        table.addCell(createStampCell(str, 2, true));
+                        // 薬剤項目
+                        for (ClaimItem ci : model.getClaimItem()) {
+                            // コメントコードでは・とｘは表示しない
+                            if (!ci.getCode().matches(ClaimConst.REGEXP_COMMENT_MED)) {
+                                table.addCell(createStampCell("・" + ci.getName(), 1, false));
+                                table.addCell(createStampCell(" x " + ci.getNumber(), 1, false));
+                                table.addCell(createStampCell(ci.getUnit(), 1, false));
+                            } else {
+                                table.addCell(createStampCell(ci.getName(), 1, false));
+                                table.addCell(createStampCell(" ", 1, false));
+                                table.addCell(createStampCell(" ", 1, false));
+                            }
+                        }
+                        // 用法
+                        table.addCell(createStampCell(model.getAdminDisplayString(), 3, false));
+                        break;
                     }
-                    // メモ
-                    String memo = model.getMemo();
-                    if (memo != null && !memo.trim().isEmpty()) {
-                        table.addCell(createStampCell(memo, 3, false));
+                    default: {
+                        // その他スタンプ
+                        BundleDolphin model = (BundleDolphin) stamp.getModel();
+                        // スタンプ名
+                        StringBuilder sb = new StringBuilder();
+                        sb.append(model.getOrderName());
+                        sb.append("(");
+                        sb.append(stamp.getModuleInfoBean().getStampName());
+                        sb.append(")");
+                        table.addCell(createStampCell(sb.toString(), 2, true));
+                        // ClassCode
+                        table.addCell(createStampCell(model.getClassCode(), 1, true));
+                        // 項目
+                        for (ClaimItem ci : model.getClaimItem()) {
+                            if (ci.getNumber() != null) {
+                                table.addCell(createStampCell("・" + ci.getName(), 1, false));
+                                table.addCell(createStampCell(" x " + ci.getNumber(), 1, false));
+                                table.addCell(createStampCell(ci.getUnit(), 1, false));
+                            } else {
+                                table.addCell(createStampCell("・" + ci.getName(), 1, false));
+                                table.addCell(createStampCell(" ", 1, false));
+                                table.addCell(createStampCell(" ", 1, false));
+                            }
+                        }
+                        // bundleNumber
+                        String number = model.getBundleNumber();
+                        if (number != null && number.startsWith("*")) {
+                            String str = hints.parseBundleNum(model);
+                            table.addCell(createStampCell(str, 3, false));
+                        } else if (number != null && !number.trim().isEmpty() && !"1".equals(number)) {
+                            table.addCell(createStampCell("・回数", 1, false));
+                            table.addCell(createStampCell(number, 1, false));
+                            table.addCell(createStampCell(" 回", 1, false));
+                        }
+                        // メモ
+                        String memo = model.getMemo();
+                        if (memo != null && !memo.trim().isEmpty()) {
+                            table.addCell(createStampCell(memo, 3, false));
+                        }
+                        break;
                     }
                 }
 

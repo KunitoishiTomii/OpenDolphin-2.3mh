@@ -17,6 +17,7 @@ import org.apache.commons.codec.binary.Base64;
 public class KarteHtmlRenderer {
 
     private static final String COMPONENT_ELEMENT_NAME = "component";
+    private static final String TEXT_ELEMENT_NAME = "text";
     private static final String STAMP_HOLDER = "stampHolder";
     private static final String SCHEMA_HOLDER = "schemaHolder";
     private static final String NAME_NAME = "name";
@@ -25,9 +26,8 @@ public class KarteHtmlRenderer {
     private static final String BR = "<BR>";
     private static final Dimension imageSize = new Dimension(192, 192);
     
-    private enum ELEMENTS {paragraph, content, text, component, icon, kartePane, section, unknown};
     
-    private static KarteHtmlRenderer instance;
+    private static final KarteHtmlRenderer instance;
     
     static {
         instance = new KarteHtmlRenderer();
@@ -51,8 +51,8 @@ public class KarteHtmlRenderer {
 
         // SOA と P のモジュールをわける
         // また夫々の Pane の spec を取得する
-        List<ModuleModel> soaModules = new ArrayList<ModuleModel>();
-        List<ModuleModel> pModules = new ArrayList<ModuleModel>();
+        List<ModuleModel> soaModules = new ArrayList<>();
+        List<ModuleModel> pModules = new ArrayList<>();
         List<SchemaModel> schemas = model.getSchema();
         String soaSpec = null;
         String pSpec = null;
@@ -62,15 +62,19 @@ public class KarteHtmlRenderer {
             bean.setModel((InfoModel) BeanUtils.xmlDecode(bean.getBeanBytes()));
 
             String role = bean.getModuleInfoBean().getStampRole();
-
-            if (role.equals(IInfoModel.ROLE_SOA)) {
-                soaModules.add(bean);
-            } else if (role.equals(IInfoModel.ROLE_SOA_SPEC)) {
-                soaSpec = ((ProgressCourse) bean.getModel()).getFreeText();
-            } else if (role.equals(IInfoModel.ROLE_P)) {
-                pModules.add(bean);
-            } else if (role.equals(IInfoModel.ROLE_P_SPEC)) {
-                pSpec = ((ProgressCourse) bean.getModel()).getFreeText();
+            switch (role) {
+                case IInfoModel.ROLE_SOA:
+                    soaModules.add(bean);
+                    break;
+                case IInfoModel.ROLE_SOA_SPEC:
+                    soaSpec = ((ProgressCourse) bean.getModel()).getFreeText();
+                    break;
+                case IInfoModel.ROLE_P:
+                    pModules.add(bean);
+                    break;
+                case IInfoModel.ROLE_P_SPEC:
+                    pSpec = ((ProgressCourse) bean.getModel()).getFreeText();
+                    break;
             }
         }
 
@@ -160,21 +164,13 @@ public class KarteHtmlRenderer {
             htmlBuff.append("</DIV>");
         }
         
-        private ELEMENTS getValue(String eName) {
-            try {
-                return ELEMENTS.valueOf(eName);
-            } catch (IllegalArgumentException ex) {
-                return ELEMENTS.unknown;
-            }
-        }
 
         private void startElement(XMLStreamReader reader) throws XMLStreamException {
             
             String eName = reader.getName().getLocalPart();
-            ELEMENTS elm = getValue(eName);
             
-            switch (elm) {
-                case text:
+            switch (eName) {
+                case TEXT_ELEMENT_NAME:
                     String text = reader.getElementText();
                     // Component直後の改行を消す
                     if (componentFlg && text.startsWith(CR)) {
@@ -183,7 +179,7 @@ public class KarteHtmlRenderer {
                     componentFlg = false;
                     startContent(text);
                     break;
-                case component:
+                case COMPONENT_ELEMENT_NAME:
                     componentFlg = true;
                     String name = reader.getAttributeValue(null, NAME_NAME);
                     String number = reader.getAttributeValue(null, COMPONENT_ELEMENT_NAME);
@@ -205,25 +201,25 @@ public class KarteHtmlRenderer {
         
         private void startComponent(String name, String number) {
 
-            int index = Integer.valueOf(number);
-            
-            if (name != null && name.equals(STAMP_HOLDER)) {
-                ModuleModel stamp = modules.get(index);
-                String str = StampRenderingHints.getInstance().getStampHtml(stamp);
-                htmlBuff.append(str);
-                
-            } else if (name != null && name.equals(SCHEMA_HOLDER)) {
-                SchemaModel schema = schemas.get(index);
-
-                byte[] bytes = ImageTool.getScaledBytes(schema.getJpegByte(), imageSize, "jpeg");
-                
-                if (bytes != null) {
-                    String base64 = Base64.encodeBase64String(bytes);
-                    htmlBuff.append("<img src=\"data:image/jpeg;base64,\n");
-                    htmlBuff.append(base64);
-                    htmlBuff.append("\" alt=\"img\"><br>");
+            if (name != null) {
+                int index = Integer.valueOf(number);
+                switch (name) {
+                    case STAMP_HOLDER:
+                        ModuleModel stamp = modules.get(index);
+                        String str = StampRenderingHints.getInstance().getStampHtml(stamp);
+                        htmlBuff.append(str);
+                        break;
+                    case SCHEMA_HOLDER:
+                        SchemaModel schema = schemas.get(index);
+                        byte[] bytes = ImageTool.getScaledBytes(schema.getJpegByte(), imageSize, "jpeg");
+                        if (bytes != null) {
+                            String base64 = Base64.encodeBase64String(bytes);
+                            htmlBuff.append("<img src=\"data:image/jpeg;base64,\n");
+                            htmlBuff.append(base64);
+                            htmlBuff.append("\" alt=\"img\"><br>");
+                        }
+                        break;
                 }
-
             }
         }
     }

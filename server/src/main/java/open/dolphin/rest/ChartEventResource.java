@@ -7,6 +7,7 @@ import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.container.CompletionCallback;
 import javax.ws.rs.container.ConnectionCallback;
 import javax.ws.rs.container.Suspended;
+import javax.ws.rs.container.TimeoutHandler;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import open.dolphin.infomodel.ChartEventModel;
@@ -42,7 +43,17 @@ public class ChartEventResource extends AbstractResource {
         String clientUUID = servletReq.getHeader(IInfoModel.CLIENT_UUID);
         
         final AsyncResponseModel arModel = new AsyncResponseModel(ar, fid, clientUUID);
+        
+        // register timeout handler
         ar.setTimeout(asyncTimeout, TimeUnit.MINUTES);
+        ar.setTimeoutHandler(new TimeoutHandler(){
+
+            @Override
+            public void handleTimeout(AsyncResponse ar) {
+                contextHolder.getAsyncResponseList().remove(arModel);
+                ar.resume(Response.noContent().status(Response.Status.SERVICE_UNAVAILABLE).build());
+            }
+        });
         
         // register callbacks
         ar.register(new CompletionCallback(){

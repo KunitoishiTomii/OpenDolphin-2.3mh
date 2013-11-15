@@ -66,13 +66,17 @@ public class StampRenderingHints {
         
         // entityに応じてテンプレートを選択
         Template template;        
-        if (IInfoModel.ENTITY_MED_ORDER.equals(entity)) {
-            template = medTemplate;
-        } else if (IInfoModel.ENTITY_LABO_TEST.equals(entity) 
-                && Project.getBoolean("laboFold", true)) {
-            template = laboTemplate;
-        } else {
-            template = dolphinTemplate;
+        switch (entity) {
+            case IInfoModel.ENTITY_MED_ORDER:
+                template = medTemplate;
+                break;
+            case IInfoModel.ENTITY_LABO_TEST:
+                template = Project.getBoolean("laboFold", true)
+                        ? laboTemplate : dolphinTemplate;
+                break;
+            default:
+                template = dolphinTemplate;
+                break;
         }
         
         VelocityContext context = new VelocityContext();
