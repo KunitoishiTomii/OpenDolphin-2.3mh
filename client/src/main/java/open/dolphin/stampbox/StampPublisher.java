@@ -35,8 +35,8 @@ public class StampPublisher {
     private static final int TT_LOCAL = 0;
     private static final int TT_PUBLIC = 1;
     
-    private StampBoxPlugin stampBox;
-    private String title = "スタンプ公開";
+    private final StampBoxPlugin stampBox;
+    private static final String title = "スタンプ公開";
     
     private JFrame dialog;
     private BlockGlass blockGlass;
@@ -68,8 +68,8 @@ public class StampPublisher {
     private javax.swing.Timer taskTimer;
     private ProgressMonitor monitor;
     private int delayCount;
-    private int maxEstimation = 90*1000;    // 90 秒
-    private int delay = 300;                // 300 mmsec
+    private final int maxEstimation = 90*1000;    // 90 秒
+    private final int delay = 300;                // 300 mmsec
     
     
     public StampPublisher(StampBoxPlugin stampBox) {
@@ -455,7 +455,7 @@ public class StampPublisher {
     private void publish() {
         
         // 公開するStampTreeを取得する
-        ArrayList<StampTree> publishList = new ArrayList<StampTree>(IInfoModel.STAMP_ENTITIES.length);
+        List<StampTree> publishList = new ArrayList<>(IInfoModel.STAMP_ENTITIES.length);
         
         // Entity のカンマ連結用 StringBuilder 
         StringBuilder sb = new StringBuilder();
@@ -490,9 +490,10 @@ public class StampPublisher {
         //
         // 公開する StampTree の XML データを生成する
         //
-        DefaultStampTreeXmlBuilder builder = new DefaultStampTreeXmlBuilder();
-        StampTreeXmlDirector director = new StampTreeXmlDirector(builder);
-        String publishXml = director.build(publishList);
+//masuda^
+        StampTreeXmlBuilder builder = new StampTreeXmlBuilder(StampTreeXmlBuilder.MODE.DEFAULT);
+        String publishXml = builder.build(publishList);
+//masuda$
         byte[] bytes = null;
         try {
             bytes = publishXml.getBytes("UTF-8");
@@ -506,10 +507,10 @@ public class StampPublisher {
         // 公開時の自分（個人用）Stamptreeを保存/更新する
         //
         List<StampTree> personalTree = stampBox.getUserStampBox().getAllTrees();
-        builder = new DefaultStampTreeXmlBuilder();
-        director = new StampTreeXmlDirector(builder);
-        String treeXml = director.build((ArrayList<StampTree>) personalTree);
-        
+//masuda^ 
+        builder = new StampTreeXmlBuilder(StampTreeXmlBuilder.MODE.DEFAULT);
+        String treeXml = builder.build(personalTree);
+//masuda$
         //
         // 個人用のStampTreeModelに公開時のXMLをセットする
         //
@@ -684,10 +685,10 @@ public class StampPublisher {
         // StampTree を表す XML データを生成する
         //
         List<StampTree> list = stampBox.getUserStampBox().getAllTrees();
-        DefaultStampTreeXmlBuilder builder = new DefaultStampTreeXmlBuilder();
-        StampTreeXmlDirector director = new StampTreeXmlDirector(builder);
-        String treeXml = director.build((ArrayList<StampTree>) list);
-        
+//masuda^
+        StampTreeXmlBuilder builder = new StampTreeXmlBuilder(StampTreeXmlBuilder.MODE.DEFAULT);
+        String treeXml = builder.build(list);
+//masuda$
         //
         // 個人用のStampTreeModelにXMLをセットする
         //

@@ -32,8 +32,8 @@ import open.dolphin.tr.StampTreeTransferHandler;
 public class StampBoxPluginExtraMenu extends MouseAdapter {
 
     private JPopupMenu popup;
-    private StampBoxPlugin context;
-    private AbstractStampBox stampBox;
+    private final StampBoxPlugin context;
+    private final AbstractStampBox stampBox;
 
 
     public StampBoxPluginExtraMenu(StampBoxPlugin ctx) {
@@ -88,9 +88,8 @@ public class StampBoxPluginExtraMenu extends MouseAdapter {
                     @Override
                     protected String doInBackground() throws Exception {
 //masuda    stampBytesを含めたデータを書き出す
-                        ExtendedStampTreeXmlBuilder builder = new ExtendedStampTreeXmlBuilder();
-                        ExtendedStampTreeXmlDirector director = new ExtendedStampTreeXmlDirector(builder);
-                        String ret = director.build(stampBox.getAllTrees());
+                        StampTreeXmlBuilder builder = new StampTreeXmlBuilder(StampTreeXmlBuilder.MODE.FILE);
+                        String ret = builder.build(stampBox.getAllTrees());
                         return ret;
                     }
 
@@ -105,9 +104,7 @@ public class StampBoxPluginExtraMenu extends MouseAdapter {
                             } catch (IOException ex) {
                                 processException(ex);
                             }
-                        } catch (InterruptedException ex) {
-                            processException(ex);
-                        } catch (ExecutionException ex) {
+                        } catch (InterruptedException | ExecutionException ex) {
                             processException(ex);
                         }
 
@@ -136,11 +133,7 @@ public class StampBoxPluginExtraMenu extends MouseAdapter {
                 JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.WARNING_MESSAGE );
 
-        if(confirm == JOptionPane.OK_OPTION) {
-            return true;
-        }
-
-        return false;
+        return confirm == JOptionPane.OK_OPTION;
     }
 
     /**
@@ -170,12 +163,11 @@ public class StampBoxPluginExtraMenu extends MouseAdapter {
                     Charset cs = Charset.forName("UTF-8");
                     try (BufferedReader reader = Files.newBufferedReader(path, cs)) {
 //masuda^   stampBytesを含めたデータを読み込む
-                        ExtendedStampTreeDirector director = 
-                                new ExtendedStampTreeDirector(new ExtendedStampTreeBuilder());
-//masuda$
-                        List<StampTree> userTrees = director.build(reader);
+                        StampTreeXmlParser parser = new StampTreeXmlParser(StampTreeXmlParser.MODE.FILE);
+                        List<StampTree> userTrees = parser.parse(reader);
+                        
                         reader.close();
-
+//masuda$
                         int currentTab = stampBox.getSelectedIndex();
                         StampTreeTransferHandler transferHandler = new StampTreeTransferHandler();
                         for (final StampTree stampTree : userTrees) {

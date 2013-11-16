@@ -25,7 +25,7 @@ public class KarteRenderer_2 {
     //private static final String SECTION_NAME = AbstractDocument.SectionElementName;
     private static final String CONTENT_NAME = AbstractDocument.ContentElementName;
     private static final String PARAGRAPH_NAME = AbstractDocument.ParagraphElementName;
-    private static final String TEXT_NAME = KartePaneDumper_2.TEXT_NAME;
+    private static final String TEXT_NAME ="text";
     
     private static final String DEFAULT_STYLE_NAME = "default";
     private static final String ALIGNMENT_STYLE_NAME = "alignment";

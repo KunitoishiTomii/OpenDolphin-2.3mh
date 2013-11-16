@@ -1228,7 +1228,7 @@ public abstract class AbstractStampEditor extends StampEditorConst {
         // 歴史的なごり
         if (!serialized && stampName.startsWith(FROM_EDITOR_STAMP_NAME)) {
             stampName = DEFAULT_STAMP_NAME;
-        } else if (stampName.equals("")) {
+        } else if (stampName.isEmpty()) {
             stampName = DEFAULT_STAMP_NAME;
         }
         AbstractOrderView view = getOrderView();

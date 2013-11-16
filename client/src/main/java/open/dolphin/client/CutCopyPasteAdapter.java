@@ -23,7 +23,11 @@ public class CutCopyPasteAdapter extends MouseAdapter {
     private static final String COPY = "コピー";
     private static final String PASTE = "ペースト";
 
-    private static CutCopyPasteAdapter instance = new CutCopyPasteAdapter();
+    private static final CutCopyPasteAdapter instance;
+    
+    static {
+        instance = new CutCopyPasteAdapter();
+    }
     
     private CutCopyPasteAdapter() {
     }

@@ -10,7 +10,11 @@ import javax.swing.text.JTextComponent;
  */
 public class AutoKanjiListener implements FocusListener {
     
-    private static AutoKanjiListener instance = new AutoKanjiListener();
+    private static final AutoKanjiListener instance;
+    
+    static {
+        instance = new AutoKanjiListener();
+    }
     
     /** Creates a new instance of AutoIMEListener */
     private AutoKanjiListener() {

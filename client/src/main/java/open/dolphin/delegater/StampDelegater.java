@@ -16,7 +16,6 @@ import open.dolphin.infomodel.*;
  */
 public class StampDelegater extends BusinessDelegater {
 
-    private static final String UTF8 = "UTF-8";
     private static final String RES_STAMP_TREE = "stampTree/";
     private static final String RES_STAMP = "stamp/";
     

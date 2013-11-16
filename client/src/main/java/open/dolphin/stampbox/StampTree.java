@@ -40,7 +40,7 @@ public class StampTree extends JTree implements TreeModelListener {
     // StampBox
     private StampBoxPlugin stampBox;
     // Logger, Application
-    private Logger logger;
+    private final Logger logger;
 
     /**
      * StampTreeオブジェクトを生成する。
@@ -781,7 +781,7 @@ public class StampTree extends JTree implements TreeModelListener {
         Enumeration e = theNode.preorderEnumeration();
 
         // このリストのなかに削除するノードとその子を含める
-        final List<String> deleteList = new ArrayList<String>();
+        final List<String> deleteList = new ArrayList<>();
 
         // エディタから発行があるかどうかのフラグ
         boolean hasEditor = false;
@@ -798,7 +798,7 @@ public class StampTree extends JTree implements TreeModelListener {
                 String stampId = info.getStampId();
                 
                 // エディタから発行がある場合は中止する
-                if (info.getStampName().equals("エディタから発行...") && (!info.isSerialized())) {
+                if (IInfoModel.TITLE_FROM_EDITOR.equals(info.getStampName()) && (!info.isSerialized())) {
                     hasEditor = true;
                     break;
                 }
@@ -967,7 +967,7 @@ public class StampTree extends JTree implements TreeModelListener {
         final int h = getHeight() - insets.top - insets.bottom;
         final int x = insets.left;
         int y = insets.top;
-        int nRows = 0;
+        int nRows;
         int startRow = 0;
         int rowH = getRowHeight();
         if (rowH > 0) {

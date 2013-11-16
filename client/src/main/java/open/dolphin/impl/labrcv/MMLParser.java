@@ -1,10 +1,8 @@
-
 package open.dolphin.impl.labrcv;
 
 import java.io.*;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import open.dolphin.client.ClientContext;
 import open.dolphin.infomodel.*;
@@ -69,8 +67,8 @@ public class MMLParser implements LabResultParser {
     private String specimenName;
     private String specimenCode;
 
-    private String encoding;
-    private Logger logger;
+    private final String encoding;
+    private final Logger logger;
     private boolean DEBUG = false;
 
     private static final String MML = "MML";
@@ -94,19 +92,12 @@ public class MMLParser implements LabResultParser {
             return null;
         }
         
-        try {
-            String name = labFile.getName();
-            logger.info(name + " のパースを開始します");
-
-//masuda^
-            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(labFile), encoding));
-            //encoding = CharsetDetector.getEncoding(labFile.getPath());
-            //FileInputStream is = new FileInputStream(labFile);
-            //InputStreamReader in = new InputStreamReader(is, encoding);
-            //BufferedReader reader = new BufferedReader(in);
-//masuda$
+        String name = labFile.getName();
+        logger.info(name + " のパースを開始します");
+        
+        try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(new FileInputStream(labFile), encoding))) {
             parse(reader);
-            reader.close();
             
         } catch (Exception e) {
             e.printStackTrace(System.err);
@@ -154,17 +145,18 @@ public class MMLParser implements LabResultParser {
         
         Element masterIdElement = header.getChild("masterId");
         Element id = masterIdElement.getChild("Id", mmlCm);
-        if (id == null) {
+        
+        if (id != null) {
+            patientId = id.getTextTrim();
+            patientIdType = id.getAttributeValue("type", mmlCm);
+            patientIdTypeTableId = id.getAttributeValue("tableId", mmlCm);
+
+            logger.debug("patientId = " + patientId);
+            logger.debug("patientIdType = " + patientIdType);
+            logger.debug("patientId TableId = " + patientIdTypeTableId);
+        } else {
             logger.info("id is null");
         }
-        
-        patientId = id.getTextTrim();
-        patientIdType = id.getAttributeValue("type", mmlCm);
-        patientIdTypeTableId = id.getAttributeValue("tableId", mmlCm);
-        
-        logger.debug("patientId = " + patientId);
-        logger.debug("patientIdType = " + patientIdType);
-        logger.debug("patientId TableId = " + patientIdTypeTableId);
     }
     
     /**
@@ -174,12 +166,10 @@ public class MMLParser implements LabResultParser {
     private void parseBody(Element body) {
         
         // MmlModuleItem のリストを得る
-        List children = body.getChildren("MmlModuleItem");
+        List<Element> children = body.getChildren("MmlModuleItem");
 
         // それをイテレートする
-        for (Iterator iterator = children.iterator(); iterator.hasNext();) {
-            
-            Element moduleItem = (Element) iterator.next();
+        for (Element moduleItem : children) {
             
             // ModuleItem = docInfo + content なので夫々の要素を得る
             Element docInfo = moduleItem.getChild("docInfo");
@@ -189,7 +179,7 @@ public class MMLParser implements LabResultParser {
             String attr = docInfo.getAttributeValue("contentModuleType");
             
             // LaboTest Module のみをパースする
-            if (attr.equals("test")) {
+            if ("test".equals(attr)) {
                 
                 // uuid を取得する
                 moduleUUID = docInfo.getChild("docId").getChildTextTrim("uid");
@@ -251,251 +241,234 @@ public class MMLParser implements LabResultParser {
     private void parseTestModule(Element testModule) {
         
         // コンテント要素の子を列挙する
-        List children = testModule.getChildren();
-        Iterator iterator = children.iterator();
-        
-        while (iterator.hasNext()) {
+        List<Element> children = testModule.getChildren();
+
+        for (Element child : children) {
             
-            Element child = (Element) iterator.next();
             //String ename = child.getName();
             String qname = child.getQualifiedName();
             Namespace ns = child.getNamespace();
             debug(child.toString());
-            String val = null;
             
-            if (qname.equals("mmlLb:information")) {
-                // mmlLb:information要素をパースする
-                //logger.debug("infomation　をパース中");
-                
-                // 登録ID属性を取得する
-                val = child.getAttributeValue("registId", ns);
-                logger.debug("registId = " + val);
-                laboModule.setRegistId(val);
-                
-                // サンプルタイム属性を取得する
-                val = child.getAttributeValue("sampleTime", ns);
-                logger.debug("sampleTime = " + val);
-                laboModule.setSampleTime(val);
-                
-                int pos = val.indexOf("T");
-                sampleDate = val.substring(0, pos);
-                nLaboModule.setSampleDate(sampleDate);
-                
-                // 登録時刻属性を取得する
-                val = child.getAttributeValue("registTime", ns);
-                logger.debug("registTime = " + val);
-                laboModule.setRegistTime(val);
-                
-                // 報告時間属性を取得する
-                val = child.getAttributeValue("reportTime", ns);
-                logger.debug("reportTime = " + val);
-                laboModule.setReportTime(val);
-
-            } else if (qname.equals("mmlLb:reportStatus")) {
-                // mmlLb:reportStatus要素をパースする
-                //logger.info("reportStatus　をパース中");
-                
-                // レポートステータスを取得する
-                val = child.getTextTrim();
-                logger.debug("reportStatus = " + val);
-                laboModule.setReportStatus(val);
-                
-                // statusCodeを取得する
-                val = child.getAttributeValue("statusCode", ns);
-                logger.debug("statusCode = " + val);
-                laboModule.setReportStatusCode(val);
-
-                if ("final".equals(val)) {
-                    reportStatus = "E";
-                } else if ("mid".equals(val)) {
-                    reportStatus = "M";
-                } else {
-                    reportStatus = null;
-                }
-                
-                // statusCodeIdを取得する
-                val = child.getAttributeValue("statusCodeId", ns);
-                logger.debug("statusCodeId = " + val);
-                laboModule.setReportStatusCodeId(val);
-                
-            } else if (qname.equals("mmlLb:facility")) {
-                // クライアント施設情報をパースする
-                //logger.debug("facility　をパース中");
-                
-                // 施設を取得する
-                val = child.getTextTrim();
-                logger.debug("facility = " + val);
-                laboModule.setClientFacility(val);
-                
-                // 施設コード属性を取得する
-                val = child.getAttributeValue("facilityCode", ns);
-                logger.debug("facilityCode = " + val);
-                laboModule.setClientFacilityCode(val);
-                
-                // 施設コード体系を登録する
-                val = child.getAttributeValue("facilityCodeId", ns);
-                logger.debug("facilityCodeId = " + val);
-                laboModule.setClientFacilityCodeId(val);
-                
-            } else if (qname.equals("mmlLb:laboratoryCenter")) {
-                // ラボセンター情報をパースする
-                //logger.debug("laboratoryCenter　をパース中");
-                
-                // ラボセンターを取得する
-                val = child.getTextTrim();
-                logger.debug("laboratoryCode = " + val);
-                laboModule.setLaboratoryCenter(val);
-                laboCode = val;
-                nLaboModule.setLaboCenterCode(laboCode);
-                
-                // ラボコードを取得する
-                val = child.getAttributeValue("centerCode", ns);
-                logger.debug("centerCode = " + val);
-                laboModule.setLaboratoryCenterCode(val);
-                
-                // ラボコード体系を取得する
-                val = child.getAttributeValue("centerCodeId", ns);
-                logger.debug("centerCodeId = " + val);
-                laboModule.setLaboratoryCenterCodeId(val);
-                
-            } else if (qname.equals("mmlLb:laboTest")) {
-                // labotest要素をパースする
-                //logger.debug("labotest　をパース中");
-                
-            } else if (qname.equals("mmlLb:specimen")) {
-                // 検体情報をパースする
-                //logger.debug("specimen　をパース中");
-                laboSpecimen = new LaboSpecimenValue();
-                laboModule.addLaboSpecimen(laboSpecimen);
-                laboSpecimen.setLaboModule(laboModule);	// 関係を設定する
-                
-                specimenName = "";
-                specimenCode = "";
-                
-            } else if (qname.equals("mmlLb:specimenName")) {
-                // 検体名を取得する
-                //logger.debug("specimenName　をパース中");
-                val = child.getTextTrim();
-                logger.debug("specimenName = " + val);
-                laboSpecimen.setSpecimenName(val);
-                specimenName = val;
-                
-                // spCodeを取得する
-                val = child.getAttributeValue("spCode", ns);
-                logger.debug("spCode = " + val);
-                laboSpecimen.setSpecimenCode(val);
-                specimenCode = val;
-                
-                // spCodeIdを取得する
-                val = child.getAttributeValue("spCodeId", ns);
-                logger.debug("spCodeId = " + val);
-                laboSpecimen.setSpecimenCodeId(val);
-                
-            } else if (qname.equals("mmlLb:item")) {
-                // 検査項目をパースする
-                //logger.debug("item　をパース中");
-                laboItem = new LaboItemValue();
-                //laboItem.setId(GUIDGenerator.generate(laboItem)); // EJB3.0で変更
-                laboSpecimen.addLaboItem(laboItem);
-                laboItem.setLaboSpecimen(laboSpecimen);	// 関係を設定する
-                
-                nLaboItem = new NLaboItem();
-                nLaboItem.setPatientId(patientId);
-                //nLaboItem.setLaboCode(laboCode);
-                nLaboItem.setSampleDate(getYMD(sampleDate));
-                nLaboItem.setSpecimenCode(specimenCode);
-                nLaboItem.setSpecimenName(specimenName);
-                nLaboItem.setReportStatus(reportStatus);
-                nLaboModule.addItem(nLaboItem);
-                nLaboItem.setLaboModule(nLaboModule);
-                
-            } else if (qname.equals("mmlLb:itemName")) {
-                // 検査項目名をパースする
-                //logger.debug("itemName　をパース中");
-
-                // 検査項目名を取得する
-                val = child.getTextTrim();
-                logger.debug("itemName = " + val);
-                laboItem.setItemName(val);
-                nLaboItem.setItemName(val);
-                
-                // 項目コードを取得する
-                val = child.getAttributeValue("itCode", ns);
-                logger.debug("itCode = " + val);
-                laboItem.setItemCode(val);
-                nLaboItem.setItemCode(val);
-                nLaboItem.setParentCode(val);
-
-                // 項目コード体系を取得する
-                val = child.getAttributeValue("itCodeId", ns);
-                logger.debug("itCodeId = " + val);
-                laboItem.setItemCodeId(val);
-
-                // MMLではグループコードがないっす…　生化１とか血液１とか
-                nLaboItem.setGroupCode(specimenCode);
-                nLaboItem.setGroupName(specimenName);
-
-            } else if (qname.equals("mmlLb:value")) {
-                // 検査値をパースする
-                //logger.debug("value　をパース中");
-                
-                // 値を取得する
-                val = child.getTextTrim();
-                logger.debug("value = " + val);
-                laboItem.setItemValue(val);
-                nLaboItem.setValue(val);
-                
-            } else if (qname.equals("mmlLb:numValue")) {
-                // 数値要素をパースする
-                //logger.debug("numValue　をパース中");
-                
-                // up
-                String up = child.getAttributeValue("up", ns);
-                logger.debug("up = " + up);
-                laboItem.setUp(up);
-
-                // low
-                String low = child.getAttributeValue("low", ns);
-                logger.debug("low = " + low);
-                laboItem.setLow(low);
-
-                // normal
-                val = child.getAttributeValue("normal", ns);
-                laboItem.setNormal(val);
-                if (up != null && low != null) {
-                    val = low + "-" + up;
-                    nLaboItem.setNormalValue(val);
-                } else {
-                    logger.debug("low = " + val);
-                    nLaboItem.setNormalValue(val);
-                }
-                logger.debug("normal = " + val);
-
-                // out
-                val = child.getAttributeValue("out", ns);
-                logger.debug("out = " + val);
-                laboItem.setNout(val);
-                if (!"N".equals(val)) {
-                    nLaboItem.setAbnormalFlg(val);
-                }
-
-            } else if (qname.equals("mmlLb:unit")) {
-                // 単位情報を取得する
-                // value
-                val = child.getTextTrim();
-                logger.debug("unit = " + val);
-                laboItem.setUnit(val);
-                nLaboItem.setUnit(val); 
-
-                // uCode
-                val = child.getAttributeValue("uCode", ns);
-                logger.debug("uCode = " + val);
-                laboItem.setUnitCode(val);
-
-                // uCodeId
-                val = child.getAttributeValue("uCodeId", ns);
-                logger.debug("uCodeId = " + val);
-                laboItem.setUnitCodeId(val);
+            if (qname == null) {
+                continue;
+            }
+            
+            switch (qname) {
+                case "mmlLb:information":
+                    // mmlLb:information要素をパースする
+                    //logger.debug("infomation　をパース中");
+                    // 登録ID属性を取得する
+                    String val = child.getAttributeValue("registId", ns);
+                    logger.debug("registId = " + val);
+                    laboModule.setRegistId(val);
+                    // サンプルタイム属性を取得する
+                    val = child.getAttributeValue("sampleTime", ns);
+                    logger.debug("sampleTime = " + val);
+                    laboModule.setSampleTime(val);
+                    int pos = val.indexOf("T");
+                    sampleDate = val.substring(0, pos);
+                    nLaboModule.setSampleDate(sampleDate);
+                    // 登録時刻属性を取得する
+                    val = child.getAttributeValue("registTime", ns);
+                    logger.debug("registTime = " + val);
+                    laboModule.setRegistTime(val);
+                    // 報告時間属性を取得する
+                    val = child.getAttributeValue("reportTime", ns);
+                    logger.debug("reportTime = " + val);
+                    laboModule.setReportTime(val);
+                    break;
+                    
+                case "mmlLb:reportStatus":
+                    // mmlLb:reportStatus要素をパースする
+                    //logger.info("reportStatus　をパース中");
+                    // レポートステータスを取得する
+                    val = child.getTextTrim();
+                    logger.debug("reportStatus = " + val);
+                    laboModule.setReportStatus(val);
+                    // statusCodeを取得する
+                    val = child.getAttributeValue("statusCode", ns);
+                    logger.debug("statusCode = " + val);
+                    laboModule.setReportStatusCode(val);
+                    switch (val) {
+                        case "final":
+                            reportStatus = "E";
+                            break;
+                        case "mid":
+                            reportStatus = "M";
+                            break;
+                        default:
+                            reportStatus = null;
+                            break;
+                    }
+                    val = child.getAttributeValue("statusCodeId", ns);
+                    logger.debug("statusCodeId = " + val);
+                    laboModule.setReportStatusCodeId(val);
+                    break;
+                    
+                case "mmlLb:facility":
+                    // クライアント施設情報をパースする
+                    //logger.debug("facility　をパース中");
+                    // 施設を取得する
+                    val = child.getTextTrim();
+                    logger.debug("facility = " + val);
+                    laboModule.setClientFacility(val);
+                    // 施設コード属性を取得する
+                    val = child.getAttributeValue("facilityCode", ns);
+                    logger.debug("facilityCode = " + val);
+                    laboModule.setClientFacilityCode(val);
+                    // 施設コード体系を登録する
+                    val = child.getAttributeValue("facilityCodeId", ns);
+                    logger.debug("facilityCodeId = " + val);
+                    laboModule.setClientFacilityCodeId(val);
+                    break;
+                    
+                case "mmlLb:laboratoryCenter":
+                    // ラボセンター情報をパースする
+                    //logger.debug("laboratoryCenter　をパース中");
+                    // ラボセンターを取得する
+                    val = child.getTextTrim();
+                    logger.debug("laboratoryCode = " + val);
+                    laboModule.setLaboratoryCenter(val);
+                    laboCode = val;
+                    nLaboModule.setLaboCenterCode(laboCode);
+                    // ラボコードを取得する
+                    val = child.getAttributeValue("centerCode", ns);
+                    logger.debug("centerCode = " + val);
+                    laboModule.setLaboratoryCenterCode(val);
+                    // ラボコード体系を取得する
+                    val = child.getAttributeValue("centerCodeId", ns);
+                    logger.debug("centerCodeId = " + val);
+                    laboModule.setLaboratoryCenterCodeId(val);
+                    break;
+                    
+                case "mmlLb:laboTest":
+                    break;
+                    
+                case "mmlLb:specimen":
+                    // 検体情報をパースする
+                    //logger.debug("specimen　をパース中");
+                    laboSpecimen = new LaboSpecimenValue();
+                    laboModule.addLaboSpecimen(laboSpecimen);
+                    laboSpecimen.setLaboModule(laboModule);	// 関係を設定する
+                    specimenName = "";
+                    specimenCode = "";
+                    break;
+                    
+                case "mmlLb:specimenName":
+                    // 検体名を取得する
+                    //logger.debug("specimenName　をパース中");
+                    val = child.getTextTrim();
+                    logger.debug("specimenName = " + val);
+                    laboSpecimen.setSpecimenName(val);
+                    specimenName = val;
+                    // spCodeを取得する
+                    val = child.getAttributeValue("spCode", ns);
+                    logger.debug("spCode = " + val);
+                    laboSpecimen.setSpecimenCode(val);
+                    specimenCode = val;
+                    // spCodeIdを取得する
+                    val = child.getAttributeValue("spCodeId", ns);
+                    logger.debug("spCodeId = " + val);
+                    laboSpecimen.setSpecimenCodeId(val);
+                    break;
+                    
+                case "mmlLb:item":
+                    // 検査項目をパースする
+                    //logger.debug("item　をパース中");
+                    laboItem = new LaboItemValue();
+                    //laboItem.setId(GUIDGenerator.generate(laboItem)); // EJB3.0で変更
+                    laboSpecimen.addLaboItem(laboItem);
+                    laboItem.setLaboSpecimen(laboSpecimen);	// 関係を設定する
+                    nLaboItem = new NLaboItem();
+                    nLaboItem.setPatientId(patientId);
+                    //nLaboItem.setLaboCode(laboCode);
+                    nLaboItem.setSampleDate(getYMD(sampleDate));
+                    nLaboItem.setSpecimenCode(specimenCode);
+                    nLaboItem.setSpecimenName(specimenName);
+                    nLaboItem.setReportStatus(reportStatus);
+                    nLaboModule.addItem(nLaboItem);
+                    nLaboItem.setLaboModule(nLaboModule);
+                    break;
+                    
+                case "mmlLb:itemName":
+                    // 検査項目名をパースする
+                    //logger.debug("itemName　をパース中");
+                    // 検査項目名を取得する
+                    val = child.getTextTrim();
+                    logger.debug("itemName = " + val);
+                    laboItem.setItemName(val);
+                    nLaboItem.setItemName(val);
+                    // 項目コードを取得する
+                    val = child.getAttributeValue("itCode", ns);
+                    logger.debug("itCode = " + val);
+                    laboItem.setItemCode(val);
+                    nLaboItem.setItemCode(val);
+                    nLaboItem.setParentCode(val);
+                    // 項目コード体系を取得する
+                    val = child.getAttributeValue("itCodeId", ns);
+                    logger.debug("itCodeId = " + val);
+                    laboItem.setItemCodeId(val);
+                    // MMLではグループコードがないっす…　生化１とか血液１とか
+                    nLaboItem.setGroupCode(specimenCode);
+                    nLaboItem.setGroupName(specimenName);
+                    break;
+                    
+                case "mmlLb:value":
+                    // 検査値をパースする
+                    //logger.debug("value　をパース中");
+                    // 値を取得する
+                    val = child.getTextTrim();
+                    logger.debug("value = " + val);
+                    laboItem.setItemValue(val);
+                    nLaboItem.setValue(val);
+                    break;
+                    
+                case "mmlLb:numValue":
+                    // 数値要素をパースする
+                    //logger.debug("numValue　をパース中");
+                    // up
+                    String up = child.getAttributeValue("up", ns);
+                    logger.debug("up = " + up);
+                    laboItem.setUp(up);
+                    // low
+                    String low = child.getAttributeValue("low", ns);
+                    logger.debug("low = " + low);
+                    laboItem.setLow(low);
+                    // normal
+                    val = child.getAttributeValue("normal", ns);
+                    laboItem.setNormal(val);
+                    if (up != null && low != null) {
+                        val = low + "-" + up;
+                        nLaboItem.setNormalValue(val);
+                    } else {
+                        logger.debug("low = " + val);
+                        nLaboItem.setNormalValue(val);
+                    }   logger.debug("normal = " + val);
+                    // out
+                    val = child.getAttributeValue("out", ns);
+                    logger.debug("out = " + val);
+                    laboItem.setNout(val);
+                    if (!"N".equals(val)) {
+                        nLaboItem.setAbnormalFlg(val);
+                    }
+                    break;
+                case "mmlLb:unit":
+                    // 単位情報を取得する
+                    // value
+                    val = child.getTextTrim();
+                    logger.debug("unit = " + val);
+                    laboItem.setUnit(val);
+                    nLaboItem.setUnit(val);
+                    // uCode
+                    val = child.getAttributeValue("uCode", ns);
+                    logger.debug("uCode = " + val);
+                    laboItem.setUnitCode(val);
+                    // uCodeId
+                    val = child.getAttributeValue("uCodeId", ns);
+                    logger.debug("uCodeId = " + val);
+                    laboItem.setUnitCodeId(val);
+                    break;
             }
             
             parseTestModule(child);

@@ -13,7 +13,7 @@ import open.dolphin.client.ImageEntry;
  */
 public class ImageEntryTransferHandler extends DolphinTransferHandler {
     
-    private static ImageEntryTransferHandler instance;
+    private static final ImageEntryTransferHandler instance;
 
     static {
         instance = new ImageEntryTransferHandler();

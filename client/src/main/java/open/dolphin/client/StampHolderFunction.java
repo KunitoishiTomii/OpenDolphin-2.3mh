@@ -27,7 +27,7 @@ public class StampHolderFunction {
     private static final String IN_MED_HOUKATSU = "院内包括";
     private static final String NYUIN_MEDICINE  = "入院処方";
     
-    private static StampHolderFunction instance;
+    private static final StampHolderFunction instance;
     
     // アクション群
     private AbstractAction copyAsTextAction;
