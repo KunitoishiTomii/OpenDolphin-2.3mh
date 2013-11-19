@@ -64,10 +64,7 @@ public class ChartEventServiceBean {
 
     @Asynchronous
     private void deliverChartEvent(List<AsyncResponseModel> sendList, ChartEventModel evt) {
-        
-        for (AsyncResponseModel arModel : sendList) {
-            chartEventResource.deliverChartEvent(arModel, evt);
-        }
+        chartEventResource.deliverChartEvent(sendList, evt);
     }
 
 
