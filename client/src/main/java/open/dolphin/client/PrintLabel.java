@@ -1,5 +1,6 @@
 package open.dolphin.client;
 
+import open.dolphin.common.util.StampRenderingHints;
 import java.io.DataOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
@@ -12,7 +13,7 @@ import open.dolphin.infomodel.*;
 import open.dolphin.project.Project;
 import open.dolphin.setting.MiscSettingPanel;
 import open.dolphin.util.MMLDate;
-import open.dolphin.util.StringTool;
+import open.dolphin.common.util.StringTool;
 
 /**
  * Brother QL-580Nで処方注射ラベルを印刷する

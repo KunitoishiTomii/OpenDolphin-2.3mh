@@ -7,7 +7,7 @@ import java.util.List;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Response;
 import open.dolphin.infomodel.*;
-import open.dolphin.util.BeanUtils;
+import open.dolphin.common.util.BeanUtils;
 
 /**
  * MasudaDelegater
@@ -57,7 +57,7 @@ public class MasudaDelegater extends BusinessDelegater {
         // いつもデコード忘れるｗ
         for (RoutineMedModel model : list) {
             for (ModuleModel mm : model.getModuleList()) {
-                mm.setModel((InfoModel) ModelUtils.xmlDecode(mm.getBeanBytes()));
+                mm.setModel((InfoModel) BeanUtils.xmlDecode(mm.getBeanBytes()));
             }
         }
 
@@ -85,7 +85,7 @@ public class MasudaDelegater extends BusinessDelegater {
         }
         // いつもデコード忘れるｗ
         for (ModuleModel mm : model.getModuleList()) {
-            mm.setModel((InfoModel) ModelUtils.xmlDecode(mm.getBeanBytes()));
+            mm.setModel((InfoModel) BeanUtils.xmlDecode(mm.getBeanBytes()));
         }
 
         return model;

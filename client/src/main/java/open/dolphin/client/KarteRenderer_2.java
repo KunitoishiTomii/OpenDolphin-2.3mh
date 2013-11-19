@@ -8,7 +8,7 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import open.dolphin.infomodel.*;
-import open.dolphin.util.XmlUtils;
+import open.dolphin.common.util.XmlUtils;
 
 
 /**

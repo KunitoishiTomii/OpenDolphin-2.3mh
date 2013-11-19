@@ -21,10 +21,10 @@ import open.dolphin.project.Project;
 import open.dolphin.setting.MiscSettingPanel;
 import open.dolphin.tr.PTransferHandler;
 import open.dolphin.tr.SOATransferHandler;
-import open.dolphin.util.BeanUtils;
+import open.dolphin.common.util.BeanUtils;
 import open.dolphin.util.ImageTool;
 import open.dolphin.util.MMLDate;
-import open.dolphin.util.ZenkakuUtils;
+import open.dolphin.common.util.ZenkakuUtils;
 
 /**
  * 2号カルテクラス。

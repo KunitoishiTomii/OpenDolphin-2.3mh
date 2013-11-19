@@ -40,7 +40,7 @@ import open.dolphin.order.StampEditor;
 import open.dolphin.plugin.PluginLoader;
 import open.dolphin.project.Project;
 import open.dolphin.tr.*;
-import open.dolphin.util.BeanUtils;
+import open.dolphin.common.util.BeanUtils;
 import open.dolphin.util.DicomImageEntry;
 import open.dolphin.util.ImageTool;
 import open.dolphin.util.NonHidePopupMenu;

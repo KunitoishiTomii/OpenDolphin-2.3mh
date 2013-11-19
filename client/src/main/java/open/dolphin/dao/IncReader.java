@@ -4,7 +4,7 @@ import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 import open.dolphin.client.ClientContext;
-import open.dolphin.util.StringTool;
+import open.dolphin.common.util.StringTool;
 
 /**
  * 簡易的に管理テーブルのコピー句を読んでみる。手抜きｗ

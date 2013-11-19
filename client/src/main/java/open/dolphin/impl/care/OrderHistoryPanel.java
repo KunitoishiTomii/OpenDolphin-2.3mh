@@ -16,7 +16,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.TableColumn;
 import open.dolphin.client.ClientContext;
-import open.dolphin.client.StampRenderingHints;
+import open.dolphin.common.util.StampRenderingHints;
 import open.dolphin.infomodel.*;
 import open.dolphin.table.ListTableModel;
 import open.dolphin.table.StripeTableCellRenderer;

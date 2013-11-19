@@ -15,7 +15,7 @@ import open.dolphin.delegater.StampDelegater;
 import open.dolphin.helper.ProgressMonitorWorker;
 import open.dolphin.infomodel.*;
 import open.dolphin.project.Project;
-import open.dolphin.util.BeanUtils;
+import open.dolphin.common.util.BeanUtils;
 import open.dolphin.util.GUIDGenerator;
 import org.apache.log4j.Logger;
 

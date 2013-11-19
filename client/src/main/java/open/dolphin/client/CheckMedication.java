@@ -6,7 +6,7 @@ import javax.swing.JOptionPane;
 import open.dolphin.dao.SqlMiscDao;
 import open.dolphin.delegater.MasudaDelegater;
 import open.dolphin.infomodel.*;
-import open.dolphin.util.ZenkakuUtils;
+import open.dolphin.common.util.ZenkakuUtils;
 
 /**
  * KarteEditorで保存したとき呼ばれる

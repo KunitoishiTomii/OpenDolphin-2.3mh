@@ -1,6 +1,5 @@
 package open.dolphin.stampbox;
 
-import java.io.StringWriter;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -8,10 +7,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import javax.swing.tree.DefaultMutableTreeNode;
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 import open.dolphin.client.ClientContext;
+import open.dolphin.common.util.SimpleXmlWriter;
 import open.dolphin.delegater.StampDelegater;
 import open.dolphin.infomodel.ModuleInfoBean;
 import open.dolphin.infomodel.StampModel;
@@ -44,7 +41,6 @@ public class StampTreeXmlBuilder {
     private static final String ATTR_STAMPID = "stampId";
     private static final String ATTR_STAMPBYTES = "stampBytes";
     private static final String COMMENT = " StampBox Export Data, Creator: %s, Created on: %s ";
-    private static final String CR = "\n";
 
     public static enum MODE {DEFAULT, FILE};
     
@@ -55,7 +51,7 @@ public class StampTreeXmlBuilder {
     private final Map<String, StampModel> allStampMap;
     private final LinkedList<StampTreeNode> stack;
     
-    private XMLStreamWriter writer;
+    private SimpleXmlWriter writer;
     
     
     public StampTreeXmlBuilder(MODE mode) {
@@ -78,61 +74,41 @@ public class StampTreeXmlBuilder {
             logger.debug("StampTree Build start");
         }
 
-        String xml = null;
-        XMLOutputFactory factory = XMLOutputFactory.newInstance();
-        StringWriter stringWriter = new StringWriter();
-        
-        try {
-            writer = factory.createXMLStreamWriter(stringWriter);
-            
-            String treeElementName = ELEM_STAMPTREE;
-            if (mode == MODE.FILE) {
-                // 先にユーザーのスタンプをデータベースからまとめて取得しHashMapに登録しておく
-                getAllStamps();
-                // コメントを設定する
-                writer.writeStartDocument("UTF-8", "1.0");
-                writer.writeCharacters(CR);
-                String facility = Project.getUserModel().getFacilityModel().getFacilityName();
-                String today = new Date().toString();
-                writer.writeComment(String.format(COMMENT, facility, today));
-                writer.writeCharacters(CR);
-                treeElementName = ELEM_EXTENDED_STAMPTREE;
-            }
-            
-            // stampTree elementを書き出す
-            writer.writeStartElement(treeElementName);
-            writer.writeAttribute(ATTR_PROJECT, "open.dolphin");
-            writer.writeAttribute(ATTR_VERSION, "1.0");
-            
-            // 各StampTreeを書き出していく
-            for (StampTree tree : allTrees) {
-                writeStampTree(tree);
-            }
-            
-            // stampTree elementを閉じる
-            writer.writeEndElement();
-            
-            allStampMap.clear();
-            
-        } catch (XMLStreamException ex) {
-            ex.printStackTrace(System.err);
-        } finally {
-            try {
-                if (writer != null) {
-                    // ドキュメントを閉じる
-                    writer.flush();
-                    xml = stringWriter.toString();
-                    writer.close();
-                }
-            } catch (XMLStreamException ex) {
-                ex.printStackTrace(System.err);
-            }
+        writer = new SimpleXmlWriter();
+        writer.setRepcaceXmlChar(true);
+        writer.setReplaceZenkaku(false);
+
+        String treeElementName = ELEM_STAMPTREE;
+        if (mode == MODE.FILE) {
+            // 先にユーザーのスタンプをデータベースからまとめて取得しHashMapに登録しておく
+            getAllStamps();
+            // コメントを設定する
+            writer.writeStartDocument("UTF-8", "1.0");
+            String facility = Project.getUserModel().getFacilityModel().getFacilityName();
+            String today = new Date().toString();
+            writer.writeComment(String.format(COMMENT, facility, today));
+            treeElementName = ELEM_EXTENDED_STAMPTREE;
         }
-        
-        return xml;
+
+        // stampTree elementを書き出す
+        writer.writeStartElement(treeElementName)
+                .writeAttribute(ATTR_PROJECT, "open.dolphin")
+                .writeAttribute(ATTR_VERSION, "1.0");
+
+        // 各StampTreeを書き出していく
+        for (StampTree tree : allTrees) {
+            writeStampTree(tree);
+        }
+
+        // stampTree elementを閉じる
+        writer.writeEndElement();
+
+        allStampMap.clear();
+
+        return writer.getProduct();
     }
     
-    private void writeStampTree(StampTree tree) throws XMLStreamException {
+    private void writeStampTree(StampTree tree) {
         
         // ルートノードを取得しチャイルドのEnumerationを得る
         DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode) tree.getModel().getRoot();
@@ -156,7 +132,7 @@ public class StampTreeXmlBuilder {
         endStakcedElements();
     }
 
-    private void endElementsIfParentNodeChanged(StampTreeNode node) throws XMLStreamException {
+    private void endElementsIfParentNodeChanged(StampTreeNode node) {
         
         // 親Nodeが変更になる場合はwriteEndElementする
         if (stack.isEmpty()) {
@@ -175,7 +151,7 @@ public class StampTreeXmlBuilder {
         }
     }
     
-    private void endStakcedElements() throws XMLStreamException {
+    private void endStakcedElements() {
         for (int i = 0; i < stack.size(); ++i) {
             writer.writeEndElement();
         }
@@ -187,35 +163,35 @@ public class StampTreeXmlBuilder {
     }
 
     
-    private void buildRootNode(StampTreeNode node) throws XMLStreamException {
+    private void buildRootNode(StampTreeNode node) {
         
         if (debug) {
             logger.debug("Build Root Node: " + node.toString());
         }
 
         TreeInfo treeInfo = (TreeInfo) node.getUserObject();
-        writer.writeStartElement(ELEM_ROOT);
-        writer.writeAttribute(ATTR_NAME, treeInfo.getName());
-        writer.writeAttribute(ATTR_ENTITY, treeInfo.getEntity());
+        writer.writeStartElement(ELEM_ROOT)
+                .writeAttribute(ATTR_NAME, treeInfo.getName())
+                .writeAttribute(ATTR_ENTITY, treeInfo.getEntity());
         
         stack.addFirst(node);
     }
     
-    private void buildDirectoryNode(StampTreeNode node) throws XMLStreamException {
+    private void buildDirectoryNode(StampTreeNode node) {
         
         // 子ノードを持たないディレクトリノードは書き出さない
         if (node.getChildCount() > 0) {
             if (debug) {
                 logger.debug("Build Directory Node: " + node.toString());
             }
-            writer.writeStartElement(ELEM_NODE);
-            writer.writeAttribute(ATTR_NAME, node.toString());
+            writer.writeStartElement(ELEM_NODE)
+                    .writeAttribute(ATTR_NAME, node.toString());
             
             stack.addFirst(node);
         }
     }
     
-    private void buildLeafNode(StampTreeNode node) throws XMLStreamException {
+    private void buildLeafNode(StampTreeNode node) {
         
         if (debug) {
             logger.debug("Build Leaf Node: " + node.toString());
@@ -237,11 +213,11 @@ public class StampTreeXmlBuilder {
         }
         
         // stampInfoはEmptyElementである
-        writer.writeEmptyElement(ELEM_STAMPINFO);
-        writer.writeAttribute(ATTR_NAME, node.toString());
-        writer.writeAttribute(ATTR_ROLE, info.getStampRole());
-        writer.writeAttribute(ATTR_ENTITY, info.getEntity());
-        writer.writeAttribute(ATTR_EDITABLE, String.valueOf(info.isEditable()));
+        writer.writeEmptyElement(ELEM_STAMPINFO)
+                .writeAttribute(ATTR_NAME, node.toString())
+                .writeAttribute(ATTR_ROLE, info.getStampRole())
+                .writeAttribute(ATTR_ENTITY, info.getEntity())
+                .writeAttribute(ATTR_EDITABLE, String.valueOf(info.isEditable()));
         
         String memo = info.getStampMemo();
         if (memo != null) {

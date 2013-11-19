@@ -4,6 +4,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.text.SimpleDateFormat;
 import javax.swing.*;
+import open.dolphin.common.util.BeanUtils;
 import open.dolphin.infomodel.*;
 
 /**
@@ -144,7 +145,7 @@ public class BasicInfoInspector {
         final SimpleDateFormat sdf = new SimpleDateFormat(IInfoModel.KARTE_DATE_FORMAT);
         
         ModuleModel mm = summary.getModule(IInfoModel.MODULE_PROGRESS_COURSE);
-        ProgressCourse pc = (ProgressCourse) ModelUtils.xmlDecode(mm.getBeanBytes());
+        ProgressCourse pc = (ProgressCourse) BeanUtils.xmlDecode(mm.getBeanBytes());
         
         boolean first = true;
         String xml = pc.getFreeText();

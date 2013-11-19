@@ -1,5 +1,6 @@
 package open.dolphin.client;
 
+import open.dolphin.common.util.StampHtmlRenderer;
 import java.awt.Frame;
 import java.awt.Point;
 import java.awt.Toolkit;
@@ -13,7 +14,6 @@ import open.dolphin.order.StampEditor;
 import open.dolphin.project.Project;
 import open.dolphin.setting.MiscSettingPanel;
 import open.dolphin.tr.StampHolderTransferHandler;
-import open.dolphin.util.ZenkakuUtils;
 
 /**
  * StampHolderのメソッドをまとめてみた
@@ -520,9 +520,10 @@ public class StampHolderFunction {
         if (sh.getStamp() == null) {
             return;
         }
-
-        String text = sh.getHints().getStampHtml(sh);
-        sh.setText(ZenkakuUtils.toHalfNumber(text));
+    
+        StampHtmlRenderer renderer = new StampHtmlRenderer(sh.getStamp(), sh.getHints());
+        String text = renderer.getStampHtml(true);
+        sh.setText(text);
 
         // カルテペインへ展開された時広がるのを防ぐ
         sh.setMaximumSize(sh.getPreferredSize());

@@ -18,10 +18,10 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import open.dolphin.client.ClientContext;
-import open.dolphin.client.StampRenderingHints;
 import open.dolphin.infomodel.*;
 import open.dolphin.project.Project;
-import open.dolphin.util.XmlUtils;
+import open.dolphin.common.util.StampRenderingHints;
+import open.dolphin.common.util.XmlUtils;
 
 
 /**

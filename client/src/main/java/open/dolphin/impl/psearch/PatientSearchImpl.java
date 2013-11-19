@@ -29,8 +29,8 @@ import open.dolphin.project.Project;
 import open.dolphin.setting.MiscSettingPanel;
 import open.dolphin.table.*;
 import open.dolphin.util.AgeCalculator;
-import open.dolphin.util.StringTool;
-import open.dolphin.util.ZenkakuUtils;
+import open.dolphin.common.util.StringTool;
+import open.dolphin.common.util.ZenkakuUtils;
 
 /**
  * 患者検索PatientSearchPlugin

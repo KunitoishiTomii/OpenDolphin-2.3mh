@@ -18,7 +18,7 @@ import open.dolphin.infomodel.StampModel;
 import open.dolphin.project.Project;
 import open.dolphin.util.GUIDGenerator;
 import open.dolphin.util.HexBytesTool;
-import open.dolphin.util.XmlUtils;
+import open.dolphin.common.util.XmlUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 

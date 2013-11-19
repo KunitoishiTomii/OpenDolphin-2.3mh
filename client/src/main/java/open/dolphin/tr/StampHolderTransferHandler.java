@@ -18,7 +18,7 @@ import open.dolphin.infomodel.ModuleModel;
 import open.dolphin.infomodel.StampModel;
 import open.dolphin.project.Project;
 import open.dolphin.stampbox.StampTreeNode;
-import open.dolphin.util.BeanUtils;
+import open.dolphin.common.util.BeanUtils;
 
 /**
  * StampHolderTransferHandler
