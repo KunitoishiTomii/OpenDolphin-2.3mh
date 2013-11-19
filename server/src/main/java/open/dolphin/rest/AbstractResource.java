@@ -53,6 +53,10 @@ public class AbstractResource implements IRestConstants {
         return (String) servletReq.getAttribute(IInfoModel.FID);
     }
     
+    protected String toJson(Object obj) {
+        return getConverter().toJson(obj);
+    }
+    
     protected StreamingOutput getJsonOutStream(final Object obj) {
         StreamingOutput so = new StreamingOutput() {
 
