@@ -1,4 +1,4 @@
-package open.dolphin.toucha;
+package open.dolphin.common.util;
 
 import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
@@ -7,6 +7,7 @@ import java.io.*;
 /**
  *
  * @author Kazushi Minagawa.
+ * @author modified by masuda, Masuda Naika
  */
 public class BeanUtils {
 
@@ -16,6 +17,17 @@ public class BeanUtils {
         
         try {
             return new String(xmlEncode(bean), UTF8);
+        } catch (Exception e) {
+            e.printStackTrace(System.err);
+        }
+        return null;
+    }
+    
+    public static Object xmlToBean(String beanXml) {
+
+        try {
+            byte[] bytes = beanXml.getBytes(UTF8);
+            return xmlDecode(bytes);
         } catch (Exception e) {
             e.printStackTrace(System.err);
         }
@@ -46,7 +58,24 @@ public class BeanUtils {
         byte[] bytes = xmlEncode(src);
         return xmlDecode(bytes);
     }
-
+    
+/*
+    public static Object deepCopySharedByteBuffer(Object src) {
+        
+        ByteBufferOutputStream os = new ByteBufferOutputStream();
+        XMLEncoder e = new XMLEncoder(os);
+        e.writeObject(src);
+        e.close();
+        
+        ByteBuffer buf = os.getBuffer();
+        buf.flip();
+        
+        ByteBufferInputStream is = new ByteBufferInputStream(buf);
+        XMLDecoder d = new XMLDecoder(is);
+        Object ret = d.readObject();
+        return ret;
+    }
+*/
 /*
 //masuda^   http://forums.sun.com/thread.jspa?threadID=427879
 

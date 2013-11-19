@@ -1,9 +1,5 @@
 package open.dolphin.infomodel;
 
-import java.beans.XMLDecoder;
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -470,28 +466,6 @@ public class ModelUtils implements IInfoModel {
             }
         }
         return sb.toString();
-    }
-
-    public static Object xmlDecode(byte[] bytes) {
-        
-        // target should not be null でヌルポとか何とか…
-        // org.hibernate.collection.PersistentBag でヌルポとか何とか…
-        // なんでやねん
-/*
-        ExceptionListener el = new ExceptionListener() {
-
-            @Override
-            public void exceptionThrown(Exception e) {
-            }
-        };
-*/
-        //XMLDecoder d = new XMLDecoder(new ByteArrayInputStream(bytes));
-        InputStream is = new BufferedInputStream(new ByteArrayInputStream(bytes));
-        XMLDecoder d = new XMLDecoder(is);
-        
-        //d.setExceptionListener(el);
-        
-        return d.readObject();
     }
     
     public static String convertListLongToStr(List<Long> list){

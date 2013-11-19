@@ -1,4 +1,4 @@
-package open.dolphin.infomodel;
+package open.dolphin.common.util;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;

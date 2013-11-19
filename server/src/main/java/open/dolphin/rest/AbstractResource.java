@@ -13,7 +13,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.StreamingOutput;
 import open.dolphin.infomodel.IInfoModel;
 import open.dolphin.infomodel.IRestConstants;
-import open.dolphin.infomodel.JsonConverter;
+import open.dolphin.common.util.JsonConverter;
 
 /**
  * AbstractResource
