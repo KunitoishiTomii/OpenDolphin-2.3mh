@@ -43,7 +43,8 @@ public class ChartEventServiceBean {
         String fid = evt.getFacilityId();
 
         List<AsyncResponseModel> arList = contextHolder.getAsyncResponseList();
-        
+        List<AsyncResponseModel> sendList = new ArrayList<>();
+
         for (AsyncResponseModel arModel : arList) {
 
             String acFid = arModel.getFid();
@@ -53,18 +54,23 @@ public class ChartEventServiceBean {
             // 同一施設かつChartEventModelの発行者でないクライアントに通知する
             // fid == nullなら全部にブロードキャストする
             if (fid == null || (fid.equals(acFid) && !acUUID.equals(issuerUUID))) {
-                deliverChartEvent(arModel, evt);
+                sendList.add(arModel);
             }
-            
+
         }
-    }
-    
-    @Asynchronous
-    private void deliverChartEvent(AsyncResponseModel arModel, ChartEventModel evt) {
-        chartEventResource.deliverChartEvent(arModel, evt);
+
+        deliverChartEvent(sendList, evt);
     }
 
-    
+    @Asynchronous
+    private void deliverChartEvent(List<AsyncResponseModel> sendList, ChartEventModel evt) {
+        
+        for (AsyncResponseModel arModel : sendList) {
+            chartEventResource.deliverChartEvent(arModel, evt);
+        }
+    }
+
+
     public String getServerUUID() {
         return contextHolder.getServerUUID();
     }
