@@ -172,6 +172,7 @@ public class StampHtmlRenderer {
                     .writeEndElement();
 
             writer.writeStartElement(TAG_TD)
+                    .writeAttribute(ATTR_NOWRAP, VALUE_NOWRAP)
                     .writeAttribute(ATTR_COLSPAN, VALUE_TWO)
                     .writeAttribute(ATTR_ALIGN, VALUE_RIGHT)
                     .writeCharacters(classCode)
