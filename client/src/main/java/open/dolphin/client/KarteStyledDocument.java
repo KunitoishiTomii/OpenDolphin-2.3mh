@@ -20,6 +20,7 @@ public class KarteStyledDocument extends DefaultStyledDocument {
     private static final String COMPONENT_ELEMENT_NAME = "component";
     private static final String CR = "\n";
     private static final String SPC = " ";
+    private static final String DEFAULT_STYLE_NAME = StyleContext.DEFAULT_STYLE;
     
     // KartePane
     private KartePane kartePane;
@@ -27,13 +28,14 @@ public class KarteStyledDocument extends DefaultStyledDocument {
     
     /** Creates new TestDocument */
     public KarteStyledDocument() {
+        setLogicalStyle(DEFAULT_STYLE_NAME);
     }
     
     public void setParent(KartePane kartePane) {
         this.kartePane = kartePane;
     }
     
-    public void setLogicalStyle(String str) {
+    public final void setLogicalStyle(String str) {
         Style style = this.getStyle(str);
         this.setLogicalStyle(this.getLength(), style);
     }
@@ -212,7 +214,7 @@ public class KarteStyledDocument extends DefaultStyledDocument {
         try {
             //System.out.println("insertTextStamp");
             clearLogicalStyle();
-            setLogicalStyle("default"); // mac 2207-03-31
+            setLogicalStyle(DEFAULT_STYLE_NAME); // mac 2207-03-31
             int pos = kartePane.getTextPane().getCaretPosition();
             insertString(pos, text, null);
         } catch (BadLocationException e) {

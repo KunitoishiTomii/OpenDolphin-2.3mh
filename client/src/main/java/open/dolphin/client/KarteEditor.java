@@ -505,11 +505,6 @@ public class KarteEditor extends AbstractChartDocument implements IInfoModel, NC
             KarteRenderer_2.getInstance().render(model, soaPane, pPane);
             //KarteRenderer_2 renderer = new KarteRenderer_2(soaPane, pPane);
             //renderer.render(model);
-
-            soaPane.setLogicalStyle("default");
-            if ( pPane != null ) {
-                pPane.setLogicalStyle("default");
-            }
 //masuda$
         }
 

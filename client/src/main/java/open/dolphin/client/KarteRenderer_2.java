@@ -27,8 +27,8 @@ public class KarteRenderer_2 {
     private static final String PARAGRAPH_NAME = AbstractDocument.ParagraphElementName;
     private static final String TEXT_NAME ="text";
     
-    private static final String DEFAULT_STYLE_NAME = "default";
-    private static final String ALIGNMENT_STYLE_NAME = "alignment";
+    private static final String DEFAULT_STYLE_NAME = StyleContext.DEFAULT_STYLE;
+    private static final String ALIGNMENT_STYLE_NAME = "alignment"; // "alignment" not "Alignment"
     
     private static final String NAME_NAME = StyleConstants.NameAttribute.toString();
     private static final String ALIGNMENT_NAME = StyleConstants.Alignment.toString();   // "Alignment" not "alignment"
@@ -135,7 +135,6 @@ public class KarteRenderer_2 {
     private class KartePaneRenderer_StAX {
 
         private KartePane kartePane;
-        private boolean logicalStyle;
         private List<ModuleModel> modules;
         private List<SchemaModel> schemas;
         
@@ -175,6 +174,8 @@ public class KarteRenderer_2 {
                 }
             } catch (XMLStreamException ex) {
             }
+            
+            kartePane.setLogicalStyle(DEFAULT_STYLE_NAME);
         }
 
         private void startElement(XMLStreamReader reader) throws XMLStreamException {
@@ -200,8 +201,7 @@ public class KarteRenderer_2 {
                         kartePane.insertFreeString(CR, null);
                     }
                     componentFlg = false;
-
-                    startContent(foreground, size, bold, italic, underline, text);
+                    startContent(text);
                     break;
                 case COMPONENT_NAME:
                     // StampHolderが連続している場合、間に改行を補う
@@ -239,38 +239,31 @@ public class KarteRenderer_2 {
         private void startParagraph(String alignStr) {
 
             kartePane.setLogicalStyle(DEFAULT_STYLE_NAME);
-            logicalStyle = true;
 
             if (alignStr != null) {
                 DefaultStyledDocument doc = (DefaultStyledDocument) kartePane.getTextPane().getDocument();
-                Style style0 = doc.getStyle(DEFAULT_STYLE_NAME);
-                Style style = doc.addStyle(ALIGNMENT_STYLE_NAME, style0);
+                Style defaultStyle = doc.getStyle(DEFAULT_STYLE_NAME);
+                Style alignmentStyle = doc.addStyle(ALIGNMENT_STYLE_NAME, defaultStyle);
                 switch (alignStr) {
                     case "0":
-                        StyleConstants.setAlignment(style, StyleConstants.ALIGN_LEFT);
+                        StyleConstants.setAlignment(alignmentStyle, StyleConstants.ALIGN_LEFT);
                         break;
                     case "1":
-                        StyleConstants.setAlignment(style, StyleConstants.ALIGN_CENTER);
+                        StyleConstants.setAlignment(alignmentStyle, StyleConstants.ALIGN_CENTER);
                         break;
                     case "2":
-                        StyleConstants.setAlignment(style, StyleConstants.ALIGN_RIGHT);
+                        StyleConstants.setAlignment(alignmentStyle, StyleConstants.ALIGN_RIGHT);
                         break;
                 }
                 kartePane.setLogicalStyle(ALIGNMENT_STYLE_NAME);
-                logicalStyle = true;
             }
         }
 
         private void endParagraph() {
-
-            if (logicalStyle) {
-                kartePane.clearLogicalStyle();
-                logicalStyle = false;
-            }
+            kartePane.clearLogicalStyle();
         }
 
-        private void startContent(String foreground, String size, String bold,
-                String italic, String underline, String text) {
+        private void startContent(String text) {
 
             // 特殊文字を戻す
             text = XmlUtils.fromXml(text);
@@ -318,7 +311,8 @@ public class KarteRenderer_2 {
                         kartePane.flowStamp(stamp);
                         break;
                     case SCHEMA_HOLDER:
-                        kartePane.flowSchema(schemas.get(index));
+                        SchemaModel shcema = schemas.get(index);
+                        kartePane.flowSchema(shcema);
                         break;
                 }
             }
