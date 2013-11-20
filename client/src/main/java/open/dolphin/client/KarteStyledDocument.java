@@ -28,6 +28,7 @@ public class KarteStyledDocument extends DefaultStyledDocument {
     
     /** Creates new TestDocument */
     public KarteStyledDocument() {
+        // コンストラクタでdefalt styleを設定しておく
         setLogicalStyle(DEFAULT_STYLE_NAME);
     }
     

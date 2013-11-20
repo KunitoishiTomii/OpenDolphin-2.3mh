@@ -534,10 +534,10 @@ public class KarteEditor extends AbstractChartDocument implements IInfoModel, NC
         String insGUID = docInfo.getHealthInsuranceGUID();
         if (insGUID != null) {
             ClientContext.getBootLogger().debug("insGUID = " + insGUID);
-            for (int i = 0; i < ins.length; i++) {
-                String GUID = ins[i].getGUID();
+            for (PVTHealthInsuranceModel insModel : ins) {
+                String GUID = insModel.getGUID();
                 if (GUID != null && GUID.equals(insGUID)) {
-                    selecteIns = ins[i].toString();
+                    selecteIns = insModel.toString();
                     ClientContext.getBootLogger().debug("found ins = " + selecteIns);
                     break;
                 }
@@ -932,14 +932,14 @@ public class KarteEditor extends AbstractChartDocument implements IInfoModel, NC
             //
             //String oldStatus = docInfo.getStatus();
 
-            if (oldStatus.equals(STATUS_NONE)) {
+            if (STATUS_NONE.equals(oldStatus)) {
                 //
                 // NONEから確定への遷移 newSave
                 //
                 sendClaim = false;
                 sendLabtest = false;
 
-            } else if (oldStatus.equals(STATUS_TMP)) {
+            } else if (STATUS_TMP.equals(oldStatus)) {
 
                 sendClaim = false;
                 sendLabtest = false;
@@ -1257,13 +1257,13 @@ public class KarteEditor extends AbstractChartDocument implements IInfoModel, NC
     // editor frameを抜いた
     protected class SaveAndSender {
         
-        private Chart chart;
-        private SaveParams params;
-        private ModuleModel[] soa;
-        private String soaText;
-        private SchemaModel[] schemas;
-        private ModuleModel[] plan;
-        private String pText;
+        private final Chart chart;
+        private final SaveParams params;
+        private final ModuleModel[] soa;
+        private final String soaText;
+        private final SchemaModel[] schemas;
+        private final ModuleModel[] plan;
+        private final String pText;
         
         public SaveAndSender(Chart chart,
                 SaveParams params, 
@@ -1322,14 +1322,14 @@ public class KarteEditor extends AbstractChartDocument implements IInfoModel, NC
                         // 編集が開始された時の state を取得する
                         //String oldStatus = docInfo.getStatus();
 
-                        if (oldStatus.equals(STATUS_NONE)) {
+                        if (STATUS_NONE.equals(oldStatus)) {
                             //------------------------------
                             // NONEから確定への遷移 newSave
                             //------------------------------
                             sendClaim = params.isSendClaim();
                             sendLabtest = params.isSendLabtest();
 
-                        } else if (oldStatus.equals(STATUS_TMP)) {
+                        } else if (STATUS_TMP.equals(oldStatus)) {
                             //-------------------------------------
                             // 仮保存から確定へ遷移する場合 saveFromTmp
                             // ------------------------------------
@@ -1826,9 +1826,9 @@ public class KarteEditor extends AbstractChartDocument implements IInfoModel, NC
      */
     protected final class StateMgr {
 
-        private EditorState noDirtyState = new NoDirtyState();
-        private EditorState dirtyState = new DirtyState();
-        private EditorState savedState = new SavedState();
+        private final EditorState noDirtyState = new NoDirtyState();
+        private final EditorState dirtyState = new DirtyState();
+        private final EditorState savedState = new SavedState();
         private EditorState currentState;
 
         public StateMgr() {

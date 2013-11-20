@@ -12,7 +12,7 @@ import open.dolphin.common.util.XmlUtils;
 
 
 /**
- * KarteRenderer_2 改
+ * KarteRenderer_2 大改造
  *
  * @author Kazushi Minagawa, Digital Globe, Inc. 
  * @author modified by masuda, Masuda Naika
@@ -28,7 +28,7 @@ public class KarteRenderer_2 {
     private static final String TEXT_NAME ="text";
     
     private static final String DEFAULT_STYLE_NAME = StyleContext.DEFAULT_STYLE;
-    private static final String ALIGNMENT_STYLE_NAME = "alignment"; // "alignment" not "Alignment"
+    //private static final String ALIGNMENT_STYLE_NAME = "alignment";
     
     private static final String NAME_NAME = StyleConstants.NameAttribute.toString();
     private static final String ALIGNMENT_NAME = StyleConstants.Alignment.toString();   // "Alignment" not "alignment"
@@ -116,7 +116,7 @@ public class KarteRenderer_2 {
             }
 
         } else {
-            new KartePaneRenderer_StAX().renderPane(soaSpec, soaModules, schemas, soaPane);
+            new KartePaneRenderer().renderPane(soaSpec, soaModules, schemas, soaPane);
         }
 
         // P Pane をレンダリングする
@@ -126,13 +126,13 @@ public class KarteRenderer_2 {
                 pPane.stamp(mm);
             }
         } else {
-            new KartePaneRenderer_StAX().renderPane(pSpec, pModules, schemas, pPane);
+            new KartePaneRenderer().renderPane(pSpec, pModules, schemas, pPane);
         }
     }
 
     
-    // StAX版
-    private class KartePaneRenderer_StAX {
+    // StAX風ｗｗｗ
+    private class KartePaneRenderer {
 
         private KartePane kartePane;
         private List<ModuleModel> modules;
@@ -175,6 +175,7 @@ public class KarteRenderer_2 {
             } catch (XMLStreamException ex) {
             }
             
+            // レンダリング後はdefault styleに戻す
             kartePane.setLogicalStyle(DEFAULT_STYLE_NAME);
         }
 
@@ -241,21 +242,23 @@ public class KarteRenderer_2 {
             kartePane.setLogicalStyle(DEFAULT_STYLE_NAME);
 
             if (alignStr != null) {
-                DefaultStyledDocument doc = (DefaultStyledDocument) kartePane.getTextPane().getDocument();
-                Style defaultStyle = doc.getStyle(DEFAULT_STYLE_NAME);
-                Style alignmentStyle = doc.addStyle(ALIGNMENT_STYLE_NAME, defaultStyle);
+                
+                MutableAttributeSet attrSet = new SimpleAttributeSet();
                 switch (alignStr) {
                     case "0":
-                        StyleConstants.setAlignment(alignmentStyle, StyleConstants.ALIGN_LEFT);
+                        StyleConstants.setAlignment(attrSet, StyleConstants.ALIGN_LEFT);
                         break;
                     case "1":
-                        StyleConstants.setAlignment(alignmentStyle, StyleConstants.ALIGN_CENTER);
+                        StyleConstants.setAlignment(attrSet, StyleConstants.ALIGN_CENTER);
                         break;
                     case "2":
-                        StyleConstants.setAlignment(alignmentStyle, StyleConstants.ALIGN_RIGHT);
+                        StyleConstants.setAlignment(attrSet, StyleConstants.ALIGN_RIGHT);
                         break;
                 }
-                kartePane.setLogicalStyle(ALIGNMENT_STYLE_NAME);
+                
+                // ParagraphにAlignmentを設定する
+                KarteStyledDocument doc = kartePane.getDocument();
+                doc.setParagraphAttributes(doc.getLength(), 0, attrSet, false);
             }
         }
 
