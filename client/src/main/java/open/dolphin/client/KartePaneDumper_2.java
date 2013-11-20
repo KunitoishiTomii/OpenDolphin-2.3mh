@@ -161,47 +161,48 @@ public final class KartePaneDumper_2 {
             // 属性の名前を得る
             Object nextName = names.nextElement();
             String attrName = nextName.toString();
+            
+            if (nextName == StyleConstants.ResolveAttribute) {
+                continue;
+            }
 
-            if (nextName != StyleConstants.ResolveAttribute) {
+            logger.debug("attribute name = " + attrName);
 
-                logger.debug("attribute name = " + attrName);
+            // $enameは除外する
+            if (attrName.startsWith("$")) {
+                continue;
+            }
 
-                // $enameは除外する
-                if (attrName.startsWith("$")) {
-                    continue;
-                }
+            // foreground 属性の場合は再構築の際に利用しやすい形に分解する
+            if (FOREGROUND_NAME.equals(attrName)) {
+                Color c = (Color) atts.getAttribute(StyleConstants.Foreground);
+                logger.debug("color = " + c.toString());
+                writer.writeAttribute(attrName, getColorStr(c));
 
-                // foreground 属性の場合は再構築の際に利用しやすい形に分解する
-                if (FOREGROUND_NAME.equals(attrName)) {
-                    Color c = (Color) atts.getAttribute(StyleConstants.Foreground);
-                    logger.debug("color = " + c.toString());
-                    writer.writeAttribute(attrName, getColorStr(c));
+            } else {
+                // 属性セットから名前をキーにして属性オブジェクトを取得する
+                Object attObject = atts.getAttribute(nextName);
+                logger.debug("attribute object = " + attObject.toString());
+
+                if (attObject instanceof StampHolder) {
+                    // スタンプの場合
+                    StampHolder sh = (StampHolder) attObject;
+                    moduleList.add(sh.getStamp());
+                    // ペインに出現する順番をこの属性の値とする
+                    writer.writeAttribute(attrName, moduleList.size() - 1);
+
+                } else if (attObject instanceof SchemaHolder) {
+                    // シュェーマの場合
+                    SchemaHolder ch = (SchemaHolder) attObject;
+                    schemaList.add(ch.getSchema());
+                    // ペインに出現する順番をこの属性の値とする
+                    writer.writeAttribute(attrName, schemaList.size() - 1);
 
                 } else {
-                    // 属性セットから名前をキーにして属性オブジェクトを取得する
-                    Object attObject = atts.getAttribute(nextName);
-                    logger.debug("attribute object = " + attObject.toString());
-
-                    if (attObject instanceof StampHolder) {
-                        // スタンプの場合
-                        StampHolder sh = (StampHolder) attObject;
-                        moduleList.add(sh.getStamp());
-                        String value = String.valueOf(moduleList.size() - 1); // ペインに出現する順番をこの属性の値とする
-                        writer.writeAttribute(attrName, value);
-
-                    } else if (attObject instanceof SchemaHolder) {
-                        // シュェーマの場合
-                        SchemaHolder ch = (SchemaHolder) attObject;
-                        schemaList.add(ch.getSchema());
-                        String value = String.valueOf(schemaList.size() - 1); // ペインに出現する順番をこの属性の値とする
-                        writer.writeAttribute(attrName, value);
-
-                    } else {
                         // それ以外の属性についてはそのまま記録する
-                        // <content start="1" end="2" name="stampHolder"><text>hoge</text></content>となるのを防ぐ
-                        if (!(isContent && NAME_NAME.equals(attrName))) {
-                            writer.writeAttribute(attrName, attObject.toString());
-                        }
+                    // <content start="1" end="2" name="stampHolder"><text>hoge</text></content>となるのを防ぐ
+                    if (!(isContent && NAME_NAME.equals(attrName))) {
+                        writer.writeAttribute(attrName, attObject.toString());
                     }
                 }
             }

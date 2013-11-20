@@ -340,6 +340,12 @@ public class KarteStyledDocument extends DefaultStyledDocument {
     public KartePane getKartePane() {
         return kartePane;
     }
+    
+    public void processBatch(List<ElementSpec> batch) throws BadLocationException {
+        ElementSpec[] inserts = new ElementSpec[batch.size()];
+        batch.toArray(inserts);
+        super.insert(0, inserts);
+    }
 //masuda$
     
 }
