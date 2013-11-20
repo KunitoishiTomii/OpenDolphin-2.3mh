@@ -37,12 +37,13 @@ public final class ChartMediator extends MenuSupport implements UndoableEditList
 
         NONE, SOA, SOA_TEXT, SCHEMA, P, P_TEXT, STAMP
     };
-    private static final int[] FONT_SIZE = {10, 12, 14, 16, 18, 24, 36};
+    //private static final int[] FONT_SIZE = {10, 12, 14, 16, 18, 24, 36};
+    private static final int[] FONT_SIZE = {10, 13, 15, 18, 20, 24, 36};
     private int curSize = 1;
     // CurrentComponent
     private JComponent currentFocusOwner;
     // Undo Manager
-    private UndoManager undoManager;
+    private final UndoManager undoManager;
     private Action undoAction;
     private Action redoAction;
     // ChartImplとEditorFrameでdispose()するとtrueになる
@@ -52,7 +53,7 @@ public final class ChartMediator extends MenuSupport implements UndoableEditList
         super(owner);
         undoManager = new UndoManager();
     }
-
+    
     public void setCurrentFocusOwner(JComponent jc) {
 
         // disposedならリターン。ChartImpl終了後に呼ばれるのを回避するため。
@@ -131,7 +132,7 @@ public final class ChartMediator extends MenuSupport implements UndoableEditList
         // 挿入メニューの時
         // StampBox のツリーをメニューにする
         //-----------------------------------
-        if (cmd.equals(GUIConst.MENU_INSERT)) {
+        if (GUIConst.MENU_INSERT.equals(cmd)) {
 
             selectedMenu.removeAll();
 
@@ -144,12 +145,12 @@ public final class ChartMediator extends MenuSupport implements UndoableEditList
                 // ツリーのエンティティを取得する
                 String entity = tree.getEntity();
 
-                if (entity.equals(IInfoModel.ENTITY_DIAGNOSIS)) {
+                if (IInfoModel.ENTITY_DIAGNOSIS.equals(entity)) {
                     // 傷病名の時、傷病名メニューを構築し追加する
                     selectedMenu.add(createDiagnosisMenu(tree));
                     selectedMenu.addSeparator();
 
-                } else if (entity.equals(IInfoModel.ENTITY_TEXT)) {
+                } else if (IInfoModel.ENTITY_TEXT.equals(entity)) {
                     // テキストの時、テキストメニューを構築し追加する
                     selectedMenu.add(createTextMenu(tree));
                     selectedMenu.addSeparator();
@@ -238,7 +239,7 @@ public final class ChartMediator extends MenuSupport implements UndoableEditList
             enabled = true;
         }
 
-        if (!enabled) {
+        if (!enabled || diagnosis == null) {
             // cjainの先頭がDiagnosisでない場合はめにゅーをdisableにする
             myMenu = new JMenu(stampTree.getTreeName());
             myMenu.setEnabled(false);
@@ -272,7 +273,7 @@ public final class ChartMediator extends MenuSupport implements UndoableEditList
             }
         }
 
-        if (!enabled) {
+        if (!enabled || kartePane == null) {
             myMenu = new JMenu(stampTree.getTreeName());
             myMenu.setEnabled(false);
 
@@ -309,7 +310,7 @@ public final class ChartMediator extends MenuSupport implements UndoableEditList
             }
         }
 
-        if (!enabled) {
+        if (!enabled || kartePane == null) {
             myMenu = new JMenu(stampTree.getTreeName());
             myMenu.setEnabled(false);
 
@@ -343,7 +344,7 @@ public final class ChartMediator extends MenuSupport implements UndoableEditList
 
         if (stampTree != null) {
 
-            if (!enabled) {
+            if (!enabled || diagnosis == null) {
                 JMenu myMenu = new JMenu(stampTree.getTreeName());
                 myMenu.setEnabled(false);
                 popup.add(myMenu);
@@ -378,7 +379,7 @@ public final class ChartMediator extends MenuSupport implements UndoableEditList
         // ASP スタンプボックスで entity に対応する Tree がない場合がある
         if (stampTree != null) {
 
-            if (!enabled) {
+            if (!enabled || kartePane == null) {
                 JMenu myMenu = new JMenu(stampTree.getTreeName());
                 myMenu.setEnabled(false);
                 popup.add(myMenu);
@@ -579,37 +580,29 @@ public final class ChartMediator extends MenuSupport implements UndoableEditList
     }
 
     public void fontLarger() {
+        
         JComponent focusOwner = getCurrentFocusOwner();
-        if (focusOwner != null) {
-            if (curSize < 6) {
+        if (focusOwner != null && focusOwner instanceof JTextPane) {
+            if (curSize < FONT_SIZE.length - 1) {
                 curSize++;
             }
             int size = FONT_SIZE[curSize];
-            Action a = focusOwner.getActionMap().get("font-size-" + size);
-            if (a != null) {
-                a.actionPerformed(new ActionEvent(focusOwner,
-                        ActionEvent.ACTION_PERFORMED,
-                        null));
-            }
-            if (curSize == 6) {
+            performFontSizeAction(size, focusOwner);
+            if (curSize == FONT_SIZE.length - 1) {
                 enabledAction("fontLarger", false);
             }
         }
     }
 
     public void fontSmaller() {
+        
         JComponent focusOwner = getCurrentFocusOwner();
-        if (focusOwner != null) {
+        if (focusOwner != null && focusOwner instanceof JTextPane) {
             if (curSize > 0) {
                 curSize--;
             }
             int size = FONT_SIZE[curSize];
-            Action a = focusOwner.getActionMap().get("font-size-" + size);
-            if (a != null) {
-                a.actionPerformed(new ActionEvent(focusOwner,
-                        ActionEvent.ACTION_PERFORMED,
-                        null));
-            }
+            performFontSizeAction(size, focusOwner);
             if (curSize == 0) {
                 enabledAction("fontSmaller", false);
             }
@@ -617,21 +610,23 @@ public final class ChartMediator extends MenuSupport implements UndoableEditList
     }
 
     public void fontStandard() {
+        
         JComponent focusOwner = getCurrentFocusOwner();
-        if (focusOwner != null) {
+        if (focusOwner != null && focusOwner instanceof JTextPane) {
             curSize = 1;
             int size = FONT_SIZE[curSize];
-            Action a = focusOwner.getActionMap().get("font-size-" + size);
-            if (a != null) {
-                a.actionPerformed(new ActionEvent(focusOwner,
-                        ActionEvent.ACTION_PERFORMED,
-                        null));
-            }
+            performFontSizeAction(size, focusOwner);
             enabledAction("fontSmaller", true);
             enabledAction("fontLarger", true);
         }
     }
-
+    
+    private void performFontSizeAction(int size, JComponent target) {
+        String actionName = String.format("font-size-%d", size);
+        Action a = new StyledEditorKit.FontSizeAction(actionName, size);
+        a.actionPerformed(new ActionEvent(target, ActionEvent.ACTION_PERFORMED, null));
+    }
+    
     public void fontBold() {
         JComponent focusOwner = getCurrentFocusOwner();
         if (focusOwner != null) {
@@ -708,11 +703,7 @@ public final class ChartMediator extends MenuSupport implements UndoableEditList
         JComponent focusOwner = getCurrentFocusOwner();
         if (focusOwner != null) {
             Action a = new StyledEditorKit.ForegroundAction("color", color);
-            if (a != null) {
-                a.actionPerformed(new ActionEvent(focusOwner,
-                        ActionEvent.ACTION_PERFORMED,
-                        "foreground"));
-            }
+            a.actionPerformed(new ActionEvent(focusOwner, ActionEvent.ACTION_PERFORMED, "foreground"));
         }
     }
 
