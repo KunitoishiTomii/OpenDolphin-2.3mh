@@ -100,8 +100,26 @@ public class KarteRenderer_2 {
             Collections.sort(schemas);
         }
         
+        // この処理はなんだろう？ soaPaneにスタンプホルダ―？？？
+        if (soaSpec != null && pSpec != null) {
+            if (soaSpec.contains(NAME_STAMP_HOLDER)) {
+                String sTmp = soaSpec;
+                String pTmp = pSpec;
+                soaSpec = pTmp;
+                pSpec = sTmp;
+            }
+        }
+        
         // SOA Pane をレンダリングする
-        new KartePaneRenderer().renderPane(soaSpec, soaModules, schemas, soaPane);
+        if (soaSpec == null || soaSpec.isEmpty()) {
+            // soaにModuleModelはないはずだよね… あ、モディファイ版にはあるかもしれない…
+            for (ModuleModel mm : soaModules) {
+                soaPane.stamp(mm);
+            }
+
+        } else {
+            new KartePaneRenderer().renderPane(soaSpec, soaModules, schemas, soaPane);
+        }
         
         // P Pane をレンダリングする
         if (pSpec == null || pSpec.isEmpty()) {
