@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.io.StringReader;
 import java.util.*;
 import javax.swing.text.*;
+import javax.swing.text.DefaultStyledDocument.ElementSpec;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -14,12 +15,12 @@ import open.dolphin.tr.StampHolderTransferHandler;
 
 
 /**
- * KarteRenderer_2 大改造
+ * KarteRenderer_2 改  batch insert版
  *
  * @author Kazushi Minagawa, Digital Globe, Inc. 
  * @author modified by masuda, Masuda Naika
  */
-public class KarteRenderer_2 {
+public class KarteRenderer_3 {
 
     private static final String STAMP_HOLDER = "stampHolder";
     private static final String SCHEMA_HOLDER = "schemaHolder";
@@ -29,7 +30,7 @@ public class KarteRenderer_2 {
     private static final String PARAGRAPH_NAME = AbstractDocument.ParagraphElementName;
     private static final String TEXT_NAME ="text";
     
-    private static final String DEFAULT_STYLE_NAME = StyleContext.DEFAULT_STYLE;
+    private static final String DEFAULT_STYLE_NAME = "default";
     //private static final String ALIGNMENT_STYLE_NAME = "alignment";
     
     private static final String NAME_NAME = StyleConstants.NameAttribute.toString();
@@ -44,16 +45,16 @@ public class KarteRenderer_2 {
     
     private static final String CR = "\n";
     
-    private final static KarteRenderer_2 instance;
+    private final static KarteRenderer_3 instance;
     
     static {
-        instance = new KarteRenderer_2();
+        instance = new KarteRenderer_3();
     }
     
-    private KarteRenderer_2() {
+    private KarteRenderer_3() {
     }
     
-    public static KarteRenderer_2 getInstance() {
+    public static KarteRenderer_3 getInstance() {
         return instance;
     }
 
@@ -109,7 +110,7 @@ public class KarteRenderer_2 {
                 pSpec = sTmp;
             }
         }
-        
+
         // SOA Pane をレンダリングする
         if (soaSpec == null || soaSpec.isEmpty()) {
             // soaにModuleModelはないはずだよね… あ、モディファイ版にはあるかもしれない…
@@ -120,7 +121,7 @@ public class KarteRenderer_2 {
         } else {
             new KartePaneRenderer().renderPane(soaSpec, soaModules, schemas, soaPane);
         }
-        
+
         // P Pane をレンダリングする
         if (pSpec == null || pSpec.isEmpty()) {
             // 前回処方など適用
@@ -132,7 +133,7 @@ public class KarteRenderer_2 {
         }
     }
 
-
+    
     // StAX版
     private class KartePaneRenderer {
 
@@ -148,6 +149,9 @@ public class KarteRenderer_2 {
         private String italic;
         private String underline;
         private boolean componentFlg;
+        private boolean isFirstParagraph;
+        
+        private List<ElementSpec> batch;
         
         // http://javatechniques.com/blog/faster-jtextpane-text-insertion-part-i/
         private static final boolean USE_TRICK = true;
@@ -162,6 +166,9 @@ public class KarteRenderer_2 {
             this.modules = modules;
             this.schemas = schemas;
             this.kartePane = kartePane;
+            this.doc = kartePane.getDocument();
+            batch = new ArrayList<>();
+            isFirstParagraph = true;
             
             // Offscreen updates trick
             if (USE_TRICK) {
@@ -192,7 +199,8 @@ public class KarteRenderer_2 {
                             break;
                     }
                 }
-            } catch (XMLStreamException ex) {
+                doc.processBatch(batch);
+            } catch (XMLStreamException | BadLocationException ex) {
             }
             
             // レンダリング後はdefault styleに戻す
@@ -226,28 +234,33 @@ public class KarteRenderer_2 {
                     String text = reader.getElementText();
                     // StampHolder直後に改行を補う
                     if (componentFlg && !text.startsWith(CR)) {
-                        doc.insertFreeString(CR, null);
+                        insertString(CR, null);
                     }
                     componentFlg = false;
+
                     startContent(text);
                     break;
                 case COMPONENT_NAME:
                     // StampHolderが連続している場合、間に改行を補う
                     if (componentFlg) {
-                        doc.insertFreeString(CR, null);
+                        insertString(CR, null);
                     }
                     componentFlg = true;
                     String name = reader.getAttributeValue(null, NAME_NAME);
                     String number = reader.getAttributeValue(null, COMPONENT_NAME);
-                    startComponent(name, number);
+                    int start = Integer.valueOf(reader.getAttributeValue(null, "start"));
+                    int end = Integer.valueOf(reader.getAttributeValue(null, "end"));
+                    try {
+                        startComponent(name, number, start, end);
+                    } catch (BadLocationException ex) {
+
+                    }
                     break;
-                //case SECTION_NAME:
-                //    break;
                 default:
                     break;
             }
         }
-
+        
         private void endElement(XMLStreamReader reader) {
 
             String eName = reader.getName().getLocalPart();
@@ -257,47 +270,55 @@ public class KarteRenderer_2 {
                     endParagraph();
                     break;
                 //case CONTENT_NAME:
+                //    break;
                 //case COMPONENT_NAME:
+                //    break;
                 //case SECTION_NAME:
                 default:
                     break;
             }
         }
-
+        
+        private void endParagraph() {
+            batch.add(new ElementSpec(null, ElementSpec.EndTagType));
+        }
+        
         private void startParagraph(String alignStr) {
-
-            MutableAttributeSet attrSet = new SimpleAttributeSet();
-            attrSet.setResolveParent(defaultStyle);
-
+            
+            MutableAttributeSet attrs = new SimpleAttributeSet();
+            attrs.setResolveParent(defaultStyle);
+            
             if (alignStr != null) {
                 switch (alignStr) {
                     case "0":
-                        StyleConstants.setAlignment(attrSet, StyleConstants.ALIGN_LEFT);
+                        StyleConstants.setAlignment(attrs, StyleConstants.ALIGN_LEFT);
                         break;
                     case "1":
-                        StyleConstants.setAlignment(attrSet, StyleConstants.ALIGN_CENTER);
+                        StyleConstants.setAlignment(attrs, StyleConstants.ALIGN_CENTER);
                         break;
                     case "2":
-                        StyleConstants.setAlignment(attrSet, StyleConstants.ALIGN_RIGHT);
+                        StyleConstants.setAlignment(attrs, StyleConstants.ALIGN_RIGHT);
                         break;
                 }
             }
-            // ParagraphにAlignmentを設定する
-            doc.setParagraphAttributes(doc.getLength(), 0, attrSet, true);
+            
+            if (isFirstParagraph) {
+                // 最初のParagraphにAlignmentを設定する
+                doc.setParagraphAttributes(doc.getLength(), 0, attrs, true);
+                isFirstParagraph = false;
+            } else {
+                batch.add(new ElementSpec(attrs, ElementSpec.StartTagType));
+            }
         }
-
-        private void endParagraph() {
-            doc.clearLogicalStyle();
-        }
-
+        
         private void startContent(String text) {
 
             // 特殊文字を戻す
             text = XmlUtils.fromXml(text);
-
+            
             // このコンテントに設定する AttributeSet
             MutableAttributeSet atts = new SimpleAttributeSet();
-
+            
             // foreground 属性を設定する
             if (foreground != null) {
                 String[] tokens = foreground.split(",");
@@ -325,26 +346,44 @@ public class KarteRenderer_2 {
             }
 
             // テキストを挿入する
-            doc.insertFreeString(text, atts);
+            insertString(text, atts);
         }
         
-        private void startComponent(String name, String number) {
+        private void startComponent(String name, String number, int start, int end) throws BadLocationException {
 
             if (name != null) {
                 int index = Integer.valueOf(number);
                 switch (name) {
-                    case STAMP_HOLDER:
-                        StampHolder stamp = new StampHolder(kartePane, modules.get(index));
-                        stamp.setTransferHandler(StampHolderTransferHandler.getInstance());
-                        doc.flowStamp(stamp);
+                    case STAMP_HOLDER: {
+                        StampHolder sth = new StampHolder(kartePane, modules.get(index));
+                        sth.setEntry(doc.createPosition(start), doc.createPosition(end));
+                        sth.setTransferHandler(StampHolderTransferHandler.getInstance());
+                        // このスタンプ用のスタイルを生成する
+                        SimpleAttributeSet runStyle = new SimpleAttributeSet();
+                        StyleConstants.setComponent(runStyle, sth);
+                        runStyle.addAttribute(NAME_NAME, STAMP_HOLDER);
+                        insertString(" ", runStyle);
                         break;
-                    case SCHEMA_HOLDER:
-                        SchemaHolder schema = new SchemaHolder(kartePane, schemas.get(index));
-                        schema.setTransferHandler(SchemaHolderTransferHandler.getInstance());
-                        doc.flowSchema(schema);
+                    }
+                    case SCHEMA_HOLDER: {
+                        SchemaHolder sch = new SchemaHolder(kartePane, schemas.get(index));
+                        sch.setEntry(doc.createPosition(start), doc.createPosition(end));
+                        sch.setTransferHandler(SchemaHolderTransferHandler.getInstance());
+                        // このスタンプ用のスタイルを生成する
+                        SimpleAttributeSet runStyle = new SimpleAttributeSet();
+                        runStyle.addAttribute(NAME_NAME, SCHEMA_HOLDER);
+                        insertString(" ", runStyle);
                         break;
+                    }
                 }
             }
         }
+        
+        private void insertString(String text, AttributeSet attrs) {
+            char[] chars = text.toCharArray();
+            ElementSpec spec = new ElementSpec(attrs, ElementSpec.ContentType, chars, 0, chars.length);
+            batch.add(spec);
+        }
+
     }
 }
