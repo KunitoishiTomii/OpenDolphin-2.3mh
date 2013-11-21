@@ -22,7 +22,7 @@ import open.dolphin.helper.SimpleWorker;
 import open.dolphin.infomodel.*;
 import open.dolphin.order.LaboTestPanelView.LaboCheckBox;
 import open.dolphin.stampbox.StampBoxPlugin;
-import open.dolphin.util.BeanUtils;
+import open.dolphin.common.util.BeanUtils;
 import open.dolphin.util.MMLDate;
 
 /**

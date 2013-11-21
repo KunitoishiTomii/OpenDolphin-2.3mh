@@ -11,6 +11,7 @@ import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -26,6 +27,7 @@ import javax.swing.event.CaretListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledEditorKit;
@@ -40,7 +42,7 @@ import open.dolphin.order.StampEditor;
 import open.dolphin.plugin.PluginLoader;
 import open.dolphin.project.Project;
 import open.dolphin.tr.*;
-import open.dolphin.util.BeanUtils;
+import open.dolphin.common.util.BeanUtils;
 import open.dolphin.util.DicomImageEntry;
 import open.dolphin.util.ImageTool;
 import open.dolphin.util.NonHidePopupMenu;
@@ -96,7 +98,7 @@ public class KartePane implements DocumentListener, MouseListener,
     // 保存後及びブラウズ時の編集不可を表すカラー
     private Color uneditableColor = UNEDITABLE_COLOR;
 
-    private Logger logger;
+    private final Logger logger;
 
     /** 
      * Creates new KartePane2 
@@ -385,7 +387,7 @@ public class KartePane implements DocumentListener, MouseListener,
         try {
             KarteStyledDocument doc = getDocument();
             doc.remove(0, doc.getLength());
-        } catch (Exception e) {
+        } catch (BadLocationException e) {
             e.printStackTrace(System.err);
         }
 
@@ -569,7 +571,7 @@ public class KartePane implements DocumentListener, MouseListener,
             int freeLen = len - freeTop;
             freeLen = freeLen < TITLE_LENGTH ? freeLen : TITLE_LENGTH;
             return getTextPane().getText(freeTop, freeLen).trim();
-        } catch (Exception e) {
+        } catch (BadLocationException e) {
             e.printStackTrace(System.err);
         }
         return null;
@@ -1195,7 +1197,7 @@ public class KartePane implements DocumentListener, MouseListener,
             width = reader.getWidth(0);
             height = reader.getHeight(0);
             
-        } catch (Exception e) {
+        } catch (IOException e) {
             logger.warn(e.getMessage());
             return;
         }
@@ -1217,7 +1219,7 @@ public class KartePane implements DocumentListener, MouseListener,
 
         String prop = e.getPropertyName();
 
-        if (prop.equals("imageProp")) {
+        if ("imageProp".equals(prop)) {
 
             SchemaModel schema = (SchemaModel) e.getNewValue();
 
@@ -1226,7 +1228,7 @@ public class KartePane implements DocumentListener, MouseListener,
                 stampSchema(schema);
             }
 
-        } else if (prop.equals(AbstractStampEditor.VALUE_PROP)) {
+        } else if (AbstractStampEditor.VALUE_PROP.equals(prop)) {
 
             Object o = e.getNewValue();
 
@@ -1289,12 +1291,12 @@ public class KartePane implements DocumentListener, MouseListener,
 
     /**
      * このペインからスタンプを削除する。
-     * @param sh 削除するスタンプのホルダリスト
+     * @param stamps 削除するスタンプのホルダリスト
      */
-    public void removeStamp(StampHolder[] sh) {
-        if (sh != null && sh.length > 0) {
-            for (int i = 0; i < sh.length; i++) {
-                removeStamp(sh[i]);
+    public void removeStamp(StampHolder[] stamps) {
+        if (stamps != null && stamps.length > 0) {
+            for (StampHolder sh : stamps) {
+                removeStamp(sh);
             }
         }
     }
@@ -1314,12 +1316,12 @@ public class KartePane implements DocumentListener, MouseListener,
 
     /**
      * このペインからシェーマを削除する。
-     * @param sh 削除するシェーマのホルダリスト
+     * @param schemas 削除するシェーマのホルダリスト
      */
-    public void removeSchema(SchemaHolder[] sh) {
-        if (sh != null && sh.length > 0) {
-            for (int i = 0; i < sh.length; i++) {
-                removeSchema(sh[i]);
+    public void removeSchema(SchemaHolder[] schemas) {
+        if (schemas != null && schemas.length > 0) {
+            for (SchemaHolder schema : schemas) {
+                removeSchema(schema);
             }
         }
     }
@@ -1352,7 +1354,7 @@ public class KartePane implements DocumentListener, MouseListener,
     private List<StampHolder> getRPStamps() {
         KarteStyledDocument doc = getDocument();
         Element root = doc.getDefaultRootElement();
-        List<StampHolder> list = new ArrayList<StampHolder>(3);
+        List<StampHolder> list = new ArrayList<>(3);
         dumpRPElement(root, list);
         return list;
     }
@@ -1412,7 +1414,7 @@ public class KartePane implements DocumentListener, MouseListener,
     private List<StampHolder> getStamps(String entity) {
         KarteStyledDocument doc = getDocument();
         Element root = doc.getDefaultRootElement();
-        List<StampHolder> list = new ArrayList<StampHolder>(3);
+        List<StampHolder> list = new ArrayList<>(3);
         dumpElement(root, list, entity);
         return list;
     }

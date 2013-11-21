@@ -3,6 +3,7 @@ package open.dolphin.toucha;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import open.dolphin.common.util.SimpleXmlWriter;
 import open.dolphin.infomodel.NLaboItem;
 import open.dolphin.infomodel.NLaboModule;
 import open.dolphin.infomodel.SampleDateComparator;
@@ -13,8 +14,15 @@ import open.dolphin.infomodel.SampleDateComparator;
  * @author masuda, Masuda Naika
  */
 public class LaboHtmlRenderer {
-
-    private static final String[] TR_BG = {"<tr>", "<tr bgcolor=\"aliceblue\">"};
+    
+    private static final String TAG_FONT = "FONT";
+    private static final String TAG_TABLE = "TABLE";
+    private static final String TAG_TR = "TR";
+    private static final String TAG_TD = "TD";
+    private static final String TAG_TH = "TH";
+    private static final String ATTR_COLOR = "COLOR";
+    private static final String ATTR_BGCOLOR = "BGCOLOR";
+    
     private static final LaboHtmlRenderer instance;
 
     static {
@@ -39,14 +47,20 @@ public class LaboHtmlRenderer {
         List<String> header = getHeader(modules);
         List<LabTestRowObject> rowList = getRowList(modules);
         
-        StringBuilder sb = new StringBuilder();
-        sb.append("<table>");
+        SimpleXmlWriter writer = new SimpleXmlWriter();
+        writer.setRepcaceXmlChar(true);
+        writer.setReplaceZenkaku(false);
+        
+        writer.writeStartElement(TAG_TABLE);
         // ヘッダ
-        sb.append("<tr bgcolor=\"lightgrey\">");
+        writer.writeStartElement(TAG_TR)
+                .writeAttribute(ATTR_BGCOLOR, "lightgrey");
         for (String value : header) {
-            sb.append("<th>").append(value).append("</th>");
+            writer.writeStartElement(TAG_TH)
+                    .writeCharacters(value)
+                    .writeEndElement();
         }
-        sb.append("</tr>");
+        writer.writeEndElement();
         
         for (int row = 0; row < rowList.size(); ++row) {
             LabTestRowObject rowObj = rowList.get(row);
@@ -54,44 +68,57 @@ public class LaboHtmlRenderer {
             // 項目名
             String specimenName = rowObj.getSpecimenName();
             if (specimenName != null) {
-                sb.append("<tr bgcolor=\"gold\">");
+                writer.writeStartElement(TAG_TR)
+                        .writeAttribute(ATTR_BGCOLOR, "gold");
                 for (int i = 0; i < modules.size() + 1; ++i) {
                     // 項目グループ
-                    sb.append("<td>").append(specimenName).append("</td>");
+                    writer.writeStartElement(TAG_TD)
+                            .writeCharacters(specimenName)
+                            .writeEndElement();
                 }
             } else {
-                sb.append(TR_BG[row & 1]);
-                sb.append("<td>").append(rowObj.getItemName()).append("</td>");
+                writer.writeStartElement(TAG_TR);
+                if ((row & 1) == 1) {
+                    writer.writeAttribute(ATTR_BGCOLOR, "aliceblue");
+                }
+                writer.writeStartElement(TAG_TD)
+                        .writeCharacters(rowObj.getItemName())
+                        .writeEndElement();
+
                 List<LabTestValueObject> values = rowObj.getValues();
                 if (values != null) {
                     for (LabTestValueObject value : values) {
                         // 項目
-                        sb.append("<td>");
-                        if (value != null) {
-                            String out = value.getOut();
-                            switch (out) {
+                        writer.writeStartElement(TAG_TD);
+                        if (value != null && value.getOut() != null) {
+                            switch (value.getOut()) {
                                 case "H":
-                                    sb.append("<font color=\"red\">");
-                                    sb.append(value.getValue()).append("</font>");
+                                    writer.writeStartElement(TAG_FONT)
+                                            .writeAttribute(ATTR_COLOR, "red")
+                                            .writeCharacters(value.getValue())
+                                            .writeEndElement();
                                     break;
                                 case "L":
-                                    sb.append("<font color=\"blue\">");
-                                    sb.append(value.getValue()).append("</font>");
+                                    writer.writeStartElement(TAG_FONT)
+                                            .writeAttribute(ATTR_COLOR, "blue")
+                                            .writeCharacters(value.getValue())
+                                            .writeEndElement();
                                     break;
                                 default:
-                                    sb.append(value.getValue());
+                                    writer.writeCharacters(value.getValue());
                                     break;
                             }
-                           }
-                        sb.append("</td>");
+                        }
+                        writer.writeEndElement();
                     }
                 }
             }
-            sb.append("</tr>");
+            writer.writeEndElement();
         }
 
-        sb.append("</table>");
-        return sb.toString();
+        writer.writeEndDocument();
+        
+        return writer.getProduct();
     }
     
     private List<String> getHeader(List<NLaboModule> modules) {

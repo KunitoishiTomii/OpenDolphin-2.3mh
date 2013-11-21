@@ -14,7 +14,8 @@ import javax.ws.rs.core.Response;
 import open.dolphin.delegater.ChartEventDelegater;
 import open.dolphin.infomodel.*;
 import open.dolphin.project.Project;
-import open.dolphin.util.BeanUtils;
+import open.dolphin.common.util.BeanUtils;
+import open.dolphin.common.util.JsonConverter;
 import open.dolphin.util.NamedThreadFactory;
 
 /**

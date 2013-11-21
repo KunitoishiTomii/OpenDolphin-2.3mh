@@ -8,11 +8,13 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import open.dolphin.infomodel.*;
-import open.dolphin.util.XmlUtils;
+import open.dolphin.common.util.XmlUtils;
+import open.dolphin.tr.SchemaHolderTransferHandler;
+import open.dolphin.tr.StampHolderTransferHandler;
 
 
 /**
- * KarteRenderer_2 改
+ * KarteRenderer_2 大改造
  *
  * @author Kazushi Minagawa, Digital Globe, Inc. 
  * @author modified by masuda, Masuda Naika
@@ -27,8 +29,8 @@ public class KarteRenderer_2 {
     private static final String PARAGRAPH_NAME = AbstractDocument.ParagraphElementName;
     private static final String TEXT_NAME ="text";
     
-    private static final String DEFAULT_STYLE_NAME = "default";
-    private static final String ALIGNMENT_STYLE_NAME = "alignment";
+    private static final String DEFAULT_STYLE_NAME = StyleContext.DEFAULT_STYLE;
+    //private static final String ALIGNMENT_STYLE_NAME = "alignment";
     
     private static final String NAME_NAME = StyleConstants.NameAttribute.toString();
     private static final String ALIGNMENT_NAME = StyleConstants.Alignment.toString();   // "Alignment" not "alignment"
@@ -107,7 +109,7 @@ public class KarteRenderer_2 {
                 pSpec = sTmp;
             }
         }
-
+        
         // SOA Pane をレンダリングする
         if (soaSpec == null || soaSpec.isEmpty()) {
             // soaにModuleModelはないはずだよね… あ、モディファイ版にはあるかもしれない…
@@ -116,9 +118,9 @@ public class KarteRenderer_2 {
             }
 
         } else {
-            new KartePaneRenderer_StAX().renderPane(soaSpec, soaModules, schemas, soaPane);
+            new KartePaneRenderer().renderPane(soaSpec, soaModules, schemas, soaPane);
         }
-
+        
         // P Pane をレンダリングする
         if (pSpec == null || pSpec.isEmpty()) {
             // 前回処方など適用
@@ -126,16 +128,16 @@ public class KarteRenderer_2 {
                 pPane.stamp(mm);
             }
         } else {
-            new KartePaneRenderer_StAX().renderPane(pSpec, pModules, schemas, pPane);
+            new KartePaneRenderer().renderPane(pSpec, pModules, schemas, pPane);
         }
     }
 
-    
-    // StAX版
-    private class KartePaneRenderer_StAX {
+
+    // StAX風ｗｗｗ
+    private class KartePaneRenderer {
 
         private KartePane kartePane;
-        private boolean logicalStyle;
+        private KarteStyledDocument doc;
         private List<ModuleModel> modules;
         private List<SchemaModel> schemas;
         
@@ -145,6 +147,9 @@ public class KarteRenderer_2 {
         private String italic;
         private String underline;
         private boolean componentFlg;
+        
+        // http://javatechniques.com/blog/faster-jtextpane-text-insertion-part-i/
+        private static final boolean USE_TRICK = true;
 
         /**
          * TextPane Dump の XML を解析する。
@@ -156,6 +161,16 @@ public class KarteRenderer_2 {
             this.modules = modules;
             this.schemas = schemas;
             this.kartePane = kartePane;
+            
+            // Offscreen updates trick
+            if (USE_TRICK) {
+                doc = new KarteStyledDocument();
+                doc.setParent(kartePane);
+                DefaultStyledDocument dummy = new DefaultStyledDocument();
+                kartePane.getTextPane().setDocument(dummy);
+            } else {
+                doc = kartePane.getDocument();
+            }
             
             try {
                 XMLInputFactory factory = XMLInputFactory.newInstance();
@@ -174,6 +189,13 @@ public class KarteRenderer_2 {
                     }
                 }
             } catch (XMLStreamException ex) {
+            }
+            
+            // レンダリング後はdefault styleに戻す
+            doc.setLogicalStyle(DEFAULT_STYLE_NAME);
+            
+            if (USE_TRICK) {
+                kartePane.getTextPane().setDocument(doc);
             }
         }
 
@@ -197,16 +219,15 @@ public class KarteRenderer_2 {
                     String text = reader.getElementText();
                     // StampHolder直後に改行を補う
                     if (componentFlg && !text.startsWith(CR)) {
-                        kartePane.insertFreeString(CR, null);
+                        doc.insertFreeString(CR, null);
                     }
                     componentFlg = false;
-
-                    startContent(foreground, size, bold, italic, underline, text);
+                    startContent(text);
                     break;
                 case COMPONENT_NAME:
                     // StampHolderが連続している場合、間に改行を補う
                     if (componentFlg) {
-                        kartePane.insertFreeString(CR, null);
+                        doc.insertFreeString(CR, null);
                     }
                     componentFlg = true;
                     String name = reader.getAttributeValue(null, NAME_NAME);
@@ -238,39 +259,33 @@ public class KarteRenderer_2 {
 
         private void startParagraph(String alignStr) {
 
-            kartePane.setLogicalStyle(DEFAULT_STYLE_NAME);
-            logicalStyle = true;
+            doc.setLogicalStyle(DEFAULT_STYLE_NAME);
 
             if (alignStr != null) {
-                DefaultStyledDocument doc = (DefaultStyledDocument) kartePane.getTextPane().getDocument();
-                Style style0 = doc.getStyle(DEFAULT_STYLE_NAME);
-                Style style = doc.addStyle(ALIGNMENT_STYLE_NAME, style0);
+                
+                MutableAttributeSet attrSet = new SimpleAttributeSet();
                 switch (alignStr) {
                     case "0":
-                        StyleConstants.setAlignment(style, StyleConstants.ALIGN_LEFT);
+                        StyleConstants.setAlignment(attrSet, StyleConstants.ALIGN_LEFT);
                         break;
                     case "1":
-                        StyleConstants.setAlignment(style, StyleConstants.ALIGN_CENTER);
+                        StyleConstants.setAlignment(attrSet, StyleConstants.ALIGN_CENTER);
                         break;
                     case "2":
-                        StyleConstants.setAlignment(style, StyleConstants.ALIGN_RIGHT);
+                        StyleConstants.setAlignment(attrSet, StyleConstants.ALIGN_RIGHT);
                         break;
                 }
-                kartePane.setLogicalStyle(ALIGNMENT_STYLE_NAME);
-                logicalStyle = true;
+                
+                // ParagraphにAlignmentを設定する
+                doc.setParagraphAttributes(doc.getLength(), 0, attrSet, false);
             }
         }
 
         private void endParagraph() {
-
-            if (logicalStyle) {
-                kartePane.clearLogicalStyle();
-                logicalStyle = false;
-            }
+            doc.clearLogicalStyle();
         }
 
-        private void startContent(String foreground, String size, String bold,
-                String italic, String underline, String text) {
+        private void startContent(String text) {
 
             // 特殊文字を戻す
             text = XmlUtils.fromXml(text);
@@ -305,7 +320,7 @@ public class KarteRenderer_2 {
             }
 
             // テキストを挿入する
-            kartePane.insertFreeString(text, atts);
+            doc.insertFreeString(text, atts);
         }
         
         private void startComponent(String name, String number) {
@@ -314,11 +329,14 @@ public class KarteRenderer_2 {
                 int index = Integer.valueOf(number);
                 switch (name) {
                     case STAMP_HOLDER:
-                        ModuleModel stamp = modules.get(index);
-                        kartePane.flowStamp(stamp);
+                        StampHolder stamp = new StampHolder(kartePane, modules.get(index));
+                        stamp.setTransferHandler(StampHolderTransferHandler.getInstance());
+                        doc.flowStamp(stamp);
                         break;
                     case SCHEMA_HOLDER:
-                        kartePane.flowSchema(schemas.get(index));
+                        SchemaHolder schema = new SchemaHolder(kartePane, schemas.get(index));
+                        schema.setTransferHandler(SchemaHolderTransferHandler.getInstance());
+                        doc.flowSchema(schema);
                         break;
                 }
             }

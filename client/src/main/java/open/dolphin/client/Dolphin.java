@@ -27,6 +27,7 @@ import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.MenuEvent;
+import open.dolphin.common.util.StampRenderingHints;
 import open.dolphin.dao.SqlDaoBean;
 import open.dolphin.delegater.PatientDelegater;
 import open.dolphin.delegater.StampDelegater;
@@ -47,8 +48,6 @@ import open.dolphin.server.PVTServer;
 import open.dolphin.setting.MiscSettingPanel;
 import open.dolphin.setting.ProjectSettingDialog;
 import open.dolphin.stampbox.StampBoxPlugin;
-//import org.jboss.resteasy.plugins.providers.RegisterBuiltin;
-//import org.jboss.resteasy.spi.ResteasyProviderFactory;
 
 /**
  * アプリケーションのメインウインドウクラス。
@@ -482,6 +481,12 @@ public class Dolphin implements MainWindow, IChartEventListener {
         cel = ChartEventListener.getInstance();
         cel.start();
         cel.addListener(this);
+        
+        // StampRenderingHintsの初期設置をする
+        int cellPadding = Project.getInt("stampHolderCellPadding", 0);
+        StampRenderingHints.getInstance().setCellPadding(cellPadding);
+        boolean laboFold = Project.getBoolean("laboFold", true);
+        StampRenderingHints.getInstance().setLaboFold(laboFold);
 //masuda$
         
         //----------------------------------------

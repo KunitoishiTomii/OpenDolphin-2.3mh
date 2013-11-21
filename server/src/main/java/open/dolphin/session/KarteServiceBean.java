@@ -7,6 +7,7 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
+import open.dolphin.common.util.BeanUtils;
 import open.dolphin.infomodel.*;
 import open.dolphin.mbean.ServletContextHolder;
 import org.hibernate.search.jpa.FullTextEntityManager;
@@ -964,7 +965,7 @@ public class KarteServiceBean {
             if (IInfoModel.MODULE_PROGRESS_COURSE.equals(entity)) {
                 continue;
             }
-            mm.setModel((InfoModel) ModelUtils.xmlDecode(mm.getBeanBytes()));
+            mm.setModel((InfoModel) BeanUtils.xmlDecode(mm.getBeanBytes()));
             ClaimBundle cb = (ClaimBundle) mm.getModel();
             if (cb == null) {
                 continue;

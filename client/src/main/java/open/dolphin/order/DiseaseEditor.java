@@ -23,8 +23,8 @@ import open.dolphin.project.Project;
 import open.dolphin.table.ListTableModel;
 import open.dolphin.table.StripeTableCellRenderer;
 import open.dolphin.tr.RegisteredDiagnosisTransferHandler;
-import open.dolphin.util.BeanUtils;
-import open.dolphin.util.StringTool;
+import open.dolphin.common.util.BeanUtils;
+import open.dolphin.common.util.StringTool;
 
 /**
  * 傷病名編集テーブルクラス。

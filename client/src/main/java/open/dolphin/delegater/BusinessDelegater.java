@@ -9,7 +9,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import open.dolphin.client.ClientContext;
 import open.dolphin.infomodel.*;
-import open.dolphin.util.BeanUtils;
+import open.dolphin.common.util.BeanUtils;
+import open.dolphin.common.util.JsonConverter;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 

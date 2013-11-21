@@ -1,4 +1,4 @@
-package open.dolphin.util;
+package open.dolphin.common.util;
 
 /**
  * Utilities to handel String.

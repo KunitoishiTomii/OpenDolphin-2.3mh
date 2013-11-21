@@ -31,7 +31,7 @@ import open.dolphin.table.ListTableSorter;
 import open.dolphin.table.StripeTableCellRenderer;
 import open.dolphin.tr.DiagnosisTransferHandler;
 import open.dolphin.util.AgeCalculator;
-import open.dolphin.util.BeanUtils;
+import open.dolphin.common.util.BeanUtils;
 import open.dolphin.util.MMLDate;
 import open.dolphin.util.NonHidePopupMenu;
 import org.apache.log4j.Logger;

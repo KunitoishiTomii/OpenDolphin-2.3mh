@@ -1,5 +1,6 @@
 package open.dolphin.rest;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 import javax.ws.rs.*;
@@ -9,7 +10,6 @@ import javax.ws.rs.container.ConnectionCallback;
 import javax.ws.rs.container.Suspended;
 import javax.ws.rs.container.TimeoutHandler;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
 import open.dolphin.infomodel.ChartEventModel;
 import open.dolphin.infomodel.IInfoModel;
 import open.dolphin.mbean.AsyncResponseModel;
@@ -88,12 +88,13 @@ public class ChartEventResource extends AbstractResource {
         return Response.ok(String.valueOf(cnt)).build();
     }
 
-    public void deliverChartEvent(AsyncResponseModel arModel, ChartEventModel evt) {
+    public void deliverChartEvent(List<AsyncResponseModel> sendList, ChartEventModel evt) {
         
-        StreamingOutput so = getJsonOutStream(evt);
-        Response response = Response.ok(so).type(MEDIATYPE_JSON_UTF8).build();
-        
-        arModel.getAsyncResponse().resume(response);
+        String json = getConverter().toJson(evt);
+        for (AsyncResponseModel arModel : sendList) {
+            Response response = Response.ok(json).type(MEDIATYPE_JSON_UTF8).build();
+            arModel.getAsyncResponse().resume(response);
+        }
     }
     
     @Override

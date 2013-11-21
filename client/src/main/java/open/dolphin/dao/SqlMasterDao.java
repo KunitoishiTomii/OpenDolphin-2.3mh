@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import open.dolphin.infomodel.DiseaseEntry;
 import open.dolphin.infomodel.TensuMaster;
-import open.dolphin.util.StringTool;
+import open.dolphin.common.util.StringTool;
 
 /**
  * SqlMasterDao

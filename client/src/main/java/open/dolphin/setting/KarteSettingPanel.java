@@ -17,7 +17,7 @@ import open.dolphin.client.*;
 import open.dolphin.helper.GridBagBuilder;
 import open.dolphin.project.Project;
 import open.dolphin.project.ProjectStub;
-import open.dolphin.util.ZenkakuUtils;
+import open.dolphin.common.util.ZenkakuUtils;
 
 /**
  * KarteSettingPanel

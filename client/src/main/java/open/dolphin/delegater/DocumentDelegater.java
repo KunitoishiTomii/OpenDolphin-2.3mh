@@ -13,7 +13,7 @@ import open.dolphin.dto.DocumentSearchSpec;
 import open.dolphin.dto.ImageSearchSpec;
 import open.dolphin.dto.ModuleSearchSpec;
 import open.dolphin.infomodel.*;
-import open.dolphin.util.BeanUtils;
+import open.dolphin.common.util.BeanUtils;
 
 /**
  * Session と Document の送受信を行う Delegater クラス。

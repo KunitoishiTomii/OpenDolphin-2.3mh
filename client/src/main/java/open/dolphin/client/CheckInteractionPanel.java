@@ -1,4 +1,3 @@
-
 package open.dolphin.client;
 
 import java.awt.BorderLayout;
@@ -14,7 +13,7 @@ import open.dolphin.dao.SqlMiscDao;
 import open.dolphin.delegater.MasudaDelegater;
 import open.dolphin.helper.ComponentMemory;
 import open.dolphin.infomodel.*;
-import open.dolphin.util.StringTool;
+import open.dolphin.common.util.StringTool;
 
 /**
  * 薬剤併用チェックを行うためのパネル

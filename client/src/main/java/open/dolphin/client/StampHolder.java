@@ -1,5 +1,6 @@
 package open.dolphin.client;
 
+import open.dolphin.common.util.StampRenderingHints;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.event.MouseEvent;
@@ -32,7 +33,7 @@ public final class StampHolder extends AbstractComponentHolder implements Compon
     private KartePane kartePane;
     
     private StampRenderingHints hints;
-    private StampHolderFunction function;
+    private final StampHolderFunction function;
 
     private Position start;
     //private Position end; //endPositionはstart+1で代用

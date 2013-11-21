@@ -7,11 +7,15 @@ import java.util.*;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
+import open.dolphin.common.util.BeanUtils;
+import open.dolphin.common.util.SimpleXmlWriter;
+import open.dolphin.common.util.StampHtmlRenderer;
+import open.dolphin.common.util.StampRenderingHints;
 import open.dolphin.infomodel.*;
-import org.apache.commons.codec.binary.Base64;
 
 /**
  * KarteHtmlRenderer
+ * 
  * @author masuda, Masuda Naika
  */
 public class KarteHtmlRenderer {
@@ -23,7 +27,11 @@ public class KarteHtmlRenderer {
     private static final String NAME_NAME = "name";
     
     private static final String CR = "\n";
-    private static final String BR = "<BR>";
+    private static final String TAG_DIV = "div";
+    private static final String TAG_H4 = "h4";
+    private static final String ATTR_ALIGN = "align";
+    private static final String ATTR_STYLE = "style";
+    
     private static final Dimension imageSize = new Dimension(192, 192);
     
     
@@ -85,37 +93,37 @@ public class KarteHtmlRenderer {
             Collections.sort(schemas);
         }
         
-        // SOA Pane をレンダリングする
-        StringBuilder sb = new StringBuilder();
-        new KartePaneRenderer_StAX().renderPane(soaSpec, soaModules, schemas, sb);
-        String soaPane = sb.toString();
-
-        // P Pane をレンダリングする
-        String pPane = null;
-        if (pSpec != null) {
-            sb = new StringBuilder();
-            new KartePaneRenderer_StAX().renderPane(pSpec, pModules, schemas, sb);
-            pPane = sb.toString();
-        }
-        
         SimpleDateFormat frmt = new SimpleDateFormat(IInfoModel.KARTE_DATE_FORMAT);
         String docDate = frmt.format(model.getStarted());
         String title = model.getDocInfoModel().getTitle();
         
-        sb = new StringBuilder();
-        sb.append("<h4 style=\"background-color:#cccccc\" align=\"center\">");
-        sb.append(docDate).append("<BR>").append(title).append("</h4>");
-        sb.append(soaPane);
-        if (pPane != null) {
-            sb.append("<HR>");
-            sb.append(pPane);
+        SimpleXmlWriter writer = new SimpleXmlWriter();
+        writer.setRepcaceXmlChar(true);
+        writer.setReplaceZenkaku(false);
+        
+        writer.writeStartElement(TAG_H4)
+                .writeAttribute(ATTR_STYLE, "background-color:#cccccc")
+                .writeAttribute(ATTR_ALIGN, "center")
+                .writeCharacters(docDate)
+                .writeBR()
+                .writeCharacters(title)
+                .writeEndElement();
+        
+        // SOA Pane をレンダリングする
+        new KartePaneRenderer_StAX().renderPane(soaSpec, soaModules, schemas, writer);
+
+        // P Pane をレンダリングする
+        if (pSpec != null) {
+            writer.writeHR();
+            new KartePaneRenderer_StAX().renderPane(pSpec, pModules, schemas, writer);
         }
-        return sb.toString();
+        
+        return writer.getProduct();
     }
 
     private class KartePaneRenderer_StAX {
 
-        private StringBuilder htmlBuff;
+        private SimpleXmlWriter writer;
         private List<ModuleModel> modules;
         private List<SchemaModel> schemas;
         private boolean componentFlg;
@@ -125,12 +133,12 @@ public class KarteHtmlRenderer {
          *
          * @param xml TextPane Dump の XML
          */
-        private void renderPane(String xml, List<ModuleModel> modules, List<SchemaModel> schemas, StringBuilder sb) {
+        private void renderPane(String xml, List<ModuleModel> modules, List<SchemaModel> schemas, SimpleXmlWriter writer) {
             
             this.modules = modules;
             this.schemas = schemas;
-            this.htmlBuff = sb;
-            htmlBuff.append("<DIV>");
+            this.writer = writer;
+            writer.writeStartElement(TAG_DIV);
 
             XMLInputFactory factory = XMLInputFactory.newInstance();
             StringReader stream = null;
@@ -161,7 +169,6 @@ public class KarteHtmlRenderer {
                     stream.close();
                 }
             }
-            htmlBuff.append("</DIV>");
         }
         
 
@@ -192,11 +199,8 @@ public class KarteHtmlRenderer {
 
         private void startContent(String text) {
 
-            // 特殊文字を戻す
-            //text = XmlUtils.fromXml(text);
-            text = text.replace(CR, BR);
             // テキストを挿入する
-            htmlBuff.append(text);
+            writer.writeCrReplaceCharacters(text);
         }
         
         private void startComponent(String name, String number) {
@@ -206,18 +210,14 @@ public class KarteHtmlRenderer {
                 switch (name) {
                     case STAMP_HOLDER:
                         ModuleModel stamp = modules.get(index);
-                        String str = StampRenderingHints.getInstance().getStampHtml(stamp);
-                        htmlBuff.append(str);
+                        StampRenderingHints hints = StampRenderingHints.getInstance();
+                        StampHtmlRenderer stampRen = new StampHtmlRenderer(stamp, hints);
+                        writer.writeRawCharacters(stampRen.getStampHtml(false));
                         break;
                     case SCHEMA_HOLDER:
                         SchemaModel schema = schemas.get(index);
-                        byte[] bytes = ImageTool.getScaledBytes(schema.getJpegByte(), imageSize, "jpeg");
-                        if (bytes != null) {
-                            String base64 = Base64.encodeBase64String(bytes);
-                            htmlBuff.append("<img src=\"data:image/jpeg;base64,\n");
-                            htmlBuff.append(base64);
-                            htmlBuff.append("\" alt=\"img\"><br>");
-                        }
+                        ImageHtmlRenderer imgRen = new ImageHtmlRenderer();
+                        writer.writeRawCharacters(imgRen.getImageHtml(schema.getJpegByte(), imageSize));
                         break;
                 }
             }

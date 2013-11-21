@@ -18,9 +18,9 @@ import org.apache.velocity.VelocityContext;
  */
 public class MessageBuilder {
     
-    private static MessageBuilder instance;
+    private final static MessageBuilder instance;
 
-    private Logger logger;
+    private final Logger logger;
     
     private Template claimTemplate;
     private Template diseaseTemplate;

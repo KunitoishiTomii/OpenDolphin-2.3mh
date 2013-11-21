@@ -1,14 +1,9 @@
-package open.dolphin.toucha;
+package open.dolphin.common.util;
 
 import java.awt.Color;
-import java.io.StringWriter;
 import open.dolphin.infomodel.BundleDolphin;
-import open.dolphin.infomodel.BundleMed;
 import open.dolphin.infomodel.ClaimConst;
 import open.dolphin.infomodel.IInfoModel;
-import open.dolphin.infomodel.ModuleModel;
-import org.apache.velocity.Template;
-import org.apache.velocity.VelocityContext;
 
 /**
  * StampRenderingHints
@@ -23,76 +18,34 @@ public class StampRenderingHints {
     private Color background = Color.WHITE;
     private Color labelColor;
     private int border = 0;
-    private int cellSpacing = 0;
-    private int cellPadding = 0;
+    private int cellSpacing = 1;    //masuda 0 -> 1 to avoid unexpected line wrap
+    private int cellPadding = 0;    //masuda 3 -> 0 to make slim
+    private boolean laboFold = true;
 
-    private static final String KEY_MODEL = "model";
-    private static final String KEY_STAMP_NAME = "stampName";
-    private static final String KEY_HINTS = "hints";
-    private static final String DOT_VM = ".vm";
-    
     private static final StampRenderingHints instance;
     
-    private Template medTemplate;
-    private Template dolphinTemplate;
-    private Template laboTemplate;
-
     static {
         instance = new StampRenderingHints();
     }
 
     private StampRenderingHints() {
-        setCellPadding(0);
-        prepareTemplates();
     }
 
     public static StampRenderingHints getInstance() {
         return instance;
     }
     
-    private void prepareTemplates() {
-        TemplateLoader loader = new TemplateLoader();
-        medTemplate = loader.newTemplate(BundleMed.class.getName() + DOT_VM);
-        dolphinTemplate = loader.newTemplate(BundleDolphin.class.getName() + DOT_VM);
-        laboTemplate = loader.newTemplate("labo.vm");
+    public void setLaboFold(boolean laboFold) {
+        this.laboFold = laboFold;
     }
-    
-    public String getStampHtml(ModuleModel stamp) {
-
-        // entityを取得
-        String entity = stamp.getModuleInfoBean().getEntity();
-        
-        // entityに応じてテンプレートを選択
-        Template template;        
-        switch (entity) {
-            case IInfoModel.ENTITY_MED_ORDER:
-                template = medTemplate;
-                break;
-            case IInfoModel.ENTITY_LABO_TEST:
-                template = laboTemplate;
-                break;
-            default:
-                template = dolphinTemplate;
-                break;
-        }
-        
-        VelocityContext context = new VelocityContext();
-        context.put(KEY_HINTS, instance);
-        context.put(KEY_MODEL, stamp.getModel());
-        context.put(KEY_STAMP_NAME, stamp.getModuleInfoBean().getStampName());
-            
-        StringWriter sw = new StringWriter();
-        template.merge(context, sw);
-
-        String text = sw.toString();
-        
-        return text;
+    public boolean isLaboFold() {
+        return laboFold;
     }
-    
+
     // velocityから使う↓
     public boolean isNewStamp(String stampName) {
         return "新規スタンプ".equals(stampName) 
-                || "エディタから発行...".equals(stampName) 
+                || IInfoModel.TITLE_FROM_EDITOR.equals(stampName) 
                 || "チェックシート".equals(stampName);
     }
 
@@ -128,7 +81,6 @@ public class StampRenderingHints {
     }
     // velocityから使う↑
 
-    
     public int getFontSize() {
         return fontSize;
     }

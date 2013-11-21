@@ -17,7 +17,7 @@ import open.dolphin.delegater.StampDelegater;
 import open.dolphin.infomodel.*;
 import open.dolphin.stampbox.StampTree;
 import open.dolphin.stampbox.StampTreeNode;
-import open.dolphin.util.BeanUtils;
+import open.dolphin.common.util.BeanUtils;
 
 /**
  * EditorSetPanel

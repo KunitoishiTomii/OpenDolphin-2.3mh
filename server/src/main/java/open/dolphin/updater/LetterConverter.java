@@ -1,7 +1,7 @@
-
 package open.dolphin.updater;
 
 import java.util.List;
+import open.dolphin.common.util.BeanUtils;
 import open.dolphin.infomodel.*;
 
 /**
@@ -48,7 +48,7 @@ public class LetterConverter extends AbstractUpdaterModule {
         List<LetterModel> letterList = em.createQuery("from TouTouLetter").getResultList();
         for (LetterModel model : letterList) {
             byte[] bytes = model.getBeanBytes();
-            TouTouLetter letter = (TouTouLetter) ModelUtils.xmlDecode(bytes);
+            TouTouLetter letter = (TouTouLetter) BeanUtils.xmlDecode(bytes);
             decodeAndFixPrimaryKeys(letter);
             convertTouTouLetter(letter);
         }
@@ -57,7 +57,7 @@ public class LetterConverter extends AbstractUpdaterModule {
         List<LetterModel> replyList = em.createQuery("from TouTouReply").getResultList();
         for (LetterModel model : replyList) {
             byte[] bytes = model.getBeanBytes();
-            TouTouReply reply = (TouTouReply) ModelUtils.xmlDecode(bytes);
+            TouTouReply reply = (TouTouReply) BeanUtils.xmlDecode(bytes);
             decodeAndFixPrimaryKeys(reply);
             convertTouTouReply(reply);
         }

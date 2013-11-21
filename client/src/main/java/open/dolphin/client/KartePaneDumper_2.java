@@ -1,7 +1,6 @@
 package open.dolphin.client;
 
 import java.awt.Color;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.LinkedList;
@@ -13,9 +12,7 @@ import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.Element;
 import javax.swing.text.ElementIterator;
 import javax.swing.text.StyleConstants;
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
+import open.dolphin.common.util.SimpleXmlWriter;
 import open.dolphin.infomodel.ModuleModel;
 import open.dolphin.infomodel.SchemaModel;
 import org.apache.log4j.Logger;
@@ -41,8 +38,8 @@ public final class KartePaneDumper_2 {
     private final List<SchemaModel> schemaList;
     private final LinkedList<Element> stack;
     private final Logger logger;
-    private XMLStreamWriter writer;
     
+    private SimpleXmlWriter writer;
     private String spec;
     
     
@@ -96,38 +93,27 @@ public final class KartePaneDumper_2 {
      */
     public void dump(DefaultStyledDocument doc) {
         
-        XMLOutputFactory factory = XMLOutputFactory.newInstance();
-        StringWriter stringWriter = new StringWriter();
+        writer = new SimpleXmlWriter();
+        writer.setRepcaceXmlChar(true);
+        writer.setReplaceZenkaku(false);
 
-        try {
-            writer = factory.createXMLStreamWriter(stringWriter);
-            
-            ElementIterator itr = new ElementIterator(doc);
+        ElementIterator itr = new ElementIterator(doc);
 
-            for (Element elem = itr.first(); elem != null; elem = itr.next()){
-                endElementsIfParentElementChanged(elem);
-                startElement(elem);
-            }
-            
-            endStackedElements();
-            
-        } catch (BadLocationException | XMLStreamException ex) {
-            ex.printStackTrace(System.err);
-        } finally {
+        for (Element elem = itr.first(); elem != null; elem = itr.next()) {
+            endElementsIfParentElementChanged(elem);
             try {
-                if (writer != null) {
-                    // ドキュメントを閉じる
-                    writer.flush();
-                    spec = stringWriter.toString();
-                    writer.close();
-                }
-            } catch (XMLStreamException ex) {
-                ex.printStackTrace(System.err);
+                startElement(elem);
+            } catch (BadLocationException ex) {
+                logger.debug(ex);
             }
         }
+
+        endStackedElements();
+
+        spec = writer.getProduct();
     }
     
-    private void startElement(Element element) throws BadLocationException, XMLStreamException {
+    private void startElement(Element element) throws BadLocationException {
         
         // 要素の開始及び終了のオフセット値を保存する
         int start = element.getStartOffset();
@@ -139,9 +125,9 @@ public final class KartePaneDumper_2 {
         boolean isContent = CONTENT_NAME.equals(elmName);
         
         // Elementを開始する
-        writer.writeStartElement(elmName);
-        writer.writeAttribute(ATTR_START, String.valueOf(start));
-        writer.writeAttribute(ATTR_END, String.valueOf(end));
+        writer.writeStartElement(elmName)
+                .writeAttribute(ATTR_START, String.valueOf(start))
+                .writeAttribute(ATTR_END, String.valueOf(end));
    
         // このエレメントの属性セットを得る
         AttributeSet atts = element.getAttributes();
@@ -157,15 +143,15 @@ public final class KartePaneDumper_2 {
             String text = element.getDocument().getText(start, len);
             logger.debug("text = " + text);
             // 文字列を出力する
-            writer.writeStartElement(TEXT_NAME);
-            writer.writeCharacters(text);
-            writer.writeEndElement();
+            writer.writeStartElement(TEXT_NAME)
+                    .writeCharacters(text)
+                    .writeEndElement();
         }
         
         stack.addFirst(element);
     }
     
-    private void writeAttributes(AttributeSet atts, boolean isContent) throws XMLStreamException {
+    private void writeAttributes(AttributeSet atts, boolean isContent) {
         
         // 全ての属性を列挙する
         Enumeration names = atts.getAttributeNames();
@@ -175,54 +161,55 @@ public final class KartePaneDumper_2 {
             // 属性の名前を得る
             Object nextName = names.nextElement();
             String attrName = nextName.toString();
+            
+            if (nextName == StyleConstants.ResolveAttribute) {
+                continue;
+            }
 
-            if (nextName != StyleConstants.ResolveAttribute) {
+            logger.debug("attribute name = " + attrName);
 
-                logger.debug("attribute name = " + attrName);
+            // $enameは除外する
+            if (attrName.startsWith("$")) {
+                continue;
+            }
 
-                // $enameは除外する
-                if (attrName.startsWith("$")) {
-                    continue;
-                }
+            // foreground 属性の場合は再構築の際に利用しやすい形に分解する
+            if (FOREGROUND_NAME.equals(attrName)) {
+                Color c = (Color) atts.getAttribute(StyleConstants.Foreground);
+                logger.debug("color = " + c.toString());
+                writer.writeAttribute(attrName, getColorStr(c));
 
-                // foreground 属性の場合は再構築の際に利用しやすい形に分解する
-                if (FOREGROUND_NAME.equals(attrName)) {
-                    Color c = (Color) atts.getAttribute(StyleConstants.Foreground);
-                    logger.debug("color = " + c.toString());
-                    writer.writeAttribute(attrName, getColorStr(c));
+            } else {
+                // 属性セットから名前をキーにして属性オブジェクトを取得する
+                Object attObject = atts.getAttribute(nextName);
+                logger.debug("attribute object = " + attObject.toString());
+
+                if (attObject instanceof StampHolder) {
+                    // スタンプの場合
+                    StampHolder sh = (StampHolder) attObject;
+                    moduleList.add(sh.getStamp());
+                    // ペインに出現する順番をこの属性の値とする
+                    writer.writeAttribute(attrName, moduleList.size() - 1);
+
+                } else if (attObject instanceof SchemaHolder) {
+                    // シュェーマの場合
+                    SchemaHolder ch = (SchemaHolder) attObject;
+                    schemaList.add(ch.getSchema());
+                    // ペインに出現する順番をこの属性の値とする
+                    writer.writeAttribute(attrName, schemaList.size() - 1);
 
                 } else {
-                    // 属性セットから名前をキーにして属性オブジェクトを取得する
-                    Object attObject = atts.getAttribute(nextName);
-                    logger.debug("attribute object = " + attObject.toString());
-
-                    if (attObject instanceof StampHolder) {
-                        // スタンプの場合
-                        StampHolder sh = (StampHolder) attObject;
-                        moduleList.add(sh.getStamp());
-                        String value = String.valueOf(moduleList.size() - 1); // ペインに出現する順番をこの属性の値とする
-                        writer.writeAttribute(attrName, value);
-
-                    } else if (attObject instanceof SchemaHolder) {
-                        // シュェーマの場合
-                        SchemaHolder ch = (SchemaHolder) attObject;
-                        schemaList.add(ch.getSchema());
-                        String value = String.valueOf(schemaList.size() - 1); // ペインに出現する順番をこの属性の値とする
-                        writer.writeAttribute(attrName, value);
-
-                    } else {
                         // それ以外の属性についてはそのまま記録する
-                        // <content start="1" end="2" name="stampHolder"><text>hoge</text></content>となるのを防ぐ
-                        if (!(isContent && NAME_NAME.equals(attrName))) {
-                            writer.writeAttribute(attrName, attObject.toString());
-                        }
+                    // <content start="1" end="2" name="stampHolder"><text>hoge</text></content>となるのを防ぐ
+                    if (!(isContent && NAME_NAME.equals(attrName))) {
+                        writer.writeAttribute(attrName, attObject.toString());
                     }
                 }
             }
         }
     }
     
-    private void endElementsIfParentElementChanged(Element element) throws XMLStreamException {
+    private void endElementsIfParentElementChanged(Element element) {
 
         // 親Elementが変更になる場合はwriteEndElementする
         if (stack.isEmpty()) {
@@ -245,7 +232,7 @@ public final class KartePaneDumper_2 {
         return stack.getFirst();
     }
     
-    private void endStackedElements() throws XMLStreamException {
+    private void endStackedElements() {
         for (int i = 0; i < stack.size(); ++i) {
             writer.writeEndElement();
         }
