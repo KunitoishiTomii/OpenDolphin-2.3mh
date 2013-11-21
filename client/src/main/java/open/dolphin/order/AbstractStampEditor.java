@@ -1126,6 +1126,10 @@ public abstract class AbstractStampEditor extends StampEditorConst {
                         //result = dao.getTensuMasterByName(StringTool.hiraganaToKatakana(text), d, pt);
                         result = dao.getTensuMasterByName(text, d, pt);
                         break;
+                        
+                    case TT_SHINKU_SERACH:
+                        result = dao.getTensuMasterByShinku(text.substring(1), d);
+                        break;
                 }
 
                 if (!dao.isNoError()) {
