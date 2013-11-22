@@ -668,11 +668,13 @@ public class PatientSearchImpl extends AbstractMainComponent {
 
             } else if (StringTool.startsWithKatakana(text)) {
                 spec.setCode(PatientSearchSpec.KANA_SEARCH);
+                text = text.replace("　", " ");     // 全角スペースは半角に置換する
                 spec.setName(text);
 
             } else if (StringTool.startsWithHiragana(text)) {
                 text = StringTool.hiraganaToKatakana(text);
                 spec.setCode(PatientSearchSpec.KANA_SEARCH);
+                text = text.replace("　", " ");     // 全角スペースは半角に置換する
                 spec.setName(text);
 
             } else if (isNameAddress(text)) {
