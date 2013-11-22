@@ -285,29 +285,29 @@ public class KarteRenderer_3 {
         
         private void startParagraph(String alignStr) {
             
-            MutableAttributeSet attrs = new SimpleAttributeSet();
-            attrs.setResolveParent(defaultStyle);
+            MutableAttributeSet atts = new SimpleAttributeSet();
+            atts.setResolveParent(defaultStyle);
             
             if (alignStr != null) {
                 switch (alignStr) {
                     case "0":
-                        StyleConstants.setAlignment(attrs, StyleConstants.ALIGN_LEFT);
+                        StyleConstants.setAlignment(atts, StyleConstants.ALIGN_LEFT);
                         break;
                     case "1":
-                        StyleConstants.setAlignment(attrs, StyleConstants.ALIGN_CENTER);
+                        StyleConstants.setAlignment(atts, StyleConstants.ALIGN_CENTER);
                         break;
                     case "2":
-                        StyleConstants.setAlignment(attrs, StyleConstants.ALIGN_RIGHT);
+                        StyleConstants.setAlignment(atts, StyleConstants.ALIGN_RIGHT);
                         break;
                 }
             }
             
             if (isFirstParagraph) {
                 // 最初のParagraphにAlignmentを設定する
-                doc.setParagraphAttributes(doc.getLength(), 0, attrs, true);
+                doc.setParagraphAttributes(doc.getLength(), 0, atts, true);
                 isFirstParagraph = false;
             } else {
-                batch.add(new ElementSpec(attrs, ElementSpec.StartTagType));
+                batch.add(new ElementSpec(atts, ElementSpec.StartTagType));
             }
         }
         
@@ -355,24 +355,23 @@ public class KarteRenderer_3 {
                 int index = Integer.valueOf(number);
                 switch (name) {
                     case STAMP_HOLDER: {
-                        StampHolder sth = new StampHolder(kartePane, modules.get(index));
-                        sth.setEntry(doc.createPosition(start), doc.createPosition(end));
-                        sth.setTransferHandler(StampHolderTransferHandler.getInstance());
+                        StampHolder sh = new StampHolder(kartePane, modules.get(index));
+                        sh.setEntry(doc.createPosition(start), doc.createPosition(end));
+                        sh.setTransferHandler(StampHolderTransferHandler.getInstance());
                         // このスタンプ用のスタイルを生成する
-                        SimpleAttributeSet runStyle = new SimpleAttributeSet();
-                        StyleConstants.setComponent(runStyle, sth);
-                        runStyle.addAttribute(NAME_NAME, STAMP_HOLDER);
-                        insertString(" ", runStyle);
+                        MutableAttributeSet atts = doc.getStampAttribute();
+                        StyleConstants.setComponent(atts, sh);
+                        insertString(" ", atts);
                         break;
                     }
                     case SCHEMA_HOLDER: {
-                        SchemaHolder sch = new SchemaHolder(kartePane, schemas.get(index));
-                        sch.setEntry(doc.createPosition(start), doc.createPosition(end));
-                        sch.setTransferHandler(SchemaHolderTransferHandler.getInstance());
+                        SchemaHolder sh = new SchemaHolder(kartePane, schemas.get(index));
+                        sh.setEntry(doc.createPosition(start), doc.createPosition(end));
+                        sh.setTransferHandler(SchemaHolderTransferHandler.getInstance());
                         // このスタンプ用のスタイルを生成する
-                        SimpleAttributeSet runStyle = new SimpleAttributeSet();
-                        runStyle.addAttribute(NAME_NAME, SCHEMA_HOLDER);
-                        insertString(" ", runStyle);
+                        MutableAttributeSet atts = doc.getSchemaAttribute();
+                        StyleConstants.setComponent(atts, sh);
+                        insertString(" ", atts);
                         break;
                     }
                 }

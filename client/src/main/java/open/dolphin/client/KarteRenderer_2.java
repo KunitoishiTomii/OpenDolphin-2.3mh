@@ -266,24 +266,24 @@ public class KarteRenderer_2 {
 
         private void startParagraph(String alignStr) {
 
-            MutableAttributeSet attrSet = new SimpleAttributeSet();
-            attrSet.setResolveParent(defaultStyle);
+            MutableAttributeSet atts = new SimpleAttributeSet();
+            atts.setResolveParent(defaultStyle);
 
             if (alignStr != null) {
                 switch (alignStr) {
                     case "0":
-                        StyleConstants.setAlignment(attrSet, StyleConstants.ALIGN_LEFT);
+                        StyleConstants.setAlignment(atts, StyleConstants.ALIGN_LEFT);
                         break;
                     case "1":
-                        StyleConstants.setAlignment(attrSet, StyleConstants.ALIGN_CENTER);
+                        StyleConstants.setAlignment(atts, StyleConstants.ALIGN_CENTER);
                         break;
                     case "2":
-                        StyleConstants.setAlignment(attrSet, StyleConstants.ALIGN_RIGHT);
+                        StyleConstants.setAlignment(atts, StyleConstants.ALIGN_RIGHT);
                         break;
                 }
             }
             // ParagraphにAlignmentを設定する
-            doc.setParagraphAttributes(doc.getLength(), 0, attrSet, true);
+            doc.setParagraphAttributes(doc.getLength(), 0, atts, true);
         }
 
         private void endParagraph() {
