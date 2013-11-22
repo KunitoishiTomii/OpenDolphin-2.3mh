@@ -20,6 +20,7 @@ import javax.persistence.*;
 public class PatientModel extends InfoModel {
     
     private static final long DAY_IN_MILLISEC = 1000 * 60 * 60 * 24;
+    public  static final int  ELAPSED_DAY_MAX = 9999;
     
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -158,8 +159,13 @@ public class PatientModel extends InfoModel {
     }
     public int getElapsedDay() {
         long now = System.currentTimeMillis();
-        int ret = (int) ((now - pvtDate2.getTime()) / DAY_IN_MILLISEC);
-        return ret;
+        if (pvtDate2!=null){
+            int ret = (int) ((now - pvtDate2.getTime()) / DAY_IN_MILLISEC);
+            return ret;
+        }
+        else{
+            return ELAPSED_DAY_MAX;
+        }
     }
     public String getPvtDateTrimTime() {
         return ModelUtils.trimTime(pvtDate);
