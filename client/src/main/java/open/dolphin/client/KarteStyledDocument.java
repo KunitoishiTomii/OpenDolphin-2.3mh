@@ -10,14 +10,15 @@ import open.dolphin.project.Project;
 /**
  * KartePane の StyledDocument class。
  *
- * @author  Kazushi Minagawa, Digital Globe, Inc.
+ * @author Kazushi Minagawa, Digital Globe, Inc.
+ * @author modified by masuda, Masuda Naika
  */
 public class KarteStyledDocument extends DefaultStyledDocument {
     
-//masuta    to static
-    private static final String STAMP_STYLE = "stampHolder";
-    private static final String SCHEMA_STYLE = "schemaHolder";
+    private static final String STAMP_HOLDER = "stampHolder";
+    private static final String SCHEMA_HOLDER = "schemaHolder";
     private static final String COMPONENT_ELEMENT_NAME = "component";
+    private static final String NAME_NAME = StyleConstants.NameAttribute.toString();
     private static final String CR = "\n";
     private static final String SPC = " ";
     private static final String DEFAULT_STYLE_NAME = StyleContext.DEFAULT_STYLE;
@@ -26,7 +27,6 @@ public class KarteStyledDocument extends DefaultStyledDocument {
     private KartePane kartePane;
     
     
-    /** Creates new TestDocument */
     public KarteStyledDocument() {
         // コンストラクタでdefalt styleを設定しておく
         setLogicalStyle(DEFAULT_STYLE_NAME);
@@ -53,6 +53,20 @@ public class KarteStyledDocument extends DefaultStyledDocument {
         }
     }
     
+//masuda^   コンポーネントのAttributeを作成する
+    public MutableAttributeSet getStampAttribute() {
+        MutableAttributeSet atts = new SimpleAttributeSet();
+        atts.addAttribute(NAME_NAME, STAMP_HOLDER);
+        return atts;
+    }
+
+    public MutableAttributeSet getSchemaAttribute() {
+        MutableAttributeSet atts = new SimpleAttributeSet();
+        atts.addAttribute(NAME_NAME, SCHEMA_HOLDER);
+        return atts;
+    }
+//masuda$
+    
     /**
      * Stamp を挿入する。
      * @param sh 挿入するスタンプホルダ
@@ -60,11 +74,9 @@ public class KarteStyledDocument extends DefaultStyledDocument {
     public void stamp(final StampHolder sh) {
         
         try {
-            Style runStyle = this.getStyle(STAMP_STYLE);
-            if (runStyle == null) {
-                runStyle = addStyle(STAMP_STYLE, null);
-            }
-            StyleConstants.setComponent(runStyle, sh);
+            // StampHolderの属性をセットする
+            MutableAttributeSet atts = getStampAttribute();
+            StyleConstants.setComponent(atts, sh);
             
             // キャレット位置を取得する
             int start = kartePane.getTextPane().getCaretPosition();
@@ -72,13 +84,15 @@ public class KarteStyledDocument extends DefaultStyledDocument {
             // Stamp を挿入する
             if (Project.getBoolean("stampSpace")) {
                 insertString(start, CR, null);
-                insertString(start+1, SPC, runStyle);
-                insertString(start+2, CR, null);                           // 改行をつけないとテキスト入力制御がやりにくくなる
-                sh.setEntry(createPosition(start+1), createPosition(start+2)); // スタンプの開始と終了位置を生成して保存する
+                insertString(start+1, SPC, atts);
+                insertString(start+2, CR, null);    // 改行をつけないとテキスト入力制御がやりにくくなる
+                // スタンプの開始と終了位置を生成して保存する
+                sh.setEntry(createPosition(start+1), createPosition(start+2));
             } else {
-                insertString(start, SPC, runStyle);
-                insertString(start+1, CR, null);                           // 改行をつけないとテキスト入力制御がやりにくくなる
-                sh.setEntry(createPosition(start), createPosition(start+1)); // スタンプの開始と終了位置を生成して保存する
+                insertString(start, SPC, atts);
+                insertString(start+1, CR, null);    // 改行をつけないとテキスト入力制御がやりにくくなる
+                // スタンプの開始と終了位置を生成して保存する
+                sh.setEntry(createPosition(start), createPosition(start+1));
             }
             
         } catch(BadLocationException | NullPointerException ex) {
@@ -93,21 +107,15 @@ public class KarteStyledDocument extends DefaultStyledDocument {
     public void flowStamp(final StampHolder sh) {
         
         try {
-            Style runStyle = this.getStyle(STAMP_STYLE);
-            if (runStyle == null) {
-                runStyle = addStyle(STAMP_STYLE, null);
-            }
-            // このスタンプ用のスタイルを動的に生成する
-            StyleConstants.setComponent(runStyle, sh);
+            // StampHolderの属性をセットする
+            MutableAttributeSet atts = getStampAttribute();
+            StyleConstants.setComponent(atts, sh);
             
-            // キャレット位置を取得する
-//masuda^   EDTでなくてもいいように
-            //int start = kartePane.getTextPane().getCaretPosition();
+            // 挿入位置を取得する
             int start = this.getLength();
-//masuda$
             
             // Stamp を挿入する
-            insertString(start, SPC, runStyle);
+            insertString(start, SPC, atts);
             
             // スタンプの開始と終了位置を生成して保存する
             Position stPos = createPosition(start);
@@ -149,36 +157,34 @@ public class KarteStyledDocument extends DefaultStyledDocument {
     public void insertStamp(Position inPos, StampHolder sh) {
         
         try {
-            Style runStyle = this.getStyle(STAMP_STYLE);
-            if (runStyle == null) {
-                runStyle = addStyle(STAMP_STYLE, null);
-            }
-            StyleConstants.setComponent(runStyle, sh);
+            // StampHolderの属性をセットする
+            MutableAttributeSet atts = getStampAttribute();
+            StyleConstants.setComponent(atts, sh);
             
             // 挿入位置
             int start = inPos.getOffset();
-            insertString(start, SPC, runStyle);
+            insertString(start, SPC, atts);
             sh.setEntry(createPosition(start), createPosition(start+1));
         } catch(BadLocationException be) {
             be.printStackTrace(System.err);
         }
     }
     
-    public void stampSchema(SchemaHolder sc) {
+    public void stampSchema(SchemaHolder sh) {
         
         try {
-            Style runStyle = this.getStyle(SCHEMA_STYLE);
-            if (runStyle == null) {
-                runStyle = addStyle(SCHEMA_STYLE, null);
-            }
-            // このスタンプ用のスタイルを動的に生成する
-            StyleConstants.setComponent(runStyle, sc);
+            // SchemaHolderの属性をセットする
+            MutableAttributeSet atts = getSchemaAttribute();
+            StyleConstants.setComponent(atts, sh);
             
-            // Stamp同様
+            // シェーマを挿入する
             int start = kartePane.getTextPane().getCaretPosition();
-            insertString(start, SPC, runStyle);
+            insertString(start, SPC, atts);
             insertString(start+1, CR, null);
-            sc.setEntry(createPosition(start), createPosition(start+1));
+            
+            // シェーマの開始と終了位置を生成して保存する
+            sh.setEntry(createPosition(start), createPosition(start+1));
+            
         } catch(BadLocationException be) {
             be.printStackTrace(System.err);
         }
@@ -187,22 +193,17 @@ public class KarteStyledDocument extends DefaultStyledDocument {
     public void flowSchema(final SchemaHolder sh) {
         
         try {
-            Style runStyle = this.getStyle(SCHEMA_STYLE);
-            if (runStyle == null) {
-                runStyle = addStyle(SCHEMA_STYLE, null);
-            }
-            // このスタンプ用のスタイルを動的に生成する
-            StyleConstants.setComponent(runStyle, sh);
+            // SchemaHolderの属性をセットする
+            MutableAttributeSet atts = getSchemaAttribute();
+            StyleConstants.setComponent(atts, sh);
             
-            // キャレット位置を取得する
-//masuda^   EDTでなくてもいいように
-            //int start = kartePane.getTextPane().getCaretPosition();
+            // 挿入位置を取得する
             int start = this.getLength();
-//masuda$
-            // Stamp を挿入する
-            insertString(start, SPC, runStyle);
             
-            // スタンプの開始と終了位置を生成して保存する
+            // シェーマを挿入する
+            insertString(start, SPC, atts);
+            
+            // シェーマの開始と終了位置を生成して保存する
             sh.setEntry(createPosition(start), createPosition(start+1));
             
         } catch(BadLocationException | NullPointerException ex) {

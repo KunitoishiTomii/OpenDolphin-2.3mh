@@ -82,6 +82,7 @@ public class KarteViewer2 extends KarteViewer {
 //masuda^
         //new KarteRenderer_2(soaPane, pPane).render(getModel());
         KarteRenderer_2.getInstance().render(getModel(), soaPane, pPane);
+        //KarteRenderer_3.getInstance().render(getModel(), soaPane, pPane);
 //masuda$
         
         // モデル表示後にリスナ等を設定する
