@@ -47,7 +47,7 @@ public class PatientSearchImpl extends AbstractMainComponent {
             = {"patientId", "fullName", "kanaName", "genderDesc", "ageBirthday", "pvtDateTrimTime", "getElapsedDay", "isOpened"};
     private static final Class[] COLUMN_CLASSES = {
         String.class, String.class, String.class, String.class, String.class, 
-        String.class, Integer.class, String.class};
+        String.class, String.class, String.class};
     private final int[] COLUMN_WIDTH = {50, 100, 120, 30, 100, 80, 20, 20};
     private final int START_NUM_ROWS = 1;
    
@@ -77,6 +77,7 @@ public class PatientSearchImpl extends AbstractMainComponent {
     private int ageColumn;
     private int pvtDateColumn;
     private int stateColumn;
+    private int lapDayColumn;
     
     private ListTableModel<PatientModel> tableModel;
     private ListTableSorter sorter;
@@ -298,6 +299,7 @@ public class PatientSearchImpl extends AbstractMainComponent {
         ageColumn = columnHelper.getColumnPositionEndsWith("birthday");
         pvtDateColumn = columnHelper.getColumnPositionStartWith("pvtdate");
         stateColumn = columnHelper.getColumnPosition("isOpened");
+        lapDayColumn = columnHelper.getColumnPosition("getElapsedDay");
         
         ageDisplay = Project.getBoolean(KEY_AGE_DISPLAY, true);
     }
@@ -1269,6 +1271,10 @@ public class PatientSearchImpl extends AbstractMainComponent {
                     setIcon(null);
                 }
                 setText("");
+            } else if (col == lapDayColumn) {
+                setHorizontalAlignment(JLabel.CENTER);
+                setIcon(null);
+                setText(value == null ? "" : value.toString());
             } else {
                 setHorizontalAlignment(JLabel.LEFT);
                 setIcon(null);
