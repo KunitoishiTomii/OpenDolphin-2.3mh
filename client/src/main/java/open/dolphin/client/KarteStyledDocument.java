@@ -347,6 +347,12 @@ public class KarteStyledDocument extends DefaultStyledDocument {
         batch.toArray(inserts);
         super.insert(0, inserts);
     }
+    
+    public void createDocument(List<ElementSpec> batch) {
+        ElementSpec[] inserts = new ElementSpec[batch.size()];
+        batch.toArray(inserts);
+        super.create(inserts);
+    }
 //masuda$
     
 }

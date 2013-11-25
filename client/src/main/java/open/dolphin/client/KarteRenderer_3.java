@@ -25,7 +25,7 @@ public class KarteRenderer_3 {
     private static final String STAMP_HOLDER = "stampHolder";
     private static final String SCHEMA_HOLDER = "schemaHolder";
     private static final String COMPONENT_NAME = "component";
-    //private static final String SECTION_NAME = AbstractDocument.SectionElementName;
+    private static final String SECTION_NAME = AbstractDocument.SectionElementName;
     private static final String CONTENT_NAME = AbstractDocument.ContentElementName;
     private static final String PARAGRAPH_NAME = AbstractDocument.ParagraphElementName;
     private static final String TEXT_NAME ="text";
@@ -168,7 +168,7 @@ public class KarteRenderer_3 {
             this.kartePane = kartePane;
             this.doc = kartePane.getDocument();
             batch = new ArrayList<>();
-            isFirstParagraph = true;
+            //isFirstParagraph = true;
             
             // Offscreen updates trick
             if (USE_TRICK) {
@@ -199,8 +199,9 @@ public class KarteRenderer_3 {
                             break;
                     }
                 }
-                doc.processBatch(batch);
-            } catch (XMLStreamException | BadLocationException ex) {
+                doc.createDocument(batch);
+                
+            } catch (XMLStreamException ex) {
             }
             
             // レンダリング後はdefault styleに戻す
@@ -219,6 +220,9 @@ public class KarteRenderer_3 {
             String eName = reader.getName().getLocalPart();
 
             switch (eName) {
+                case SECTION_NAME:
+                    startSection();
+                    break;
                 case PARAGRAPH_NAME:
                     String alignStr = reader.getAttributeValue(null, ALIGNMENT_NAME);
                     startParagraph(alignStr);
@@ -259,6 +263,10 @@ public class KarteRenderer_3 {
                 default:
                     break;
             }
+        }
+        
+        private void startSection() {
+            batch.add(new ElementSpec(null, ElementSpec.StartTagType));
         }
         
         private void endElement(XMLStreamReader reader) {
@@ -302,13 +310,7 @@ public class KarteRenderer_3 {
                 }
             }
             
-            if (isFirstParagraph) {
-                // 最初のParagraphにAlignmentを設定する
-                doc.setParagraphAttributes(doc.getLength(), 0, atts, true);
-                isFirstParagraph = false;
-            } else {
-                batch.add(new ElementSpec(atts, ElementSpec.StartTagType));
-            }
+            batch.add(new ElementSpec(atts, ElementSpec.StartTagType));
         }
         
         private void startContent(String text) {
