@@ -23,7 +23,7 @@ public class KarteRenderer_2 {
 
     private static final String STAMP_HOLDER = "stampHolder";
     private static final String SCHEMA_HOLDER = "schemaHolder";
-    private static final String COMPONENT_NAME = "component";
+    private static final String COMPONENT_NAME = StyleConstants.ComponentElementName;   // "component";
     private static final String SECTION_NAME = AbstractDocument.SectionElementName;
     private static final String CONTENT_NAME = AbstractDocument.ContentElementName;
     private static final String PARAGRAPH_NAME = AbstractDocument.ParagraphElementName;

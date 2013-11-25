@@ -17,7 +17,7 @@ public class KarteStyledDocument extends DefaultStyledDocument {
 
     private static final String STAMP_HOLDER = "stampHolder";
     private static final String SCHEMA_HOLDER = "schemaHolder";
-    private static final String COMPONENT_ELEMENT_NAME = "component";
+    private static final String COMPONENT_NAME = StyleConstants.ComponentElementName;   // "component";
     private static final String NAME_NAME = StyleConstants.NameAttribute.toString();
     private static final String CR = "\n";
     private static final String SPC = " ";
@@ -272,7 +272,7 @@ public class KarteStyledDocument extends DefaultStyledDocument {
         ElementIterator itr = new ElementIterator(this);
 
         for (Element elem = itr.first(); elem != null; elem = itr.next()) {
-            if (COMPONENT_ELEMENT_NAME.equals(elem.getName())) {
+            if (COMPONENT_NAME.equals(elem.getName())) {
                 list.add(StyleConstants.getComponent(elem.getAttributes()));
             }
         }
@@ -355,7 +355,7 @@ public class KarteStyledDocument extends DefaultStyledDocument {
 
         for (Element elem = itr.first(); elem != null; elem = itr.next()) {
 
-            if (COMPONENT_ELEMENT_NAME.equals(elem.getName())) {
+            if (COMPONENT_NAME.equals(elem.getName())) {
                 ComponentHolder ch = (ComponentHolder) StyleConstants.getComponent(elem.getAttributes());
                 if (ch != null) {
                     try {
