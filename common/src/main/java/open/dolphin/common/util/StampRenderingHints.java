@@ -97,7 +97,7 @@ public class StampRenderingHints {
     
     public String getUnit(String unit) {
         if (unit == null) {
-            return null;
+            return "";
         }
         return unit.replace("カプセル", "Ｃ");
     }

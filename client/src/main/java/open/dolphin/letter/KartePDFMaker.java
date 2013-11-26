@@ -34,7 +34,7 @@ public class KartePDFMaker extends AbstractPDFMaker {
 
     private static final String STAMP_HOLDER = "stampHolder";
     private static final String SCHEMA_HOLDER = "schemaHolder";
-    private static final String COMPONENT_NAME = "component";
+    private static final String COMPONENT_NAME = StyleConstants.ComponentElementName;   // "component";
     //private static final String SECTION_NAME = AbstractDocument.SectionElementName;
     private static final String CONTENT_NAME = AbstractDocument.ContentElementName;
     private static final String PARAGRAPH_NAME = AbstractDocument.ParagraphElementName;
@@ -47,6 +47,7 @@ public class KartePDFMaker extends AbstractPDFMaker {
     private static final String BOLD_NAME = StyleConstants.Bold.toString();
     private static final String ITALIC_NAME = StyleConstants.Italic.toString();
     private static final String UNDERLINE_NAME = StyleConstants.Underline.toString();
+    private static final String VALUE_ONE = "1";
 
     private static final int KARTE_FONT_SIZE = 9;
     private static final int STAMP_FONT_SIZE = 8;
@@ -398,7 +399,7 @@ public class KartePDFMaker extends AbstractPDFMaker {
                     break;
                 case TEXT_NAME:
                     String text = reader.getElementText();
-                    startContent(foreground, size, bold, italic, underline, text);
+                    startContent(text);
                     break;
                 case COMPONENT_NAME:
                     String name = reader.getAttributeValue(null, NAME_NAME);
@@ -439,8 +440,7 @@ public class KartePDFMaker extends AbstractPDFMaker {
             return p;
         }
 
-        private void startContent(String foreground, String size, String bold,
-                String italic, String underline, String text) {
+        private void startContent(String text) {
 
             // 特殊文字を戻す
             text = XmlUtils.fromXml(text);
@@ -476,7 +476,7 @@ public class KartePDFMaker extends AbstractPDFMaker {
             }
 
             // テキストを挿入する
-            if (!text.trim().equals("")) {  // スタンプで改行されないために
+            if (!text.trim().isEmpty()) {  // スタンプで改行されないために
                 theParagraph.add(new Chunk(text));
             }
         }
@@ -486,14 +486,22 @@ public class KartePDFMaker extends AbstractPDFMaker {
 
             int index = Integer.valueOf(number);
             PdfPTable pTable = null;
-
-            if (name != null && name.equals(STAMP_HOLDER)) {
-                ModuleModel stamp = modules.get(index);
-                pTable = createStampTable(stamp);
-
-            } else if (name != null && name.equals(SCHEMA_HOLDER)) {
-                SchemaModel schema = schemas.get(index);
-                pTable = createImageTable(schema);
+            
+            if (name != null) {
+                switch (name) {
+                    case STAMP_HOLDER: {
+                        ModuleModel stamp = modules.get(index);
+                        StampTableMaker maker = new StampTableMaker();
+                        pTable = maker.createTable(stamp);
+                        break;
+                    }
+                    case SCHEMA_HOLDER: {
+                        SchemaModel schema = schemas.get(index);
+                        SchemaTableMaker maker = new SchemaTableMaker();
+                        pTable = maker.createTable(schema);
+                        break;
+                    }
+                }
             }
 
             // cellにスタンプを追加する
@@ -511,175 +519,196 @@ public class KartePDFMaker extends AbstractPDFMaker {
             cell.addElement(theParagraph);
         }
 
-        // SchemaをImage入りのテーブルとして作成する
-        private PdfPTable createImageTable(SchemaModel schema) {
+        private class SchemaTableMaker {
 
-            try {
-                // Schemaはカラム数１のテーブル
-                PdfPTable table = new PdfPTable(1);
-                table.setSpacingBefore(1);
-                //table.setSpacingAfter(1);
-                table.setHorizontalAlignment(Element.ALIGN_LEFT);
-                // イメージのパーセントを設定
-                int percentage = Math.min(PERCENTAGE_IMAGE_WIDTH * karteTable.getColumnCount(), 100);
-                table.setWidthPercentage(percentage);
-                // SchemaModelからjpeg imageを取得
-                Image image = Image.getInstance(schema.getJpegByte());
-                // セルにimageを設定
-                PdfPCell pcell = new PdfPCell(image, true);
-                pcell.setBorder(Rectangle.NO_BORDER);
-                // テーブルに追加
-                table.addCell(pcell);
+            private PdfPTable createTable(SchemaModel schema) {
 
-                return table;
+                try {
+                    // Schemaはカラム数１のテーブル
+                    PdfPTable table = new PdfPTable(1);
+                    table.setSpacingBefore(1);
+                    //table.setSpacingAfter(1);
+                    table.setHorizontalAlignment(Element.ALIGN_LEFT);
+                    // イメージのパーセントを設定
+                    int percentage = Math.min(PERCENTAGE_IMAGE_WIDTH * karteTable.getColumnCount(), 100);
+                    table.setWidthPercentage(percentage);
+                    // SchemaModelからjpeg imageを取得
+                    Image image = Image.getInstance(schema.getJpegByte());
+                    // セルにimageを設定
+                    PdfPCell pcell = new PdfPCell(image, true);
+                    pcell.setBorder(Rectangle.NO_BORDER);
+                    // テーブルに追加
+                    table.addCell(pcell);
 
-            } catch (BadElementException ex) {
-            } catch (MalformedURLException ex) {
-            } catch (IOException ex) {
+                    return table;
+
+                } catch (BadElementException ex) {
+                } catch (MalformedURLException ex) {
+                } catch (IOException ex) {
+                }
+
+                return null;
             }
-
-            return null;
         }
 
-        // スタンプをテーブルとして作成する
-        private PdfPTable createStampTable(ModuleModel stamp) {
+        private class StampTableMaker {
 
-            try {
-                // スタンプのテーブルを作成、カラム数３
-                PdfPTable table = new PdfPTable(3);
-                table.setWidthPercentage(100);
-                table.setWidths(new int[]{7, 1, 2});    // てきとー
-                table.setHorizontalAlignment(Element.ALIGN_LEFT);
-                table.setSpacingAfter(5);
+            private PdfPTable table;
+            private ModuleModel moduleModel;
+            private String stampName;
 
-                // スタンプの種類別に処理する
-                String entity = stamp.getModuleInfoBean().getEntity();
-                switch (entity) {
-                    case IInfoModel.ENTITY_LABO_TEST: {
-                        // 検体検査スタンプ
-                        BundleDolphin model = (BundleDolphin) stamp.getModel();
-                        // スタンプ名
-                        StringBuilder sb = new StringBuilder();
-                        sb.append(model.getOrderName());
-                        sb.append("(");
-                        sb.append(stamp.getModuleInfoBean().getStampName());
-                        sb.append(")");
-                        table.addCell(createStampCell(sb.toString(), 2, true));
-                        // ClassCode
-                        table.addCell(createStampCell(model.getClassCode(), 1, true));
-                        // 項目
-                        table.addCell(createStampCell(model.getItemNames(), 3, false));
-                        // bundleNumber
-                        String number = model.getBundleNumber();
-                        if (number != null && number.startsWith("*")) {
-                            String str = hints.parseBundleNum(model);
-                            table.addCell(createStampCell(str, 3, false));
-                        } else if (number != null && !number.trim().isEmpty() && !"1".equals(number)) {
-                            table.addCell(createStampCell("・回数", 1, false));
-                            table.addCell(createStampCell(number, 1, false));
-                            table.addCell(createStampCell(" 回", 1, false));
-                        }
-                        // メモ
-                        String memo = model.getMemo();
-                        if (memo != null && !memo.trim().isEmpty()) {
-                            table.addCell(createStampCell(memo, 3, false));
-                        }
-                        break;
+            private PdfPTable createTable(ModuleModel stamp) {
+
+                moduleModel = stamp;
+                stampName = stamp.getModuleInfoBean().getStampName();
+
+                try {
+                    // スタンプのテーブルを作成、カラム数３
+                    table = new PdfPTable(3);
+                    table.setWidthPercentage(100);
+                    table.setWidths(new int[]{7, 1, 2});    // てきとー
+                    table.setHorizontalAlignment(Element.ALIGN_LEFT);
+                    table.setSpacingAfter(5);
+                    // スタンプの種類別に処理する
+                    String entity = stamp.getModuleInfoBean().getEntity();
+                    switch (entity) {
+                        case IInfoModel.ENTITY_MED_ORDER:
+                            buildMedStamp();
+                            break;
+                        case IInfoModel.ENTITY_LABO_TEST:
+                            buildDolphinStamp(hints.isLaboFold());
+                            break;
+                        default:
+                            buildDolphinStamp(false);
+                            break;
                     }
-                    case IInfoModel.ENTITY_MED_ORDER: {
-                        // 処方スタンプ
-                        BundleMed model = (BundleMed) stamp.getModel();
-                        // スタンプ名
-                        StringBuilder sb = new StringBuilder();
-                        sb.append("RP）");
-                        sb.append(stamp.getModuleInfoBean().getStampName());
-                        table.addCell(createStampCell(sb.toString(), 2, true));
-                        // 院内・院外、ClassCode
-                        String str = model.getMemo().replace("処方", "") + "/" + model.getClassCode();
-                        table.addCell(createStampCell(str, 2, true));
-                        // 薬剤項目
-                        for (ClaimItem ci : model.getClaimItem()) {
-                            // コメントコードでは・とｘは表示しない
-                            if (!ci.getCode().matches(ClaimConst.REGEXP_COMMENT_MED)) {
-                                table.addCell(createStampCell("・" + ci.getName(), 1, false));
-                                table.addCell(createStampCell(" x " + ci.getNumber(), 1, false));
-                                table.addCell(createStampCell(ci.getUnit(), 1, false));
-                            } else {
-                                table.addCell(createStampCell(ci.getName(), 1, false));
-                                table.addCell(createStampCell(" ", 1, false));
-                                table.addCell(createStampCell(" ", 1, false));
-                            }
-                        }
-                        // 用法
-                        table.addCell(createStampCell(model.getAdminDisplayString(), 3, false));
-                        break;
-                    }
-                    default: {
-                        // その他スタンプ
-                        BundleDolphin model = (BundleDolphin) stamp.getModel();
-                        // スタンプ名
-                        StringBuilder sb = new StringBuilder();
-                        sb.append(model.getOrderName());
-                        sb.append("(");
-                        sb.append(stamp.getModuleInfoBean().getStampName());
-                        sb.append(")");
-                        table.addCell(createStampCell(sb.toString(), 2, true));
-                        // ClassCode
-                        table.addCell(createStampCell(model.getClassCode(), 1, true));
-                        // 項目
-                        for (ClaimItem ci : model.getClaimItem()) {
-                            if (ci.getNumber() != null) {
-                                table.addCell(createStampCell("・" + ci.getName(), 1, false));
-                                table.addCell(createStampCell(" x " + ci.getNumber(), 1, false));
-                                table.addCell(createStampCell(ci.getUnit(), 1, false));
-                            } else {
-                                table.addCell(createStampCell("・" + ci.getName(), 1, false));
-                                table.addCell(createStampCell(" ", 1, false));
-                                table.addCell(createStampCell(" ", 1, false));
-                            }
-                        }
-                        // bundleNumber
-                        String number = model.getBundleNumber();
-                        if (number != null && number.startsWith("*")) {
-                            String str = hints.parseBundleNum(model);
-                            table.addCell(createStampCell(str, 3, false));
-                        } else if (number != null && !number.trim().isEmpty() && !"1".equals(number)) {
-                            table.addCell(createStampCell("・回数", 1, false));
-                            table.addCell(createStampCell(number, 1, false));
-                            table.addCell(createStampCell(" 回", 1, false));
-                        }
-                        // メモ
-                        String memo = model.getMemo();
-                        if (memo != null && !memo.trim().isEmpty()) {
-                            table.addCell(createStampCell(memo, 3, false));
-                        }
-                        break;
+                    return table;
+                } catch (DocumentException ex) {
+                }
+                return null;
+            }
+
+            private void buildMedStamp() {
+                // 処方スタンプ
+                BundleMed model = (BundleMed) moduleModel.getModel();
+                // タイトル
+                String orderName = (hints.isNewStamp(stampName)) ? "RP) " : "RP) " + stampName;
+                String classCode = hints.getMedTypeAndCode(model);
+                writeTableTitle(orderName, classCode);
+
+                // 項目
+                for (ClaimItem item : model.getClaimItem()) {
+                    writeClaimItem(item);
+                }
+                // 用法
+                writeAdminUsage(model);
+
+                // メモ
+                writeMemo(model.getAdminMemo());
+            }
+
+            private void buildDolphinStamp(boolean foldItem) {
+
+                BundleDolphin model = (BundleDolphin) moduleModel.getModel();
+                // タイトル
+                String orderName = model.getOrderName();
+                if (!hints.isNewStamp(stampName)) {
+                    StringBuilder sb = new StringBuilder();
+                    sb.append(orderName);
+                    sb.append("(").append(stampName).append(")");
+                    orderName = sb.toString();
+                }
+                String classCode = model.getClassCode();
+                writeTableTitle(orderName, classCode);
+                // 項目
+                if (foldItem) {
+                    writeLaboFoldItem(model);
+                } else {
+                    for (ClaimItem item : model.getClaimItem()) {
+                        writeClaimItem(item);
                     }
                 }
 
-                return table;
+                // メモ
+                writeMemo(model.getMemo());
 
-            } catch (DocumentException ex) {
+                // バンドル数量
+                writeBundleNumber(model);
             }
 
-            return null;
+            // テーブルタイトルを書き出す
+            private void writeTableTitle(String orderName, String classCode) {
+                table.addCell(createStampCell(orderName, 1, true));
+                table.addCell(createStampCell(classCode, 2, true));
+            }
+
+            // ClaimItemを書き出す
+            private void writeClaimItem(ClaimItem item) {
+
+                if (hints.is84Code(item.getCode())) {
+                    // 84系コードの場合、空白部分に数量を埋め込む
+                    table.addCell(createStampCell(hints.build84Name(item), 3, false));
+
+                } else if (hints.isCommentCode(item.getCode())) {
+                    // コメントコードなら"・"と"x"は表示しない
+                    table.addCell(createStampCell(item.getName(), 3, false));
+                } else if (item.getNumber() != null && !item.getNumber().isEmpty()) {
+
+                    table.addCell(createStampCell("・" + item.getName(), 1, false));
+                    table.addCell(createStampCell(" x " + item.getNumber(), 1, false));
+                    table.addCell(createStampCell(" " + hints.getUnit(item.getUnit()), 1, false));
+                } else {
+
+                    table.addCell(createStampCell("・" + item.getName(), 3, false));
+                }
+            }
+
+            // ラボ項目を折りたたんで書き出す
+            private void writeLaboFoldItem(BundleDolphin model) {
+                table.addCell(createStampCell("・" + model.getItemNames(), 3, false));
+            }
+
+            // 内服の用法を書き出す
+            private void writeAdminUsage(BundleMed model) {
+                table.addCell(createStampCell(model.getAdminDisplayString(), 3, false));
+            }
+
+            // メモ行をかきだす
+            private void writeMemo(String memo) {
+                if (memo != null && !memo.isEmpty()) {
+                    table.addCell(createStampCell(memo, 3, false));
+                }
+            }
+
+            // バンドル数量を書き出す
+            private void writeBundleNumber(BundleDolphin model) {
+
+                if (model.getBundleNumber().startsWith("*")) {
+                    table.addCell(createStampCell("・" + hints.parseBundleNum(model), 3, false));
+                } else if (!VALUE_ONE.equals(model.getBundleNumber())) {
+                    table.addCell(createStampCell("・回数", 1, false));
+                    table.addCell(createStampCell(" x " + model.getBundleNumber(), 1, false));
+                    table.addCell(createStampCell(" 回", 1, false));
+                }
+            }
+
+            // スタンプ表示に使うPdfPCellを作成する
+            private PdfPCell createStampCell(String str, int colSpan, boolean setBackground) {
+
+                if (str == null) {
+                    str = "";
+                }
+                PdfPCell pcell = new PdfPCell();
+                pcell.setColspan(colSpan);
+                pcell.setPadding(0);
+                pcell.setBorder(Rectangle.NO_BORDER);
+                if (setBackground) {
+                    pcell.setBackgroundColor(STAMP_TITLE_BACKGROUND);
+                }
+                pcell.addElement(new Chunk(str, new Font(baseFont, STAMP_FONT_SIZE)));
+                return pcell;
+            }
         }
 
-        // スタンプ表示に使うPdfPCellを作成する
-        private PdfPCell createStampCell(String str, int colSpan, boolean setBackground) {
-
-            if (str == null) {
-                str = "";
-            }
-            PdfPCell pcell = new PdfPCell();
-            pcell.setColspan(colSpan);
-            pcell.setPadding(0);
-            pcell.setBorder(Rectangle.NO_BORDER);
-            if (setBackground) {
-                pcell.setBackgroundColor(STAMP_TITLE_BACKGROUND);
-            }
-            pcell.addElement(new Chunk(str, new Font(baseFont, STAMP_FONT_SIZE)));
-            return pcell;
-        }
     }
 }
