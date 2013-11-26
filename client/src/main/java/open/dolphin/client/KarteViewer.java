@@ -89,8 +89,10 @@ public abstract class KarteViewer extends AbstractChartDocument {
         // 当時の年齢を表示する
         String mmlBirthday = getContext().getPatient().getBirthday();
         String mmlDate = ModelUtils.getDateAsString(docInfo.getFirstConfirmDate());
-        sb.append("[").append(AgeCalculator.getAge2(mmlBirthday, mmlDate)).append("歳]");
-
+        if (mmlBirthday != null) {
+            sb.append("[").append(AgeCalculator.getAge2(mmlBirthday, mmlDate)).append("歳]");
+        }
+        
         if (docInfo.getStatus().equals(IInfoModel.STATUS_TMP)) {
             sb.append(UNDER_TMP_SAVE);
         }

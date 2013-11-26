@@ -22,6 +22,7 @@ import open.dolphin.infomodel.*;
 import open.dolphin.project.Project;
 import open.dolphin.common.util.StampRenderingHints;
 import open.dolphin.common.util.XmlUtils;
+import open.dolphin.util.AgeCalculator;
 
 
 /**
@@ -263,63 +264,81 @@ public class KartePDFMaker extends AbstractPDFMaker {
     }
 
     // カルテのタイトルを作成する
-    private String createTitle(DocumentModel docModel) {
+    private String createTitle(DocumentModel model) {
 
+        DocInfoModel docInfo = model.getDocInfoModel();
+        
         StringBuilder sb = new StringBuilder();
-        switch (docModel.getDocInfoModel().getStatus()) {
+        switch (docInfo.getStatus()) {
             case IInfoModel.STATUS_DELETE:
                 sb.append("削除済／");
                 break;
             case IInfoModel.STATUS_MODIFIED:
                 sb.append("修正:");
-                sb.append(docModel.getDocInfoModel().getVersionNumber().replace(".0", ""));
+                sb.append(docInfo.getVersionNumber().replace(".0", ""));
                 sb.append("／");
                 break;
         }
 
         // 確定日を分かりやすい表現に変える
         sb.append(ModelUtils.getDateAsFormatString(
-                docModel.getDocInfoModel().getFirstConfirmDate(),
-                IInfoModel.KARTE_DATE_FORMAT));
+                docInfo.getFirstConfirmDate(), IInfoModel.KARTE_DATE_FORMAT));
 
         // 当時の年齢を表示する
-        String mmlDate = ModelUtils.getDateAsString(docModel.getDocInfoModel().getFirstConfirmDate());
-        if (getPatientBirthday() != null) {
-            sb.append("[").append(ModelUtils.getAge2(getPatientBirthday(), mmlDate)).append("歳]");
+        String mmlBirthday = getPatientBirthday();
+        String mmlDate = ModelUtils.getDateAsString(docInfo.getFirstConfirmDate());
+        if (mmlBirthday != null) {
+            sb.append("[").append(AgeCalculator.getAge2(mmlBirthday, mmlDate)).append("歳]");
         }
 
-        // 仮保存
-        if (docModel.getDocInfoModel().getStatus().equals(IInfoModel.STATUS_TMP)) {
+        if (docInfo.getStatus().equals(IInfoModel.STATUS_TMP)) {
             sb.append(UNDER_TMP_SAVE);
         }
-
+        
+        // 入院の場合は病室・入院科を表示する
+        AdmissionModel admission = docInfo.getAdmissionModel();
+        if (admission != null) {
+            sb.append("<");
+            sb.append(admission.getRoom()).append("号室:");
+            sb.append(admission.getDepartment());
+            sb.append(">");
+        }
+        
         // 保険　公費が見えるのは気分良くないだろうから、表示しない
-        // SPC区切りの保険者番号・保険者名称・公費のフォーマットである
-        String ins = docModel.getDocInfoModel().getHealthInsuranceDesc().trim();
+        // コロン区切りの保険者名称・公費のフォーマットである 
+        // 旧カルテはSPC区切りの保険者番号・SPC・保険者名称・公費のフォーマット
+        String ins = docInfo.getHealthInsuranceDesc().trim();
         if (ins != null && !ins.isEmpty()) {
-            String items[] = docModel.getDocInfoModel().getHealthInsuranceDesc().split(" ");
-            List<String> itemList = new ArrayList<>();
-            for (String item : items) {
-                if (!item.isEmpty()) {
-                    itemList.add(item);
-                }
-            }
-            switch (itemList.size()) {
-                case 1:
+            if (ins.contains(":")) {
+                String items[] = docInfo.getHealthInsuranceDesc().split(":");
+                sb.append("／");
+                sb.append(items[0]);
+            } else if (ins.contains(" ")) {
+                String items[] = docInfo.getHealthInsuranceDesc().split(" ");
+                if (items.length > 2) {
+                    sb.append("／");
+                    sb.append(items[2]);
+                } else {
                     sb.append("／");
                     sb.append(ins);
-                    break;
-                case 2:
-                case 3:
-                    sb.append("／");
-                    sb.append(itemList.get(1));
-                    break;
+                }
+            } else {
+                sb.append("／");
+                sb.append(ins);
             }
         }
         
         // KarteViewerで日付の右Dr名を表示する
         sb.append("／");
-        sb.append(docModel.getUserModel().getCommonName());
+        sb.append(model.getUserModel().getCommonName());
+        
+        // pdfには最終編集日を記載する
+        if (docInfo.getParentId() != null) {
+            SimpleDateFormat frmt = new SimpleDateFormat(IInfoModel.ISO_DF_FORMAT);
+            sb.append("／[編集]");
+            String cconfirmDate = frmt.format(docInfo.getConfirmDate());
+            sb.append(cconfirmDate);
+        }
 
         return sb.toString();
     }
