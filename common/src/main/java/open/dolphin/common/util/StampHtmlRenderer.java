@@ -92,7 +92,7 @@ public class StampHtmlRenderer {
         
         // 項目
         for (ClaimItem item : model.getClaimItem()) {
-            writeMedItem(item);
+            writeClaimItem(item);
         }
         
         // 用法
@@ -181,18 +181,24 @@ public class StampHtmlRenderer {
         writer.writeEndElement();
     }
     
-    // Med ClaimItemを書き出す
-    private void writeMedItem(ClaimItem item) {
+    // ClaimItemを書き出す
+    private void writeClaimItem(ClaimItem item) {
         
         writer.writeStartElement(TAG_TR);
-
-        // コメントコードなら"・"と"x"は表示しない
-        if (hints.isCommentCode(item.getCode())) {
+        
+        if (hints.is84Code(item.getCode())) {
+            // 84系コードの場合、空白部分に数量を埋め込む
+            writer.writeStartElement(TAG_TD)
+                    .writeAttribute(ATTR_COLSPAN, VALUE_THREE)
+                    .writeCharacters(hints.build84Name(item))
+                    .writeEndElement();
+        } else if (hints.isCommentCode(item.getCode())) {
+            // コメントコードなら"・"と"x"は表示しない
             writer.writeStartElement(TAG_TD)
                     .writeAttribute(ATTR_COLSPAN, VALUE_THREE)
                     .writeCharacters(item.getName())
                     .writeEndElement();
-        } else {
+        } else if (item.getNumber() != null && !item.getNumber().isEmpty()) {
             writer.writeStartElement(TAG_TD)
                     .writeCharacters("・")
                     .writeCharacters(item.getName())
@@ -210,43 +216,11 @@ public class StampHtmlRenderer {
                     .writeCharacters(" ")
                     .writeCharacters(hints.getUnit(item.getUnit()))
                     .writeEndElement();
-        }
-
-        writer.writeEndElement();
-    }
-    
-    // ClaimItemを書き出す
-    private void writeClaimItem(ClaimItem item) {
-        
-        writer.writeStartElement(TAG_TR);
-        
-        // コメントコードなら"・"と"x"は表示しない
-        String itemName = item.getName();
-        if (!hints.isCommentCode(item.getCode())) {
-            itemName = "・" + itemName;
-        }
-
-        if (item.getNumber() != null && !item.getNumber().isEmpty()) {
-            writer.writeStartElement(TAG_TD)
-                    .writeCharacters(itemName)
-                    .writeEndElement();
-
-            writer.writeStartElement(TAG_TD)
-                    .writeAttribute(ATTR_NOWRAP, VALUE_NOWRAP)
-                    .writeAttribute(ATTR_ALIGN, VALUE_RIGHT)
-                    .writeCharacters(" x ")
-                    .writeCharacters(item.getNumber())
-                    .writeEndElement();
-
-            writer.writeStartElement(TAG_TD)
-                    .writeAttribute(ATTR_NOWRAP, VALUE_NOWRAP)
-                    .writeCharacters(" ")
-                    .writeCharacters(hints.getUnit(item.getUnit()))
-                    .writeEndElement();
         } else {
             writer.writeStartElement(TAG_TD)
                     .writeAttribute(ATTR_COLSPAN, VALUE_THREE)
-                    .writeCharacters(itemName)
+                    .writeCharacters("・")
+                    .writeCharacters(item.getName())
                     .writeEndElement();
         }
 

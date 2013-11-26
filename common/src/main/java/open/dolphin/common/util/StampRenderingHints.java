@@ -3,6 +3,7 @@ package open.dolphin.common.util;
 import java.awt.Color;
 import open.dolphin.infomodel.BundleDolphin;
 import open.dolphin.infomodel.ClaimConst;
+import open.dolphin.infomodel.ClaimItem;
 import open.dolphin.infomodel.IInfoModel;
 
 /**
@@ -51,6 +52,40 @@ public class StampRenderingHints {
 
     public boolean isCommentCode(String code) {
         return code.matches(ClaimConst.REGEXP_COMMENT_MED);
+    }
+    
+    public boolean is84Code(String code) {
+        if (code != null) {
+            return code.startsWith("84") || code.startsWith("0084");
+        }
+        return false;
+    }
+    
+    public String build84Name(ClaimItem item) {
+        try {
+            char[] chars = item.getName().toCharArray();
+            String[] numTokens = item.getNumber().split("-");
+            StringBuilder sb = new StringBuilder();
+            boolean skip = false;
+            int index = 0;
+
+            for (char c : chars) {
+                if (c == ' ' || c == '　') {
+                    if (!skip) {
+                        sb.append(' ').append(numTokens[index]);
+                        index++;
+                    }
+                    skip = true;
+                } else {
+                    sb.append(c);
+                    skip = false;
+                }
+            }
+            return sb.toString();
+        } catch (Exception ex) {
+        }
+        
+        return item.getName() + " " + item.getNumber();
     }
     
     public String getMedTypeAndCode(BundleDolphin model) {
