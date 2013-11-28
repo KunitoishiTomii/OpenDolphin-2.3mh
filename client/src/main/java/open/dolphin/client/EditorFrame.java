@@ -981,10 +981,7 @@ public class EditorFrame extends AbstractMainTool implements Chart {
         // ここはこのEditorFrameは除外しないといけない
         long baseDocPk = base.getDocInfoModel().getDocPk();
         List<EditorFrame> editorFrames = WindowSupport.getAllEditorFrames();
-        if (editorFrames.isEmpty()) {
-            return true;
-        }
-
+        
         for (EditorFrame ef : editorFrames) {
             long parentDocPk = ef.getParentDocPk();
             if (ef != EditorFrame.this && baseDocPk == parentDocPk) {

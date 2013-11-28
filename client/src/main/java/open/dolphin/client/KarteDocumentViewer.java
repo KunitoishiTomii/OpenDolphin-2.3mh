@@ -539,6 +539,13 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
         if (selectedKarte == null) {
             return;
         }
+        
+ //masuda^
+        // カルテ表示はひとつだけ
+        // すでに修正中の document があれば toFront するだけで帰る
+        if (!canModifyKarte()) {
+            return;
+        }
 
         EditorFrame editorFrame = new EditorFrame();
         editorFrame.setChart(getContext());
@@ -547,7 +554,7 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
         DocumentModel model = selectedKarte.getModel();
         String docType = model.getDocInfoModel().getDocType();
 
-//masuda^   サマリー対応
+        // サマリー対応
         if (IInfoModel.DOCTYPE_S_KARTE.equals(docType)
                 || IInfoModel.DOCTYPE_SUMMARY.equals(docType)) {
             KarteViewer viwer = KarteViewer.createKarteViewer(KarteViewer.MODE.SINGLE);
@@ -555,16 +562,11 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
             editorFrame.setKarteViewer(viwer);
             editorFrame.start();
         } else if (IInfoModel.DOCTYPE_KARTE.equals(docType)) {
-            // カルテ表示はひとつだけ
-            // すでに修正中の document があれば toFront するだけで帰る
-            if (!canModifyKarte()) {
-                return;
-            }
-//masuda$
             KarteViewer viwer = KarteViewer.createKarteViewer(KarteViewer.MODE.DOUBLE);
             viwer.setModel(model);
             editorFrame.setKarteViewer(viwer);
             editorFrame.start();
+//masuda$
         }
     }
 
@@ -962,10 +964,7 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
         }
 
         List<EditorFrame> editorFrames = WindowSupport.getAllEditorFrames();
-        if (editorFrames.isEmpty()) {
-            return true;
-        }
-
+        
         long baseDocPk = base.getDocInfoModel().getDocPk();
         for (EditorFrame ef : editorFrames) {
             long parentDocPk = ef.getParentDocPk();
