@@ -44,16 +44,16 @@ public class WindowSupport implements MenuListener {
     
     // Window support が提供するスタッフ
     // フレーム
-    private JFrame frame;
+    private final JFrame frame;
     
     // メニューバー
-    private JMenuBar menuBar;
+    private final JMenuBar menuBar;
     
     // ウインドウメニュー
-    private JMenu windowMenu;
+    private final JMenu windowMenu;
     
     // Window Action
-    private Action windowAction;
+    private final Action windowAction;
     
     // ChartMediator
     private Object mediator;
