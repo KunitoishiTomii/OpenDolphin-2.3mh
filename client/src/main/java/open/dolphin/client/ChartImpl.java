@@ -2266,7 +2266,7 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
                 String msg = "新規カルテウィンドウが開いています。新たに作成しますか？";
                 String[] options = {"いいえ", "はい"};
                 int val = JOptionPane.showOptionDialog(
-                        null, msg, title,
+                        getFrame(), msg, title,
                         JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE, null, options, options[0]);
                 if (val == 0) {
                     // 新規カルテのEditorFrameがある場合はFrameをtoFrontする
