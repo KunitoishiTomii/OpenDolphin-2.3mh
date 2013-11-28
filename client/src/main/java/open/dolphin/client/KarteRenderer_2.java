@@ -113,6 +113,7 @@ public class KarteRenderer_2 {
         // SOA Pane をレンダリングする
         if (soaSpec == null || soaSpec.isEmpty()) {
             // soaにModuleModelはないはずだよね… あ、モディファイ版にはあるかもしれない…
+            soaPane.initKarteStyledDocument();  // 忘れてたｗ
             for (ModuleModel mm : soaModules) {
                 soaPane.stamp(mm);
             }
@@ -124,6 +125,7 @@ public class KarteRenderer_2 {
         // P Pane をレンダリングする
         if (pSpec == null || pSpec.isEmpty()) {
             // 前回処方など適用
+            pPane.initKarteStyledDocument();    // 忘れてたｗ
             for (ModuleModel mm : pModules) {
                 pPane.stamp(mm);
             }
