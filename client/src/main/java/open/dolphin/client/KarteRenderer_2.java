@@ -133,7 +133,7 @@ public class KarteRenderer_2 {
     }
     
     // StAX版
-    private class KartePaneRenderer {
+    private static class KartePaneRenderer {
 
         private KartePane kartePane;
         private KarteStyledDocument doc;
@@ -336,7 +336,7 @@ public class KarteRenderer_2 {
     }
 
     // ElementSpec版
-    private class KartePaneRenderer_ElementSpec {
+    private static class KartePaneRenderer_ElementSpec {
 
         private KartePane kartePane;
         private KarteStyledDocument doc;

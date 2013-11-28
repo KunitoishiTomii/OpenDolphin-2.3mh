@@ -1,7 +1,6 @@
 package open.dolphin.client;
 
 import open.dolphin.common.util.StampRenderingHints;
-import java.io.DataOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.nio.ByteBuffer;
@@ -27,7 +26,7 @@ public class PrintLabel {
 
     // QL-580Nの全角最大桁数(全角32dot fontで半角換算の桁数)
     private static final int maxColumn = 42;
-    private static final String encoding = "JIS";
+    private static final String ENCODING = "JIS";
 
     // esc/pコマンド関連
     private static final byte[] escpInitialize = {0x1b, 0x40};
@@ -39,18 +38,18 @@ public class PrintLabel {
     private static final byte[] KI = {0x1b, 0x24, 0x42};
     //private static final byte[] KO = {0x1b, 0x28, 0x42};
 
-    private List<LineModel> lineData = new ArrayList<LineModel>();
-    private List<ModuleModel> rpStamp = new ArrayList<ModuleModel>();
-    private List<ModuleModel> exStamp = new ArrayList<ModuleModel>();
-    private List<ModuleModel> otherStamp = new ArrayList<ModuleModel>();
-    private List<ModuleModel> otherStamp2 = new ArrayList<ModuleModel>();
-    private List<ModuleModel> injStamp = new ArrayList<ModuleModel>();
-    private List<StampHolder> stampHolders = new ArrayList<StampHolder>();
-    private KartePane kartePane = new KartePane();
+    private final List<LineModel> lineData = new ArrayList<>();
+    private final List<ModuleModel> rpStamp = new ArrayList<>();
+    private final List<ModuleModel> exStamp = new ArrayList<>();
+    private final List<ModuleModel> otherStamp = new ArrayList<>();
+    private final List<ModuleModel> otherStamp2 = new ArrayList<>();
+    private final List<ModuleModel> injStamp = new ArrayList<>();
+    private List<StampHolder> stampHolders = new ArrayList<>();
+    private KartePane kartePane;
 
     private String date;
     
-    private StampRenderingHints hints;
+    private final StampRenderingHints hints;
     
 
     public PrintLabel() {
@@ -125,20 +124,27 @@ public class PrintLabel {
         for (StampHolder sh : stampHolders) {
             ModuleModel stamp = sh.getStamp();
             String entity = stamp.getModuleInfoBean().getEntity();
-            if (IInfoModel.ENTITY_MED_ORDER.equals(entity)) {
-                String rpName = stamp.getModuleInfoBean().getStampName();
-                // 順番に印刷するために定期臨時注射それぞれのArrayListに登録
-                if (rpName.indexOf("定期") != -1) {
-                    rpStamp.add(stamp);
-                } else if (rpName.indexOf("臨時") != -1) {
-                    exStamp.add(stamp);
-                } else {
-                    otherStamp.add(stamp);
-                }
-            } else if ("injectionOrder".equals(entity)) {
-                injStamp.add(stamp);
-            } else {
-                otherStamp2.add(stamp);
+            if (entity == null) {
+                continue;
+            }
+            switch (entity) {
+                case IInfoModel.ENTITY_MED_ORDER:
+                    String rpName = stamp.getModuleInfoBean().getStampName();
+                    // 順番に印刷するために定期臨時注射それぞれのArrayListに登録
+                    if (rpName.contains("定期")) {
+                        rpStamp.add(stamp);
+                    } else if (rpName.contains("臨時")) {
+                        exStamp.add(stamp);
+                    } else {
+                        otherStamp.add(stamp);
+                    }
+                    break;
+                case IInfoModel.ENTITY_INJECTION_ORDER:
+                    injStamp.add(stamp);
+                    break;
+                default:
+                    otherStamp2.add(stamp);
+                    break;
             }
         }
     }
@@ -173,90 +179,95 @@ public class PrintLabel {
     }
 
     private void addLineFromModule(ModuleModel stamp) {
-        if (IInfoModel.ENTITY_MED_ORDER.equals(stamp.getModuleInfoBean().getEntity())) {
-            // 処方の場合の処理
-            BundleMed bundle = (BundleMed) stamp.getModel();
-            ClaimItem[] ci = bundle.getClaimItem();
-            String rpName = stamp.getModuleInfoBean().getStampName();
-            rpName = rpName.replace("定期 - ", "Ｒｐ");
-            rpName = rpName.replace("臨時 - ", "Ｅｘ");
-
-            lineData.add(new LineModel(rpName, "", "─"));
-            for (ClaimItem c : ci) {
-                String itemName = c.getName();
-                String unit = c.getUnit();
-                if ("カプセル".equals(unit)) {
-                    unit = "Ｃ";
-                }
-                // 0085系のコメントはunitがnullなので""に置き換える。
-                // 手技の場合もclassCodeが"0"なので置き換える
-                if (unit == null || "0".equals(c.getClassCode())) {
-                    unit = "";
-                }
-                String itemNumber = hankakuNumToZenkaku(c.getNumber()) + unit;
-                lineData.add(new LineModel(itemName, itemNumber, "　"));
-            }
-
-            String admin = "【" + bundle.getAdmin() + "】";
-            String bundleNumber = hankakuNumToZenkaku(bundle.getBundleNumber());
-
-            // 頓用と外用なら「何回分」にする
-            boolean tonyo = bundle.getClassCode().startsWith(ClaimConst.RECEIPT_CODE_TONYO.substring(0, 2));
-            boolean gaiyo = bundle.getClassCode().startsWith(ClaimConst.RECEIPT_CODE_GAIYO.substring(0, 2));
-            if (tonyo || gaiyo) {
-                bundleNumber = bundleNumber + "回分";
-            } else {
-                bundleNumber = bundleNumber + "日分";
-            }
-
-            lineData.add(new LineModel(admin, bundleNumber, "　"));
-
-            String adminMemo = bundle.getAdminMemo();
-            if (adminMemo != null) {
-                lineData.add(new LineModel(adminMemo, "", "　"));
-            }
-
-        } else if ("injectionOrder".equals(stamp.getModuleInfoBean().getEntity())) {
-            BundleDolphin bundle = (BundleDolphin) stamp.getModel();
-            lineData.add(new LineModel("注射", "", "─"));
-            ClaimItem[] ci = bundle.getClaimItem();
-            for (ClaimItem c : ci) {
-                String itemName = c.getName();
-                String unit = c.getUnit();
-                if (unit != null) {
-                    // 注射の薬剤はここで処理される
+        
+        String entity = stamp.getModuleInfoBean().getEntity();
+        if (entity == null) {
+            return;
+        }
+        switch (entity) {
+            case IInfoModel.ENTITY_MED_ORDER: {
+                // 処方の場合の処理
+                BundleMed bundle = (BundleMed) stamp.getModel();
+                ClaimItem[] ci = bundle.getClaimItem();
+                String rpName = stamp.getModuleInfoBean().getStampName();
+                rpName = rpName.replace("定期 - ", "Ｒｐ");
+                rpName = rpName.replace("臨時 - ", "Ｅｘ");
+                lineData.add(new LineModel(rpName, "", "─"));
+                for (ClaimItem c : ci) {
+                    String itemName = c.getName();
+                    String unit = c.getUnit();
+                    if ("カプセル".equals(unit)) {
+                        unit = "Ｃ";
+                    }
+                        // 0085系のコメントはunitがnullなので""に置き換える。
+                    // 手技の場合もclassCodeが"0"なので置き換える
+                    if (unit == null || "0".equals(c.getClassCode())) {
+                        unit = "";
+                    }
                     String itemNumber = hankakuNumToZenkaku(c.getNumber()) + unit;
                     lineData.add(new LineModel(itemName, itemNumber, "　"));
+                }
+                String admin = "【" + bundle.getAdmin() + "】";
+                String bundleNumber = hankakuNumToZenkaku(bundle.getBundleNumber());
+                // 頓用と外用なら「何回分」にする
+                boolean tonyo = bundle.getClassCode().startsWith(ClaimConst.RECEIPT_CODE_TONYO.substring(0, 2));
+                boolean gaiyo = bundle.getClassCode().startsWith(ClaimConst.RECEIPT_CODE_GAIYO.substring(0, 2));
+                if (tonyo || gaiyo) {
+                    bundleNumber = bundleNumber + "回分";
                 } else {
-                    // 注射の手技はここで処理される
-                    itemName = "【" + itemName + "】";
+                    bundleNumber = bundleNumber + "日分";
+                }
+                lineData.add(new LineModel(admin, bundleNumber, "　"));
+                String adminMemo = bundle.getAdminMemo();
+                if (adminMemo != null) {
+                    lineData.add(new LineModel(adminMemo, "", "　"));
+                }
+                break;
+            }
+            case IInfoModel.ENTITY_INJECTION_ORDER: {
+                BundleDolphin bundle = (BundleDolphin) stamp.getModel();
+                lineData.add(new LineModel("注射", "", "─"));
+                ClaimItem[] ci = bundle.getClaimItem();
+                for (ClaimItem c : ci) {
+                    String itemName = c.getName();
+                    String unit = c.getUnit();
+                    if (unit != null) {
+                        // 注射の薬剤はここで処理される
+                        String itemNumber = hankakuNumToZenkaku(c.getNumber()) + unit;
+                        lineData.add(new LineModel(itemName, itemNumber, "　"));
+                    } else {
+                        // 注射の手技はここで処理される
+                        itemName = "【" + itemName + "】";
+                        lineData.add(new LineModel(itemName, "", "　"));
+                    }
+                }       // 入院注射、施行日
+                String bundleNum = bundle.getBundleNumber();
+                if (bundleNum.startsWith("*")) {
+                    String itemName = hints.parseBundleNum(bundle);
                     lineData.add(new LineModel(itemName, "", "　"));
                 }
+                break;
             }
-            // 入院注射、施行日
-            String bundleNum = bundle.getBundleNumber();
-            if (bundleNum.startsWith("*")) {
-                String itemName =hints.parseBundleNum(bundle);
-                lineData.add(new LineModel(itemName, "", "　"));
-            }
-        } else {
-            BundleDolphin bundle = (BundleDolphin) stamp.getModel();
-            lineData.add(new LineModel("", "", "─"));
-            ClaimItem[] ci = bundle.getClaimItem();
-            for (ClaimItem c : ci) {
-                String itemName = c.getName();
-                String unit = c.getUnit();
-                if (unit != null) {
-                    String itemNumber = hankakuNumToZenkaku(c.getNumber()) + unit;
-                    lineData.add(new LineModel(itemName, itemNumber, "　"));
-                } else {
-                    String num = c.getNumber();
-                    String itemNumber = hankakuNumToZenkaku(num);
-                    if (num != null) {
-                        itemNumber = "×" + itemNumber;
+            default: {
+                BundleDolphin bundle = (BundleDolphin) stamp.getModel();
+                lineData.add(new LineModel("", "", "─"));
+                ClaimItem[] ci = bundle.getClaimItem();
+                for (ClaimItem c : ci) {
+                    String itemName = c.getName();
+                    String unit = c.getUnit();
+                    if (unit != null) {
+                        String itemNumber = hankakuNumToZenkaku(c.getNumber()) + unit;
+                        lineData.add(new LineModel(itemName, itemNumber, "　"));
+                    } else {
+                        String num = c.getNumber();
+                        String itemNumber = hankakuNumToZenkaku(num);
+                        if (num != null) {
+                            itemNumber = "×" + itemNumber;
+                        }
+                        lineData.add(new LineModel(itemName, itemNumber, "　"));
                     }
-                    lineData.add(new LineModel(itemName, itemNumber, "　"));
                 }
+                break;
             }
         }
     }
@@ -341,9 +352,9 @@ public class PrintLabel {
         buf.put(escpCmdModeChange);
         buf.put(escpKOSI);
 
-        for (int i = 0; i < input.length(); ++i) {
-            String str = input.substring(i, i + 1);
-            byte[] bytes = convertToJisBytes(str);
+        char[] charArray = input.toCharArray();
+        for (char c : charArray) {
+            byte[] bytes = convertToJisBytes(c);
             if (bytes != null) {
                 if (bytes.length > 4) {
                     byte[] ctrl = {bytes[0], bytes[1], bytes[2]};
@@ -373,34 +384,43 @@ public class PrintLabel {
         buf.get(ret);
         return ret;
     }
-
-    private byte[] convertToJisBytes(String str) {
+    private byte[] convertToJisBytes(char c) {
+        
+        // 全角マイナス等は自分でJISに変換
         byte[] bytes = null;
-        try {
-            // 全角マイナス等は自分でJISに変換
-            if ("－".equals(str)) {                 // "－"
+        switch (c) {
+            case '－':
                 bytes = new byte[]{0x1b, 0x24, 0x42, 0x21, 0x5d, 0x1b, 0x28, 0x42};
-            } else if ("～".equals(str)) {          // "～"
+                break;
+            case '～':
                 bytes = new byte[]{0x1b, 0x24, 0x42, 0x21, 0x41, 0x1b, 0x28, 0x42};
-            } else if ("∥".equals(str)){           // "∥"
+                break;
+            case '∥':
                 bytes = new byte[]{0x1b, 0x24, 0x42, 0x21, 0x42, 0x1b, 0x28, 0x42};
-            } else if ("￠".equals(str)){           // "￠"
+                break;
+            case '￠':
                 bytes = new byte[]{0x1b, 0x24, 0x42, 0x21, 0x71, 0x1b, 0x28, 0x42};
-            } else if ("￡".equals(str)){           // "￡"
+                break;
+            case '￡':
                 bytes = new byte[]{0x1b, 0x24, 0x42, 0x21, 0x72, 0x1b, 0x28, 0x42};
-            } else if ("￢".equals(str)){           // "￢"
+                break;
+            case '￢':
                 bytes = new byte[]{0x1b, 0x24, 0x42, 0x22, 0x4c, 0x1b, 0x28, 0x42};
-            } else {
-                bytes = str.getBytes("JIS");
-            }
-        } catch (Exception e) {
+                break;
+            default:
+                try {
+                    String str = new String(new char[]{c});
+                    bytes = str.getBytes(ENCODING);
+                } catch (UnsupportedEncodingException ex) {
+                }
+                break;
         }
         return bytes;
     }
 
     private void sendData(final byte[] rawData) {
         // esc/pのraw dataをQL-580Nに転送する
-        if (rawData == null) {
+        if (rawData == null || rawData.length == 0) {
             return;
         }
 
@@ -411,20 +431,13 @@ public class PrintLabel {
 
             @Override
             protected Object doInBackground() throws Exception {
-                try {
-                    // Socketを用意
-                    Socket socket = new Socket(prtAddress, prtPort);
-                    // 出力ストリームを取得
-                    DataOutputStream out = new DataOutputStream(socket.getOutputStream());
-                    // 転送
-                    out.write(rawData);
-                    // ストリーム・ソケットを閉じる
-                    out.close();
-                    socket.close();
-                    out = null;
-                    socket = null;
-                } catch (Exception e) {
+                // 転送
+                try (Socket socket = new Socket(prtAddress, prtPort)) {
+                    socket.getOutputStream().write(rawData);
+                } catch (Exception ex) {
+                    ex.printStackTrace(System.err);
                 }
+
                 return null;
             }
         };
@@ -432,11 +445,11 @@ public class PrintLabel {
     }
 
 
-    private class LineModel {
+    private static class LineModel {
 
-        private String itemName;
-        private String numDate;
-        private String filler;
+        private final String itemName;
+        private final String numDate;
+        private final String filler;
 
         private LineModel(String itemName, String numDate, String filler) {
             this.itemName = itemName;
