@@ -1277,10 +1277,13 @@ public class PatientSearchImpl extends AbstractMainComponent {
                     setIcon(null);
                 }
                 setText("");
-            } else if (col == lapDayColumn) {
-                setHorizontalAlignment(JLabel.CENTER);
-                setIcon(null);
-                setText(value == null ? "" : value.toString());
+            } else if (col == lapDayColumn){
+                if (getText().compareTo(String.format("%d", PatientModel.LAPDAY_MAX)) == 0){
+                    setText("");
+                }
+                else{
+                    // Nothing to do
+                }
             } else {
                 setHorizontalAlignment(JLabel.LEFT);
                 setIcon(null);
