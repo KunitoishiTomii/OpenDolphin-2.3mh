@@ -144,7 +144,7 @@ public class ChartSplitPanel extends JPanel {
     private List<Dimension> getDimensionList(String str) {
 
         String[] sizes = str.split(",");
-        List<Dimension> ret = new ArrayList<Dimension>();
+        List<Dimension> ret = new ArrayList<>();
         for (int i = 0; i < sizes.length; i += 2) {
             Dimension d = new Dimension();
             d.width = Integer.valueOf(sizes[i]);
@@ -158,11 +158,11 @@ public class ChartSplitPanel extends JPanel {
     private class SplitterPanel extends JPanel implements MouseListener, MouseMotionListener, ComponentListener {
 
         private boolean selected;
-        private List<Mark> markList;
+        private final List<Mark> markList;
         private Mark selectedMark;
 
         private SplitterPanel() {
-            markList = new ArrayList<Mark>();
+            markList = new ArrayList<>();
             setBorder(EMPTY_BORDER);
             addMouseListener(SplitterPanel.this);
             addMouseMotionListener(SplitterPanel.this);
@@ -301,7 +301,7 @@ public class ChartSplitPanel extends JPanel {
 
         private void layoutLeftPanel() {
 
-            List<Integer> markY = new ArrayList<Integer>();
+            List<Integer> markY = new ArrayList<>();
             for (Mark mark : markList) {
                 int y = mark.getPoint().y;
                 markY.add(y);

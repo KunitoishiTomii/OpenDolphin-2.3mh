@@ -116,7 +116,7 @@ public class MakeBaseChargeStamp extends CheckSantei {
         }
         DecimalFormat srycdFrmt = new DecimalFormat(srycdFrmtStr);
 
-        List<String> srycdList = new ArrayList<String>();
+        List<String> srycdList = new ArrayList<>();
         srycdList.add(srycdFrmt.format(srycd_Saishin));
         srycdList.add(srycdFrmt.format(srycd_Saishin_Dummy));
         srycdList.add(srycdFrmt.format(srycd_Gairai_Riha1));
@@ -193,7 +193,7 @@ public class MakeBaseChargeStamp extends CheckSantei {
         if (!dao.isNoError()) {
             return false;
         }
-        claimItemMap = new HashMap<Integer, ClaimItem>();
+        claimItemMap = new HashMap<>();
         for (TensuMaster tm : list){
             claimItemMap.put(Integer.valueOf(tm.getSrycd()), tensuMasterToClaimItem(tm));
         }
@@ -596,7 +596,7 @@ public class MakeBaseChargeStamp extends CheckSantei {
 
     private List<SrycdNumberPair> collectData() {
 
-        List<SrycdNumberPair> srycdList = new ArrayList<SrycdNumberPair>();
+        List<SrycdNumberPair> srycdList = new ArrayList<>();
 
         // 初診
         if (rb_shoshin.isSelected()) {
@@ -1399,10 +1399,10 @@ public class MakeBaseChargeStamp extends CheckSantei {
         return panel;
     }
 
-    private class SrycdNumberPair {
+    private static class SrycdNumberPair {
 
-        private int srycd;
-        private int number;
+        private final int srycd;
+        private final int number;
 
         private SrycdNumberPair(int srycd, int number) {
             this.srycd = srycd;

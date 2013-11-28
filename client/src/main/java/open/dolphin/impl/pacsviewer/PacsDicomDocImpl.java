@@ -271,7 +271,7 @@ public class PacsDicomDocImpl extends AbstractChartDocument implements PropertyC
         Class[] cls = columnHelper.getTableModelColumnClasses();
         
         // listTableの設定
-        listTableModel = new ListTableModel<ListDicomObject>(columnNames, 1, methods, cls);
+        listTableModel = new ListTableModel<>(columnNames, 1, methods, cls);
         sorter = new ListTableSorter(listTableModel);
         listTable.setModel(sorter);
         sorter.setTableHeader(listTable.getTableHeader());
@@ -396,7 +396,7 @@ public class PacsDicomDocImpl extends AbstractChartDocument implements PropertyC
             return;
         }
         DicomViewer viewer = new DicomViewer();
-        List<DicomImageEntry> list = new ArrayList<DicomImageEntry>();
+        List<DicomImageEntry> list = new ArrayList<>();
         Enumeration<DicomImageEntry> enu = listModel.elements();
         while (enu.hasMoreElements()) {
             list.add(enu.nextElement());
@@ -473,7 +473,7 @@ public class PacsDicomDocImpl extends AbstractChartDocument implements PropertyC
 
     private class RegisterDicomObject implements Runnable {
 
-        private DicomObject object;
+        private final DicomObject object;
 
         private RegisterDicomObject(DicomObject object) {
             this.object = object;

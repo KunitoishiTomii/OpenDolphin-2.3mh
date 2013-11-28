@@ -111,7 +111,7 @@ public class PeriodSelectDialog extends JDialog {
 
         int[] columns = table.getSelectedColumns();
         int month = gc.get(GregorianCalendar.MONTH);
-        List<Integer> list = new ArrayList<Integer>();
+        List<Integer> list = new ArrayList<>();
 
         // 月末を超えるものは無視する
         for (int col : columns) {

@@ -108,7 +108,7 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
     private AbstractAction activeAction;        // active病名のみ表示
     private JCheckBox activeBox;                // active病名チェックボックス
     
-    private Logger logger = ClientContext.getBootLogger();
+    private final Logger logger = ClientContext.getBootLogger();
 
     // 昇順降順フラグ
     private boolean ascend;
@@ -116,7 +116,7 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
     // 病名修飾語リスト 8000台は後ろにつく修飾語
     private final static LinkedHashMap<String, String> diagnosisModifiers;
     static {
-        diagnosisModifiers = new LinkedHashMap<String, String>();
+        diagnosisModifiers = new LinkedHashMap<>();
         diagnosisModifiers.put("右", "2056");
         diagnosisModifiers.put("左", "2049");
         diagnosisModifiers.put("両", "2057");
@@ -194,8 +194,8 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
         undoAction.setEnabled(false);
         redoAction = getContext().getChartMediator().getAction(GUIConst.ACTION_REDO);
         redoAction.setEnabled(false);
-        undoQue = new LinkedList<RegisteredDiagnosisDequeModel>();
-        redoQue = new LinkedList<RegisteredDiagnosisDequeModel>();
+        undoQue = new LinkedList<>();
+        redoQue = new LinkedList<>();
     }
 
 //masuda^   ChartMediatorから引っ越し
@@ -986,11 +986,11 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
     @Override
     public void save() {
         // データベースにない追加の項目
-        List<RegisteredDiagnosisModel> addedDiagnosis = new ArrayList<RegisteredDiagnosisModel>();
+        List<RegisteredDiagnosisModel> addedDiagnosis = new ArrayList<>();
         // データベースにある変更した項目
-        List<RegisteredDiagnosisModel> updatedDiagnosis = new ArrayList<RegisteredDiagnosisModel>();
+        List<RegisteredDiagnosisModel> updatedDiagnosis = new ArrayList<>();
         // データベースから削除する項目
-        List<RegisteredDiagnosisModel> deletedDiagnosis = new ArrayList<RegisteredDiagnosisModel>();
+        List<RegisteredDiagnosisModel> deletedDiagnosis = new ArrayList<>();
         
         for (RegisteredDiagnosisModel rd : allDiagnosis){
             String status = rd.getStatus();
@@ -1139,7 +1139,7 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
             end = end.replace("/", "-");
             startDate = sdf.parse(start);
             endDate = sdf.parse(end);
-        } catch (Exception e) {
+        } catch (ParseException e) {
             StringBuilder sb = new StringBuilder();
             sb.append("日付のフォーマットが正しくありません。");
             sb.append("\n");
@@ -1158,7 +1158,7 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
             return false;
         }
 
-        if (endDate.before(startDate)) {
+        if (endDate != null && endDate.before(startDate)) {
             StringBuilder sb = new StringBuilder();
             sb.append("疾患の終了日が開始日以前になっています。");
             JOptionPane.showMessageDialog(
@@ -1254,7 +1254,7 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
     public void sendClaim() {
 
         // 選択された診断を CLAIM 送信する
-        List<RegisteredDiagnosisModel> rdList = new ArrayList<RegisteredDiagnosisModel>();
+        List<RegisteredDiagnosisModel> rdList = new ArrayList<>();
         Date confirmed = new Date();
         int rows[] = diagTable.getSelectedRows();
         for (int row : rows) {
@@ -1358,7 +1358,7 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
         List<RegisteredDiagnosisModel> rdList;
         
         if (activeOnly) {
-            rdList = new ArrayList<RegisteredDiagnosisModel>();
+            rdList = new ArrayList<>();
             for (RegisteredDiagnosisModel rd : allDiagnosis) {
                 if (rd.isActive()) {
                     rdList.add(rd);
@@ -1368,7 +1368,7 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
             rdList = allDiagnosis;
         }
         
-        tableModel.setDataProvider(new ArrayList<RegisteredDiagnosisModel>(rdList));
+        tableModel.setDataProvider(new ArrayList<>(rdList));
     }
     
 //masuda^
@@ -1378,11 +1378,11 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
     private class DiagnosisPutTask extends DBTask<List<Long>, Void> {
 
         //private Chart chart;
-        private List<RegisteredDiagnosisModel> added;
-        private List<RegisteredDiagnosisModel> updated;
-        private List<RegisteredDiagnosisModel> deleted;
-        private boolean sendClaim;
-        private DocumentDelegater ddl;
+        private final List<RegisteredDiagnosisModel> added;
+        private final List<RegisteredDiagnosisModel> updated;
+        private final List<RegisteredDiagnosisModel> deleted;
+        private final boolean sendClaim;
+        private final DocumentDelegater ddl;
 
         public DiagnosisPutTask(
                 Chart chart,
@@ -1430,7 +1430,7 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
             
             // 削除も保存時に行う
             if (deleted != null && !deleted.isEmpty()) {
-                List<Long> removeList = new ArrayList<Long>();
+                List<Long> removeList = new ArrayList<>();
                 for (RegisteredDiagnosisModel rd : deleted) {
                     removeList.add(rd.getId());
                 }
@@ -1438,7 +1438,7 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
             }
 
             // CLAIM 送信する
-            List<RegisteredDiagnosisModel> rdList = new ArrayList<RegisteredDiagnosisModel>();
+            List<RegisteredDiagnosisModel> rdList = new ArrayList<>();
             rdList.addAll(added);
             rdList.addAll(updated);
             rdList.addAll(deleted);
@@ -1670,8 +1670,8 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
      */
     private static class RegisteredDiagnosisDequeModel {
 
-        private RegisteredDiagnosisModel oldRd;
-        private RegisteredDiagnosisModel newRd;
+        private final RegisteredDiagnosisModel oldRd;
+        private final RegisteredDiagnosisModel newRd;
 
         private RegisteredDiagnosisDequeModel(RegisteredDiagnosisModel oldRd, RegisteredDiagnosisModel newRd){
             this.oldRd = oldRd;
@@ -1949,9 +1949,9 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
     private void importOrcaDisease() {
 
         // ORCAの病名
-        List<RegisteredDiagnosisModel> orcaRdList = new ArrayList<RegisteredDiagnosisModel>();
+        List<RegisteredDiagnosisModel> orcaRdList = new ArrayList<>();
         // Dolphinの病名
-        List<RegisteredDiagnosisModel> dolphinRdList = new ArrayList<RegisteredDiagnosisModel>();
+        List<RegisteredDiagnosisModel> dolphinRdList = new ArrayList<>();
         
         // まずはtableModelのRegisteredDiagnosisModelを分類
         for (RegisteredDiagnosisModel rd : allDiagnosis){
@@ -2053,7 +2053,7 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
     }
 */
     private void checkIkouByomei(RegisteredDiagnosisModel rd) {
-        List<RegisteredDiagnosisModel> list = new ArrayList<RegisteredDiagnosisModel>();
+        List<RegisteredDiagnosisModel> list = new ArrayList<>();
         list.add(rd);
         updateIkouTokutei2(list);
     }
@@ -2067,7 +2067,7 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
             @Override
             protected List<DiseaseEntry> doInBackground() throws Exception {
 
-                List<String> srycdList = new ArrayList<String>();
+                List<String> srycdList = new ArrayList<>();
                 for (RegisteredDiagnosisModel rd : list) {
                     // 病名コードを切り出し（接頭語，接尾語は捨てる）
                     String srycd = extractSrycd(rd.getDiagnosisCode());

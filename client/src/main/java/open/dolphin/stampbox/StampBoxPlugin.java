@@ -75,7 +75,7 @@ public class StampBoxPlugin extends AbstractMainTool {
     }
 //pns$
     
-    private class EditorFrame extends JFrame {
+    private static class EditorFrame extends JFrame {
         private EditorFrame(String title) {
             super(title);
         } 

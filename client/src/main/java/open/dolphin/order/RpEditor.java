@@ -68,7 +68,7 @@ public final class RpEditor extends AbstractStampEditor {
     private static final String RINJI = "臨時";
     private static final String NYUIN = "入院";
     // 用法のキャッシュ
-    private static HashMap<String, List<TensuMaster>> adminCache = new HashMap<String, List<TensuMaster>>();
+    private static HashMap<String, List<TensuMaster>> adminCache = new HashMap<>();
 //masuda$
 
     public RpEditor() {
@@ -158,7 +158,7 @@ public final class RpEditor extends AbstractStampEditor {
     @Override
     public IInfoModel[] getValue() {
 
-        List<ModuleModel> retList = new ArrayList<ModuleModel>();
+        List<ModuleModel> retList = new ArrayList<>();
         List<MasterItem> items = tableModel.getDataProvider();
 
         ModuleModel mm = createModuleModel();
@@ -274,7 +274,7 @@ public final class RpEditor extends AbstractStampEditor {
         boolean noCharge = view.getCbNoCharge().isSelected();
         boolean tonyo = CheckTonyo.isTonyo(adminCode);
         
-        if (ykzKbn.equals(ClaimConst.YKZ_KBN_NAIYO)) {
+        if (ClaimConst.YKZ_KBN_NAIYO.equals(ykzKbn)) {
             if (tonyo) {
                 // 頓用
                 if (nyuin) {
@@ -352,7 +352,7 @@ public final class RpEditor extends AbstractStampEditor {
                 setOldValue(value);
                 ModuleModel[] stamps = (ModuleModel[]) value;
                 // null であればリターンする
-                if (stamps == null || stamps.length == 0) {
+                if (stamps.length == 0) {
                     return;
                 }
 
@@ -501,7 +501,7 @@ public final class RpEditor extends AbstractStampEditor {
                     view.getCountField().setText(String.valueOf(cnt));
 //masuda^
                     showFirstResult(view.getSearchResultTable());
-                    adminCache.put(regExp, new ArrayList<TensuMaster>(result));
+                    adminCache.put(regExp, new ArrayList<>(result));
 //masuda$
                 } catch (InterruptedException ex) {
 
@@ -799,7 +799,7 @@ public final class RpEditor extends AbstractStampEditor {
         // 検索結果テーブルを生成する
         //
         JTable searchResultTable = view.getSearchResultTable();
-        searchResultModel = new ListTableModel<TensuMaster>(SR_COLUMN_NAMES, SR_NUM_ROWS, SR_METHOD_NAMES, null);
+        searchResultModel = new ListTableModel<>(SR_COLUMN_NAMES, SR_NUM_ROWS, SR_METHOD_NAMES, null);
         searchResultTable.setModel(searchResultModel);
 
         // 用法検索
@@ -980,7 +980,7 @@ public final class RpEditor extends AbstractStampEditor {
     // ScreenTenKeyのポップアップ
     private class PopupListener extends MouseAdapter implements PropertyChangeListener {
 
-        private JTextField tf;
+        private final JTextField tf;
         private JPopupMenu popup;
         private ScreenTenKey stk;
 
@@ -1034,7 +1034,7 @@ public final class RpEditor extends AbstractStampEditor {
     }
     private class PopupListener2 extends MouseAdapter{
 
-        private JTable table;
+        private final JTable table;
 
         private PopupListener2(JTable table) {
             this.table = table;
@@ -1108,7 +1108,7 @@ public final class RpEditor extends AbstractStampEditor {
             @Override
             protected List<TensuMaster> doInBackground() throws Exception {
 
-                List<String> srycdList = new ArrayList<String>();
+                List<String> srycdList = new ArrayList<>();
                 for (MasterItem mi : items) {
                     srycdList.add(mi.getCode());
                 }
@@ -1123,7 +1123,7 @@ public final class RpEditor extends AbstractStampEditor {
             protected void done() {
                 try {
                     List<TensuMaster> list = get();
-                    HashMap<Integer, Float> result = new HashMap<Integer, Float>();
+                    HashMap<Integer, Float> result = new HashMap<>();
                     for (TensuMaster tm : list) {
                         result.put(Integer.valueOf(tm.getSrycd()), Float.valueOf(tm.getTen()));
                     }
@@ -1141,7 +1141,7 @@ public final class RpEditor extends AbstractStampEditor {
                         }
                     }
                     tableModel.fireTableDataChanged();
-                } catch (Exception ex) {
+                } catch (InterruptedException | ExecutionException | NumberFormatException ex) {
                 }
             }
         };

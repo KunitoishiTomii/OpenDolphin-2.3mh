@@ -22,7 +22,7 @@ import open.dolphin.util.ImageTool;
  */
 public class DicomViewerPanel extends JPanel {
 
-    private AffineTransform af;
+    private final AffineTransform af;
     private BufferedImage image;
     private Point basePoint;
     private LookupOp lookupOp;
@@ -32,7 +32,7 @@ public class DicomViewerPanel extends JPanel {
     private double gamma;
     private DicomImageInfo info;
     private boolean showInfo;
-    private List<PointPair> measure;
+    private final List<PointPair> measure;
     private double pixelSpacingX;
     private double pixelSpacingY;
     private static final int maxDepth = 256;
@@ -54,12 +54,12 @@ public class DicomViewerPanel extends JPanel {
     private final BasicStroke STROKE_PLAIN = new BasicStroke();
     private final static DecimalFormat frmt = new DecimalFormat("0.0");
     
-    private DicomViewer viewer;
+    private final DicomViewer viewer;
     
     
     public DicomViewerPanel(DicomViewer viewer) {
         this.viewer = viewer;
-        measure = new ArrayList<PointPair>();
+        measure = new ArrayList<>();
         af = new AffineTransform();
         MyMouseAdapter adapter = new MyMouseAdapter();
         this.addMouseWheelListener(adapter);
@@ -271,7 +271,7 @@ public class DicomViewerPanel extends JPanel {
     private class MyMouseAdapter extends MouseAdapter {
 
         private int mouseButton;
-        private Point oldBaseP;
+        private final Point oldBaseP;
         private Point startP;
         private Point endP;
         private double oldWW;
@@ -383,8 +383,8 @@ public class DicomViewerPanel extends JPanel {
     // 計測２点を記憶するクラス
     private class PointPair {
 
-        private Point start;
-        private Point end;
+        private final Point start;
+        private final Point end;
 
         private PointPair(Point start, Point end) {
             this.start = new Point(start);

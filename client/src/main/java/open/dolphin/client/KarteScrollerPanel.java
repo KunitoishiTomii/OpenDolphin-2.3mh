@@ -22,7 +22,7 @@ public class KarteScrollerPanel extends ScrollableJPanel {
     private SkipScrollWheelAdapter scrollAdapter;
 
     // アニメーションスクロールのActionListener
-    private AnimateScrollAction scrollAction;
+    private final AnimateScrollAction scrollAction;
 
     private static final String PAGE_UP = DefaultEditorKit.pageUpAction;
     private static final String PAGE_DOWN = DefaultEditorKit.pageDownAction;
@@ -31,10 +31,10 @@ public class KarteScrollerPanel extends ScrollableJPanel {
     private static final String UP_ARROW = DefaultEditorKit.upAction;
     private static final String DOWN_ARROW = DefaultEditorKit.downAction;
 
-    private KarteDocumentViewer docViewer;
+    private final KarteDocumentViewer docViewer;
 
-    private boolean vsc;
-    private int mode;
+    private final boolean vsc;
+    private final int mode;
 
     public KarteScrollerPanel(KarteDocumentViewer docViewer) {
 

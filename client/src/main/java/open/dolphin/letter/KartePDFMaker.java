@@ -62,11 +62,6 @@ public class KartePDFMaker extends AbstractPDFMaker {
     private boolean ascending;
     private int bookmarkNumber;   // しおりの内部番号
     
-    private final StampRenderingHints hints;
-    
-    public KartePDFMaker() {
-        hints = StampRenderingHints.getInstance();
-    }
     
     @Override
     protected final String getPatientName() {
@@ -185,14 +180,17 @@ public class KartePDFMaker extends AbstractPDFMaker {
                         (IInfoModel.DOCTYPE_S_KARTE.equals(docInfo.getDocType())
                         || IInfoModel.DOCTYPE_SUMMARY.equals(docInfo.getDocType()))) {
                     table = createTable(docModel, 1);
-                    PdfPCell cell = new PdfCellRenderer().render(soaSpec, soaModules, schemas, table);
+                    PdfPCell cell = new PdfCellRenderer(baseFont)
+                            .render(soaSpec, soaModules, schemas, table);
                     cell.setColspan(2);
                     table.addCell(cell);
                 } else {
                     table = createTable(docModel, 2);
-                    PdfPCell cell = new PdfCellRenderer().render(soaSpec, soaModules, schemas, table);
+                    PdfPCell cell = new PdfCellRenderer(baseFont)
+                            .render(soaSpec, soaModules, schemas, table);
                     table.addCell(cell);
-                    cell = new PdfCellRenderer().render(pSpec, pModules, schemas, table);
+                    cell = new PdfCellRenderer(baseFont)
+                            .render(pSpec, pModules, schemas, table);
                     table.addCell(cell);
                 }
 
@@ -344,7 +342,7 @@ public class KartePDFMaker extends AbstractPDFMaker {
     }
     
     
-    private class KarteTable extends PdfPTable {
+    private static class KarteTable extends PdfPTable {
 
         private final int col;    // カラム数
 
@@ -358,7 +356,7 @@ public class KartePDFMaker extends AbstractPDFMaker {
         }
     }
 
-    private class PdfCellRenderer {
+    private static class PdfCellRenderer {
 
         private PdfPCell cell;
         private Paragraph theParagraph;
@@ -371,6 +369,14 @@ public class KartePDFMaker extends AbstractPDFMaker {
         private String bold;
         private String italic;
         private String underline;
+        
+        private final StampRenderingHints hints;
+        private final BaseFont baseFont;
+        
+        private PdfCellRenderer(BaseFont baseFont) {
+            hints = StampRenderingHints.getInstance();
+            this.baseFont = baseFont;
+        }
 
         private PdfPCell render(String xml, List<ModuleModel> modules, List<SchemaModel> schemas, KarteTable karteTable) {
 

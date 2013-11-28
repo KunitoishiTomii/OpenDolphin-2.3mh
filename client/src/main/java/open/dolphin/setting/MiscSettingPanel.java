@@ -757,11 +757,11 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         connect();
     }
 
-    private class MyBtnActionListener implements ActionListener {
+    private static class MyBtnActionListener implements ActionListener {
 
-        private JTextField tf;
-        private String currentDirectory;
-        private int mode;
+        private final JTextField tf;
+        private final String currentDirectory;
+        private final int mode;
 
         private MyBtnActionListener(String currentDirectory, JTextField tf, int mode) {
             this.tf = tf;
@@ -1340,7 +1340,7 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         // サーバーに保存する前にPropertiesを更新する
         getContext().saveOnly();
         
-        List<UserPropertyModel> list = new ArrayList<UserPropertyModel>();
+        List<UserPropertyModel> list = new ArrayList<>();
         Properties prop = Project.getUserDefaults();
         String idAsLocal = Project.getUserModel().idAsLocal();
         String userId = Project.getUserModel().getUserId();
@@ -1390,7 +1390,7 @@ public class MiscSettingPanel extends AbstractSettingPanel {
             } else if (values.length == 4) {
                 c = new Color(intValues[0], intValues[1], intValues[2], intValues[3]);
             }
-        } catch (Exception e) {
+        } catch (NumberFormatException e) {
         }
         return c;
     }

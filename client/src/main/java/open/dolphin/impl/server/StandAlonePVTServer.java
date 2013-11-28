@@ -29,10 +29,10 @@ import org.apache.log4j.Logger;
 public class StandAlonePVTServer {
 
     private PVTServer pvtServer;
-    private Logger pvtLogger;
-    private ScheduledFuture timerHandler;
+    private final Logger pvtLogger;
+    private final ScheduledFuture timerHandler;
     private static final int maxTryCount = 10;
-    private boolean showGUI;
+    private final boolean showGUI;
 
     public StandAlonePVTServer(boolean pro, String baseURI, String userId, String password) {
 
@@ -66,11 +66,11 @@ public class StandAlonePVTServer {
 
     private class Login implements Runnable {
 
-        private UserDelegater userDlg;
+        private final UserDelegater userDlg;
         private UserModel userModel;
-        private String fid;
-        private String userId;
-        private String password;
+        private final String fid;
+        private final String userId;
+        private final String password;
         private int tryCount;
 
         private Login(String fid, String userId, String password) {

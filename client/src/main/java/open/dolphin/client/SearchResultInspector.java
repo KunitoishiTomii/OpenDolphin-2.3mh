@@ -49,7 +49,7 @@ public class SearchResultInspector {
     // 束縛サポート
     private PropertyChangeSupport boundSupport;
     // context
-    private ChartImpl context;
+    private final ChartImpl context;
     // 選択された文書情報(DocInfo)の配列
     private DocInfoModel[] selectedHistories;
     // 昇順降順のフラグ
@@ -307,7 +307,7 @@ public class SearchResultInspector {
                 if (e.getValueIsAdjusting() == false) {
                     int[] selectedRows = resultTable.getSelectedRows();
                     if (selectedRows.length > 0) {
-                        List<DocInfoModel> list = new ArrayList<DocInfoModel>(1);
+                        List<DocInfoModel> list = new ArrayList<>(1);
                         for (int i = 0; i < selectedRows.length; i++) {
                             DocInfoModel obj = tableModel.getObject(selectedRows[i]);
                             if (obj != null) {
@@ -362,7 +362,7 @@ public class SearchResultInspector {
      */
     private class DocInfoTask extends DBTask<List<DocInfoModel>, Void> {
 
-        private List<Long> docPkList;
+        private final List<Long> docPkList;
 
         public DocInfoTask(Chart ctx, List<Long> docPkList) {
             super(ctx);

@@ -319,7 +319,7 @@ public class InFacilityLabo {
         NLaboModule nLaboModule = new NLaboModule();
         
         // NLaboItemを作成
-        List<NLaboItem> nLaboItemList = new ArrayList<NLaboItem>();
+        List<NLaboItem> nLaboItemList = new ArrayList<>();
         for (InFacilityLaboItem item : list) {
             String itemValue = item.getItemValue();
             if (itemValue == null || itemValue.trim().isEmpty()){
@@ -404,14 +404,6 @@ public class InFacilityLabo {
         return null;
     }
     
-    private String getFormattedDate(SimpleDate sd) {
-        final SimpleDateFormat dateFrmt = new SimpleDateFormat(DEFAULT_DATE_FORMAT);
-        GregorianCalendar gc = new GregorianCalendar();
-        gc.clear();
-        gc.set(sd.getYear(), sd.getMonth(), sd.getDay());
-        return dateFrmt.format(gc.getTime());
-    }
-     
     private String toHalfNumber(String test) {
         if (test != null) {
             for (int i = 0; i < MATCHIES.length; i++) {
@@ -445,15 +437,23 @@ public class InFacilityLabo {
         }
     }
 
-    private class PopupListener extends PopupCalendarListener {
+    private static class PopupListener extends PopupCalendarListener {
 
         public PopupListener(JTextField tf) {
             super(tf);
         }
-        
+
         @Override
         public void setValue(SimpleDate sd) {
             tf.setText(getFormattedDate(sd));
+        }
+
+        private String getFormattedDate(SimpleDate sd) {
+            final SimpleDateFormat dateFrmt = new SimpleDateFormat(DEFAULT_DATE_FORMAT);
+            GregorianCalendar gc = new GregorianCalendar();
+            gc.clear();
+            gc.set(sd.getYear(), sd.getMonth(), sd.getDay());
+            return dateFrmt.format(gc.getTime());
         }
     }
 }

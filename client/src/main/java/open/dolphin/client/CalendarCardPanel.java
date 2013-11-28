@@ -24,29 +24,29 @@ public class CalendarCardPanel extends JPanel  {
 
     public static final String PICKED_DATE = "pickedDate";
 
-    private JLabel titleLabel;
+    private final JLabel titleLabel;
     private JPanel cardPanel;
-    private CardLayout cardLayout;
+    private final CardLayout cardLayout;
 
     private static final ImageIcon leftIcon = ClientContext.getImageIconAlias("icon_calendar_left");
     private static final ImageIcon downIcon = ClientContext.getImageIconAlias("icon_calendar_down");
     private static final ImageIcon rightIcon = ClientContext.getImageIconAlias("icon_calendar_right");
     private static final ImageIcon upIcon = ClientContext.getImageIconAlias("icon_calendar_up");
-    private JButton upBtn = new JButton(upIcon);
-    private JButton leftBtn = new JButton(leftIcon);
-    private JButton downBtn = new JButton(downIcon);
-    private JButton rightBtn = new JButton(rightIcon);
+    private final JButton upBtn = new JButton(upIcon);
+    private final JButton leftBtn = new JButton(leftIcon);
+    private final JButton downBtn = new JButton(downIcon);
+    private final JButton rightBtn = new JButton(rightIcon);
 
     private int current;
     private int[] range;
 
-    private HashMap<Integer, LiteCalendarPanel> calendars = new HashMap<Integer, LiteCalendarPanel>(12,1.0f);
-    private HashMap<Integer, LiteCalendarPanel> popupCalendars = new HashMap<Integer, LiteCalendarPanel>();
-    private HashMap<String, Color> colorTable;
+    private final HashMap<Integer, LiteCalendarPanel> calendars = new HashMap<>(12,1.0f);
+    private final HashMap<Integer, LiteCalendarPanel> popupCalendars = new HashMap<>();
+    private final HashMap<String, Color> colorTable;
     private List<SimpleDate> markList;
 
     private PropertyChangeSupport boundSupport; // = new PropertyChangeSupport(this);
-    private PropertyChangeListener calendarListener;
+    private final PropertyChangeListener calendarListener;
 
     private static final int TITLE_ALIGN = SwingConstants.CENTER;
     private static final int TITLE_FONT_SIZE = 14;
@@ -328,7 +328,7 @@ public class CalendarCardPanel extends JPanel  {
 
     private class MyMouseAdapter2 extends MouseAdapter {
 
-        private JPopupMenu popup;
+        private final JPopupMenu popup;
         private int currentPos;
 
         private MyMouseAdapter2(JPopupMenu popup) {
@@ -374,7 +374,7 @@ public class CalendarCardPanel extends JPanel  {
 //masuda class -> private static class
     private static class CalendarListener implements PropertyChangeListener {
 
-        private CalendarCardPanel owner;
+        private final CalendarCardPanel owner;
 
         public CalendarListener(CalendarCardPanel owner) {
             this.owner = owner;

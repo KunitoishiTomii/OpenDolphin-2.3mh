@@ -182,7 +182,7 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
     @Override
     public void start() {
 
-        karteViewerMap = new HashMap<Long, KarteViewer>();
+        karteViewerMap = new HashMap<>();
         connect();
         stateMgr = new StateMgr();
         enter();
@@ -296,7 +296,7 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
         }
 
         // 選択リストにあって 現在の karteViewerMap にないものはデータベースから取得する
-        Map<Long, DocInfoModel> map = new LinkedHashMap<Long, DocInfoModel>();
+        Map<Long, DocInfoModel> map = new LinkedHashMap<>();
         for (DocInfoModel docInfo : docInfoList) {
             long docPk = docInfo.getDocPk();
             if (!karteViewerMap.containsKey(docPk)) {
@@ -466,7 +466,7 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
     // カルテのPDFを作成する
     private void makePDF(boolean asc) {
 
-        List<DocumentModel> docList = new ArrayList<DocumentModel>();
+        List<DocumentModel> docList = new ArrayList<>();
         for (DocInfoModel docInfo : docInfoList) {
             docList.add(karteViewerMap.get(docInfo.getDocPk()).getModel());
         }
@@ -548,13 +548,13 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
         String docType = model.getDocInfoModel().getDocType();
 
 //masuda^   サマリー対応
-        if (docType.equals(IInfoModel.DOCTYPE_S_KARTE)
-                || docType.equals(IInfoModel.DOCTYPE_SUMMARY)) {
+        if (IInfoModel.DOCTYPE_S_KARTE.equals(docType)
+                || IInfoModel.DOCTYPE_SUMMARY.equals(docType)) {
             KarteViewer viwer = KarteViewer.createKarteViewer(KarteViewer.MODE.SINGLE);
             viwer.setModel(model);
             editorFrame.setKarteViewer(viwer);
             editorFrame.start();
-        } else if (docType.equals(IInfoModel.DOCTYPE_KARTE)) {
+        } else if (IInfoModel.DOCTYPE_KARTE.equals(docType)) {
             // カルテ表示はひとつだけ
             // すでに修正中の document があれば toFront するだけで帰る
             if (!canModifyKarte()) {
@@ -634,7 +634,7 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
     
     private class MakeViewerTask implements Callable {
 
-        private DocumentModel docModel;
+        private final DocumentModel docModel;
         
         private MakeViewerTask(DocumentModel docModel) {
             this.docModel = docModel;
@@ -707,9 +707,9 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
     private final class KarteTask extends DBTask<Integer, Void> {
         
         private static final int defaultFetchSize = 200;
-        private Map<Long, DocInfoModel> docInfoMap;
+        private final Map<Long, DocInfoModel> docInfoMap;
         private CompletionService service;
-        private MultiTaskExecutor exec;
+        private final MultiTaskExecutor exec;
         
 
         public KarteTask(Chart ctx, Map<Long, DocInfoModel> docInfoMap) {
@@ -741,7 +741,7 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
                     : idListSize / 2;
             
             // 分割してサーバーから取得する
-            List<Long> allIds = new ArrayList<Long>(docInfoMap.keySet());
+            List<Long> allIds = new ArrayList<>(docInfoMap.keySet());
             
             while (fromIndex < idListSize) {
                 int toIndex = Math.min(fromIndex + fetchSize, idListSize);
@@ -811,8 +811,8 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
      */
     private final class DeleteTask extends DBTask<Boolean, Void> {
 
-        private long docPk;
-        private DocumentDelegater ddl;
+        private final long docPk;
+        private final DocumentDelegater ddl;
 
         public DeleteTask(Chart ctx, long docPk) {
             super(ctx);
@@ -929,8 +929,8 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
      */
     private final class StateMgr {
 
-        private BrowserState emptyState = new EmptyState();
-        private BrowserState cleanState = new ClaenState();
+        private final BrowserState emptyState = new EmptyState();
+        private final BrowserState cleanState = new ClaenState();
         private BrowserState currentState;
 
         public StateMgr() {

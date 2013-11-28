@@ -69,7 +69,7 @@ public class DocumentHistory {
     private PropertyChangeSupport boundSupport;
     
     // context 
-    private ChartImpl context;
+    private final ChartImpl context;
     
     // 選択された文書情報(DocInfo)の配列
     private DocInfoModel[] selectedHistories;
@@ -420,7 +420,7 @@ public class DocumentHistory {
 //masuda^
         if (newHistory != null) {
             // データベースから取得したDocInfoを保存
-            docInfoList = new ArrayList<DocInfoModel>(newHistory);
+            docInfoList = new ArrayList<>(newHistory);
 
             // フィルタリング
             filterDocInfo(newHistory);
@@ -792,7 +792,7 @@ public class DocumentHistory {
                     JTable table = view.getTable();
                     int[] selectedRows = table.getSelectedRows();
                     if (selectedRows.length > 0) {
-                        List<DocInfoModel> list = new ArrayList<DocInfoModel>(1);
+                        List<DocInfoModel> list = new ArrayList<>(1);
                         for (int i = 0; i < selectedRows.length; i++) {
                             DocInfoModel obj = tableModel.getObject(selectedRows[i]);
                             if (obj != null) {
@@ -1042,9 +1042,9 @@ public class DocumentHistory {
     private class DocInfoTask extends DBTask<List<DocInfoModel>, Void> {
 
         // Delegator
-        private DocumentDelegater ddl;
+        private final DocumentDelegater ddl;
         // 検索パラメータを保持するオブジェクト
-        private DocumentSearchSpec spec;
+        private final DocumentSearchSpec spec;
 
         public DocInfoTask(Chart ctx, DocumentSearchSpec spec, DocumentDelegater ddl) {
             super(ctx);
@@ -1069,7 +1069,7 @@ public class DocumentHistory {
     private class DeleteTask extends DBTask<Void, Void> {
 
         // 検索パラメータを保持するオブジェクト
-        private long spec;
+        private final long spec;
 
         public DeleteTask(Chart ctx, long spec) {
             super(ctx);
@@ -1098,9 +1098,9 @@ public class DocumentHistory {
     private class ChangeTitleTask extends DBTask<Boolean, Void> {
 
         // DocInfo
-        private DocInfoModel docInfo;
+        private final DocInfoModel docInfo;
         // Delegator
-        private DocumentDelegater ddl;
+        private final DocumentDelegater ddl;
 
         public ChangeTitleTask(Chart ctx, DocInfoModel docInfo, DocumentDelegater ddl) {
             super(ctx);

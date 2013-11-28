@@ -16,23 +16,23 @@ public class ListPluginLoader<S> implements Iterable<S> {
     private static final String PREFIX = "META-INF/plugins/";
     
     // ロードするプラグインのインターフェイス
-    private Class<S> plugin;
+    //private final Class<S> plugin;
     
     // クラスローダ
-    private ClassLoader loader;
+    //private final ClassLoader loader;
     
     // プロバイダキャッシュ
-    private HashMap<String, S> providers;
+    private final HashMap<String, S> providers;
     
     // 実際のプラグイン反復子
-    private ActualIterator actualIterator;
+    private final ActualIterator actualIterator;
     
     
     /** Creates a new instance of PluginLoader */
     private ListPluginLoader(Class<S> plugin, ClassLoader loader) {
-        this.plugin = plugin;
-        this.loader = loader;
-        providers = new HashMap<String, S>();
+        //this.plugin = plugin;
+        //this.loader = loader;
+        providers = new HashMap<>();
         actualIterator = new ActualIterator(plugin, loader);
     }
     
@@ -48,10 +48,10 @@ public class ListPluginLoader<S> implements Iterable<S> {
 	fail(plugin, u + ":" + line + ": " + msg);
     }
     
-    protected class IdValuePair {
+    private static class IdValuePair {
         
-        private String id;
-        private String value;
+        private final String id;
+        private final String value;
         
         public IdValuePair(String id, String value) {
             this.id = id;
@@ -86,13 +86,13 @@ public class ListPluginLoader<S> implements Iterable<S> {
                 String fullName = PREFIX + plugin.getName();        
                 configs = loader.getResources(fullName);
                 
-            } catch (Exception x) {
+            } catch (IOException x) {
                 fail(plugin, "Error locating plugin configuration files", x);
             }
             
             try {
                 
-                ArrayList<IdValuePair> allPlugins = new ArrayList<IdValuePair>();
+                ArrayList<IdValuePair> allPlugins = new ArrayList<>();
                 
                 while (configs.hasMoreElements()) {
                     
@@ -145,7 +145,7 @@ public class ListPluginLoader<S> implements Iterable<S> {
                 
             } catch (ClassNotFoundException x) {
                 fail(plugin, "Provider " + className + " not found");
-            } catch (Throwable x) {
+            } catch (InstantiationException | IllegalAccessException x) {
                 fail(plugin, "Provider " + className + " could not be instantiated: " + x, x);
             }
             
@@ -185,7 +185,7 @@ public class ListPluginLoader<S> implements Iterable<S> {
     }
     
     public static <S> ListPluginLoader<S> load(Class<S> plugin, ClassLoader loader) {
-	return new ListPluginLoader<S>(plugin, loader);
+	return new ListPluginLoader<>(plugin, loader);
     }
     
     public static <S> ListPluginLoader<S> load(Class<S> plugin) {

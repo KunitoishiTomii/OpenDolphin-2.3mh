@@ -13,8 +13,9 @@ import javax.swing.JToggleButton;
  * @author pns
  */
 public class ButtonAction {
-    private SchemaCanvas canvas;
-        private StateMgr stateMgr;
+
+    private final SchemaCanvas canvas;
+    private final StateMgr stateMgr;
 
     public ButtonAction(SchemaEditorImpl context) {
         this.canvas = context.getCanvas();
@@ -30,8 +31,9 @@ public class ButtonAction {
     }
 
     private class ButtonActionListener implements ActionListener {
-        private Cursor cursor;
-        private String name;
+        
+        private final Cursor cursor;
+        private final String name;
 
         public ButtonActionListener(String name, Cursor cursor) {
             super();
@@ -39,6 +41,7 @@ public class ButtonAction {
             this.name = name;
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             try {
                 if (cursor != null) canvas.setCursor(cursor);

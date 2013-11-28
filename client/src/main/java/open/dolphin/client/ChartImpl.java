@@ -2109,6 +2109,9 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
          * " + b); } } if (scheduler != null) { scheduler.shutdown(); if (DEBUG)
          * { ClientContext.getBootLogger().debug("scheduler.shutdown"); } }
          */
+        if (inactiveProvidersMap != null) {
+            inactiveProvidersMap.clear();
+        }
 //masuda$
         if (providers != null) {
             for (Iterator<String> iter = providers.keySet().iterator(); iter.hasNext();) {

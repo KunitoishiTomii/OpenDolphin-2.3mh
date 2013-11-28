@@ -51,7 +51,7 @@ public class ImageBox extends AbstractMainTool {
 
     private JFrame frame;
     
-    private String title = "シェーマボックス";
+    private static final String TITLE=  "シェーマボックス";
     
 //pns^  SchemaBox でもメニューを出すため
     private MenuSupport mediator;
@@ -121,7 +121,7 @@ public class ImageBox extends AbstractMainTool {
 
 //pns^  mac で SchemaBox にもメニューバーを出す
         if (ClientContext.isMac()) {
-            WindowSupport windowSupport = WindowSupport.create(title);
+            WindowSupport windowSupport = WindowSupport.create(TITLE);
             frame = windowSupport.getFrame();
             javax.swing.JMenuBar myMenuBar = windowSupport.getMenuBar();
             mediator = new MenuSupport(this);
@@ -138,7 +138,7 @@ public class ImageBox extends AbstractMainTool {
             };
             mediator.enableMenus(enables);
         } else {
-            frame = new JFrame(title);
+            frame = new JFrame(TITLE);
             // アイコン設定
             ClientContext.setDolphinIcon(frame);
         }
@@ -230,7 +230,7 @@ public class ImageBox extends AbstractMainTool {
         }
     }
 
-    private class DirectoryFilter implements DirectoryStream.Filter<Path> {
+    private static class DirectoryFilter implements DirectoryStream.Filter<Path> {
 
         @Override
         public boolean accept(Path entry) throws IOException {
@@ -238,9 +238,9 @@ public class ImageBox extends AbstractMainTool {
         }
     }
     
-    private class ImageFileFilter implements DirectoryStream.Filter<Path> {
+    private static class ImageFileFilter implements DirectoryStream.Filter<Path> {
 
-        private String[] suffix;
+        private final String[] suffix;
 
         public ImageFileFilter(String[] suffix) {
             this.suffix = suffix;

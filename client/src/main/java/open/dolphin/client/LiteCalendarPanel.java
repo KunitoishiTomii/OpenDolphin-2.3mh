@@ -650,7 +650,7 @@ public class LiteCalendarPanel extends JPanel implements PropertyChangeListener 
     }
 
     // セルごとにToolTipを変える
-    private class CalendarTable extends JTable {
+    private static class CalendarTable extends JTable {
 
         private CalendarTable(AbstractTableModel model) {
             super(model);

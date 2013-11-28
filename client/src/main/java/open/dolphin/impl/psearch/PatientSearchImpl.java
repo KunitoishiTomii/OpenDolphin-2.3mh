@@ -7,6 +7,7 @@ import java.awt.event.*;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -83,8 +84,8 @@ public class PatientSearchImpl extends AbstractMainComponent {
     private ListTableSorter sorter;
     private AbstractAction copyAction;
     
-    private String clientUUID;
-    private ChartEventListener cel;
+    private final String clientUUID;
+    private final ChartEventListener cel;
     
     // 過去患者検索期間
     private static final int pastDay = 100;
@@ -727,7 +728,7 @@ public class PatientSearchImpl extends AbstractMainComponent {
     // カルテ検索のタスク
     private class SearchTask extends SimpleWorker<Collection<PatientModel>, Void> {
 
-        private PatientSearchSpec searchSpec;
+        private final PatientSearchSpec searchSpec;
 
         private SearchTask(PatientSearchSpec spec) {
             searchSpec = spec;
@@ -783,7 +784,7 @@ public class PatientSearchImpl extends AbstractMainComponent {
                 sdf.parse(text);
                 maybe = true;
 
-            } catch (Exception e) {
+            } catch (ParseException e) {
             }
         }
 
@@ -978,7 +979,7 @@ public class PatientSearchImpl extends AbstractMainComponent {
     
     private class FullTextSearchTask extends SimpleWorker<List<PatientModel>, String[]> {
 
-        private String searchText;
+        private final String searchText;
         private ProgressMonitor progressMonitor;
         private final String message = "カルテ内検索";
         private final String progressNote = "<html>「%s」を検索中<br>（%d％完了，%d件発見）";
@@ -1025,7 +1026,7 @@ public class PatientSearchImpl extends AbstractMainComponent {
 
             // 検索開始
             MasudaDelegater dl = MasudaDelegater.getInstance();
-            HashSet<PatientModel> pmSet = new HashSet<PatientModel>();
+            HashSet<PatientModel> pmSet = new HashSet<>();
             SearchResultModel srm = new SearchResultModel();
 
             long fromId = 0;
@@ -1036,7 +1037,7 @@ public class PatientSearchImpl extends AbstractMainComponent {
             while (srm != null) {
                 // キャンセルされた場合
                 if (progressMonitor.isCanceled()) {
-                    return new ArrayList<PatientModel>(pmSet);
+                    return new ArrayList<>(pmSet);
                 }
                 srm = dl.getSearchResult(searchText, fromId, maxResult, progressCourseOnly);
 
@@ -1075,7 +1076,7 @@ public class PatientSearchImpl extends AbstractMainComponent {
                 }
 
             }
-            return new ArrayList<PatientModel>(pmSet);
+            return new ArrayList<>(pmSet);
         }
 
         @Override

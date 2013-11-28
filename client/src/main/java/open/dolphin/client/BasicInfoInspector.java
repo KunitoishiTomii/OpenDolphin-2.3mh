@@ -30,7 +30,7 @@ public class BasicInfoInspector {
     private static final int PANEL_HEIGHT = 40;
     
     // Context このインスペクタの親コンテキスト
-    private ChartImpl context;
+    private final ChartImpl context;
 
 
     /**
@@ -78,9 +78,9 @@ public class BasicInfoInspector {
         String gender = context.getPatient().getGenderDesc();
 
         Color color;
-        if (gender.equals(IInfoModel.MALE_DISP)) {
+        if (IInfoModel.MALE_DISP.equals(gender)) {
             color = maleColor;
-        } else if (gender.equals(IInfoModel.FEMALE_DISP)) {
+        } else if (IInfoModel.FEMALE_DISP.equals(gender)) {
             color = femaleColor;
         } else {
             color = unknownColor;
@@ -181,8 +181,8 @@ public class BasicInfoInspector {
     private class PopupAction extends AbstractAction {
 
         private Popup popup;
-        private PopupFactory factory;
-        private JTextArea ta;
+        private final PopupFactory factory;
+        private final JTextArea ta;
         
         private PopupAction(JTextArea ta) {
             factory = PopupFactory.getSharedInstance();

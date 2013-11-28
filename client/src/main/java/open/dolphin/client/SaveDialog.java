@@ -34,7 +34,7 @@ public final class SaveDialog {
     private static final String SAVE = "保存";
     private static final String TMP_SAVE = "仮保存";
     
-    private Window parent;
+    private final Window parent;
     // ダイアログ
     private JDialog dialog;
     

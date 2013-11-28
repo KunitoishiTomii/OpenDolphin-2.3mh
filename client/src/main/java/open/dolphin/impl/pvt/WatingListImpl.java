@@ -105,7 +105,7 @@ public class WatingListImpl extends AbstractMainComponent {
     private WatingListView view;
     
     // 状態ビット・アイコン配列
-    private BitAndIconPair[] bitAndIconPairs = {
+    private final BitAndIconPair[] bitAndIconPairs = {
         new BitAndIconPair(PatientVisitModel.BIT_OPEN, 
             OPEN_ICON),
         new BitAndIconPair(PatientVisitModel.BIT_SAVE_CLAIM, 
@@ -155,9 +155,9 @@ public class WatingListImpl extends AbstractMainComponent {
     // pvt delegater
     private PVTDelegater pvtDelegater;
     
-    private String clientUUID;
-    private ChartEventListener cel;
-    private String orcaId;
+    private final String clientUUID;
+    private final ChartEventListener cel;
+    private final String orcaId;
 
     /**
      * Creates new WatingList
@@ -1092,7 +1092,7 @@ public class WatingListImpl extends AbstractMainComponent {
         }
     }
 
-    private class BitAndIconPair {
+    private static class BitAndIconPair {
 
         private Integer bit;
         private ImageIcon icon;
@@ -1248,7 +1248,7 @@ public class WatingListImpl extends AbstractMainComponent {
         List<PatientVisitModel> list;
         
         if (isAssignedOnly()) {
-            list = new ArrayList<PatientVisitModel>();
+            list = new ArrayList<>();
             for (PatientVisitModel pvt : pvtList) {
                 String doctorId = pvt.getDoctorId();
                 if (doctorId == null || doctorId.equals(orcaId) || doctorId.equals(UN_ASSIGNED_ID)) {
@@ -1256,7 +1256,7 @@ public class WatingListImpl extends AbstractMainComponent {
                 }
             }
         } else {
-            list = new ArrayList<PatientVisitModel>(pvtList);
+            list = new ArrayList<>(pvtList);
         }
         
         for (int i = 0; i < list.size(); ++i) {
