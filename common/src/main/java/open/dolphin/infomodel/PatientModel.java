@@ -156,12 +156,10 @@ public class PatientModel extends InfoModel {
     public Date getPvtDate2() {
         return pvtDate2;
     }
-    public String getElapsedDay() {
-        if (pvtDate2 != null) {
-            long now = System.currentTimeMillis();
-            return String.valueOf((now - pvtDate2.getTime()) / DAY_IN_MILLISEC);
-        }
-        return "--";
+    public Integer getElapsedDay() {
+        long now = System.currentTimeMillis();
+        return pvtDate2 != null
+                ? (int) ((now - pvtDate2.getTime()) / DAY_IN_MILLISEC) : null;
     }
     public String getPvtDateTrimTime() {
         return ModelUtils.trimTime(pvtDate);
