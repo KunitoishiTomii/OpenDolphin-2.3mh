@@ -12,6 +12,7 @@ import open.dolphin.infomodel.*;
 import open.dolphin.mbean.ServletContextHolder;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
+import org.jboss.logging.Logger;
 
 /**
  *
@@ -561,54 +562,70 @@ public class KarteServiceBean {
         Set<DocumentModel> delSet = getChildren(parent);
         
         Date ended = new Date();
-        
-        for (DocumentModel delete : delSet) {
-            
-            long delId = delete.getId();
-            
-            // HibernateSearchのFulTextEntityManagerを用意。削除済みのものはインデックスから削除する
-            final FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(em);
-            fullTextEntityManager.purge(DocumentModel.class, delId);
-            
-            // 削除するものは算定履歴も削除する
-            deleteSanteiHistory(delId);
+        Boolean     bIsFinalUnique = true;
 
-            if (IInfoModel.STATUS_TMP.equals(delete.getStatus())) {
-                // 仮文書の場合は抹消スル
-                DocumentModel dm = em.find(DocumentModel.class, delId);
-                em.remove(dm);
-                
-            } else {
-                // 削除フラグをたてる
-                delete.setStatus(IInfoModel.STATUS_DELETE);
-                delete.setEnded(ended);
-
-                // 関連するモジュールに同じ処理を行う
-                List<ModuleModel> deleteModules =
-                        em.createQuery(QUERY_MODULE_BY_DOC_ID)
-                        .setParameter(ID, delId)
-                        .getResultList();
-                for (ModuleModel model : deleteModules) {
-                    model.setStatus(IInfoModel.STATUS_DELETE);
-                    model.setEnded(ended);
-                }
-
-                // 関連する画像に同じ処理を行う
-                List<SchemaModel> deleteImages =
-                        em.createQuery(QUERY_SCHEMA_BY_DOC_ID)
-                        .setParameter(ID, delId)
-                        .getResultList();
-                for (SchemaModel model : deleteImages) {
-                    model.setStatus(IInfoModel.STATUS_DELETE);
-                    model.setEnded(ended);
-                }
+        for (DocumentModel delete: delSet) {
+            if (delete.getId() != id && delete.getStatus().equals(IInfoModel.STATUS_FINAL)){
+                // 同一のparentの文書で、かつSTATUS_FINALが指定されている文書が２つ以上ある場合は記録しておき、
+                // 指定された文書だけを削除する (2013.11.28 katou)
+                bIsFinalUnique = false;
             }
+        }
+        
+        if (bIsFinalUnique == true){
+            for (DocumentModel delete : delSet) {
+                // STATUS_FINALが単一なので、同一parentのDocumentすべてにDELETEマークをつける
+                DeleteOneDocument(delete.getId(), delete, ended);
+            }
+        }
+        else{
+            // STATUS_FINALが複数あるので、指定されたDocumentのみにDELETEマークをつける
+            DeleteOneDocument(id, target, ended);
         }
         
         return 1;
 //masuda$
     }
-    
+
+    private void DeleteOneDocument(long id, DocumentModel target, Date ended){
+        // HibernateSearchのFulTextEntityManagerを用意。削除済みのものはインデックスから削除する
+        final FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(em);
+        fullTextEntityManager.purge(DocumentModel.class, id);
+
+        // 削除するものは算定履歴も削除する
+        deleteSanteiHistory(id);
+
+        if (IInfoModel.STATUS_TMP.equals(target.getStatus())) {
+            // 仮文書の場合は抹消スル
+            DocumentModel dm = em.find(DocumentModel.class, id);
+            em.remove(dm);
+
+        } else {
+            // 削除フラグをたてる
+            target.setStatus(IInfoModel.STATUS_DELETE);
+            target.setEnded(ended);
+
+            // 関連するモジュールに同じ処理を行う
+            List<ModuleModel> deleteModules =
+                    em.createQuery(QUERY_MODULE_BY_DOC_ID)
+                    .setParameter(ID, id)
+                    .getResultList();
+            for (ModuleModel model : deleteModules) {
+                model.setStatus(IInfoModel.STATUS_DELETE);
+                model.setEnded(ended);
+            }
+
+            // 関連する画像に同じ処理を行う
+            List<SchemaModel> deleteImages =
+                    em.createQuery(QUERY_SCHEMA_BY_DOC_ID)
+                    .setParameter(ID, id)
+                    .getResultList();
+            for (SchemaModel model : deleteImages) {
+                model.setStatus(IInfoModel.STATUS_DELETE);
+                model.setEnded(ended);
+            }
+        }
+    }
 //masuda^
     // 親分文書を追いかける
     public DocumentModel getParent(DocumentModel dm) {
