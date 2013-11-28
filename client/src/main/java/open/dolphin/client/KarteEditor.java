@@ -353,7 +353,6 @@ public class KarteEditor extends AbstractChartDocument implements IInfoModel, NC
         soaPane.setTextPane(kartePanel.getSoaTextPane());
         soaPane.setParent(this);
         soaPane.setRole(ROLE_SOA);
-        //soaPane.getTextPane().setTransferHandler(new SOATransferHandler(soaPane));
         soaPane.getTextPane().setTransferHandler(SOATransferHandler.getInstance());
 
         if (model != null) {
@@ -499,14 +498,19 @@ public class KarteEditor extends AbstractChartDocument implements IInfoModel, NC
             timeStamp = sb.toString();
         }
 
+//masuda^
         // 内容を表示する
         if (model.getModules() != null) {
-//masuda^
             KarteRenderer_2.getInstance().render(model, soaPane, pPane);
-            //KarteRenderer_2 renderer = new KarteRenderer_2(soaPane, pPane);
-            //renderer.render(model);
-//masuda$
+        } else {
+            // 新規の場合ここでKarteStyledDocumentを設定する。
+            // off screen renderingのため
+            soaPane.initKarteStyledDocument();
+            if (pPane != null) {
+                pPane.initKarteStyledDocument();
+            }
         }
+//masuda$
 
         //---------------------
         // 健康保険を表示する

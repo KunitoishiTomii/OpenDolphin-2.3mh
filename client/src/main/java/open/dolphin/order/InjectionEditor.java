@@ -475,9 +475,6 @@ public final class InjectionEditor extends AbstractStampEditor {
         JTable setTable = view.getSetTable();
         setTable.setModel(tableModel);
         
-        // 数量入力: リターンキーで次のセルに移動するため
-        setTable.setCellSelectionEnabled(true);
-
         // 数量カラムにセルエディタを設定する
         JTextField tf = new JTextField();
         tf.addFocusListener(AutoRomanListener.getInstance());

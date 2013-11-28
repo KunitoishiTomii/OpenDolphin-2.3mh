@@ -122,6 +122,7 @@ public class RoutineMedPanel extends JPanel {
         kartePane.setRole(ROLE_RMP);
         kartePane.setTextPane(textPane);
         kartePane.setParent(null);
+        kartePane.initKarteStyledDocument();    // off screen rendering
         
         // レンダリングする
         List<ModuleModel> list = medModel.getModuleList();

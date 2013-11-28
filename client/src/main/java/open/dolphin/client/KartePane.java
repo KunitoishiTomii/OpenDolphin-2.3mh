@@ -206,13 +206,23 @@ public class KartePane implements DocumentListener, MouseListener,
      */
     public void setTextPane(JTextPane textPane) {
         this.textPane = textPane;
+//masuda^   off screen updates trickのため、KarteStyledDocumentの設定は後回し
+/*
         if (this.textPane != null) {
             KarteStyledDocument doc = new KarteStyledDocument();
             this.textPane.setDocument(doc);
-
             doc.setParent(this);
         }
+*/
     }
+    
+    // あらたにKarteStyledDocumentを設定する
+    public void initKarteStyledDocument() {
+        KarteStyledDocument doc = new KarteStyledDocument();
+        this.textPane.setDocument(doc);
+        doc.setParent(this);
+    }
+//masuda$    
 
     /**
      * JTextPaneを返す。

@@ -77,7 +77,7 @@ public class PatientSearchImpl extends AbstractMainComponent {
     private int ageColumn;
     private int pvtDateColumn;
     private int stateColumn;
-    private int elapsedDayColumn;
+    private int lapDayColumn;
     
     private ListTableModel<PatientModel> tableModel;
     private ListTableSorter sorter;
@@ -299,7 +299,7 @@ public class PatientSearchImpl extends AbstractMainComponent {
         ageColumn = columnHelper.getColumnPositionEndsWith("birthday");
         pvtDateColumn = columnHelper.getColumnPositionStartWith("pvtdate");
         stateColumn = columnHelper.getColumnPosition("isOpened");
-        elapsedDayColumn = columnHelper.getColumnPosition("getElapsedDay");
+        lapDayColumn = columnHelper.getColumnPosition("getElapsedDay");
         
         ageDisplay = Project.getBoolean(KEY_AGE_DISPLAY, true);
     }
@@ -1277,13 +1277,10 @@ public class PatientSearchImpl extends AbstractMainComponent {
                     setIcon(null);
                 }
                 setText("");
-            } else if (col == elapsedDayColumn){
-                if (getText().compareTo(String.format("%d", PatientModel.ELAPSED_DAY_MAX)) == 0){
-                    setText("");
-                }
-                else{
-                    // Nothing to do
-                }
+            } else if (col == lapDayColumn) {
+                setHorizontalAlignment(JLabel.CENTER);
+                setIcon(null);
+                setText(value == null ? "" : value.toString());
             } else {
                 setHorizontalAlignment(JLabel.LEFT);
                 setIcon(null);
