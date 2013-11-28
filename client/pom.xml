@@ -121,7 +121,7 @@
            <version>1.6.9</version>
          </dependency>
 
-<!-- 以下�?自�?��ローカルリポジトリに追�?���?-->
+<!-- 以下は自分でローカルリポジトリに追加する -->
         <dependency>
             <groupId>com.lowagie</groupId>
             <artifactId>iTextAsian</artifactId>

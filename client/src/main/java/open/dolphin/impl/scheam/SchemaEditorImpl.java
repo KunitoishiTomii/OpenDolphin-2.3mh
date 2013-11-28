@@ -478,15 +478,7 @@ public class SchemaEditorImpl implements SchemaEditor {
         properties.computeViewBounds(canvasView, toolView, srcImage);
 
         if (editable) toolView.setVisible(true); // editable でない場合はツールパネルを出さない
-        
-//masuda^   invokeLater
-        SwingUtilities.invokeLater(new Runnable(){
-
-            @Override
-            public void run() {
-                canvasView.setVisible(true);
-            }
-        });
+        canvasView.setVisible(true);
 //masuda$
     }
     
