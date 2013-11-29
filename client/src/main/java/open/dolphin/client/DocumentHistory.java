@@ -718,6 +718,15 @@ public class DocumentHistory {
                 maybeShowPopup(e);
             }
         });
+        
+        // OCC版よりインスパイヤ
+        view.getDeptChk().addItemListener(new ItemListener() {
+            
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                updateHistory(docInfoList);
+            }
+        });
 //masuda$
     }
 
