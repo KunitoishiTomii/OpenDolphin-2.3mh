@@ -90,7 +90,7 @@ public class NonHidePopupMenu extends JPopupMenu {
      */
     private class MultiColumnMenuLayout implements LayoutManager2 {
 
-        private Dimension preferredSize = new Dimension();
+        private final Dimension preferredSize = new Dimension();
         private boolean isInvalidLayout = true;
 
         @Override
@@ -142,7 +142,7 @@ public class NonHidePopupMenu extends JPopupMenu {
             Rectangle rowRect = new Rectangle(insets.left, insets.top, 0, 0);
             int maxColumnHeight = 0;
 
-            List<Component> list = new ArrayList<Component>();
+            List<Component> list = new ArrayList<>();
             for (Component comp : target.getComponents()) {
                 Dimension compSize = comp.getPreferredSize();
                 if (rowRect.height + compSize.height > maxHeight) {

@@ -28,9 +28,9 @@ public class ExamHistory {
     private ListTableModel<ExamHistoryModel> tableModel;     // 文書履歴テーブル
     private JTable table;
     private InspectorTablePanel view;
-    private DocumentHistory docHistory;     // 文書履歴
-    private ChartImpl context;
-    private PatientInspector patientInspector;
+    private final DocumentHistory docHistory;     // 文書履歴
+    private final ChartImpl context;
+    private final PatientInspector patientInspector;
     
     private static final long MILLISEC_IN_MONTH = 1000 * 60 * 60 * 24 * 30L;
     public static final String ExamHistoryTitle = "検査";
@@ -289,7 +289,7 @@ public class ExamHistory {
         worker.execute();
     }
 
-    private class ExamHistoryComparator implements Comparator {
+    private static class ExamHistoryComparator implements Comparator {
 
         @Override
         public int compare(Object o1, Object o2) {

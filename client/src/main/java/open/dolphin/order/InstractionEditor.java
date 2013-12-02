@@ -615,7 +615,7 @@ public final class InstractionEditor extends AbstractStampEditor {
     private class PopupListener extends MouseAdapter implements ActionListener {
 
         //private JTextField tf;
-        private JPopupMenu popup;
+        private final JPopupMenu popup;
 
         private PopupListener(JTextField tf) {
             //this.tf = tf;

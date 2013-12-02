@@ -157,15 +157,10 @@ public class PatientModel extends InfoModel {
     public Date getPvtDate2() {
         return pvtDate2;
     }
-    public int getElapsedDay() {
+    public Integer getElapsedDay() {
         long now = System.currentTimeMillis();
-        if (pvtDate2!=null){
-            int ret = (int) ((now - pvtDate2.getTime()) / DAY_IN_MILLISEC);
-            return ret;
-        }
-        else{
-            return LAPDAY_MAX;
-        }
+        return pvtDate2 != null
+                ? (int) ((now - pvtDate2.getTime()) / DAY_IN_MILLISEC) : null;
     }
     public String getPvtDateTrimTime() {
         return ModelUtils.trimTime(pvtDate);

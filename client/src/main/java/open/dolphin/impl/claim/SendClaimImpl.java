@@ -9,7 +9,6 @@ import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
 import open.dolphin.client.*;
 import open.dolphin.delegater.OrcaDelegater;
 import open.dolphin.project.Project;
@@ -29,7 +28,7 @@ public class SendClaimImpl implements ClaimMessageListener {
     private String enc;
     private String name;
     private MainWindow context;
-    private Logger logger;
+    private final Logger logger;
     
     private Thread thread;
     private ClaimSendTask claimSendTask;
@@ -140,12 +139,12 @@ public class SendClaimImpl implements ClaimMessageListener {
     
     private class ClaimSendTask implements Runnable {
 
-        private List<ClaimMessageEvent> queue;
+        private final List<ClaimMessageEvent> queue;
         private boolean isRunning;
         private Selector selector;
 
         private ClaimSendTask() {
-            queue = new LinkedList<ClaimMessageEvent>();
+            queue = new LinkedList<>();
             isRunning = true;
             try {
                 selector = Selector.open();

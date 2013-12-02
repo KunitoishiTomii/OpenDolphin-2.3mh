@@ -89,7 +89,7 @@ public final class CareMapDocument extends AbstractChartDocument {
      */
     private void initialize() {
         
-        cPool = new HashMap<Integer, SimpleCalendarPanel>(12, 0.75f);
+        cPool = new HashMap<>(12, 0.75f);
         Chart chartCtx = getContext();
         
         JPanel myPanel = getUI();
@@ -620,10 +620,10 @@ public final class CareMapDocument extends AbstractChartDocument {
     }
     
 //masuda^
-    private class ModelList {
+    private static class ModelList {
 
-        List<List<ModuleModel>> modules;
-        List<List<AppointmentModel>> appointments;
+        private List<List<ModuleModel>> modules;
+        private List<List<AppointmentModel>> appointments;
 
         private void setModules(List<List<ModuleModel>> modules) {
             this.modules = modules;
@@ -724,7 +724,7 @@ public final class CareMapDocument extends AbstractChartDocument {
     @Override
     public void save() {
         
-        final ArrayList<AppointmentModel> results = new ArrayList<AppointmentModel>();
+        final ArrayList<AppointmentModel> results = new ArrayList<>();
         
         for (Map.Entry entry : cPool.entrySet()) {
             SimpleCalendarPanel c = (SimpleCalendarPanel) entry.getValue();

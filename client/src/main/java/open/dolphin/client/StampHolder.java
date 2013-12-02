@@ -26,11 +26,11 @@ public final class StampHolder extends AbstractComponentHolder implements Compon
     private static final Border selectedBorder = BorderFactory.createLineBorder(SELECTED_BORDER);
     private static final Color LBL_COLOR = new Color(0xFF, 0xCE, 0xD9);
     
-    private Color foreGround = FOREGROUND;
-    private Color background = BACKGROUND;
+    private final Color foreGround = FOREGROUND;
+    private final Color background = BACKGROUND;
     
     private ModuleModel stamp;
-    private KartePane kartePane;
+    private final KartePane kartePane;
     
     private StampRenderingHints hints;
     private final StampHolderFunction function;
@@ -43,8 +43,8 @@ public final class StampHolder extends AbstractComponentHolder implements Compon
     // StampRenderingHintsのlineSpacingを0にすると、ラベルの上部に隙間ができてしまう
     //　見栄えが悪いので線を追加描画する
     @Override
-    public void paint(Graphics g) {
-        super.paint(g);
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
         Color c = g.getColor();
         g.setColor(LBL_COLOR);
         int w = getWidth() - 2;

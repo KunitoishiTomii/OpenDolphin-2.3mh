@@ -2127,6 +2127,9 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
          * " + b); } } if (scheduler != null) { scheduler.shutdown(); if (DEBUG)
          * { ClientContext.getBootLogger().debug("scheduler.shutdown"); } }
          */
+        if (inactiveProvidersMap != null) {
+            inactiveProvidersMap.clear();
+        }
 //masuda$
         if (providers != null) {
             for (Iterator<String> iter = providers.keySet().iterator(); iter.hasNext();) {
@@ -2276,10 +2279,19 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
             String status = ef.getDocInfoStatus();
             String id = ef.getKarte().getPatient().getPatientId();
             if (patientId.equals(id) && IInfoModel.STATUS_NONE.equals(status)) {
-                // 新規カルテのEditorFrameがある場合はFrameをtoFrontする
-                ef.getFrame().setExtendedState(Frame.NORMAL);
-                ef.getFrame().toFront();
-                return false;
+                // ダイアログで確認する
+                String title = "新規カルテ作成";
+                String msg = "新規カルテウィンドウが開いています。新たに作成しますか？";
+                String[] options = {"いいえ", "はい"};
+                int val = JOptionPane.showOptionDialog(
+                        getFrame(), msg, title,
+                        JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE, null, options, options[0]);
+                if (val == 0) {
+                    // 新規カルテのEditorFrameがある場合はFrameをtoFrontする
+                    ef.getFrame().setExtendedState(Frame.NORMAL);
+                    ef.getFrame().toFront();
+                    return false;
+                }
             }
         }
 

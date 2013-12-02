@@ -24,11 +24,11 @@ public class ColumnSpecHelper {
     private static final String CAMMA = ",";
     
     private JTable table;
-    private String specName;
-    private String[] columnNames;
-    private String[] propNames;
-    private Class[] columnClasses;
-    private int[] columnWidth;
+    private final String specName;
+    private final String[] columnNames;
+    private final String[] propNames;
+    private final Class[] columnClasses;
+    private final int[] columnWidth;
     
     // カラム仕様リスト
     private List<ColumnSpec> columnSpecs;
@@ -199,7 +199,7 @@ public class ColumnSpecHelper {
         String line = Project.getString(specName, defaultLine);
 
         // 仕様を保存
-        columnSpecs = new ArrayList<ColumnSpec>();
+        columnSpecs = new ArrayList<>();
         String[] params = line.split(",");
 
         // 保存していた名称・メソッド・クラスが同じか調べる
@@ -208,9 +208,9 @@ public class ColumnSpecHelper {
         boolean same = len == columnNames.length;
         // 各項目は同じか
         if (same) {
-            List<String> savedColumns = new ArrayList<String>();
-            List<String> savedProps = new ArrayList<String>();
-            List<String> savedClasses = new ArrayList<String>();
+            List<String> savedColumns = new ArrayList<>();
+            List<String> savedProps = new ArrayList<>();
+            List<String> savedClasses = new ArrayList<>();
             for (int i = 0; i < len; ++i) {
                 int k = 4 * i;
                 savedColumns.add(params[k]);
@@ -311,7 +311,7 @@ public class ColumnSpecHelper {
         return menu;
     }
             
-    private class MyCheckBoxMenuItem extends JCheckBoxMenuItem {
+    private static class MyCheckBoxMenuItem extends JCheckBoxMenuItem {
         
         private ColumnSpec cs;
         

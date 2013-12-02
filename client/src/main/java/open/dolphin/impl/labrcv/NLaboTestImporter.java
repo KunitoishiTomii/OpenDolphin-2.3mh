@@ -10,6 +10,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -64,8 +65,8 @@ public class NLaboTestImporter extends AbstractMainComponent {
     private ListTableModel<NLaboImportSummary> tableModel;
     private NLabTestImportView view;
     
-    private String clientUUID;
-    private ChartEventListener cel;
+    private final String clientUUID;
+    private final ChartEventListener cel;
     
     
     /** Creates new NLaboTestImporter */
@@ -270,7 +271,7 @@ public class NLaboTestImporter extends AbstractMainComponent {
 
                 if (dataList!=null && dataList.size()>0) {
 
-                    List<String> idList = new ArrayList<String>(dataList.size());
+                    List<String> idList = new ArrayList<>(dataList.size());
                     for (NLaboImportSummary sm : dataList) {
                         idList.add(sm.getPatientId());
                     }
@@ -305,7 +306,7 @@ public class NLaboTestImporter extends AbstractMainComponent {
                     List<NLaboImportSummary> allModules = get();
                     getTableModel().setDataProvider(allModules);
 
-                } catch (Throwable e) {
+                } catch (InterruptedException | ExecutionException e) {
                     e.printStackTrace(System.err);
                     String why = e.getMessage();
                     Window parent = SwingUtilities.getWindowAncestor(getUI());
@@ -357,9 +358,7 @@ public class NLaboTestImporter extends AbstractMainComponent {
                 for (NLaboImportSummary summary : modules) {
 
 //masuda^           // OpenDolphinに登録されていない場合はスキップする　のつはる診療所　白坂先生のご提案
-                    // 2013.4.1 橋本医院オリジナル LaboCodeが入っていないラボデータを受け取ることがあったため、
-                    //          受け取った場合はスキップするように修正
-                    if (summary.getKarteId() == null || summary.getLaboCode() == null) {
+                    if (summary.getKarteId() == null) {
                         summary.setResult(ERROR);
                         continue;
                     }

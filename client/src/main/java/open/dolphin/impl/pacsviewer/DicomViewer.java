@@ -6,6 +6,7 @@ import java.awt.FlowLayout;
 import java.awt.Point;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -57,7 +58,7 @@ public class DicomViewer {
     private static final int CELL_HEIGHT_MARGIN = 20;
     private int cellWidth = MAX_IMAGE_SIZE + CELL_WIDTH_MARGIN;
     private int cellHeight = MAX_IMAGE_SIZE + CELL_HEIGHT_MARGIN;
-    private int columnCount = 1;
+    private final int columnCount = 1;
     private int index = 0;
     private final static DecimalFormat frmt = new DecimalFormat("0.0");
     private final static DecimalFormat frmt1 = new DecimalFormat("0.00");
@@ -353,7 +354,7 @@ public class DicomViewer {
     // 選択中の画像をimagePanelに設定するタスク
     private class ShowSelectedImageTask implements Runnable {
 
-        private int imageIndex;
+        private final int imageIndex;
 
         private ShowSelectedImageTask(final int index) {
             this.imageIndex = index;
@@ -374,7 +375,7 @@ public class DicomViewer {
                 viewerPanel.setPixelSpacing(object.getDoubles(Tag.PixelSpacing));
                 viewerPanel.setInfo(new DicomImageInfo(object));
                 viewerPanel.setImage(image);
-            } catch (Exception ex) {
+            } catch (IOException ex) {
             }
         }
     }

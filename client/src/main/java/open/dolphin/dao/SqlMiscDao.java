@@ -30,13 +30,13 @@ public final class SqlMiscDao extends SqlDaoBean {
     }
 
     private SqlMiscDao() {
-        hokatsuKbnMap = new HashMap<String, Integer>();
+        hokatsuKbnMap = new HashMap<>();
     }
     
     // 検査等実施判断グループ区分を調べる
     public Map<String, Integer> getHokatsuKbnMap(List<String> srycds) {
         
-        List<String> srycdsToGet = new ArrayList<String>();
+        List<String> srycdsToGet = new ArrayList<>();
         for (String srycd : srycds) {
             if (!hokatsuKbnMap.containsKey(srycd)) {
                 srycdsToGet.add(srycd);
@@ -77,7 +77,7 @@ public final class SqlMiscDao extends SqlDaoBean {
         String dateStr = frmt.format(date);
         int hospNum = getHospNum();
         
-        List<AdmissionModel> ret = new ArrayList<AdmissionModel>();
+        List<AdmissionModel> ret = new ArrayList<>();
         
         int[] types = {Types.CHAR, Types.CHAR, Types.INTEGER};
         String[] params = {dateStr, dateStr, String.valueOf(hospNum)};
@@ -239,7 +239,7 @@ public final class SqlMiscDao extends SqlDaoBean {
         return ret;
     }
     
-    private class ZoroBrandPair {
+    private static class ZoroBrandPair {
 
         String zoroSrycd;
         String zoroName;
@@ -445,7 +445,7 @@ public final class SqlMiscDao extends SqlDaoBean {
         sb.append(")");
         String sql = sb.toString();
 
-        HashMap<Integer, TensuMaster> tmMap = new HashMap<Integer, TensuMaster>();
+        HashMap<Integer, TensuMaster> tmMap = new HashMap<>();
         
         List<List<String>> valuesList = executeStatement(sql);
         for (List<String> values : valuesList) {
@@ -463,7 +463,7 @@ public final class SqlMiscDao extends SqlDaoBean {
                 }
             }
         }
-        return new ArrayList<TensuMaster>(tmMap.values());
+        return new ArrayList<>(tmMap.values());
     }
 
     // 傷病名コードからまとめてDiseaseEntryを取得
@@ -483,8 +483,8 @@ public final class SqlMiscDao extends SqlDaoBean {
         sb.append(")");
         String sql = sb.toString();
 
-        List<DiseaseEntry> collection = new ArrayList<DiseaseEntry>();
-        List<DiseaseEntry> outUse = new ArrayList<DiseaseEntry>();
+        List<DiseaseEntry> collection = new ArrayList<>();
+        List<DiseaseEntry> outUse = new ArrayList<>();
         
         List<List<String>> valuesList = executeStatement(sql);
         for (List<String> values : valuesList) {
@@ -505,8 +505,8 @@ public final class SqlMiscDao extends SqlDaoBean {
 
         final String ADMIN_MARK = "[用法] ";
 
-        List<MasterItem> miList = new ArrayList<MasterItem>();
-        List<String[]> dataList = new ArrayList<String[]>();      // {srycd, suryo}
+        List<MasterItem> miList = new ArrayList<>();
+        List<String[]> dataList = new ArrayList<>();      // {srycd, suryo}
 
         String sryYM = visitYMD.substring(0, 6);
         String sryD = String.valueOf(Integer.parseInt(visitYMD.substring(6)));
@@ -586,14 +586,14 @@ public final class SqlMiscDao extends SqlDaoBean {
         if (len == 0) {
             return Collections.emptyList();
         }
-        List<String> srycdList = new ArrayList<String>(len);
+        List<String> srycdList = new ArrayList<>(len);
         for (int i = 0; i < len; ++i) {
             srycdList.add(dataList.get(i)[0]);
         }
         // ORCAに問い合わせ
         List<TensuMaster> result = getTensuMasterList(srycdList);
         // HashMapに登録
-        HashMap<Integer, TensuMaster> tensuMasterMap = new HashMap<Integer, TensuMaster>();
+        HashMap<Integer, TensuMaster> tensuMasterMap = new HashMap<>();
         for (TensuMaster tm : result) {
             tensuMasterMap.put(Integer.valueOf(tm.getSrycd()), tm);
         }
@@ -643,7 +643,7 @@ public final class SqlMiscDao extends SqlDaoBean {
     // 期間内の受診日を取得する。返り値は"YYYYMMDD"形式の文字列リスト
     public List<String> getOrcaVisit(String patientId, String startDate, String endDate, boolean desc, String search) {
 
-        List<String> orcaVisit = new ArrayList<String>();
+        List<String> orcaVisit = new ArrayList<>();
         long ptid = getOrcaPtID(patientId);
 
         StringBuilder sb = new StringBuilder();

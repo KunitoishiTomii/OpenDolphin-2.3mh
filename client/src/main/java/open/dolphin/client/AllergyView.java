@@ -15,8 +15,8 @@ import open.dolphin.table.ListTableModel;
  */
 public class AllergyView extends JPanel{
     
-    private JScrollPane scroll;
-    private JTable table;
+    private final JScrollPane scroll;
+    private final JTable table;
 
     public AllergyView() {
         
@@ -37,7 +37,7 @@ public class AllergyView extends JPanel{
     }
     
     // メモはToolTipTextで表示する
-    private class RowTipsTable extends JTable {
+    private static class RowTipsTable extends JTable {
 
         @Override
         public String getToolTipText(MouseEvent e) {

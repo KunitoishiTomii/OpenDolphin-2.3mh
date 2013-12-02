@@ -16,13 +16,13 @@ public final class PluginLoader<S> implements Iterable<S> {
     private static final String PREFIX = "META-INF/plugins/";
     
     // ロードするプラグインのインターフェイス
-    private Class<S> plugin;
+    private final Class<S> plugin;
     
     // クラスローダ
-    private ClassLoader loader;
+    private final ClassLoader loader;
     
     // 生成順のキャッシュプロバイダ
-    private LinkedHashMap<String,S> providers = new LinkedHashMap<String,S>();
+    private final LinkedHashMap<String,S> providers = new LinkedHashMap<>();
     
     // 現在の遅延lookp 反復子
     private LazyIterator lookupIterator;
@@ -93,7 +93,7 @@ public final class PluginLoader<S> implements Iterable<S> {
         
         InputStream in = null;
 	BufferedReader r = null;
-	ArrayList<String> names = new ArrayList<String>();
+	ArrayList<String> names = new ArrayList<>();
         
         try {
             in = u.openStream();
@@ -178,7 +178,7 @@ public final class PluginLoader<S> implements Iterable<S> {
                 
             } catch (ClassNotFoundException x) {
                 fail(plugin, "Provider " + cn + " not found");
-            } catch (Throwable x) {
+            } catch (InstantiationException | IllegalAccessException x) {
                 fail(plugin, "Provider " + cn + " could not be instantiated: " + x, x);
             }
             
@@ -233,7 +233,7 @@ public final class PluginLoader<S> implements Iterable<S> {
     }
     
     public static <S> PluginLoader<S> load(Class<S> plugin, ClassLoader loader) {
-	return new PluginLoader<S>(plugin, loader);
+	return new PluginLoader<>(plugin, loader);
     }
     
     public static <S> PluginLoader<S> load(Class<S> plugin) {

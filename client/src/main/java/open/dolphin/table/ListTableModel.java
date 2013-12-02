@@ -25,7 +25,7 @@ public class ListTableModel<T> extends AbstractTableModel {
 
     private Class[] columnClasses;
 
-    private List<T> dataProvider = new ArrayList<T>();
+    private List<T> dataProvider = new ArrayList<>();
 
     private PropertyChangeSupport boundSupport;
 

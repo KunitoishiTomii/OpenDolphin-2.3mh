@@ -52,10 +52,10 @@ public class SyskanriInfo extends SqlDaoBean {
     }
     
     private void initialize() {
-        syskanri1006 = new ArrayList<Integer>();
-        deptCodeDescMap = new HashMap<String, String>();
-        staffCodeNameMap = new HashMap<String, String>();
-        orcaUserCodeIdMap = new HashMap<String, String>();
+        syskanri1006 = new ArrayList<>();
+        deptCodeDescMap = new HashMap<>();
+        staffCodeNameMap = new HashMap<>();
+        orcaUserCodeIdMap = new HashMap<>();
         
         initialized = setHospNum();
         initialized &= setSyskanri1006();
@@ -289,7 +289,7 @@ public class SyskanriInfo extends SqlDaoBean {
     private List<KanriTblModel> getKanriTblModel(String kanricd) {
         
         final String sql = "select kbncd, kanritbl from tbl_syskanri where kanricd = ?";
-        List<KanriTblModel> ret = new ArrayList<KanriTblModel>();
+        List<KanriTblModel> ret = new ArrayList<>();
         
         int[] types = {Types.CHAR};
         String[] params = {kanricd};
@@ -309,11 +309,11 @@ public class SyskanriInfo extends SqlDaoBean {
     }
     
     // kbncdとkanritblのペアクラス
-    private class KanriTblModel {
+    private static class KanriTblModel {
         
-        private String kbncd;
+        private final String kbncd;
         
-        private String kanritbl;
+        private final String kanritbl;
         
         private KanriTblModel(String kbncd, String kanritbl) {
             this.kbncd = kbncd;

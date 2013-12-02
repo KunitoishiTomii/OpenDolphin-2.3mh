@@ -51,8 +51,8 @@ public class AdmissionList extends AbstractMainComponent {
     
     // Status　情報　メインウィンドウの左下に表示される内容
     private String statusInfo;
-    private String INFO_MSG = "入院カルテはここから作成";
-    private String CLICK_BTN_MSG = "左のボタンをクリックして入院患者リストを取得してください。";
+    private static final String INFO_MSG = "入院カルテはここから作成";
+    private static final String CLICK_BTN_MSG = "左のボタンをクリックして入院患者リストを取得してください。";
     
     // カラム仕様名
     private static final String COLUMN_SPEC_NAME = "admissionTable.column.spec";
@@ -76,8 +76,8 @@ public class AdmissionList extends AbstractMainComponent {
     private Action openKarteAction;
     private Action copyAction;
     
-    private String clientUUID;
-    private ChartEventListener cel;
+    private final String clientUUID;
+    private final ChartEventListener cel;
     
     
     public AdmissionList() {
@@ -301,7 +301,7 @@ public class AdmissionList extends AbstractMainComponent {
                 List<AdmissionModel> amList = SqlMiscDao.getInstance().getInHospitalPatients(today);
                 
                 // いったんHashMapに登録
-                Map<String, AdmissionModel> amMap = new HashMap<String, AdmissionModel>();
+                Map<String, AdmissionModel> amMap = new HashMap<>();
                 for (AdmissionModel am : amList) {
                     amMap.put(am.getPatientId(), am);
                 }
@@ -337,7 +337,7 @@ public class AdmissionList extends AbstractMainComponent {
         worker.execute();
     }
     
-    private class RoomNumberComparator implements Comparator {
+    private static class RoomNumberComparator implements Comparator {
 
         @Override
         public int compare(Object o1, Object o2) {

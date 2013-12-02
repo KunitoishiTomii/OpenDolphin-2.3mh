@@ -157,7 +157,7 @@ public class RestClient {
         return resteasyClient;
     }
 
-    private class OreOreHostnameVerifier implements HostnameVerifier {
+    private static class OreOreHostnameVerifier implements HostnameVerifier {
 
         @Override
         public boolean verify(String string, SSLSession ssls) {
@@ -166,7 +166,7 @@ public class RestClient {
         
     }
     
-    private class OreOreTrustManager implements X509TrustManager {
+    private static class OreOreTrustManager implements X509TrustManager {
 
         @Override
         public void checkClientTrusted(X509Certificate[] xcs, String string) throws CertificateException {

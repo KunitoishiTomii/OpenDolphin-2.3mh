@@ -50,7 +50,6 @@ public class ImagePalette extends JPanel {
         scroll.getVerticalScrollBar().setUnitIncrement(imageHeight / 2);
         setLayout(new BorderLayout());
         add(scroll, BorderLayout.CENTER);
-        add(scroll);
 
         // transferHandler
         imageList.setTransferHandler(ImageEntryTransferHandler.getInstance());
@@ -65,7 +64,9 @@ public class ImagePalette extends JPanel {
         jlistModel.clear();
     }
 
-    public void refresh() {
+    private void refresh() {
+        
+        jlistModel.clear();
         
         if (urlList == null || urlList.isEmpty()) {
             return;

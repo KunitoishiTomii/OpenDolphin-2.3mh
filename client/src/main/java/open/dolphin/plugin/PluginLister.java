@@ -18,10 +18,10 @@ public class PluginLister<S> {
     private static final String PREFIX = "META-INF/plugins/";
     
     // ロードするプラグインのインターフェイス
-    private Class<S> plugin;
+    private final Class<S> plugin;
     
     // クラスローダ
-    private ClassLoader loader;
+    private final ClassLoader loader;
     
     
     /** Creates a new instance of PluginLoader */
@@ -44,7 +44,7 @@ public class PluginLister<S> {
     
     public LinkedHashMap<String,String> getProviders() {
         
-        LinkedHashMap<String,String> providers = new LinkedHashMap<String, String>(10);
+        LinkedHashMap<String,String> providers = new LinkedHashMap<>(10);
 
         try {
             String fullName = PREFIX + plugin.getName();
@@ -77,7 +77,7 @@ public class PluginLister<S> {
     }
     
     public static <S> PluginLister<S> list(Class<S> plugin, ClassLoader loader) {
-	return new PluginLister<S>(plugin, loader);
+	return new PluginLister<>(plugin, loader);
     }
     
     public static <S> PluginLister<S> list(Class<S> plugin) {

@@ -18,7 +18,7 @@ import javax.swing.border.EmptyBorder;
 public class ImageEntryJList<E> extends JList { //implements DragGestureListener {
     
     private int maxIconTextWidth;
-    private Insets margin = new Insets(5, 5, 5, 5);
+    private final Insets margin = new Insets(5, 5, 5, 5);
     
     public ImageEntryJList(DefaultListModel<ImageEntry> model) {
         super(model);

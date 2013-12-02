@@ -191,9 +191,9 @@ public class ScreenTenKey {
         }
     }
 
-    private class TenkeyButton extends JButton {
+    private static class TenkeyButton extends JButton {
 
-        private String cmd;
+        private final String cmd;
 
         private TenkeyButton(String cmd, String text) {
             setText(text);

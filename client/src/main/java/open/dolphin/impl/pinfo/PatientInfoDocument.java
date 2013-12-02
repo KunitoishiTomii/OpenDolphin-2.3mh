@@ -325,7 +325,7 @@ public class PatientInfoDocument extends AbstractChartDocument {
     private class PatientManagementModel extends AbstractTableModel {
         
         // KarteBean
-        private PatientModel patient;
+        private final PatientModel patient;
         
         // 属性名の配列
         private final String[] attributes = {"Ｃ管理", "在宅時(特定施設入居時)医学総合管理", "在宅", "特定施設入居"};
@@ -434,13 +434,13 @@ public class PatientInfoDocument extends AbstractChartDocument {
     protected class PatientInfoTableModel extends AbstractTableModel {
         
         // 患者モデル
-        private PatientModel patient;
+        private final PatientModel patient;
         
         // 属性名の配列
-        private String[] attributes;
+        private final String[] attributes;
         
         // カラム名の配列
-        private String[] columnNames;
+        private final String[] columnNames;
         
         public PatientInfoTableModel(PatientModel patient, String[] attrs, String[] columnNames) {
             this.patient = patient;
@@ -657,9 +657,9 @@ public class PatientInfoDocument extends AbstractChartDocument {
      */
     protected class HealthInsuranceTableModel extends AbstractTableModel {
         
-        private String[] columnNames;
+        private final String[] columnNames;
         
-        private List<String[]> data;
+        private final List<String[]> data;
         
         public HealthInsuranceTableModel(PVTHealthInsuranceModel insurance,
                 String[] columnNames) {
@@ -673,7 +673,7 @@ public class PatientInfoDocument extends AbstractChartDocument {
                 return null;
             }
             
-            List<String[]> list = new ArrayList<String[]>();
+            List<String[]> list = new ArrayList<>();
             
             String[] rowData = new String[2];
             rowData[0] = "保険種別";
@@ -822,13 +822,13 @@ public class PatientInfoDocument extends AbstractChartDocument {
         }
     }
     
-    abstract class State {
+    private abstract class State {
         
         public abstract void enter();
         
     }
     
-    class CleanState extends State {
+    private class CleanState extends State {
         
         @Override
         public void enter() {
@@ -837,7 +837,7 @@ public class PatientInfoDocument extends AbstractChartDocument {
         }
     }
     
-    class DirtyState extends State {
+    private class DirtyState extends State {
         
         @Override
         public void enter() {
@@ -845,10 +845,10 @@ public class PatientInfoDocument extends AbstractChartDocument {
         }
     }
     
-    class StateContext {
+    private class StateContext {
         
-        private CleanState cleanState = new CleanState();
-        private DirtyState dirtyState = new DirtyState();
+        private final CleanState cleanState = new CleanState();
+        private final DirtyState dirtyState = new DirtyState();
         private State curState;
         
         public StateContext() {
