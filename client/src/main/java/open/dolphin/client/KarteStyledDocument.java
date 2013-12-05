@@ -194,7 +194,7 @@ public class KarteStyledDocument extends DefaultStyledDocument {
     public List<ModuleModel> getStamps() {
 
         List<StampHolder> shList = getStampHolders();
-        List<ModuleModel> list = new ArrayList<>();
+        List<ModuleModel> list = new ArrayList<>(shList.size());
         for (StampHolder sh : shList) {
             list.add(sh.getStamp());
         }
