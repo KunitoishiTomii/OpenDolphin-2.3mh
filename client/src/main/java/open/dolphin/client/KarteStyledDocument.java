@@ -15,8 +15,6 @@ import open.dolphin.project.Project;
  */
 public class KarteStyledDocument extends DefaultStyledDocument {
 
-    private static final String STAMP_HOLDER = "stampHolder";
-    private static final String SCHEMA_HOLDER = "schemaHolder";
     private static final String COMPONENT_NAME = StyleConstants.ComponentElementName;   // "component";
     private static final String NAME_NAME = StyleConstants.NameAttribute.toString();
     private static final String CR = "\n";
@@ -24,208 +22,119 @@ public class KarteStyledDocument extends DefaultStyledDocument {
     private static final String DEFAULT_STYLE_NAME = StyleContext.DEFAULT_STYLE;
 
     // KartePane
-    private KartePane kartePane;
+    private final KartePane kartePane;
 
-    public KarteStyledDocument() {
-        // コンストラクタでdefalt styleを設定しておく
-        setLogicalStyle(DEFAULT_STYLE_NAME);
-    }
+    public KarteStyledDocument(KartePane kartePane) {
 
-    public void setParent(KartePane kartePane) {
         this.kartePane = kartePane;
+        // コンストラクタでdefalt styleを設定しておく
+        setDefaultStyle();
     }
 
-    public final void setLogicalStyle(String str) {
-        Style style = this.getStyle(str);
-        this.setLogicalStyle(this.getLength(), style);
+    // KartePaneを返す。SOA/PTransferHandlerでインポート先を、
+    // JTextPane->KarteStyledDocument->KartePaneとたぐることができる
+    public KartePane getKartePane() {
+        return kartePane;
+    }
+
+    public final Style setDefaultStyle() {
+        Style style = getStyle(DEFAULT_STYLE_NAME);
+        setLogicalStyle(getLength(), style);
+        return style;
     }
 
     public void clearLogicalStyle() {
-        this.setLogicalStyle(this.getLength(), null);
+        this.setLogicalStyle(getLength(), null);
     }
 
-    public void makeParagraph() {
-        try {
-            insertString(getLength(), CR, null);
-        } catch (BadLocationException e) {
-            e.printStackTrace(System.err);
-        }
-    }
-
-//masuda^   コンポーネントのAttributeを作成する
-    public MutableAttributeSet createStampAttribute() {
+    // ComponentHolderのAttributeSetを作成する
+    public MutableAttributeSet createComponentAttribute(ComponentHolder ch) {
         MutableAttributeSet atts = new SimpleAttributeSet();
-        atts.addAttribute(NAME_NAME, STAMP_HOLDER);
+        StyleConstants.setComponent(atts, (Component) ch);
+        atts.addAttribute(NAME_NAME, ch.getAttributeName());
         return atts;
     }
-
-    public MutableAttributeSet createSchemaAttribute() {
-        MutableAttributeSet atts = new SimpleAttributeSet();
-        atts.addAttribute(NAME_NAME, SCHEMA_HOLDER);
-        return atts;
-    }
-//masuda$
 
     /**
-     * Stamp を挿入する。
+     * CompohentHolderをスタンプする
      *
-     * @param sh 挿入するスタンプホルダ
+     * @param ch スタンプするComponentHolder
      */
-    public void stamp(final StampHolder sh) {
+    public void stampComponent(ComponentHolder ch) {
 
         try {
-            // StampHolderの属性をセットする
-            MutableAttributeSet atts = createStampAttribute();
-            StyleConstants.setComponent(atts, sh);
-
             // キャレット位置を取得する
             int start = kartePane.getTextPane().getCaretPosition();
 
-            // Stamp を挿入する
+            // ComponentHolderを挿入する
             if (Project.getBoolean("stampSpace")) {
-                insertString(start, CR, null);
-                insertString(start + 1, SPC, atts);
-                // 改行をつけないとテキスト入力制御がやりにくくなる
-                insertString(start + 2, CR, null);
-                // スタンプの開始と終了位置を生成して保存する
-                sh.setEntry(createPosition(start + 1), createPosition(start + 2));
-            } else {
-                insertString(start, SPC, atts);
-                // 改行をつけないとテキスト入力制御がやりにくくなる
-                insertString(start + 1, CR, null);
-                // スタンプの開始と終了位置を生成して保存する
-                sh.setEntry(createPosition(start), createPosition(start + 1));
+                insertCR(start++);
             }
+            insertComponentHolder(start++, ch);
+            insertCR(start);
 
-        } catch (BadLocationException | NullPointerException ex) {
+        } catch (BadLocationException ex) {
             ex.printStackTrace(System.err);
         }
     }
 
     /**
-     * Stamp を挿入する。
+     * ComponentHolderを流し込む KarteRenderer_2から
      *
-     * @param sh 挿入するスタンプホルダ
+     * @param ch 流し込むComponentHolder
      */
-    public void flowStamp(final StampHolder sh) {
+    public void flowComponent(ComponentHolder ch) {
 
         try {
-            // StampHolderの属性をセットする
-            MutableAttributeSet atts = createStampAttribute();
-            StyleConstants.setComponent(atts, sh);
-
             // 挿入位置を取得する
-            int start = this.getLength();
+            int start = getLength();
+            // ComponentHolderを挿入する
+            insertComponentHolder(start, ch);
 
-            // Stamp を挿入する
-            insertString(start, SPC, atts);
-
-            // スタンプの開始と終了位置を生成して保存する
-            Position stPos = createPosition(start);
-            Position endPos = createPosition(start + 1);
-            sh.setEntry(stPos, endPos);
-
-        } catch (BadLocationException | NullPointerException ex) {
+        } catch (BadLocationException ex) {
             ex.printStackTrace(System.err);
         }
     }
 
+    // 改行する
+    private void insertCR(int pos) throws BadLocationException {
+        insertString(pos, CR, null);
+    }
+
+    // ComponentHolderを挿入する
+    private void insertComponentHolder(int pos, ComponentHolder ch) throws BadLocationException {
+        
+        // ComponentHolderのAttributeを設定する
+        MutableAttributeSet atts = createComponentAttribute(ch);
+        insertString(pos, SPC, atts);
+        // ComponentHolderのPositionを設定する
+        ch.setStartPosition(createPosition(pos));
+    }
+    
     /**
      * Stampを削除する。
      *
-     * @param start 削除開始のオフセット位置
-     * @param len
+     * @param pos 削除開始のオフセット位置
      */
-    public void removeStamp(int start, int len) {
+    public void removeComponent(int pos) {
 
+        // Stamp/Schemaをremoveするときは直後の改行も削除する
+        // Stamp は一文字で表されている
         try {
-//masuda^   Stamp/Schemaをremoveするときは直後の改行も削除する
-            // Stamp は一文字で表されている
-            //remove(start, 1);
-            if (start < getLength() && CR.equals(getText(start + 1, 1))) {
-                remove(start, 2);
+            if (pos < getLength() && CR.equals(getText(pos + 1, 1))) {
+                remove(pos, 2);
             } else {
-                remove(start, 1);
+                remove(pos, 1);
             }
-//masuda$
         } catch (BadLocationException be) {
             be.printStackTrace(System.err);
-        }
-    }
-
-    /**
-     * Stampを指定されたポジションに挿入する。
-     *
-     * @param inPos　挿入ポジション
-     * @param sh　挿入する StampHolder
-     */
-    public void insertStamp(Position inPos, StampHolder sh) {
-
-        try {
-            // StampHolderの属性をセットする
-            MutableAttributeSet atts = createStampAttribute();
-            StyleConstants.setComponent(atts, sh);
-
-            // 挿入位置
-            int start = inPos.getOffset();
-            // Stamp を挿入する
-            insertString(start, SPC, atts);
-            // スタンプの開始と終了位置を生成して保存する
-            sh.setEntry(createPosition(start), createPosition(start + 1));
-            
-        } catch (BadLocationException be) {
-            be.printStackTrace(System.err);
-        }
-    }
-
-    public void stampSchema(SchemaHolder sh) {
-
-        try {
-            // SchemaHolderの属性をセットする
-            MutableAttributeSet atts = createSchemaAttribute();
-            StyleConstants.setComponent(atts, sh);
-
-            // 挿入位置
-            int start = kartePane.getTextPane().getCaretPosition();
-            // シェーマを挿入する
-            insertString(start, SPC, atts);
-            insertString(start + 1, CR, null);
-
-            // シェーマの開始と終了位置を生成して保存する
-            sh.setEntry(createPosition(start), createPosition(start + 1));
-
-        } catch (BadLocationException be) {
-            be.printStackTrace(System.err);
-        }
-    }
-
-    public void flowSchema(final SchemaHolder sh) {
-
-        try {
-            // SchemaHolderの属性をセットする
-            MutableAttributeSet atts = createSchemaAttribute();
-            StyleConstants.setComponent(atts, sh);
-
-            // 挿入位置を取得する
-            int start = this.getLength();
-
-            // シェーマを挿入する
-            insertString(start, SPC, atts);
-
-            // シェーマの開始と終了位置を生成して保存する
-            sh.setEntry(createPosition(start), createPosition(start + 1));
-
-        } catch (BadLocationException | NullPointerException ex) {
-            ex.printStackTrace(System.err);
         }
     }
 
     public void insertTextStamp(String text) {
 
         try {
-            //System.out.println("insertTextStamp");
-            clearLogicalStyle();
-            setLogicalStyle(DEFAULT_STYLE_NAME); // mac 2207-03-31
+            setDefaultStyle();
             int pos = kartePane.getTextPane().getCaretPosition();
             insertString(pos, text, null);
         } catch (BadLocationException e) {
@@ -241,7 +150,8 @@ public class KarteStyledDocument extends DefaultStyledDocument {
         }
     }
 
-//masuda^   KarteStyledDocument内のStampHolderを取得する。
+
+    // KarteStyledDocument内のStampHolderを取得する。
     public List<StampHolder> getStampHolders() {
 
         List<StampHolder> list = new ArrayList<>();
@@ -290,7 +200,7 @@ public class KarteStyledDocument extends DefaultStyledDocument {
         }
         return list;
     }
-    
+
     // 文書末の余分な改行文字を削除する
     public void removeExtraCR() {
 
@@ -323,23 +233,11 @@ public class KarteStyledDocument extends DefaultStyledDocument {
             if (ch != null) {
                 super.insertString(offs, str, a);
                 int pos = offs + str.length();
-                ch.setEntry(createPosition(pos), createPosition(pos + 1));
+                ch.setStartPosition(createPosition(pos));
                 return;
             }
         }
         super.insertString(offs, str, a);
-    }
-
-    // KartePaneを返す。SOA/PTransferHandlerでインポート先を、
-    // JTextPane->KarteStyledDocument->KartePaneとたぐることができる
-    public KartePane getKartePane() {
-        return kartePane;
-    }
-
-    public void processBatch(List<ElementSpec> specList) throws BadLocationException {
-        ElementSpec[] specs = new ElementSpec[specList.size()];
-        specList.toArray(specs);
-        super.insert(0, specs);
     }
 
     public void createDocument(List<ElementSpec> specList) {
@@ -360,8 +258,7 @@ public class KarteStyledDocument extends DefaultStyledDocument {
                 if (ch != null) {
                     try {
                         Position startP = createPosition(elem.getStartOffset());
-                        Position endP = createPosition(elem.getEndOffset());
-                        ch.setEntry(startP, endP);
+                        ch.setStartPosition(startP);
                     } catch (BadLocationException ex) {
                     }
                 }
@@ -369,6 +266,4 @@ public class KarteStyledDocument extends DefaultStyledDocument {
 
         }
     }
-//masuda$
-
 }

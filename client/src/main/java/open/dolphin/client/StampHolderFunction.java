@@ -254,7 +254,7 @@ public class StampHolderFunction {
 
         // そして新しいのを追加しておく
         KartePane kartePane = selectedStampHolder.getKartePane();
-        kartePane.getTextPane().setCaretPosition(selectedStampHolder.getStartPos());
+        kartePane.getTextPane().setCaretPosition(selectedStampHolder.getStartOffset());
         for (ModuleModel newStamp : newStamps) {
             kartePane.stamp(newStamp);
         }

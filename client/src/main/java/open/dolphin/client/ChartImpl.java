@@ -9,7 +9,6 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
-import javax.swing.Timer;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -91,10 +90,6 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
     }
     private ChartImplExtensions ext;
 //masuda$
-    // task
-    private int delayCount;
-    private ProgressMonitor monitor;
-    private Timer taskTimer;
 
     /**
      * Creates new ChartService
@@ -302,7 +297,19 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
         
         //final LapTimer timer = new LapTimer();
         
-        final SimpleWorker worker = new SimpleWorker<KarteBean, Void>() {
+        ResourceBundle resource = ClientContext.getBundle(this.getClass());
+        Component c = null;
+        String message = "カルテオープン";
+        StringBuilder sb = new StringBuilder();
+        sb.append(getPatientVisit().getPatientModel().getFullName()).append(resource.getString("sama"));
+        sb.append("を開いています...");
+        String note = sb.toString();
+        
+        int maxEstimation = Integer.parseInt(resource.getString("maxEstimation"));
+        int delay = Integer.parseInt(resource.getString("timerDelay"));
+        
+        ProgressMonitorWorker worker = 
+                new ProgressMonitorWorker<KarteBean, Void>(c, message, note, maxEstimation, delay) {
             
             private int periodComboIndex;
 
@@ -384,50 +391,7 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
                 ClientContext.getBootLogger().warn("Task failed");
                 ClientContext.getBootLogger().warn(cause.getMessage());
             }
-
-            @Override
-            protected void startProgress() {
-                delayCount = 0;
-                taskTimer.start();
-            }
-
-            @Override
-            protected void stopProgress() {
-                //timer.lap("StopProgress");
-                taskTimer.stop();
-                monitor.close();
-                taskTimer = null;
-                monitor = null;
-                //timer.stop();
-            }
         };
-
-        ResourceBundle resource = ClientContext.getBundle(this.getClass());
-        Component c = null;
-        String message = "カルテオープン";
-        StringBuilder sb = new StringBuilder();
-        sb.append(getPatientVisit().getPatientModel().getFullName()).append(resource.getString("sama"));
-        sb.append("を開いています...");
-        String note = sb.toString();
-        int maxEstimation = Integer.parseInt(resource.getString("maxEstimation"));
-        int dl = Integer.parseInt(resource.getString("timerDelay"));
-
-        monitor = new ProgressMonitor(c, message, note, 0, maxEstimation / dl);
-
-        taskTimer = new Timer(dl, new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                delayCount++;
-
-                if (monitor.isCanceled() && (!worker.isCancelled())) {
-                    worker.cancel(true);
-
-                } else {
-                    monitor.setProgress(delayCount);
-                }
-            }
-        });
 
         worker.execute();
     }
@@ -885,7 +849,7 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
         Iterator<ChartDocument> iterator = loader.iterator();
 
         int index = 0;
-        providers = new HashMap<String, ChartDocument>();
+        providers = new HashMap<>();
         final JTabbedPane tab = new JTabbedPane();
 
         while (iterator.hasNext()) {
@@ -1483,7 +1447,7 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
 
         // コレクションが null の場合は自費保険を追加する
         if (insurances == null || insurances.isEmpty()) {
-            insurances = new ArrayList<PVTHealthInsuranceModel>(1);
+            insurances = new ArrayList<>(1);
             PVTHealthInsuranceModel model = new PVTHealthInsuranceModel();
             model.setInsuranceClass(INSURANCE_SELF);
             model.setInsuranceClassCode(INSURANCE_SELF_CODE);
@@ -1544,7 +1508,7 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
 
         // 保険がない場合 自費保険を生成して追加する
         if (insurances == null || insurances.isEmpty()) {
-            insurances = new ArrayList<PVTHealthInsuranceModel>(1);
+            insurances = new ArrayList<>(1);
             PVTHealthInsuranceModel model = new PVTHealthInsuranceModel();
             model.setInsuranceClass(INSURANCE_SELF);
             model.setInsuranceClassCode(INSURANCE_SELF_CODE);
@@ -1752,7 +1716,7 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
             protected String doInBackground() throws Exception {
                 DocumentTemplateFactory documentTemplateFactory = new DocumentTemplateFactory();
                 DocumentTemplate template = documentTemplateFactory.getTemplate(new File(templatePath));
-                Map<String, String> data = new HashMap<String, String>();
+                Map<String, String> data = new HashMap<>();
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy'年'M'月'd'日'");
 
                 // Entry date
@@ -1847,7 +1811,7 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
 
         // 拡張ポイント新規文書のプラグインをリストアップし、
         // リストで選択させる
-        List<NameValuePair> documents = new ArrayList<NameValuePair>(3);
+        List<NameValuePair> documents = new ArrayList<>(3);
         PluginLister<NChartDocument> lister = PluginLister.list(NChartDocument.class);
         LinkedHashMap<String, String> nproviders = lister.getProviders();
         if (nproviders != null) {
@@ -2016,7 +1980,7 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
      * @return dirtyの時true
      */
     private List<UnsavedDocument> dirtyList() {
-        List<UnsavedDocument> ret = new ArrayList<UnsavedDocument>();
+        List<UnsavedDocument> ret = new ArrayList<>();
         int count = tabbedPane.getTabCount();
         for (int i = 0; i < count; i++) {
             ChartDocument doc = providers.get(String.valueOf(i));
@@ -2130,7 +2094,7 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
         getFrame().dispose();
     }
 
-    protected abstract class ChartState {
+    private abstract class ChartState {
 
         public ChartState() {
         }
@@ -2141,7 +2105,7 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
     /**
      * ReadOnly ユーザの State クラス。
      */
-    protected final class ReadOnlyState extends ChartState {
+    private final class ReadOnlyState extends ChartState {
 
         public ReadOnlyState() {
         }
@@ -2159,7 +2123,7 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
     /**
      * 保険証がない場合の State クラス。
      */
-    protected final class NoInsuranceState extends ChartState {
+    private final class NoInsuranceState extends ChartState {
 
         public NoInsuranceState() {
         }
@@ -2173,7 +2137,7 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
     /**
      * 通常の State クラス。
      */
-    protected final class OrdinalyState extends ChartState {
+    private final class OrdinalyState extends ChartState {
 
         public OrdinalyState() {
         }
@@ -2187,11 +2151,11 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
     /**
      * State Manager クラス。
      */
-    protected final class StateMgr {
+    private final class StateMgr {
 
-        private ChartState readOnlyState = new ReadOnlyState();
-        private ChartState noInsuranceState = new NoInsuranceState();
-        private ChartState ordinalyState = new OrdinalyState();
+        private final ChartState readOnlyState = new ReadOnlyState();
+        private final ChartState noInsuranceState = new NoInsuranceState();
+        private final ChartState ordinalyState = new OrdinalyState();
         private ChartState currentState;
 
         public StateMgr() {
@@ -2335,7 +2299,7 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
     private void makeNewFrame() {
 
         if (inactiveProvidersMap == null) {
-            inactiveProvidersMap = new HashMap<ChartDocument, JFrame>();
+            inactiveProvidersMap = new HashMap<>();
         }
 
         final int index = tabbedPane.getSelectedIndex();

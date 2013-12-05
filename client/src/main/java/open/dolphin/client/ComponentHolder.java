@@ -7,15 +7,10 @@ import javax.swing.text.Position;
 /**
  * IComponentHolder
  *
- * @author  Kauzshi Minagawa
+ * @author Kauzshi Minagawa
+ * @author modified by masuda, Masuda Naika
  */
 public interface ComponentHolder extends PropertyChangeListener {
-    
-    public static final int TT_STAMP = 0;
-    
-    public static final int TT_IMAGE = 1;
-    
-    public int getContentType();
     
     public KartePane getKartePane();
     
@@ -25,13 +20,12 @@ public interface ComponentHolder extends PropertyChangeListener {
     
     public void edit();
     
+    public int getStartOffset();
+    
+    public void setStartPosition(Position start);
+    
+    public String getAttributeName();
+    
     @Override
     public void propertyChange(PropertyChangeEvent e);
-    
-    public void setEntry(Position start, Position end);
-    
-    public int getStartPos();
-    
-    public int getEndPos();
-
 }

@@ -135,7 +135,7 @@ public final class RadEditor extends AbstractStampEditor {
         // セットテーブルのマスターアイテムを取得する
         List<MasterItem> itemList = tableModel.getDataProvider();
 
-        List<ClaimItem> tmpList = new ArrayList<ClaimItem>();
+        List<ClaimItem> tmpList = new ArrayList<>();
 
         for (MasterItem masterItem : itemList) {
 
@@ -148,7 +148,7 @@ public final class RadEditor extends AbstractStampEditor {
             }
         }
         // BundleDolphinにClaimItemをセット
-        bundle.setClaimItem(tmpList.toArray(new ClaimItem[0]));
+        bundle.setClaimItem(tmpList.toArray(new ClaimItem[tmpList.size()]));
 
         // 診療行為区分は".700"固定にする
         String c007 = view.getSelectedShinku();

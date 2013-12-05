@@ -51,6 +51,7 @@ public final class SaveParams {
     public void setDateEditable(boolean b) {
         dateEditable = b;
     }
+    
     // カルテの保存日
     private Date confirmed;
     public Date getConfirmed(){
@@ -99,12 +100,7 @@ public final class SaveParams {
 //masuda$
     }
     
-    public SaveParams(boolean sendMML) {
-        this();
-        this.sendMML = sendMML;
-    }
-    
-    public boolean getSendMML() {
+    public boolean isSendMML() {
         return sendMML;
     }
     

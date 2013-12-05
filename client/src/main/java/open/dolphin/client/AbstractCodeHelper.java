@@ -32,10 +32,10 @@ public abstract class AbstractCodeHelper {
     protected static final Icon icon = ClientContext.getImageIconAlias("icon_foldr_small");
     
     /** 対象の KartePane */
-    private KartePane kartePane;
+    private final KartePane kartePane;
     
     /** KartePane の JTextPane */
-    private JTextPane textPane;
+    private final JTextPane textPane;
     
     /** 補完リストメニュー */
     protected JPopupMenu popup;
@@ -50,7 +50,7 @@ public abstract class AbstractCodeHelper {
     private int end;
     
     /** ChartMediator */
-    private ChartMediator mediator;
+    //private final ChartMediator mediator;
     
     /** 修飾キー */
     private int MODIFIER;
@@ -62,14 +62,14 @@ public abstract class AbstractCodeHelper {
     public AbstractCodeHelper(KartePane kartePane, ChartMediator mediator) {
         
         this.kartePane = kartePane;
-        this.mediator = mediator;
+        //this.mediator = mediator;
         this.textPane = kartePane.getTextPane();
         
         String modifier = Project.getString("modifier");
         
-        if (modifier.equals("ctrl")) {
+        if ("ctrl".equals(modifier)) {
             MODIFIER =  KeyEvent.CTRL_DOWN_MASK;
-        } else if (modifier.equals("meta")) {
+        } else if ("meta".equals(modifier)) {
             MODIFIER =  KeyEvent.META_DOWN_MASK;
         }
 
@@ -111,7 +111,7 @@ public abstract class AbstractCodeHelper {
         
         popup = new JPopupMenu();
 
-        HashMap<Object, Object> ht = new HashMap<Object, Object>(5, 0.75f);
+        HashMap<Object, Object> ht = new HashMap<>(5, 0.75f);
         
         DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode) tree.getModel().getRoot();
         ht.put(rootNode, popup);

@@ -195,16 +195,52 @@ public class OrcaApiElement implements IOrcaApi {
 
                     record.addContent(new Element(STRING).setAttribute(NAME, "Disease_StartDate").addContent(m.getStartDate()));
                     record.addContent(new Element(STRING).setAttribute(NAME, "Disease_EndDate").addContent(m.getEndDate()));
-
-                    // 転帰はdeleteなら'O 削除'、その他は'F 完治'、空白なら設定なし。
-                    if ("delete".equals(m.getOutcome())) {
-                        record.addContent(new Element(STRING).setAttribute(NAME, "Disease_Outcome").addContent("O"));
-                    } else if (!"".equals(m.getOutcome())) {
-                        record.addContent(new Element(STRING).setAttribute(NAME, "Disease_Outcome").addContent("F"));
+                    
+                    // 転帰設定
+                    String outcome = toOrcaApiOutcome(m.getOutcome());
+                    if (outcome != null) {
+                        record.addContent(new Element(STRING).setAttribute(NAME, "Disease_OutCome").addContent(outcome));
                     }
                     addContent(record);
                 }
             }
+        }
+    }
+    
+    // MML0016 to ORCA API Outcome
+    private static String toOrcaApiOutcome(String mmlOutcome) {
+        
+        if (mmlOutcome == null) {
+            return null;
+        }
+        
+        switch (mmlOutcome) {
+            case "died":        // 死亡
+                return "D";     // 死亡
+            case "worsening":
+                return "W";     // 悪化
+            case "unchanged":
+                return "N";     // 不変
+            case "recovering":
+                return "R";     // 軽快
+            case "fullyRecovered":
+            case "end":
+            case "home":
+                return "F";     // 完治
+            case "transfer":
+            case "transferAcute":
+            case "transferChronic":
+            case "sequelae":
+            case "continued":
+                return "S";     // 移行
+            case "pause":
+                return "U";     // 中止 "C"じゃないみたい
+            case "unknown":
+                return "U";     // 不明
+            case "delete":
+                return "O";     // 削除
+            default:
+                return null;
         }
     }
     

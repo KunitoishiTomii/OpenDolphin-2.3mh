@@ -179,10 +179,8 @@ public final class DiseaseEditor extends AbstractStampEditor {
             // 名前とコードを設定する
             diagnosis.setDiagnosis(name.toString());
             diagnosis.setDiagnosisCode(code.toString());
-            List<RegisteredDiagnosisModel> ret = new ArrayList<RegisteredDiagnosisModel>(1);
-            ret.add(diagnosis);
 
-            return ret.toArray(new RegisteredDiagnosisModel[0]);
+            return new RegisteredDiagnosisModel[]{diagnosis};
 
         } else {
             return null;
@@ -215,10 +213,10 @@ public final class DiseaseEditor extends AbstractStampEditor {
         // 修飾語を含む傷病名を編集する場合はコードからMasuterItemを調べてtableに追加 masuda
         final String codeSystem = ClientContext.getString("mml.codeSystem.diseaseMaster");
         String[] srycdArray = rd.getDiagnosisCode().split("\\.");
-        final List<String> srycdList = new ArrayList<String>(srycdArray.length);
-                for (String srycd : srycdArray) {
+        final List<String> srycdList = new ArrayList<>(srycdArray.length);
+        for (String srycd : srycdArray) {
             // 修飾語は４桁。コードにZZZを追加する。
-            if (srycd.length() == 4){
+            if (srycd.length() == 4) {
                 srycdList.add(MODIFIER_CODE + srycd);
             } else {
                 srycdList.add(srycd);
@@ -567,7 +565,7 @@ public final class DiseaseEditor extends AbstractStampEditor {
         //
         // 病名マスタ検索結果テーブル
         //
-        searchResultModel = new ListTableModel<DiseaseEntry>(SR_COLUMN_NAMES, 20, SR_METHOD_NAMES, null);
+        searchResultModel = new ListTableModel<>(SR_COLUMN_NAMES, 20, SR_METHOD_NAMES, null);
 
         JTable searchResultTable = view.getSearchResultTable();
         searchResultTable.setModel(searchResultModel);

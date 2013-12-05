@@ -29,9 +29,9 @@ public class FindAndView {
     //private static final Color SELECTED_BORDER = new Color(255, 0, 153); //stampHolder の選択色
     private String searchText;
     private JPanel scrollerPanel; // 検索対象の Panel (KarteDocumentViewer からもってくる
-    private SimpleAttributeSet foundAttr = new SimpleAttributeSet(); // 見つかった
-    private SimpleAttributeSet onCursorAttr = new SimpleAttributeSet(); // 現在いるところ
-    private SimpleAttributeSet defaultAttr = new SimpleAttributeSet(); // もともとの背景色（panelに応じて変化）
+    private final SimpleAttributeSet foundAttr = new SimpleAttributeSet(); // 見つかった
+    private final SimpleAttributeSet onCursorAttr = new SimpleAttributeSet(); // 現在いるところ
+    private final SimpleAttributeSet defaultAttr = new SimpleAttributeSet(); // もともとの背景色（panelに応じて変化）
 
     // StampHolder にマークするためのタグ
     private static final String FONT_END = "</font>";
@@ -62,7 +62,7 @@ public class FindAndView {
 
         searchText = text;
         scrollerPanel = panel;
-        findDataList = new ArrayList<FindDataModel>();
+        findDataList = new ArrayList<>();
         Component cp;
 
         cp = panel.getComponent(0);
@@ -133,8 +133,8 @@ public class FindAndView {
                         while (m.find()) {
                             setFoundAttr(sh);
                             int y;
-                            y = kpHeight + pPane.modelToView(sh.getStartPos()).y;
-                            findDataList.add(new FindDataModel(y, pPane, sh.getStartPos(), 0, sh));
+                            y = kpHeight + pPane.modelToView(sh.getStartOffset()).y;
+                            findDataList.add(new FindDataModel(y, pPane, sh.getStartOffset(), 0, sh));
                             break;
                         }
                     }
@@ -253,7 +253,7 @@ public class FindAndView {
 
         //まずはタグの位置をArrayListに記録する masuda
         //int [] tagPosition = new int [2];
-        List<int[]> tagPositionArray = new ArrayList<int[]>();
+        List<int[]> tagPositionArray = new ArrayList<>();
         while (m1.find()) {
             int[] tagPosition = {m1.start(), m1.end() - 1};
             tagPositionArray.add(tagPosition);
@@ -356,11 +356,11 @@ public class FindAndView {
     }
 
     private static class FindDataModel implements Comparable {
-        private JTextPane textPane;
-        private int posY;
-        private StampHolder stampHolder;
-        private int startPos;
-        private int length;
+        private final JTextPane textPane;
+        private final int posY;
+        private final StampHolder stampHolder;
+        private final int startPos;
+        private final int length;
 
         private FindDataModel(int y, JTextPane pane, int pos, int len, StampHolder sh){
             posY = y;

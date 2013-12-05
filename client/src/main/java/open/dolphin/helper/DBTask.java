@@ -23,7 +23,7 @@ public abstract class DBTask<T, V> extends javax.swing.SwingWorker {
 
     protected static final String ERROR_ACCESS = "データベースアクセスエラー";
     
-    protected Chart context;
+    protected Chart chart;
 
     protected PropertyChangeListener pl;
     
@@ -31,7 +31,7 @@ public abstract class DBTask<T, V> extends javax.swing.SwingWorker {
 
         super();
 
-        this.context = context;
+        this.chart = context;
 
         pl = new PropertyChangeListener() {
 
@@ -53,27 +53,27 @@ public abstract class DBTask<T, V> extends javax.swing.SwingWorker {
     
     protected void startProgress() {
         Component c = null;
-        if (context!=null && context.getFrame()!=null && context.getFrame().getGlassPane()!=null) {
-            c = context.getFrame().getGlassPane();
+        if (chart!=null && chart.getFrame()!=null && chart.getFrame().getGlassPane()!=null) {
+            c = chart.getFrame().getGlassPane();
         }
         if (c!=null && c instanceof BlockGlass) {
             ((BlockGlass) c).setVisible(true);
         }
-        context.getDocumentHistory().blockHistoryTable(true);
-        context.getStatusPanel().getProgressBar().setIndeterminate(true);
+        chart.getDocumentHistory().blockHistoryTable(true);
+        chart.getStatusPanel().getProgressBar().setIndeterminate(true);
     }
     
     protected void stopProgress() {
         Component c = null;
-        if (context!=null && context.getFrame()!=null && context.getFrame().getGlassPane()!=null) {
-            c = context.getFrame().getGlassPane();
+        if (chart!=null && chart.getFrame()!=null && chart.getFrame().getGlassPane()!=null) {
+            c = chart.getFrame().getGlassPane();
         }
         if (c !=null && c instanceof BlockGlass) {
             ((BlockGlass) c).setVisible(false);
         }
-        context.getDocumentHistory().blockHistoryTable(false);
-        context.getStatusPanel().getProgressBar().setIndeterminate(false);
-        context.getStatusPanel().getProgressBar().setValue(0);
+        chart.getDocumentHistory().blockHistoryTable(false);
+        chart.getStatusPanel().getProgressBar().setIndeterminate(false);
+        chart.getStatusPanel().getProgressBar().setValue(0);
         //context = null; //
     }
     
@@ -88,7 +88,7 @@ public abstract class DBTask<T, V> extends javax.swing.SwingWorker {
         } else {
             why.append(e.getMessage());
         }
-        Window parent = SwingUtilities.getWindowAncestor(context.getFrame());
+        Window parent = SwingUtilities.getWindowAncestor(chart.getFrame());
         JOptionPane.showMessageDialog(parent, why.toString(), ClientContext.getFrameTitle(TITLE), JOptionPane.WARNING_MESSAGE);
     }
 

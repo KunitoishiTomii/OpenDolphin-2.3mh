@@ -327,7 +327,7 @@ public class StampHolderTransferHandler extends AbstractKarteTransferHandler {
             if (test.getKartePane() != stampHolder.getKartePane()){
                 break;
             }
-            if (test.getStartPos() > stampHolder.getStartPos()) {
+            if (test.getStartOffset() > stampHolder.getStartOffset()) {
                 break;
             }
             ++pos;

@@ -11,7 +11,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import open.dolphin.delegater.UserDelegater;
-import open.dolphin.helper.SimpleWorker;
+import open.dolphin.helper.ProgressMonitorWorker;
 import open.dolphin.infomodel.*;
 import open.dolphin.project.Project;
 import open.dolphin.table.ListTableModel;
@@ -36,17 +36,9 @@ public class AddUserImpl extends AbstractMainTool implements AddUser {
     private static final String DELETE_OK_USER_ = "選択したユーザを削除します";
     
     private JFrame frame;
-    private Logger logger;
+    private final Logger logger;
 
-    // timerTask 関連
-    private SimpleWorker worker;
-    private javax.swing.Timer taskTimer;
-    private ProgressMonitor monitor;
-    private int delayCount;
-    private int maxEstimation = 120*1000;   // 120 秒
-    private int delay = 300;               // 300 mmsec
     
-    /** Creates a new instance of AddUserService */
     public AddUserImpl() {
         setName(TITLE);
         logger = ClientContext.getBootLogger();
@@ -130,23 +122,23 @@ public class AddUserImpl extends AbstractMainTool implements AddUser {
     protected class FacilityInfoPanel extends JPanel {
         
         // 施設情報フィールド
-        private JTextField facilityId;
-        private JTextField facilityName;
-        private JTextField zipField1;
-        private JTextField zipField2;
-        private JTextField addressField;
-        private JTextField areaField;
-        private JTextField cityField;
-        private JTextField numberField;
-        private JTextField areaFieldFax;
-        private JTextField cityFieldFax;
-        private JTextField numberFieldFax;
-        private JTextField urlField;
+        private final JTextField facilityId;
+        private final JTextField facilityName;
+        private final JTextField zipField1;
+        private final JTextField zipField2;
+        private final JTextField addressField;
+        private final JTextField areaField;
+        private final JTextField cityField;
+        private final JTextField numberField;
+        private final JTextField areaFieldFax;
+        private final JTextField cityFieldFax;
+        private final JTextField numberFieldFax;
+        private final JTextField urlField;
         
         // 更新等のボタン
-        private JButton updateBtn;
-        private JButton clearBtn;
-        private JButton closeBtn;
+        private final JButton updateBtn;
+        private final JButton clearBtn;
+        private final JButton closeBtn;
         private boolean hasInitialized;
         
         public FacilityInfoPanel() {
@@ -443,12 +435,15 @@ public class AddUserImpl extends AbstractMainTool implements AddUser {
             // 変更しない
             
             // タスクを実行する
-//masuda^   シングルトン化
-            //final UserDelegater udl = new UserDelegater();
+            
+//masuda^
             final UserDelegater udl = UserDelegater.getInstance();
-//masuda$
-            worker = new SimpleWorker<Boolean, Void>() {
-        
+            Component c = getFrame();
+            String message = null;
+            String note = ClientContext.getString("task.default.updateMessage");
+            
+            ProgressMonitorWorker worker = new ProgressMonitorWorker<Boolean, Void>(c, message, note) {
+
                 @Override
                 protected Boolean doInBackground() throws Exception {
                     logger.debug("updateUser doInBackground");
@@ -480,46 +475,10 @@ public class AddUserImpl extends AbstractMainTool implements AddUser {
                     logger.warn(cause.getCause());
                     logger.warn(cause.getMessage());
                 }
-
-                @Override
-                protected void startProgress() {
-                    delayCount = 0;
-                    taskTimer.start();
-                }
-
-                @Override
-                protected void stopProgress() {
-                    taskTimer.stop();
-                    monitor.close();
-                    taskTimer = null;
-                    monitor = null;
-                }
+                
             };
-
-            Component c = getFrame();
-            String message = null;
-            String note = ClientContext.getString("task.default.updateMessage");
-            maxEstimation = ClientContext.getInt("task.default.maxEstimation");
-            delay = ClientContext.getInt("task.default.delay");
-
-            monitor = new ProgressMonitor(c, message, note, 0, maxEstimation / delay);
-
-            taskTimer = new Timer(delay, new ActionListener() {
-
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    delayCount++;
-
-                    if (monitor.isCanceled() && (!worker.isCancelled())) {
-                        worker.cancel(true);
-
-                    } else {
-                        monitor.setProgress(delayCount);
-                    }
-                }
-            });
-
             worker.execute();
+//masuda$
         }
     }
     
@@ -530,9 +489,9 @@ public class AddUserImpl extends AbstractMainTool implements AddUser {
         
         private ListTableModel<UserModel> tableModel;
         private JTable table;
-        private JButton getButton;
-        private JButton deleteButton;
-        private JButton cancelButton;
+        private final JButton getButton;
+        private final JButton deleteButton;
+        private final JButton cancelButton;
         
         public UserListPanel() {
             
@@ -674,11 +633,13 @@ public class AddUserImpl extends AbstractMainTool implements AddUser {
          */
         private void getUsers() {
 
-//masuda^   シングルトン化
-            //final UserDelegater udl = new UserDelegater();
+//masuda^
             final UserDelegater udl = UserDelegater.getInstance();
-//masuda$
-            worker = new SimpleWorker<List<UserModel>, Void>() {
+            Component c = getFrame();
+            String message = null;
+            String note = ClientContext.getString("task.default.searchMessage");
+            
+            ProgressMonitorWorker worker = new ProgressMonitorWorker<List<UserModel>, Void>(c, message, note) {
         
                 @Override
                 protected List<UserModel> doInBackground() throws Exception {
@@ -709,45 +670,9 @@ public class AddUserImpl extends AbstractMainTool implements AddUser {
                     logger.warn(cause.getMessage());
                 }
 
-                @Override
-                protected void startProgress() {
-                    delayCount = 0;
-                    taskTimer.start();
-                }
-
-                @Override
-                protected void stopProgress() {
-                    taskTimer.stop();
-                    monitor.close();
-                    taskTimer = null;
-                    monitor = null;
-                }
             };
-            
-            Component c = getFrame();
-            String message = null;
-            String note = ClientContext.getString("task.default.searchMessage");
-            maxEstimation = ClientContext.getInt("task.default.maxEstimation");
-            delay = ClientContext.getInt("task.default.delay");
-
-            monitor = new ProgressMonitor(c, message, note, 0, maxEstimation / delay);
-
-            taskTimer = new Timer(delay, new ActionListener() {
-
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    delayCount++;
-
-                    if (monitor.isCanceled() && (!worker.isCancelled())) {
-                        worker.cancel(true);
-
-                    } else {
-                        monitor.setProgress(delayCount);
-                    }
-                }
-            });
-
             worker.execute();
+//masuda$
         }
         
         /**
@@ -770,13 +695,14 @@ public class AddUserImpl extends AbstractMainTool implements AddUser {
                 deleteDoc = false;
             }
             
-//masuda^   シングルトン化
-            //final UserDelegater udl = new UserDelegater();
+//masuda^
             final UserDelegater udl = UserDelegater.getInstance();
-//masuda$
             final String deleteId = entry.getUserId();
+            Component c = getFrame();
+            String message = null;
+            String note = ClientContext.getString("task.default.deleteMessage");
             
-            worker = new SimpleWorker<List<UserModel>, Void>() {
+            ProgressMonitorWorker worker = new ProgressMonitorWorker<List<UserModel>, Void>(c, message, note) {
         
                 @Override
                 protected List<UserModel> doInBackground() throws Exception {
@@ -813,45 +739,10 @@ public class AddUserImpl extends AbstractMainTool implements AddUser {
                     logger.warn(cause.getCause());
                     logger.warn(cause.getMessage());
                 }
-
-                @Override
-                protected void startProgress() {
-                    delayCount = 0;
-                    taskTimer.start();
-                }
-
-                @Override
-                protected void stopProgress() {
-                    taskTimer.stop();
-                    monitor.close();
-                    taskTimer = null;
-                    monitor = null;
-                }
             };
-
-            Component c = getFrame();
-            String message = null;
-            String note = ClientContext.getString("task.default.deleteMessage");
-            maxEstimation = ClientContext.getInt("task.default.maxEstimation");
-            delay = ClientContext.getInt("task.default.delay");
-            monitor = new ProgressMonitor(c, message, note, 0, maxEstimation / delay);
-
-            taskTimer = new Timer(delay, new ActionListener() {
-
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    delayCount++;
-
-                    if (monitor.isCanceled() && (!worker.isCancelled())) {
-                        worker.cancel(true);
-
-                    } else {
-                        monitor.setProgress(delayCount);
-                    }
-                }
-            });
-
+            
             worker.execute();
+//masuda$
         }
     }
     
@@ -866,28 +757,25 @@ public class AddUserImpl extends AbstractMainTool implements AddUser {
         private JTextField sn; // 姓
         private JTextField givenName; // 名
         // private String cn; // 氏名(sn & ' ' & givenName)
-        private LicenseModel[] licenses; // 職種(MML0026)
-        private JComboBox licenseCombo;
-        private DepartmentModel[] depts; // 診療科(MML0028)
-        private JComboBox deptCombo;
+        private final LicenseModel[] licenses; // 職種(MML0026)
+        private final JComboBox licenseCombo;
+        private final DepartmentModel[] depts; // 診療科(MML0028)
+        private final JComboBox deptCombo;
         // private String authority; // LASに対する権限(admin:管理者,user:一般利用者)
         private JTextField emailField; // メールアドレス
         
         // JTextField description;
-        private JButton okButton;
-        private JButton cancelButton;
+        private final JButton okButton;
+        private final JButton cancelButton;
         
         private boolean ok;
         
         // UserId と Password の長さ
-        private int[] userIdLength; // min,max
-        private int[] passwordLength; // min,max
-        private String idPassPattern;
-        private String usersRole; // user に与える role 名
+        private final int[] userIdLength; // min,max
+        private final int[] passwordLength; // min,max
+        private final String idPassPattern;
+        private final String usersRole; // user に与える role 名
         
-//masuda^   生パスワードを記録するかどうか
-        //private JCheckBox chk_rawPass;
-//masuda$
         
         public AddUserPanel() {
             
@@ -1153,12 +1041,13 @@ public class AddUserImpl extends AbstractMainTool implements AddUser {
             rm.setUserId(user.getUserId()); // 必要
             
             // タスクを実行する
-//masuda^   シングルトン化
-            //final UserDelegater udl = new UserDelegater();
+//masuda^
             final UserDelegater udl = UserDelegater.getInstance();
-//masuda$
+            Component c = getFrame();
+            String message = null;
+            String note = ClientContext.getString("task.default.addMessage");
             
-            worker = new SimpleWorker<Boolean, Void>() {
+            ProgressMonitorWorker worker = new ProgressMonitorWorker<Boolean, Void>(c, message, note) {
         
                 @Override
                 protected Boolean doInBackground() throws Exception {
@@ -1194,45 +1083,10 @@ public class AddUserImpl extends AbstractMainTool implements AddUser {
                     //logger.warn(cause.getCause());
                     //logger.warn(cause.getMessage());
                 }
-
-                @Override
-                protected void startProgress() {
-                    delayCount = 0;
-                    taskTimer.start();
-                }
-
-                @Override
-                protected void stopProgress() {
-                    taskTimer.stop();
-                    monitor.close();
-                    taskTimer = null;
-                    monitor = null;
-                }
             };
 
-            Component c = getFrame();
-            String message = null;
-            String note = ClientContext.getString("task.default.addMessage");
-            maxEstimation = ClientContext.getInt("task.default.maxEstimation");
-            delay = ClientContext.getInt("task.default.delay");
-            monitor = new ProgressMonitor(c, message, note, 0, maxEstimation / delay);
-
-            taskTimer = new Timer(delay, new ActionListener() {
-
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    delayCount++;
-
-                    if (monitor.isCanceled() && (!worker.isCancelled())) {
-                        worker.cancel(true);
-
-                    } else {
-                        monitor.setProgress(delayCount);
-                    }
-                }
-            });
-
             worker.execute();
+//masuda$
         }
         
         private boolean userIdOk() {

@@ -31,14 +31,14 @@ public class OrcaApiDelegater implements IOrcaApi {
     
     private static final OrcaApiDelegater instance;
 
-    private boolean DEBUG;
-    private XMLOutputter outputter;
-    private SAXBuilder builder;
+    private final boolean DEBUG;
+    private final XMLOutputter outputter;
+    private final SAXBuilder builder;
     
     private List<PhysicianInfo> physicianList;
     private List<DepartmentInfo> deptList;
     
-    private boolean xml2;
+    private final boolean xml2;
     
     static {
         instance = new OrcaApiDelegater();

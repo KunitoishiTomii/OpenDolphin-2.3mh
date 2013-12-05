@@ -314,7 +314,7 @@ public class SearchResultInspector {
                                 list.add(obj);
                             }
                         }
-                        DocInfoModel[] selected = list.toArray(new DocInfoModel[0]);
+                        DocInfoModel[] selected = list.toArray(new DocInfoModel[list.size()]);
                         if (selected != null && selected.length > 0) {
                             setSelectedHistories(selected);
                         } else {

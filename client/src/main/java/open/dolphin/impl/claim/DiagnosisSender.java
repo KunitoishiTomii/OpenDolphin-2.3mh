@@ -6,9 +6,9 @@ import java.util.ArrayList;
 import java.util.List;
 import open.dolphin.client.*;
 import open.dolphin.infomodel.*;
+import open.dolphin.message.ClaimMessageBuilder;
 import open.dolphin.message.DiagnosisModuleItem;
 import open.dolphin.message.DiseaseHelper;
-import open.dolphin.message.MessageBuilder;
 import open.dolphin.project.Project;
 import open.dolphin.util.GUIDGenerator;
 import org.apache.log4j.Level;
@@ -27,7 +27,7 @@ public class DiagnosisSender implements IDiagnosisSender {
     private List<RegisteredDiagnosisModel> rdList;
     private PropertyChangeSupport boundSupport;
 
-    private boolean DEBUG;
+    private final boolean DEBUG;
 
     public DiagnosisSender() {
         DEBUG = ClientContext.getBootLogger().getLevel() == Level.DEBUG;
@@ -102,7 +102,7 @@ public class DiagnosisSender implements IDiagnosisSender {
         }
 
         // DocInfo & RD をカプセル化したアイテムを生成する
-        List<DiagnosisModuleItem> moduleItems = new ArrayList<DiagnosisModuleItem>();
+        List<DiagnosisModuleItem> moduleItems = new ArrayList<>();
 
         for (RegisteredDiagnosisModel rd : rdList) {
             DocInfoModel docInfo = new DocInfoModel();
@@ -133,13 +133,6 @@ public class DiagnosisSender implements IDiagnosisSender {
         dhl.setUseDefalutDept(b);
 //masuda$
         // DG ------------------------------------
-        //dhl.setDepartment(pvt.getDepartmentCode());
-        //dhl.setDepartmentDesc(pvt.getDepartment());
-        //dhl.setCreatorName(pvt.getAssignedDoctorName());
-        //dhl.setCreatorId(pvt.getAssignedDoctorId());
-        //dhl.setCreatorLicense(Project.getUserModel().getLicenseModel().getLicense());
-        //dhl.setFacilityName(Project.getUserModel().getFacilityModel().getFacilityName());
-        //dhl.setJmariCode(pvt.getJmariCode());
         dhl.setDepartment(pvt.getDeptCode());     // 診療科コード
         dhl.setDepartmentDesc(pvt.getDeptName()); // 診療科名
         dhl.setCreatorName(pvt.getDoctorName());  // 担当医名
@@ -149,7 +142,7 @@ public class DiagnosisSender implements IDiagnosisSender {
         dhl.setFacilityName(Project.getUserModel().getFacilityModel().getFacilityName());
         //------------------------------------ DG
 
-        MessageBuilder mb = MessageBuilder.getInstance();
+        ClaimMessageBuilder mb = ClaimMessageBuilder.getInstance();
         String claimMessage = mb.build(dhl);
         ClaimMessageEvent event = new ClaimMessageEvent(this);
         event.setPatientId(patient.getPatientId());

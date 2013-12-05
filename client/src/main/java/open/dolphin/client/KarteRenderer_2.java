@@ -21,8 +21,8 @@ import open.dolphin.tr.StampHolderTransferHandler;
  */
 public class KarteRenderer_2 {
 
-    private static final String STAMP_HOLDER = "stampHolder";
-    private static final String SCHEMA_HOLDER = "schemaHolder";
+    private static final String STAMP_HOLDER = StampHolder.ATTRIBUTE_NAME;
+    private static final String SCHEMA_HOLDER = SchemaHolder.ATTRIBUTE_NAME;
     private static final String COMPONENT_NAME = StyleConstants.ComponentElementName;   // "component";
     private static final String SECTION_NAME = AbstractDocument.SectionElementName;
     private static final String CONTENT_NAME = AbstractDocument.ContentElementName;
@@ -162,10 +162,9 @@ public class KarteRenderer_2 {
             this.kartePane = kartePane;
 
             // Offscreen updates trick
-            doc = new KarteStyledDocument();
-            doc.setParent(kartePane);
+            doc = new KarteStyledDocument(kartePane);
             
-            defaultStyle = doc.getStyle(DEFAULT_STYLE_NAME);
+            defaultStyle = doc.setDefaultStyle();
             
             try {
                 XMLInputFactory factory = XMLInputFactory.newInstance();
@@ -187,7 +186,7 @@ public class KarteRenderer_2 {
             }
 
             // レンダリング後はdefault styleに戻す
-            doc.setLogicalStyle(DEFAULT_STYLE_NAME);
+            doc.setDefaultStyle();
             
             // JTextPaneにKarteStyledDocumentを設定する
             kartePane.getTextPane().setDocument(doc);
@@ -324,13 +323,13 @@ public class KarteRenderer_2 {
                         // StampHolderを作成する。JTextPaneにDocumentは未設定なのでKartePane.flowStampは使えない
                         StampHolder stamp = new StampHolder(kartePane, modules.get(index));
                         stamp.setTransferHandler(StampHolderTransferHandler.getInstance());
-                        doc.flowStamp(stamp);
+                        doc.flowComponent(stamp);
                         break;
                     case SCHEMA_HOLDER:
                         // SchemaHolderを作成する
                         SchemaHolder schema = new SchemaHolder(kartePane, schemas.get(index));
                         schema.setTransferHandler(SchemaHolderTransferHandler.getInstance());
-                        doc.flowSchema(schema);
+                        doc.flowComponent(schema);
                         break;
                 }
             }
@@ -367,8 +366,7 @@ public class KarteRenderer_2 {
             this.kartePane = kartePane;
             specList = new ArrayList<>();
                         
-            doc = new KarteStyledDocument();
-            doc.setParent(kartePane);
+            doc = new KarteStyledDocument(kartePane);
             
             defaultStyle = doc.getStyle(DEFAULT_STYLE_NAME);
 
@@ -398,7 +396,7 @@ public class KarteRenderer_2 {
             }
 
             // レンダリング後はdefault styleに戻す
-            doc.setLogicalStyle(DEFAULT_STYLE_NAME);
+            doc.setDefaultStyle();
             
             // JTextPaneにKarteStyledDocumentを設定する
             kartePane.getTextPane().setDocument(doc);
@@ -544,8 +542,7 @@ public class KarteRenderer_2 {
                         StampHolder sh = new StampHolder(kartePane, modules.get(index));
                         sh.setTransferHandler(StampHolderTransferHandler.getInstance());
                         // このスタンプ用のスタイルを生成する
-                        MutableAttributeSet atts = doc.createStampAttribute();
-                        StyleConstants.setComponent(atts, sh);
+                        MutableAttributeSet atts = doc.createComponentAttribute(sh);
                         insertString(" ", atts);
                         break;
                     }
@@ -554,8 +551,7 @@ public class KarteRenderer_2 {
                         SchemaHolder sh = new SchemaHolder(kartePane, schemas.get(index));
                         sh.setTransferHandler(SchemaHolderTransferHandler.getInstance());
                         // このスタンプ用のスタイルを生成する
-                        MutableAttributeSet atts = doc.createSchemaAttribute();
-                        StyleConstants.setComponent(atts, sh);
+                        MutableAttributeSet atts = doc.createComponentAttribute(sh);
                         insertString(" ", atts);
                         break;
                     }

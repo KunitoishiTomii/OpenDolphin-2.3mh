@@ -1,8 +1,6 @@
 package open.dolphin.client;
 
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.print.PageFormat;
@@ -22,7 +20,6 @@ import java.util.List;
 import java.util.*;
 import javax.print.attribute.HashPrintRequestAttributeSet;
 import javax.print.attribute.PrintRequestAttributeSet;
-import javax.swing.Timer;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -34,7 +31,7 @@ import open.dolphin.delegater.StampDelegater;
 import open.dolphin.delegater.UserDelegater;
 import open.dolphin.helper.ComponentMemory;
 import open.dolphin.helper.MenuSupport;
-import open.dolphin.helper.SimpleWorker;
+import open.dolphin.helper.ProgressMonitorWorker;
 import open.dolphin.helper.WindowSupport;
 import open.dolphin.impl.login.LoginDialog;
 import open.dolphin.impl.server.StandAlonePVTServer;
@@ -89,12 +86,8 @@ public class Dolphin implements MainWindow, IChartEventListener {
     // MML リスナ
     private MmlMessageListener sendMml;
 
-    // timerTask 関連
-    private javax.swing.Timer taskTimer;
-    private ProgressMonitor monitor;
-    private int delayCount;
-    private int maxEstimation = 120*1000; // 120 秒
-    private int delay = 300;      // 300 mmsec
+    private final int maxEstimation = 120*1000; // 120 秒
+    private final int delay = 300;      // 300 mmsec
 
     // VIEW
     private MainView view;
@@ -278,8 +271,13 @@ public class Dolphin implements MainWindow, IChartEventListener {
      * ユーザーのStampTreeをロードする。
      */
     private void loadStampTree() {
-
-        final SimpleWorker worker = new SimpleWorker<List<IStampTreeModel>, Void>() {
+        
+        String message = "初期化";
+        String note = "スタンプを読み込んでいます...";
+        Component c = null;
+        
+        ProgressMonitorWorker worker = new ProgressMonitorWorker<List<IStampTreeModel>, Void>(
+                c, message, note, maxEstimation, delay) {
 
             @Override
             protected List<IStampTreeModel> doInBackground() throws Exception {
@@ -296,7 +294,7 @@ public class Dolphin implements MainWindow, IChartEventListener {
 
                 // User用のStampTreeが存在しない新規ユーザの場合、そのTreeを生成する
                 boolean hasTree = false;
-                if (treeList != null || !treeList.isEmpty()) {
+                if (treeList != null && !treeList.isEmpty()) {
                     for (IStampTreeModel tree : treeList) {
                         if (tree != null) {
                             long id = tree.getUserModel().getId();
@@ -371,40 +369,7 @@ public class Dolphin implements MainWindow, IChartEventListener {
                 ClientContext.getBootLogger().debug("cancelled");
                 System.exit(0);
             }
-
-            @Override
-            protected void startProgress() {
-                taskTimer.start();
-            }
-
-            @Override
-            protected void stopProgress() {
-                taskTimer.stop();
-                monitor.close();
-                taskTimer = null;
-                monitor = null;
-            }
         };
-
-        String message = "初期化";
-        String note = "スタンプを読み込んでいます...";
-        Component c = null;
-        monitor = new ProgressMonitor(c, message, note, 0, maxEstimation/delay);
-
-        taskTimer = new Timer(delay, new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                delayCount++;
-
-                if (monitor.isCanceled() && (!worker.isCancelled())) {
-                    worker.cancel(true);
-
-                } else {
-                    monitor.setProgress(delayCount);
-                }
-            }
-        });
 
         worker.execute();
     }
@@ -1162,17 +1127,19 @@ public class Dolphin implements MainWindow, IChartEventListener {
         //FacilityModel facility = Project.getUserModel().getFacilityModel();
         //treeTosave.setPartyName(facility.getFacilityName());
 //masuda$     
-
-        SimpleWorker worker = new SimpleWorker<Void, Void>() {
+        ResourceBundle resource = ClientContext.getBundle(this.getClass());
+        String message = resource.getString("exitDolphin.taskTitle");
+        String note = resource.getString("exitDolphin.savingNote");
+        Component c = getFrame();
+        
+        ProgressMonitorWorker worker = new ProgressMonitorWorker<Void, Void>(
+                c, message, note, maxEstimation, delay){
 
             @Override
             protected Void doInBackground() throws Exception {
                 ClientContext.getBootLogger().debug("stampTask doInBackground");
                 // Stamp 保存
-//masuda^   シングルトン化
-                //StampDelegater dl = new StampDelegater();
                 StampDelegater dl = StampDelegater.getInstance();
-//masuda$
                 dl.putTree(treeTosave);
                 return null;
             }
@@ -1189,36 +1156,7 @@ public class Dolphin implements MainWindow, IChartEventListener {
                 ClientContext.getBootLogger().warn("stampTask failed");
                 ClientContext.getBootLogger().warn(cause);
             }
-
-            @Override
-            protected void startProgress() {
-                delayCount = 0;
-                taskTimer.start();
-            }
-
-            @Override
-            protected void stopProgress() {
-                taskTimer.stop();
-                monitor.close();
-                taskTimer = null;
-                monitor = null;
-            }
         };
-
-        ResourceBundle resource = ClientContext.getBundle(this.getClass());
-        String message = resource.getString("exitDolphin.taskTitle");
-        String note = resource.getString("exitDolphin.savingNote");
-        Component c = getFrame();
-        monitor = new ProgressMonitor(c, message, note, 0, maxEstimation / delay);
-
-        taskTimer = new Timer(delay, new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                delayCount++;
-                monitor.setProgress(delayCount);
-            }
-        });
 
         worker.execute();
     }
@@ -1568,10 +1506,10 @@ public class Dolphin implements MainWindow, IChartEventListener {
     /**
      * StateManager
      */
-    class StateManager {
+    private class StateManager {
 
-        private MainWindowState loginState = new LoginState();
-        private MainWindowState logoffState = new LogoffState();
+        private final MainWindowState loginState = new LoginState();
+        private final MainWindowState logoffState = new LogoffState();
         private MainWindowState currentState = logoffState;
 
         public StateManager() {

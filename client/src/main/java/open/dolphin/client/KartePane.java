@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Enumeration;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import javax.imageio.ImageIO;
@@ -24,12 +24,8 @@ import javax.imageio.stream.FileImageInputStream;
 import javax.swing.*;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Element;
-import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledEditorKit;
 import open.dolphin.client.ChartMediator.CompState;
 import open.dolphin.dao.SqlOrcaSetDao;
@@ -53,8 +49,7 @@ import org.apache.log4j.Logger;
  *
  * @author Kazushi Minagawa, Digital Globe, inc.
  */
-public class KartePane implements DocumentListener, MouseListener,
-        CaretListener, PropertyChangeListener {
+public class KartePane implements MouseListener, CaretListener, PropertyChangeListener {
 
     // 文書に付けるタイトルを自動で取得する時の長さ
     private static final int TITLE_LENGTH = 15;
@@ -78,16 +73,10 @@ public class KartePane implements DocumentListener, MouseListener,
 
     private int stampId;
 
-    // Dirty Flag
-    private boolean dirty;
-
     // Selection Flag
     private boolean hasSelection;
 
     private CompState curState;
-
-    // 初期化された時のDocumentの長さ
-    private int initialLength;
 
     // ChartMediator(MenuSupport)
     private ChartMediator mediator;
@@ -218,9 +207,8 @@ public class KartePane implements DocumentListener, MouseListener,
     
     // あらたにKarteStyledDocumentを設定する
     public void initKarteStyledDocument() {
-        KarteStyledDocument doc = new KarteStyledDocument();
+        KarteStyledDocument doc = new KarteStyledDocument(KartePane.this);
         this.textPane.setDocument(doc);
-        doc.setParent(this);
     }
 //masuda$    
 
@@ -242,70 +230,6 @@ public class KartePane implements DocumentListener, MouseListener,
     }
 
     /**
-     * 初期長を設定する。
-     * @param Documentの初期長
-     */
-    public void setInitialLength(int initialLength) {
-        this.initialLength = initialLength;
-    }
-
-    /**
-     * 初期長を返す。
-     * @return Documentの初期長
-     */
-    public int getInitialLength() {
-        return initialLength;
-    }
-
-    /**
-     * このPaneからDragされたスタンプ数を返す。
-     * @return このPaneからDragされたスタンプ数
-     */
-//    protected int getDraggedCount() {
-//        return draggedCount;
-//    }
-
-    /**
-     * このPaneからDragされたスタンプ数を設定する。
-     * @param draggedCount このPaneからDragされたスタンプ数
-     */
-//    protected void setDraggedCount(int draggedCount) {
-//        this.draggedCount = draggedCount;
-//    }
-
-    /**
-     * このPaneにDropされたスタンプ数を返す。
-     * @return このPaneにDropされたスタンプ数
-     */
-//    protected int getDroppedCount() {
-//        return droppedCount;
-//    }
-
-    /**
-     * このPaneにDropされたスタンプ数を設定する。
-     * @param droppedCount このPaneにDropされたスタンプ数
-     */
-//    protected void setDroppedCount(int droppedCount) {
-//        this.droppedCount = droppedCount;
-//    }
-
-    /**
-     * このPaneからDragされたスタンプを返す。
-     * @return このPaneからDragされたスタンプ配列
-     */
-//    protected ComponentHolder[] getDrragedStamp() {
-//        return drragedStamp;
-//    }
-
-    /**
-     * このPaneからDragされたスタンプを設定（記録）する。
-     * @param drragedStamp このPaneからDragされたスタンプ配列
-     */
-//    protected void setDrragedStamp(ComponentHolder[] drragedStamp) {
-//        this.drragedStamp = drragedStamp;
-//    }
-
-    /**
      * 初期化する。
      * @param editable 編集可能かどうかのフラグ
      * @param mediator チャートメディエータ（実際にはメニューサポート）
@@ -325,7 +249,8 @@ public class KartePane implements DocumentListener, MouseListener,
         // Editable Property を設定する
         setEditableProp(editable);
     }
-
+    
+//masuda^   UndoableEditListenerはChartMediatorではなくKarteEditorに設定する
     /**
      * 編集可否を設定する。それに応じてリスナの登録または取り除きを行う。
      * @param editable 編集可の時 true
@@ -333,41 +258,28 @@ public class KartePane implements DocumentListener, MouseListener,
     public void setEditableProp(boolean editable) {
         getTextPane().setEditable(editable);
         if (editable) {
-            getTextPane().getDocument().addDocumentListener(this);
             getTextPane().addFocusListener(AutoKanjiListener.getInstance());
-            getTextPane().getDocument().addUndoableEditListener(mediator);
+            if (parent instanceof KarteEditor) {
+                KarteEditor editor = (KarteEditor) parent;
+                getTextPane().getDocument().addUndoableEditListener(editor);
+            }
             if (IInfoModel.ROLE_SOA.equals(myRole)) {
                 SOACodeHelper helper = new SOACodeHelper(this, getMediator());
-            } else if (IInfoModel.ROLE_SOA.equals(myRole)) {
+            } else if (IInfoModel.ROLE_P.equals(myRole)) {
                 PCodeHelper helper = new PCodeHelper(this, getMediator());
             }
             getTextPane().setBackground(Color.WHITE);
             getTextPane().setOpaque(true);
         } else {
-            getTextPane().getDocument().removeDocumentListener(this);
             getTextPane().removeFocusListener(AutoKanjiListener.getInstance());
-            getTextPane().getDocument().removeUndoableEditListener(mediator);
+            if (parent instanceof KarteEditor) {
+                KarteEditor editor = (KarteEditor) parent;
+                getTextPane().getDocument().removeUndoableEditListener(editor);
+            }
             setBackgroundUneditable();
         }
     }
-
-    // JTextPaneへの挿入でdirtyかどうかを判定する
-    @Override
-    public void insertUpdate(DocumentEvent e) {
-        boolean newDirty = (getDocument().getLength() > getInitialLength());
-        setDirty(newDirty);
-    }
-
-    // 削除が起こった時dirtyかどうかを判定する
-    @Override
-    public void removeUpdate(DocumentEvent e) {
-        boolean newDirty = (getDocument().getLength() > getInitialLength());
-        setDirty(newDirty);
-    }
-
-    @Override
-    public void changedUpdate(DocumentEvent e) {
-    }
+//masuda$
 
     @Override
     public void caretUpdate(CaretEvent e) {
@@ -389,7 +301,6 @@ public class KartePane implements DocumentListener, MouseListener,
      * リソースをclearする。
      */
     public void clear() {
-        getTextPane().getDocument().removeDocumentListener(this);
         getTextPane().removeMouseListener(this);
         getTextPane().removeFocusListener(AutoKanjiListener.getInstance());
         getTextPane().removeCaretListener(this);
@@ -553,22 +464,11 @@ public class KartePane implements DocumentListener, MouseListener,
     public void setRole(String role) {
         setMyRole(role);
     }
-
-    /**
-     * Dirtyかどうかを返す。
-     * @return dirty の時 true
-     */
-    protected boolean isDirty() {
-        return getTextPane().isEditable() ? dirty : false;
+    
+    public void setDirty(boolean dirty) {
+        parent.setDirty(dirty);
     }
     
-    protected void setDirty(boolean newDirty) {
-        if (newDirty != dirty) {
-            dirty = newDirty;
-            getParent().setDirty(dirty);
-        }
-    }
-
     /**
      * 保存時につけるドキュメントのタイトルをDocument Objectから抽出する。
      * @return 先頭から指定された長さを切り出した文字列
@@ -588,52 +488,28 @@ public class KartePane implements DocumentListener, MouseListener,
     }
 
     /**
-     * Documentの段落スタイルを設定する。
-     * @param str スタイル
-     */
-    public void setLogicalStyle(String str) {
-        getDocument().setLogicalStyle(str);
-    }
-
-    /**
-     * Documentの段落論理スタイルをクリアする。
-     */
-    public void clearLogicalStyle() {
-        getDocument().clearLogicalStyle();
-    }
-
-    /**
-     * 段落を構成する。
-     */
-    public void makeParagraph() {
-        getDocument().makeParagraph();
-    }
-
-    /**
      * Documentに文字列を挿入する。
      * @param str 挿入する文字列
-     * @param attr 属性
+     * @param atts 属性
      */
-    public void insertFreeString(String s, AttributeSet a) {
-        getDocument().insertFreeString(s, a);
+    public void insertFreeString(String str, AttributeSet atts) {
+        getDocument().insertFreeString(str, atts);
     }
 
     /**
      * このペインに Stamp を挿入する。
      */
     public void stamp(final ModuleModel stamp) {
+        
         if (stamp != null) {
             EventQueue.invokeLater(new Runnable() {
 
                 @Override
                 public void run() {
-                    StampHolder h = new StampHolder(KartePane.this, stamp);
-//masuda^
-                    //h.setTransferHandler(new StampHolderTransferHandler(KartePane.this, h));
-                    h.setTransferHandler(StampHolderTransferHandler.getInstance());
-//masuda$
+                    StampHolder sh = new StampHolder(KartePane.this, stamp);
+                    sh.setTransferHandler(StampHolderTransferHandler.getInstance());
                     KarteStyledDocument doc = getDocument();
-                    doc.stamp(h);
+                    doc.stampComponent(sh);
                 }
             });
         }
@@ -643,14 +519,12 @@ public class KartePane implements DocumentListener, MouseListener,
      * このペインに Stamp を挿入する。
      */
     public void flowStamp(ModuleModel stamp) {
+        
         if (stamp != null) {
-            StampHolder h = new StampHolder(this, stamp);
-//masuda^
-            //h.setTransferHandler(new StampHolderTransferHandler(KartePane.this, h));
-            h.setTransferHandler(StampHolderTransferHandler.getInstance());
-//masuda$
+            StampHolder sh = new StampHolder(KartePane.this, stamp);
+            sh.setTransferHandler(StampHolderTransferHandler.getInstance());
             KarteStyledDocument doc = getDocument();
-            doc.flowStamp(h);
+            doc.flowComponent(sh);
         }
     }
 
@@ -659,18 +533,16 @@ public class KartePane implements DocumentListener, MouseListener,
      * @param schema シェーマ
      */
     public void stampSchema(final SchemaModel schema) {
+        
         if (schema != null) {
             EventQueue.invokeLater(new Runnable() {
 
                 @Override
                 public void run() {
-                    SchemaHolder h = new SchemaHolder(KartePane.this, schema);
-//masuda^
-                    //h.setTransferHandler(new SchemaHolderTransferHandler(KartePane.this, h));
-                    h.setTransferHandler(SchemaHolderTransferHandler.getInstance());
-//masuda$
+                    SchemaHolder sh = new SchemaHolder(KartePane.this, schema);
+                    sh.setTransferHandler(SchemaHolderTransferHandler.getInstance());
                     KarteStyledDocument doc = getDocument();
-                    doc.stampSchema(h);
+                    doc.stampComponent(sh);
                 }
             });
         }
@@ -681,14 +553,12 @@ public class KartePane implements DocumentListener, MouseListener,
      * @param schema  シェーマ
      */
     public void flowSchema(SchemaModel schema) {
+        
         if (schema != null) {
-            SchemaHolder h = new SchemaHolder(this, schema);
-//masuda^
-            //h.setTransferHandler(new SchemaHolderTransferHandler(KartePane.this, h));
-            h.setTransferHandler(SchemaHolderTransferHandler.getInstance());
-//masuda$
+            SchemaHolder sh = new SchemaHolder(KartePane.this, schema);
+            sh.setTransferHandler(SchemaHolderTransferHandler.getInstance());
             KarteStyledDocument doc = (KarteStyledDocument) getTextPane().getDocument();
-            doc.flowSchema(h);
+            doc.flowComponent(sh);
         }
     }
 
@@ -696,6 +566,7 @@ public class KartePane implements DocumentListener, MouseListener,
      * このペインに TextStamp を挿入する。
      */
     public void insertTextStamp(final String s) {
+        
         EventQueue.invokeLater(new Runnable() {
 
             @Override
@@ -1288,15 +1159,10 @@ public class KartePane implements DocumentListener, MouseListener,
      * @param sh 削除するスタンプのホルダ
      */
     public void removeStamp(StampHolder sh) {
-        //getDocument().removeStamp(sh.getStartPos(), 2);
-//masuda^   editableの場合のみ削除
-        if (!getTextPane().isEditable()) {
-            return;
+        // editableの場合のみ削除
+        if (getTextPane().isEditable()) {
+            getDocument().removeComponent(sh.getStartOffset());
         }
-//masuda$
-        KarteStyledDocument doc = getDocument();
-        Element root = doc.getDefaultRootElement();
-        deleteStamp(root, sh);
     }
 
     /**
@@ -1316,12 +1182,10 @@ public class KartePane implements DocumentListener, MouseListener,
      * @param sh 削除するシェーマのホルダ
      */
     public void removeSchema(SchemaHolder sh) {
-//masuda^   editableの場合のみ削除
-        if (!getTextPane().isEditable()) {
-            return;
+        // editableの場合のみ削除
+        if (getTextPane().isEditable()) {
+            getDocument().removeComponent(sh.getStartOffset());
         }
-//masuda$
-        getDocument().removeStamp(sh.getStartPos(), 2);
     }
 
     /**
@@ -1342,164 +1206,67 @@ public class KartePane implements DocumentListener, MouseListener,
      */
     public void changeAllRPNumDates(int number) {
 
-        List<StampHolder> list = getRPStamps();
+        final List<StampHolder> list = getRPStamps();
 
         if (list.isEmpty()) {
             Toolkit.getDefaultToolkit().beep();
             return;
         }
 
-        String numStr = String.valueOf(number);
-        for (StampHolder sh : list) {
-            ModuleModel module = sh.getStamp();
-            BundleMed med = (BundleMed)module.getModel();
-            med.setBundleNumber(numStr);
-            sh.setStamp(module);
-        }
-        this.setDirty(true);
-        this.getTextPane().validate();
-        this.getTextPane().repaint();
+        final String numStr = String.valueOf(number);
+        SwingUtilities.invokeLater(new Runnable(){
+
+            @Override
+            public void run() {
+                for (StampHolder sh : list) {
+                    ModuleModel module = sh.getStamp();
+                    BundleMed med = (BundleMed) module.getModel();
+                    med.setBundleNumber(numStr);
+                    sh.setStamp(module);
+                }
+                setDirty(true);
+            }
+        });
     }
 
     private List<StampHolder> getRPStamps() {
-        KarteStyledDocument doc = getDocument();
-        Element root = doc.getDefaultRootElement();
-        List<StampHolder> list = new ArrayList<>(3);
-        dumpRPElement(root, list);
-        return list;
-    }
-
-    private void dumpRPElement(Element element, List<StampHolder> list) {
-
-        AttributeSet atts = element.getAttributes().copyAttributes();
-
-        if (atts!=null) {
-            Enumeration names = atts.getAttributeNames();
-            while (names.hasMoreElements()) {
-                Object nextName = names.nextElement();
-                if (nextName != StyleConstants.ResolveAttribute) {
-                    if (nextName.toString().startsWith("$")) {
-                        continue;
-                    }
-                    Object attObject = atts.getAttribute(nextName);
-                    if (attObject!=null && (attObject instanceof StampHolder)) {
-                        StampHolder sh = (StampHolder)attObject;
-                        ModuleInfoBean info = sh.getStamp().getModuleInfoBean();
-                        if (info.getEntity().equals(IInfoModel.ENTITY_MED_ORDER)) {
-                            IInfoModel model = sh.getStamp().getModel();
-                            if (model!=null && (model instanceof BundleMed)) {
-                                if (((BundleMed)model).getClassCode().startsWith("21")) {
-                                    list.add(sh);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        int cnt = element.getElementCount();
-        for (int i = 0; i < cnt; i++) {
-            Element e = element.getElement(i);
-            dumpRPElement(e, list);
-        }
+        return getStamps(IInfoModel.ENTITY_MED_ORDER);
     }
 
     public boolean hasRP() {
-        if ((!getTextPane().isEditable())) {
+        if (!getTextPane().isEditable()) {
             return false;
         }
         List<StampHolder> list = getStamps(IInfoModel.ENTITY_MED_ORDER);
-        return (!list.isEmpty());
+        return !list.isEmpty();
     }
     
     public boolean hasLabtest() {
-        if ((!getTextPane().isEditable())) {
+        if (!getTextPane().isEditable()) {
             return false;
         }
         List<StampHolder> list = getStamps(IInfoModel.ENTITY_LABO_TEST);
-        return (!list.isEmpty());
+        return !list.isEmpty();
     }
 
     private List<StampHolder> getStamps(String entity) {
+        
+        if (entity == null) {
+            return Collections.emptyList();
+        }
+
         KarteStyledDocument doc = getDocument();
-        Element root = doc.getDefaultRootElement();
-        List<StampHolder> list = new ArrayList<>(3);
-        dumpElement(root, list, entity);
-        return list;
-    }
-
-    private void dumpElement(Element element, List<StampHolder> list, String entity) {
-
-        //int start = element.getStartOffset();
-        //int end = element.getEndOffset();
-
-        AttributeSet atts = element.getAttributes().copyAttributes();
-
-        if (atts!=null) {
-            Enumeration names = atts.getAttributeNames();
-            while (names.hasMoreElements()) {
-                Object nextName = names.nextElement();
-                if (nextName != StyleConstants.ResolveAttribute) {
-                    if (nextName.toString().startsWith("$")) {
-                        continue;
-                    }
-                    Object attObject = atts.getAttribute(nextName);
-                    if (attObject!=null && (attObject instanceof StampHolder)) {
-                        StampHolder sh = (StampHolder)attObject;
-                        if (sh.getStamp().getModuleInfoBean().getEntity().equals(entity)) {
-                            list.add(sh);
-                        }
-                    }
-                }
+        List<StampHolder> list = doc.getStampHolders();
+        for (Iterator<StampHolder> itr = list.iterator(); itr.hasNext();) {
+            StampHolder sh = itr.next();
+            if (!entity.equals(sh.getStamp().getModuleInfoBean().getEntity())) {
+                itr.remove();
             }
         }
-
-        int cnt = element.getElementCount();
-        for (int i = 0; i < cnt; i++) {
-            Element e = element.getElement(i);
-            dumpElement(e, list, entity);
-        }
+        return list;
     }
 
     public boolean hasSelection() {
         return hasSelection;
-    }
-    
-    private void deleteStamp(Element element, StampHolder sh){
-
-        if (element==null) {
-            return;
-        }
-
-        int start = element.getStartOffset();
-        int end = element.getEndOffset();
-        boolean deleted = false;
-
-        AttributeSet atts = element.getAttributes().copyAttributes();
-
-        if (atts!=null) {
-            Enumeration names = atts.getAttributeNames();
-            while (names.hasMoreElements()) {
-                Object nextName = names.nextElement();
-                if (nextName != StyleConstants.ResolveAttribute) {
-                    if (nextName.toString().startsWith("$")) {
-                        continue;
-                    }
-                    Object attObject = atts.getAttribute(nextName);
-                    if (attObject!=null && (attObject==sh)) {
-                        getDocument().removeStamp(start, end);
-                        deleted = true;
-                        break;
-                    }
-                }
-            }
-        }
-        
-        int cnt = element.getElementCount();
-        for (int i = 0; i < cnt; i++) {
-            Element e = element.getElement(i);
-            deleteStamp(e, sh);
-        }
     }
 }

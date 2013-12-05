@@ -17,7 +17,7 @@ import open.dolphin.client.ClientContext;
 import open.dolphin.client.GUIFactory;
 import open.dolphin.delegater.StampDelegater;
 import open.dolphin.helper.GridBagBuilder;
-import open.dolphin.helper.SimpleWorker;
+import open.dolphin.helper.ProgressMonitorWorker;
 import open.dolphin.infomodel.*;
 import open.dolphin.project.Project;
 
@@ -59,18 +59,9 @@ public class StampPublisher {
     
     private int publishType = TT_NONE;
     private boolean okState;
-            
-    private StampDelegater sdl;
     
     private PublishedState publishState;
 
-    // timerTask 関連
-    private javax.swing.Timer taskTimer;
-    private ProgressMonitor monitor;
-    private int delayCount;
-    private final int maxEstimation = 90*1000;    // 90 秒
-    private final int delay = 300;                // 300 mmsec
-    
     
     public StampPublisher(StampBoxPlugin stampBox) {
         this.stampBox = stampBox;
@@ -546,15 +537,16 @@ public class StampPublisher {
         }
 
         // task
-        final SimpleWorker worker = new SimpleWorker<Void, Void>() {
+        String message = "スタンプ公開";
+        String note = "公開しています...";
+        Component c = dialog;
         
+        ProgressMonitorWorker worker = new ProgressMonitorWorker<Void, Void>(c, message, note) {
+
             @Override
             protected Void doInBackground() throws Exception {
 
-//masuda^
-                //StampDelegater sdl = new StampDelegater();
                 StampDelegater sdl = StampDelegater.getInstance();
-//masuda$
 
                 switch (publishState) {
 
@@ -612,42 +604,16 @@ public class StampPublisher {
 
             @Override
             protected void startProgress() {
-                delayCount = 0;
+                super.startProgress();
                 blockGlass.block();
-                taskTimer.start();
             }
 
             @Override
             protected void stopProgress() {
-                taskTimer.stop();
-                monitor.close();
+                super.stopProgress();
                 blockGlass.unblock();
-                taskTimer = null;
-                monitor = null;
             }
         };
-
-        String message = "スタンプ公開";
-        String note = "公開しています...";
-        Component c = dialog;
-        monitor = new ProgressMonitor(c, message, note, 0, maxEstimation / delay);
-
-        taskTimer = new Timer(delay, new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                delayCount++;
-
-                if (monitor.isCanceled() && (!worker.isCancelled())) {
-                   // no cancel
-                } else if (delayCount >= monitor.getMaximum() && (!worker.isCancelled())) {
-                    worker.cancel(true);
-
-                } else {
-                    monitor.setProgress(delayCount);
-                }
-            }
-        });
 
         worker.execute();
     }
@@ -706,14 +672,16 @@ public class StampPublisher {
         stmpTree.setDescription(ClientContext.getString("stampTree.personal.box.tooltip"));
 
         // task
-        final SimpleWorker worker = new SimpleWorker<Void, Void>() {
+        String message = "スタンプ公開";
+        String note = "取り消しています...";
+        Component c = dialog;
+        
+        ProgressMonitorWorker worker = new ProgressMonitorWorker<Void, Void>(c, message, note) {
                
             @Override
             protected Void doInBackground() throws Exception {
-//masuda^
-                //StampDelegater sdl = new StampDelegater();
+
                 StampDelegater sdl = StampDelegater.getInstance();
-//masuda$
                 sdl.cancelPublishedTree(stmpTree);
                 return null;
             }
@@ -737,43 +705,17 @@ public class StampPublisher {
 
             @Override
             protected void startProgress() {
-                delayCount = 0;
+                super.startProgress();
                 blockGlass.block();
-                taskTimer.start();
             }
 
             @Override
             protected void stopProgress() {
-                taskTimer.stop();
-                monitor.close();
+                super.stopProgress();
                 blockGlass.unblock();
-                taskTimer = null;
-                monitor = null;
             }
 
         };
-
-        String message = "スタンプ公開";
-        String note = "取り消しています...";
-        Component c = dialog;
-        monitor = new ProgressMonitor(c, message, note, 0, maxEstimation / delay);
-
-        taskTimer = new Timer(delay, new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                delayCount++;
-
-                if (monitor.isCanceled() && (!worker.isCancelled())) {
-                   // no cancel
-                } else if (delayCount >= monitor.getMaximum() && (!worker.isCancelled())) {
-                    worker.cancel(true);
-
-                } else {
-                    monitor.setProgress(delayCount);
-                }
-            }
-        });
 
         worker.execute();
     }

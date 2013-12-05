@@ -230,7 +230,7 @@ public final class RpEditor extends AbstractStampEditor {
             ++i;
         }
 
-        return retList.toArray(new ModuleModel[0]);
+        return retList.toArray(new ModuleModel[retList.size()]);
     }
     
     // バンドルメモを作成する
@@ -973,7 +973,7 @@ public final class RpEditor extends AbstractStampEditor {
             stk.setMemo(sb.toString());
         }
         String out = stk.enterDialog();
-        stk = null;
+        
         return out;
     }
 
@@ -1184,7 +1184,6 @@ public final class RpEditor extends AbstractStampEditor {
             }
             checkValidation();
         }
-        panel = null;
     }
 //masuda$
 }
