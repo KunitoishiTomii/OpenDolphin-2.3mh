@@ -17,7 +17,6 @@ import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
 import open.dolphin.infomodel.*;
-import static open.dolphin.infomodel.IInfoModel.STATUS_TMP;
 import open.dolphin.project.Project;
 import open.dolphin.setting.MiscSettingPanel;
 import open.dolphin.tr.PTransferHandler;
