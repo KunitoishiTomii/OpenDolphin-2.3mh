@@ -60,8 +60,8 @@ public final class ChartMediator extends MenuSupport {
             enabledAction(GUIConst.ACTION_CUT, false);
             enabledAction(GUIConst.ACTION_COPY, false);
             enabledAction(GUIConst.ACTION_PASTE, false);
-            enabledAction(GUIConst.ACTION_UNDO, false);
-            enabledAction(GUIConst.ACTION_REDO, false);
+            //enabledAction(GUIConst.ACTION_UNDO, false);
+            //enabledAction(GUIConst.ACTION_REDO, false);
             enabledAction(GUIConst.ACTION_INSERT_TEXT, false);
 //masuda    シェーマ箱ボタンはいつでもenable
             //enabledAction(GUIConst.ACTION_INSERT_SCHEMA, false);
