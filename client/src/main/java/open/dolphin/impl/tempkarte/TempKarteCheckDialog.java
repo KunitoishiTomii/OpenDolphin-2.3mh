@@ -34,7 +34,7 @@ public class TempKarteCheckDialog extends JDialog implements IChartEventListener
     private JPanel panel;
     private JTable table;
     private ListTableModel<PatientModel> tableModel;
-    private ListTableSorter sorter;
+    private ListTableSorter<PatientModel> sorter;
     
     private JCheckBox allCheck;
     private JLabel cntLbl;
@@ -277,7 +277,7 @@ public class TempKarteCheckDialog extends JDialog implements IChartEventListener
     
     private PatientModel getSelectedPatient() {
         selectedRow = table.getSelectedRow();
-        return (PatientModel) sorter.getObject(selectedRow);
+        return sorter.getObject(selectedRow);
     }
 
     // ChartEventListener
@@ -346,7 +346,7 @@ public class TempKarteCheckDialog extends JDialog implements IChartEventListener
 
             super.getTableCellRendererComponent(table, value, isSelected, isFocused, row, col);
             this.setHorizontalAlignment(JLabel.LEFT);
-            PatientModel pm = (PatientModel) sorter.getObject(row);
+            PatientModel pm = sorter.getObject(row);
             
             if (pm != null && col == stateColumn) {
                 setHorizontalAlignment(JLabel.CENTER);

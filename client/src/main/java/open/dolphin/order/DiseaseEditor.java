@@ -25,6 +25,7 @@ import open.dolphin.table.StripeTableCellRenderer;
 import open.dolphin.tr.RegisteredDiagnosisTransferHandler;
 import open.dolphin.common.util.BeanUtils;
 import open.dolphin.common.util.StringTool;
+import open.dolphin.table.ListTableSorter;
 
 /**
  * 傷病名編集テーブルクラス。
@@ -64,6 +65,7 @@ public final class DiseaseEditor extends AbstractStampEditor {
     private ListTableModel<RegisteredDiagnosisModel> tableModel;
 
     private ListTableModel<DiseaseEntry> searchResultModel;
+    private ListTableSorter<DiseaseEntry> sorter;
 
     public DiseaseEditor() {
         this(true);
@@ -306,10 +308,7 @@ public final class DiseaseEditor extends AbstractStampEditor {
 
                 for (RegisteredDiagnosisModel diag : itemList) {
 
-                    if (diag.getDiagnosisCode().startsWith(MODIFIER_CODE)) {
-                        continue;
-
-                    } else {
+                    if (!diag.getDiagnosisCode().startsWith(MODIFIER_CODE)) {
                         diseaseCnt++;
                     }
                 }
@@ -501,25 +500,25 @@ public final class DiseaseEditor extends AbstractStampEditor {
         };
         
         // SetTable を生成し transferHandler を生成する
-        JTable table = view.getSetTable();
-        table.setModel(tableModel);
-        
+        JTable setTable = view.getSetTable();
+        setTable.setModel(tableModel);
+        setTable.getTableHeader().setReorderingAllowed(false);
 //masuda^   tool tip textを復活
-        table.setToolTipText(TOOLTIP_TABLE);
+        setTable.setToolTipText(TOOLTIP_TABLE);
 //masuda$
         
         // Set Table の行の高さ
         //table.setRowHeight(ClientContext.getMoreHigherRowHeight());
 
-        table.setDragEnabled(true);
-        table.setDropMode(DropMode.INSERT);
+        setTable.setDragEnabled(true);
+        setTable.setDropMode(DropMode.INSERT);
 //masuda^ 
         // TransferHandler
-        table.setTransferHandler(new RegisteredDiagnosisTransferHandler());
+        setTable.setTransferHandler(new RegisteredDiagnosisTransferHandler());
 //masuda$
-        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        table.setRowSelectionAllowed(true);
-        ListSelectionModel m = table.getSelectionModel();
+        setTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        setTable.setRowSelectionAllowed(true);
+        ListSelectionModel m = setTable.getSelectionModel();
         m.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
@@ -533,13 +532,13 @@ public final class DiseaseEditor extends AbstractStampEditor {
 
 //masuda^   ストライプテーブル
         //table.setDefaultRenderer(Object.class, new OddEvenRowRenderer());
-        StripeTableCellRenderer setRenderer = new StripeTableCellRenderer(table);
+        StripeTableCellRenderer setRenderer = new StripeTableCellRenderer(setTable);
         setRenderer.setDefaultRenderer();
 //masuda$
         
         // CellEditor を設定する
         // 疾患名
-        TableColumn column = table.getColumnModel().getColumn(NAME_COL);
+        TableColumn column = setTable.getColumnModel().getColumn(NAME_COL);
         JTextField nametf = new JTextField();
         nametf.addFocusListener(AutoKanjiListener.getInstance());
         DefaultCellEditor nameEditor = new DefaultCellEditor2(nametf);
@@ -548,7 +547,7 @@ public final class DiseaseEditor extends AbstractStampEditor {
         column.setCellEditor(nameEditor);
 
         // 病名エイリアス
-        column = table.getColumnModel().getColumn(ALIAS_COL);
+        column = setTable.getColumnModel().getColumn(ALIAS_COL);
         JTextField aliastf = new JTextField();
         aliastf.addFocusListener(AutoRomanListener.getInstance()); // alias 
         DefaultCellEditor aliasEditor = new DefaultCellEditor2(aliastf);
@@ -558,7 +557,7 @@ public final class DiseaseEditor extends AbstractStampEditor {
         // 列幅設定
         int len = COLUMN_WIDTH.length;
         for (int i = 0; i < len; i++) {
-            column = table.getColumnModel().getColumn(i);
+            column = setTable.getColumnModel().getColumn(i);
             column.setPreferredWidth(COLUMN_WIDTH[i]);
         }
 
@@ -567,8 +566,13 @@ public final class DiseaseEditor extends AbstractStampEditor {
         //
         searchResultModel = new ListTableModel<>(SR_COLUMN_NAMES, 20, SR_METHOD_NAMES, null);
 
+        // sorter設定
         JTable searchResultTable = view.getSearchResultTable();
-        searchResultTable.setModel(searchResultModel);
+        searchResultTable.getTableHeader().setReorderingAllowed(false);
+        sorter = new ListTableSorter<>(searchResultModel);
+        searchResultTable.setModel(sorter);
+        sorter.setTableHeader(searchResultTable.getTableHeader());
+        
         //searchResultTable.setRowHeight(ClientContext.getHigherRowHeight());
         searchResultTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         searchResultTable.setRowSelectionAllowed(true);
@@ -582,7 +586,7 @@ public final class DiseaseEditor extends AbstractStampEditor {
 
                     int row = view.getSearchResultTable().getSelectedRow();
 
-                    DiseaseEntry o = searchResultModel.getObject(row);
+                    DiseaseEntry o = sorter.getObject(row);
 
                     if (o != null) {
 

@@ -24,7 +24,6 @@ import open.dolphin.delegater.PatientDelegater;
 import open.dolphin.dto.PatientSearchSpec;
 import open.dolphin.helper.KeyBlocker;
 import open.dolphin.helper.SimpleWorker;
-import open.dolphin.helper.WindowSupport;
 import open.dolphin.infomodel.*;
 import open.dolphin.project.Project;
 import open.dolphin.setting.MiscSettingPanel;
@@ -80,7 +79,7 @@ public class PatientSearchImpl extends AbstractMainComponent {
     private int stateColumn;
     
     private ListTableModel<PatientModel> tableModel;
-    private ListTableSorter sorter;
+    private ListTableSorter<PatientModel> sorter;
     private AbstractAction copyAction;
     
     private final String clientUUID;
@@ -176,43 +175,8 @@ public class PatientSearchImpl extends AbstractMainComponent {
     private void controlMenu() {
 
         PatientModel pvt = getSelectedPatient();
-        boolean enabled = canOpen(pvt);
+        boolean enabled = (pvt != null);
         getContext().enabledAction(GUIConst.ACTION_OPEN_KARTE, enabled);
-    }
-
-    /**
-     * カルテを開くことが可能かどうかを返す。
-     * @return 開くことが可能な時 true
-     */
-    private boolean canOpen(PatientModel patient) {
-        if (patient == null) {
-            return false;
-        }
-
-        if (isKarteOpened(patient)) {
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * カルテがオープンされているかどうかを返す。
-     * @return オープンされている時 true
-     */
-    private boolean isKarteOpened(PatientModel patient) {
-        if (patient != null) {
-            boolean opened = false;
-            List<ChartImpl> allCharts = WindowSupport.getAllCharts();
-            for (ChartImpl chart : allCharts) {
-                if (chart.getPatient().getId() == patient.getId()) {
-                    opened = true;
-                    break;
-                }
-            }
-            return opened;
-        }
-        return false;
     }
 
     /**
@@ -237,7 +201,7 @@ public class PatientSearchImpl extends AbstractMainComponent {
                 final JPopupMenu contextMenu = new JPopupMenu();
 
                 int row = view.getTable().rowAtPoint(e.getPoint());
-                PatientModel obj = (PatientModel) sorter.getObject(row);
+                PatientModel obj = sorter.getObject(row);
                 int selected = view.getTable().getSelectedRow();
 
                 if (row == selected && obj != null) {
@@ -528,7 +492,7 @@ public class PatientSearchImpl extends AbstractMainComponent {
                 int row = table.getSelectedRow();
 //pns   row = -1 でここに入ってくることあり
                 if (row >= 0) {
-                    PatientModel patient = (PatientModel) sorter.getObject(row);
+                    PatientModel patient = sorter.getObject(row);
                     setSelectedPatient(patient);
                 } else {
                     setSelectedPatient(null);
@@ -583,14 +547,11 @@ public class PatientSearchImpl extends AbstractMainComponent {
      */
     private void openKarte() {
 
-        if (canOpen(getSelectedPatient())) {
-
-            // 来院情報を生成する
-            PatientModel pm = getSelectedPatient();
-            PatientVisitModel pvt = cel.createFakePvt(pm);
-            // カルテコンテナを生成する
-            getContext().openKarte(pvt);
-        }
+        // 来院情報を生成する
+        PatientModel pm = getSelectedPatient();
+        PatientVisitModel pvt = cel.createFakePvt(pm);
+        // カルテコンテナを生成する
+        getContext().openKarte(pvt);
     }
 
     // EVT から
@@ -873,11 +834,7 @@ public class PatientSearchImpl extends AbstractMainComponent {
                 JOptionPane.WARNING_MESSAGE,
                 JOptionPane.OK_CANCEL_OPTION);
 
-        if (confirm == JOptionPane.OK_OPTION) {
-            return true;
-        }
-
-        return false;
+        return confirm == JOptionPane.OK_OPTION;
     }
 //pns$
     
@@ -1254,7 +1211,7 @@ public class PatientSearchImpl extends AbstractMainComponent {
 
             super.getTableCellRendererComponent(table, value, isSelected, isFocused, row, col);
             
-            PatientModel pm = (PatientModel) sorter.getObject(row);
+            PatientModel pm = sorter.getObject(row);
             
             if (pm != null && col == stateColumn) {
                 setHorizontalAlignment(JLabel.CENTER);

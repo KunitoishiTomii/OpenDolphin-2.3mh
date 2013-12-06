@@ -19,6 +19,7 @@ import open.dolphin.table.ListTableModel;
 import open.dolphin.util.CheckTonyo;
 import open.dolphin.util.MMLDate;
 import open.dolphin.common.util.ZenkakuUtils;
+import open.dolphin.table.ListTableSorter;
 
 /**
  *
@@ -38,7 +39,9 @@ public final class RpEditor extends AbstractStampEditor {
     private static final String[] SR_COLUMN_NAMES = 
     {"種別", "コード", "名 称", "単位", "点数", "薬価基準", "有効期限"};
     private static final String[] SR_METHOD_NAMES = 
-    {"getSlot", "getSrycd", "getName", "getTaniname", "getTen","getYakkakjncd", "getYukoedymdStr"};
+    {"getSlot", "getSrycd", "getName", "getTaniname", "getTenInteger","getYakkakjncd", "getYukoedymdStr"};
+        private static final Class[] SR_CLASSES = 
+    {String.class, String.class, String.class, String.class, Integer.class, String.class, String.class};
     private static final int[] SR_COLUMN_WIDTH = {10, 50, 200, 10, 10, 10, 10};
     private static final int SR_NUM_ROWS = 1;
 
@@ -59,6 +62,7 @@ public final class RpEditor extends AbstractStampEditor {
     private ListTableModel<MasterItem> tableModel;
 
     private ListTableModel<TensuMaster> searchResultModel;
+    private ListTableSorter<TensuMaster> sorter;
 
 //masuda^
     private static final String NYUIN_MEDICINE  = "入院処方";
@@ -762,6 +766,7 @@ public final class RpEditor extends AbstractStampEditor {
         
         JTable setTable = view.getSetTable();
         setTable.setModel(tableModel);
+        setTable.getTableHeader().setReorderingAllowed(false);
 //masuda^
         // 中止項目登録のためsetTableにPopupListener2を設定する
         PopupListener2 popupListener2 = new PopupListener2(setTable);
@@ -799,8 +804,14 @@ public final class RpEditor extends AbstractStampEditor {
         // 検索結果テーブルを生成する
         //
         JTable searchResultTable = view.getSearchResultTable();
-        searchResultModel = new ListTableModel<>(SR_COLUMN_NAMES, SR_NUM_ROWS, SR_METHOD_NAMES, null);
-        searchResultTable.setModel(searchResultModel);
+        searchResultTable.getTableHeader().setReorderingAllowed(false);
+        searchResultModel = new ListTableModel<>(SR_COLUMN_NAMES, SR_NUM_ROWS, SR_METHOD_NAMES, SR_CLASSES);
+        
+        // sorter設定
+        sorter = new ListTableSorter<>(searchResultModel);
+        searchResultTable.setModel(sorter);
+        sorter.setTableHeader(searchResultTable.getTableHeader());
+
 
         // 用法検索
         JComboBox usage = view.getUsageCombo();

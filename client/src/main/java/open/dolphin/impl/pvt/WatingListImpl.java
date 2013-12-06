@@ -93,7 +93,7 @@ public class WatingListImpl extends AbstractMainComponent {
     // Table Model
     private ListTableModel<PatientVisitModel> pvtTableModel;
     // TableSorter
-    private ListTableSorter sorter;
+    private ListTableSorter<PatientVisitModel> sorter;
     
     // 性別レンダラフラグ 
     private boolean sexRenderer;
@@ -620,7 +620,7 @@ public class WatingListImpl extends AbstractMainComponent {
      */
     public PatientVisitModel getSelectedPvt() {
         selectedRow = pvtTable.getSelectedRow();
-        return (PatientVisitModel) sorter.getObject(selectedRow);
+        return sorter.getObject(selectedRow);
     }
 
 
@@ -942,7 +942,7 @@ public class WatingListImpl extends AbstractMainComponent {
 
             super.getTableCellRendererComponent(table, value, isSelected, isFocused, row, col);
             
-            PatientVisitModel pvt = (PatientVisitModel) sorter.getObject(row);
+            PatientVisitModel pvt = sorter.getObject(row);
             if (pvt == null) {
                 return this;
             }
@@ -1038,7 +1038,7 @@ public class WatingListImpl extends AbstractMainComponent {
 
             super.getTableCellRendererComponent(table, value, isSelected, isFocused, row, col);
             
-            PatientVisitModel pvt = (PatientVisitModel) sorter.getObject(row);
+            PatientVisitModel pvt = sorter.getObject(row);
             
             if (pvt != null) {
                 if (pvt.getStateBit(PatientVisitModel.BIT_CANCEL)) {

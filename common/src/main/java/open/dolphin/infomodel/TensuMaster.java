@@ -175,6 +175,10 @@ public class TensuMaster {
     public String getTen() {
         return ten;
     }
+    
+    public Integer getTenInteger() {
+        return Integer.valueOf(ten);
+    }
 
     /**
      * @param ten the ten to set
