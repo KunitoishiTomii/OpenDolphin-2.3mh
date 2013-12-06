@@ -233,7 +233,7 @@ public final class OrderHistoryPanel extends JPanel implements PropertyChangeLis
         }
         
         int size = allModules.size();
-        List<ModuleModel> list = new ArrayList<ModuleModel>();
+        List<ModuleModel> list = new ArrayList<>();
         
         for (int i = 0; i < size; i++) {
             List<ModuleModel> l = allModules.get(i);

@@ -24,17 +24,17 @@ public class PacsServiceImpl implements PacsService {
     private String name;
     private MyDcmQR myDcmQR;
 
-    private String[] returnKeys = 
+    private final String[] returnKeys = 
             new String[]{"PatientName", "PatientSex", "PatientBirthDate", "ModalitiesInStudy", "StudyDescription"};
     // 受け入れるModality
-    private String[] storeTCs = 
+    private final String[] storeTCs = 
             new String[]{"CR", "US", "CT", "MR", "SC", "ES"};
     // 受け入れるTransferSyntax
     private static final String[] DEF_TS2 = {
         UID.ExplicitVRLittleEndian, 
         UID.ImplicitVRLittleEndian};
     
-    private boolean ivrle = false;
+    private final boolean ivrle = false;
 
     public static final String PACS_IMAGE_ARRIVED = "pacsServiceImageArrived";
     private PropertyChangeSupport boundSupport;

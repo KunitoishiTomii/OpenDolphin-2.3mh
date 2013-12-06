@@ -402,7 +402,7 @@ public final class SaveDialog {
                 tmpButton.setEnabled(true);
                 //setFocus(okButton);  // これは不便と指摘
             }
-        } catch (Exception ex) {
+        } catch (ParseException ex) {
             okButton.setEnabled(false);
             tmpButton.setEnabled(false);
         }

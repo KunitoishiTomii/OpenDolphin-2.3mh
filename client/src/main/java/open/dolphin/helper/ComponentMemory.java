@@ -16,11 +16,11 @@ import open.dolphin.project.Project;
  */
 public final class ComponentMemory implements ComponentListener {
     
-    private Component target;
-    private Point defaultLocation;
-    private Dimension defaultSise;
+    private final Component target;
+    private final Point defaultLocation;
+    private final Dimension defaultSise;
     private String name;
-    private boolean report = true;
+    private final boolean report = true;
     
     public ComponentMemory(Component target, Point loc, Dimension size, Object object) {
         this.target = target;

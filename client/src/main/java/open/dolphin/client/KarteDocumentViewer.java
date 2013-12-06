@@ -553,21 +553,28 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
         // 表示している文書タイプに応じて Viewer を作成する
         DocumentModel model = selectedKarte.getModel();
         String docType = model.getDocInfoModel().getDocType();
-
+        
         // サマリー対応
-        if (IInfoModel.DOCTYPE_S_KARTE.equals(docType)
-                || IInfoModel.DOCTYPE_SUMMARY.equals(docType)) {
-            KarteViewer viwer = KarteViewer.createKarteViewer(KarteViewer.MODE.SINGLE);
-            viwer.setModel(model);
-            editorFrame.setKarteViewer(viwer);
-            editorFrame.start();
-        } else if (IInfoModel.DOCTYPE_KARTE.equals(docType)) {
-            KarteViewer viwer = KarteViewer.createKarteViewer(KarteViewer.MODE.DOUBLE);
-            viwer.setModel(model);
-            editorFrame.setKarteViewer(viwer);
-            editorFrame.start();
-//masuda$
+        if (docType != null) {
+            switch (docType) {
+                case IInfoModel.DOCTYPE_S_KARTE:
+                case IInfoModel.DOCTYPE_SUMMARY: {
+                    KarteViewer viwer = KarteViewer.createKarteViewer(KarteViewer.MODE.SINGLE);
+                    viwer.setModel(model);
+                    editorFrame.setKarteViewer(viwer);
+                    editorFrame.start();
+                    break;
+                }
+                case IInfoModel.DOCTYPE_KARTE: {
+                    KarteViewer viwer = KarteViewer.createKarteViewer(KarteViewer.MODE.DOUBLE);
+                    viwer.setModel(model);
+                    editorFrame.setKarteViewer(viwer);
+                    editorFrame.start();
+                    break;
+                }
+            }
         }
+//masuda$
     }
 
     /**
@@ -773,9 +780,7 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
                     Future<KarteViewer> future = service.take();
                     KarteViewer viewer = future.get();
                     karteViewerMap.put(viewer.getModel().getId(), viewer);
-                } catch (ExecutionException ex) {
-                    logger.debug(ex);
-                } catch (InterruptedException ex) {
+                } catch (ExecutionException | InterruptedException ex) {
                     logger.debug(ex);
                 }
             }
@@ -832,8 +837,7 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
         @Override
         protected void succeeded(Boolean result) {
             logger.debug("DeleteTask succeeded");
-            Chart chart = (KarteDocumentViewer.this).getContext();
-            chart.getDocumentHistory().getDocumentHistory();
+            getContext().getDocumentHistory().getDocumentHistory();
         }
     }
 

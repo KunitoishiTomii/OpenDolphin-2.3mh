@@ -20,7 +20,7 @@ import open.dolphin.client.ClientContext;
  */
 public class PeriodSelectDialog extends JDialog {
 
-    private int COLUMN_COUNT = 10;
+    private final int COLUMN_COUNT = 10;
     private JTable table;
     private DefaultTableModel tableModel;
     private JPanel panel;

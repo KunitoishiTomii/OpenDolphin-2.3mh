@@ -21,12 +21,12 @@ public class LaboTestPanelView extends JPanel{
     private JLabel lbl_mishutoku;
     private JLabel lbl_otherItem;
     private JComboBox cmbStamp;
-    private List<LaboCheckBox> checkBoxList;
+    private final List<LaboCheckBox> checkBoxList;
 
     private static final int MARGIN = 5;
 
     public LaboTestPanelView() {
-        checkBoxList = new ArrayList<LaboCheckBox>();
+        checkBoxList = new ArrayList<>();
         initComponents();
     }
     
@@ -61,7 +61,7 @@ public class LaboTestPanelView extends JPanel{
 
     public class LaboCheckBox extends JCheckBox {
 
-        private int srycd;
+        private final int srycd;
         private TensuMaster tm;
 
         private LaboCheckBox(int srycd, String text) {

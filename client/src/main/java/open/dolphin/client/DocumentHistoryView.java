@@ -11,12 +11,12 @@ import javax.swing.*;
  */
 public class DocumentHistoryView extends JPanel{
 
-    private JTable table;
-    private JScrollPane scroll;
-    private JComboBox docTypeCombo;
-    private JCheckBox deptChk;
-    private JComboBox periodCombo;
-    private JLabel cntLbl;
+    private final JTable table;
+    private final JScrollPane scroll;
+    private final JComboBox docTypeCombo;
+    private final JCheckBox deptChk;
+    private final JComboBox periodCombo;
+    private final JLabel cntLbl;
 
 
     public DocumentHistoryView() {

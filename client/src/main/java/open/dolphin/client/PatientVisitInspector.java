@@ -23,11 +23,11 @@ public class PatientVisitInspector {
     
     private CalendarCardPanel calendarCardPanel;
 
-    private ChartImpl context;
+    private final ChartImpl context;
     
 //masuda^
     private static final String pvtEvent= ClientContext.getString("eventCode.pvt"); // PVT
-    private static final HashMap<String, String> appoEventMap = new HashMap<String, String>();
+    private static final HashMap<String, String> appoEventMap = new HashMap<>();
     static {
         appoEventMap.put("再診", "EXAM_APPO2");
         appoEventMap.put("検体検査", "TEST2");
@@ -97,7 +97,7 @@ public class PatientVisitInspector {
 //masuda^   来院歴はPVTではなくて文書があるかどうかで判断する様に変更
 
         List<DocInfoModel> docInfo = context.getKarte().getDocInfoList();
-        List<SimpleDate> simpleDates = new ArrayList<SimpleDate>();
+        List<SimpleDate> simpleDates = new ArrayList<>();
 
         if (docInfo != null && !docInfo.isEmpty()) {
             GregorianCalendar gc = new GregorianCalendar();

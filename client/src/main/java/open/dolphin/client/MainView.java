@@ -17,10 +17,10 @@ public class MainView extends JPanel{
     private static final Font lblFont = new Font("Lucida Grande", 0, 10);
     private static final Dimension pbSize = new Dimension(80, 15);
 
-    private JLabel dateLbl;
-    private JProgressBar progressBar;
-    private JLabel statusLbl;
-    private JTabbedPane tabbedPane;
+    private final JLabel dateLbl;
+    private final JProgressBar progressBar;
+    private final JLabel statusLbl;
+    private final JTabbedPane tabbedPane;
 
     public MainView() {
 

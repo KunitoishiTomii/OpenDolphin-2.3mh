@@ -57,7 +57,7 @@ public final class CareMapDocument extends AbstractChartDocument {
     private AppointTablePanel appointTable;
     private ImageHistoryPanel imagePanel;
     private JPanel historyContainer;
-    private String imageEvent = "image"; //orderCodes[2]; //
+    private final String imageEvent = "image"; //orderCodes[2]; //
     // Calendars
     private SimpleCalendarPanel c0;
     private SimpleCalendarPanel c1;

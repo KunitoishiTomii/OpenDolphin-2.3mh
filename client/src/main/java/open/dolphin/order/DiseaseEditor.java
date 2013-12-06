@@ -275,7 +275,7 @@ public final class DiseaseEditor extends AbstractStampEditor {
                     }
                     // 状態マシンへイベントを送信する
                     checkValidation();
-                } catch (Exception ex) {
+                } catch (InterruptedException | ExecutionException ex) {
                     String msg = "ORCAに接続できません";
                     String title = ClientContext.getFrameTitle("傷病名エディタ");
                     JOptionPane.showMessageDialog(getView(), msg, title, JOptionPane.ERROR_MESSAGE);
@@ -429,7 +429,7 @@ public final class DiseaseEditor extends AbstractStampEditor {
                         ret = true;
 //pns$
                 } else if (col == ALIAS_COL) {
-                    if (model != null && (!model.getDiagnosisCode().startsWith(MODIFIER_CODE))) {
+                    if (!model.getDiagnosisCode().startsWith(MODIFIER_CODE)) {
                         ret = true;
                     }
                 }

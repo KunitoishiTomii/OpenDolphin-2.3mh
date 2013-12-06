@@ -1050,7 +1050,7 @@ public class PatientSearchImpl extends AbstractMainComponent {
                             if (old.getId() == pm.getId()) {
                                 List<Long> docIdList = old.getDocPkList();
                                 if (docIdList != null) {
-                                    HashSet<Long> pkSet = new HashSet<Long>();
+                                    HashSet<Long> pkSet = new HashSet<>();
                                     pkSet.addAll(docIdList);
                                     if (pm.getDocPkList() != null) {
                                         pkSet.addAll(pm.getDocPkList());

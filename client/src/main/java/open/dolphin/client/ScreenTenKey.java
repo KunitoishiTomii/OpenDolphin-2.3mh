@@ -147,21 +147,26 @@ public class ScreenTenKey {
         boolean overwrite = false;
 
         String str = getText();
-        if ("Ent".equals(cmd)) {
-            exit();
-            return;
-        } else if ("Ｃ".equals(cmd)) {
-            cmd = "0";
-            overwrite = true;
-        } else if ("14".equals(cmd) || "28".equals(cmd)) {
-            overwrite = true;
-        } else if (".".equals(cmd)) {
-            if (str.contains(".")) {
+        switch (cmd) {
+            case "Ent":
+                exit();
                 return;
-            } else if (overwriteNext) {
-                cmd = "0.";
-            }
+            case "Ｃ":
+                cmd = "0";
+                overwrite = true;
+                break;
+            case "14":
+            case "28":
+                overwrite = true;
+                break;
+            case ".":
+                if (str.contains(".")) {
+                    return;
+                } else if (overwriteNext) {
+                    cmd = "0.";
+                }   break;
         }
+        
         if (overwrite || overwriteNext) {
             setText(cmd);
             overwriteNext = overwrite;

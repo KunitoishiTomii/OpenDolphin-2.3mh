@@ -611,7 +611,7 @@ public final class RpEditor extends AbstractStampEditor {
 */
         // 薬剤と用法以外ならスキップする
         if (!tm.getSrycd().matches(ClaimConst.REGEXP_COMMENT_MED)) {
-            String inputNum = null;
+            String inputNum;
             String maxDose = null;
             String admin = null;
             String unit = null;

@@ -1,8 +1,8 @@
 package open.dolphin.helper;
 
-import java.awt.Component;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import javax.swing.JComponent;
 
 /**
  *
@@ -10,9 +10,9 @@ import java.awt.event.KeyListener;
  */
 public final class KeyBlocker implements KeyListener {
     
-    private Component target;
+    private final JComponent target;
     
-    public KeyBlocker(Component target) {
+    public KeyBlocker(JComponent target) {
         this.target = target;
     }
     

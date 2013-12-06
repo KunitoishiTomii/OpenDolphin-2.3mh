@@ -1,6 +1,6 @@
 package open.dolphin.client;
 
-import java.awt.Component;
+import javax.swing.JComponent;
 import javax.swing.JOptionPane;
 
 /**
@@ -9,11 +9,11 @@ import javax.swing.JOptionPane;
  */
 public class TimeoutWarning {
 
-    private Component parent;
+    private final JComponent parent;
     private String title;
-    private String message;
+    private final String message;
 
-    public TimeoutWarning(Component parent, String title, String message) {
+    public TimeoutWarning(JComponent parent, String title, String message) {
         this.parent = parent;
         this.message = message;
     }

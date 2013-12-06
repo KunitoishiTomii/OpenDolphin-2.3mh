@@ -50,7 +50,7 @@ public class AdmissionList extends AbstractMainComponent {
         30, 40, 100, 20, 40, 80, 50, 80, 20};
     
     // Status　情報　メインウィンドウの左下に表示される内容
-    private String statusInfo;
+    private final String statusInfo;
     private static final String INFO_MSG = "入院カルテはここから作成";
     private static final String CLICK_BTN_MSG = "左のボタンをクリックして入院患者リストを取得してください。";
     
@@ -326,8 +326,7 @@ public class AdmissionList extends AbstractMainComponent {
                 try {
                     List<PatientModel> list = get();
                     tableModel.setDataProvider(list);
-                } catch (InterruptedException ex) {
-                } catch (ExecutionException ex) {
+                } catch (InterruptedException | ExecutionException ex) {
                 }
 
                 updateInfo();

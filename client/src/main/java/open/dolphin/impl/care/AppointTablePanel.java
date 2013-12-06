@@ -57,7 +57,7 @@ public class AppointTablePanel extends JPanel implements PropertyChangeListener 
     private CareTableModel tableModel;
     private JTable careTable;
     private TodayRowRenderer todayRenderer;
-    private String today;   // = "2003-02-21";
+    private final String today;   // = "2003-02-21";
     private CareMapDocument parent;
     private boolean dirty;
     
@@ -197,7 +197,7 @@ public class AppointTablePanel extends JPanel implements PropertyChangeListener 
             SimpleCalendarPanel[] calendars = (SimpleCalendarPanel[])e.getNewValue();
             
             int len = calendars.length;
-            ArrayList<AppointmentModel> list = new ArrayList<AppointmentModel>();
+            ArrayList<AppointmentModel> list = new ArrayList<>();
             
             for (int i = 0; i < len; i++) {
                 

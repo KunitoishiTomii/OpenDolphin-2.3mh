@@ -10,6 +10,7 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
@@ -35,14 +36,14 @@ public class LaboTestPanel {
 
     private List<MasterItem> masterItemList;
     // パネルにない検査項目
-    private List<MasterItem> otherItems;
+    private final List<MasterItem> otherItems;
     // 検体検査スタンプの情報
-    private HashMap<String, ModuleInfoBean> stampMap;
+    private final HashMap<String, ModuleInfoBean> stampMap;
 
     private JDialog dialog;
-    private BaseEditor editor;
-    private LaboTestPanelView view;
-    private List<LaboCheckBox> checkBoxList;
+    private final BaseEditor editor;
+    private final LaboTestPanelView view;
+    private final List<LaboCheckBox> checkBoxList;
     private boolean isModified = false;
 
     // 点数マスタの静的マップ、一度取得したものは再利用する
@@ -56,9 +57,9 @@ public class LaboTestPanel {
     public LaboTestPanel(BaseEditor editor) {
 
         this.editor = editor;
-        otherItems = new ArrayList<MasterItem>();
-        masterItemList = new ArrayList<MasterItem>();
-        stampMap = new HashMap<String, ModuleInfoBean>();
+        otherItems = new ArrayList<>();
+        masterItemList = new ArrayList<>();
+        stampMap = new HashMap<>();
         view = new LaboTestPanelView();
         checkBoxList = view.getCheckBoxList();
         configureButtonAction();
@@ -66,11 +67,11 @@ public class LaboTestPanel {
     }
 
     public List<MasterItem> getMasterItemList() {
-        return new ArrayList<MasterItem>(masterItemList);
+        return new ArrayList<>(masterItemList);
     }
 
     public void setMasterItemList(List<MasterItem> list) {
-        masterItemList = new ArrayList<MasterItem>(list);
+        masterItemList = new ArrayList<>(list);
     }
 
     public boolean isModified() {
@@ -322,7 +323,7 @@ public class LaboTestPanel {
             @Override
             protected List<TensuMaster> doInBackground() throws Exception {
 
-                List<String> srycdList = new ArrayList<String>();
+                List<String> srycdList = new ArrayList<>();
                 for (LaboCheckBox cb : checkBoxList) {
                     srycdList.add(srycdFrmt.format(cb.getSrycd()));
                 }
@@ -339,12 +340,12 @@ public class LaboTestPanel {
                 try {
                     List<TensuMaster> tmResult = get();
                     // 取得したTensuMasterをtensuMasterMapに登録する。
-                    tensuMasterMap = new HashMap<Integer, TensuMaster>();
+                    tensuMasterMap = new HashMap<>();
                     for (TensuMaster tm : tmResult) {
                         tensuMasterMap.put(Integer.valueOf(tm.getSrycd()), tm);
                     }
                     prepareCheckBox();
-                } catch (Exception ex) {
+                } catch (InterruptedException | ExecutionException | NumberFormatException ex) {
                     closePanel();
                 }
             }

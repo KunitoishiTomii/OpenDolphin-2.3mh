@@ -16,7 +16,7 @@ public final class AppointEntryTransferable implements Transferable, ClipboardOw
   
     public static final DataFlavor[] flavors = {AppointEntryTransferable.appointFlavor};
       
-    private AppointmentModel appoint;
+    private final AppointmentModel appoint;
 
     /** Creates new StampTransferable */
     public AppointEntryTransferable(AppointmentModel appoint) {

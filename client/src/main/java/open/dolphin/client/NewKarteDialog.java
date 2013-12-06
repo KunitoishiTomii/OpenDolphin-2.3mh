@@ -3,7 +3,6 @@ package open.dolphin.client;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -45,9 +44,9 @@ public final class NewKarteDialog {
     private JRadioButton addToTab;	// タブパネルへ追加
     private JRadioButton openAnother;	// 別 Window へ表示
     
-    private Frame parentFrame;
-    private String title;
-    private JPanel content;
+    private final JFrame parentFrame;
+    private final String title;
+    private final JPanel content;
     private JDialog dialog;
     private Object value;
     
@@ -55,7 +54,7 @@ public final class NewKarteDialog {
     /** 
      * Creates new OpenKarteDialog 
      */
-    public NewKarteDialog(Frame parentFrame, String title) {
+    public NewKarteDialog(JFrame parentFrame, String title) {
         this.parentFrame = parentFrame;
         this.title = title;
         content = createComponent();

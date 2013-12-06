@@ -58,8 +58,8 @@ public class EditorSetPanel extends JPanel implements PropertyChangeListener, Tr
 //masuda$
     
     // 上記エディタを格納するカードパネル
-    private JPanel cardPanel;
-    private CardLayout cardLayout;
+    private final JPanel cardPanel;
+    private final CardLayout cardLayout;
 
     // 現在使用中のエディタ
     private AbstractStampEditor curEditor;
@@ -89,7 +89,7 @@ public class EditorSetPanel extends JPanel implements PropertyChangeListener, Tr
 //masuda$
     
     // 上記編集値（束縛属性）をStampBoxへ通知するサポート
-    private PropertyChangeSupport boundSupport = new PropertyChangeSupport(this);
+    private final PropertyChangeSupport boundSupport = new PropertyChangeSupport(this);
     
     
     /**
@@ -510,7 +510,7 @@ public class EditorSetPanel extends JPanel implements PropertyChangeListener, Tr
 //masuda$
         
         // Hashテーブルに登録し show(entity) で使用する
-        table = new HashMap<String, AbstractStampEditor>();
+        table = new HashMap<>();
         table.put(IInfoModel.ENTITY_BACTERIA_ORDER, bacteria);
         table.put(IInfoModel.ENTITY_BASE_CHARGE_ORDER, baseCharge);
         table.put(IInfoModel.ENTITY_DIAGNOSIS, diagnosis);

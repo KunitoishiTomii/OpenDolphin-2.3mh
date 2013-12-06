@@ -29,7 +29,7 @@ public class PhysicianResParser extends AbstractOrcaApiParser {
     
     private List<PhysicianInfo> getList1() {
         
-        List<PhysicianInfo> list = new ArrayList<PhysicianInfo>();
+        List<PhysicianInfo> list = new ArrayList<>();
         Element arrayElm = doc.getRootElement().getChild(RECORD).getChild(RECORD).getChild(ARRAY);
         
         //String resName = arrayElm.getAttributeValue(NAME);
@@ -98,7 +98,7 @@ public class PhysicianResParser extends AbstractOrcaApiParser {
             return null;
         }
 
-        List<PhysicianInfo> list = new ArrayList<PhysicianInfo>();
+        List<PhysicianInfo> list = new ArrayList<>();
         for (Element elm : array.getChildren()) {
             PhysicianInfo info = new PhysicianInfo();
             String code = elm.getChildText("Code");

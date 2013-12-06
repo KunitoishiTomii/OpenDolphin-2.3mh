@@ -64,7 +64,7 @@ public class RoutineMedImpl extends AbstractChartDocument {
     private JPanel medPanel;
     private JScrollPane scrlMedPanel;
     private ListTableModel<RoutineMedModel> tableModel;
-    private List<RoutineMedPanel> panelList;
+    private final List<RoutineMedPanel> panelList;
     
     // undo関連
     private Deque undoQue;      // undo用のdeque
@@ -79,7 +79,7 @@ public class RoutineMedImpl extends AbstractChartDocument {
     
     public RoutineMedImpl() {
         setTitle(TITLE);
-        panelList = new ArrayList<RoutineMedPanel>();
+        panelList = new ArrayList<>();
     }
     
     @Override
@@ -110,8 +110,8 @@ public class RoutineMedImpl extends AbstractChartDocument {
         undoAction.setEnabled(false);
         redoAction = getContext().getChartMediator().getAction(GUIConst.ACTION_REDO);
         redoAction.setEnabled(false);
-        undoQue = new LinkedList<RoutineMedModel>();
-        redoQue = new LinkedList<RoutineMedModel>();
+        undoQue = new LinkedList<>();
+        redoQue = new LinkedList<>();
     }
     
     private void initComponents() {
@@ -180,7 +180,7 @@ public class RoutineMedImpl extends AbstractChartDocument {
         panel.add(btnPanel);
         
         // 表
-        tableModel = new ListTableModel<RoutineMedModel>(COLUMN_NAMES, START_NUM_ROWS, PROPERTY_NAMES, COLUMN_CLASSES);
+        tableModel = new ListTableModel<>(COLUMN_NAMES, START_NUM_ROWS, PROPERTY_NAMES, COLUMN_CLASSES);
         sorter = new ListTableSorter(tableModel);
         table = new JTable(sorter) {
 
@@ -459,8 +459,8 @@ public class RoutineMedImpl extends AbstractChartDocument {
      */
     private static class RoutineMedDequeModel {
 
-        private RoutineMedModel oldMed;
-        private RoutineMedModel newMed;
+        private final RoutineMedModel oldMed;
+        private final RoutineMedModel newMed;
 
         private RoutineMedDequeModel(RoutineMedModel oldMed, RoutineMedModel newMed){
             this.oldMed = oldMed;

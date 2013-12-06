@@ -1378,7 +1378,7 @@ public class WindowsMenuFactory extends AbstractMenuFactory {
         }
         
         // 外部LAF
-        Map<String, JMenu> subMenuMap = new HashMap<String, JMenu>();
+        Map<String, JMenu> subMenuMap = new HashMap<>();
         for (String[] lafInfo : ILookAndFeelConst.EXT_LAF_INFO) {
             String group = lafInfo[0];
             String lafName = lafInfo[1];

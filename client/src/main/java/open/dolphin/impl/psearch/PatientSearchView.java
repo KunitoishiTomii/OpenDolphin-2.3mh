@@ -14,12 +14,12 @@ import open.dolphin.client.ClientContext;
 
 public class PatientSearchView extends JPanel {
     
-    private AddressTipsTable table;
-    private JLabel loupeLbl;
-    private JTextField keywordFld;
-    private JRadioButton karteSearchBtn;
-    private JRadioButton ptSearchBtn;
-    private JComboBox methodCombo;
+    private final AddressTipsTable table;
+    private final JLabel loupeLbl;
+    private final JTextField keywordFld;
+    private final JRadioButton karteSearchBtn;
+    private final JRadioButton ptSearchBtn;
+    private final JComboBox methodCombo;
 
     public static final String HIBERNATE_SEARCH = "Ｈ検";
     public static final String ALL_SEARCH = "全て";

@@ -24,7 +24,7 @@ public class GUIFactory {
     private static final int TITLE_SPACE_BOTTOM 	= 5;
     private static final int TITLE_SPACE_RIGHT  	= 5;
     
-    private static Color dropOkColor = new Color(0, 12, 156);
+    private static final Color dropOkColor = new Color(0, 12, 156);
     
     public static Font createSmallFont() {
         return new Font("Dialog", Font.PLAIN, 10);
@@ -129,8 +129,8 @@ public class GUIFactory {
      */
     public static JPanel createButtonPanel(JButton[] btns, int align) {
         JPanel p = new JPanel(new FlowLayout(align, BUTTON_GAP, 0));
-        for (int i = 0; i < btns.length; i++) {
-            p.add(btns[i]);
+        for (JButton btn : btns) {
+            p.add(btn);
         }
         return p;
     }
@@ -154,16 +154,16 @@ public class GUIFactory {
     
     public static JPanel createRadioPanel(JRadioButton[] rbs) {
         JPanel p = new JPanel(new FlowLayout(FlowLayout.LEFT, BUTTON_GAP, 0));
-        for (int i = 0; i < rbs.length; i++) {
-            p.add(rbs[i]);
+        for (JRadioButton rb : rbs) {
+            p.add(rb);
         }
         return p;
     }
     
     public static JPanel createCheckBoxPanel(JCheckBox[] boxes) {
         JPanel p = new JPanel(new FlowLayout(FlowLayout.LEFT,BUTTON_GAP, 0));
-        for (int i = 0; i < boxes.length; i++) {
-            p.add(boxes[i]);
+        for (JCheckBox boxe : boxes) {
+            p.add(boxe);
         }
         return p;
     }

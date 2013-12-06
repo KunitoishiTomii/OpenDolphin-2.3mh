@@ -27,7 +27,7 @@ public class DepartmentResParser extends AbstractOrcaApiParser {
     
     private List<DepartmentInfo> getList1() {
         
-        List<DepartmentInfo> list = new ArrayList<DepartmentInfo>();
+        List<DepartmentInfo> list = new ArrayList<>();
         Element arrayElm = doc.getRootElement().getChild(RECORD).getChild(RECORD).getChild(ARRAY);
         
         //String resName = arrayElm.getAttributeValue(NAME);
@@ -83,7 +83,7 @@ public class DepartmentResParser extends AbstractOrcaApiParser {
             return null;
         }
 
-        List<DepartmentInfo> list = new ArrayList<DepartmentInfo>();
+        List<DepartmentInfo> list = new ArrayList<>();
         for (Element elm : array.getChildren()) {
             DepartmentInfo info = new DepartmentInfo();
             String code = elm.getChildText("Code");
