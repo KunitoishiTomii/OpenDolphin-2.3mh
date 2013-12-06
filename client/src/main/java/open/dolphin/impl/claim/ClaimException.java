@@ -13,8 +13,8 @@ public class ClaimException extends Exception {
         NO_ERROR, CONNECTION_REJECT, IO_ERROR, NAK_SIGNAL
     };
     
-    private ERROR_CODE code;
-    private ClaimMessageEvent evt;
+    private final ERROR_CODE code;
+    private final ClaimMessageEvent evt;
 
     public ClaimException(ERROR_CODE code, ClaimMessageEvent evt) {
         this.code = code;

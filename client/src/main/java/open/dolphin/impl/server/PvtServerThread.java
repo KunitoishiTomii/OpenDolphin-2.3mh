@@ -77,6 +77,11 @@ public class PvtServerThread implements Runnable {
             } catch (IOException ex) {
                 ex.printStackTrace(System.err);
             }
+            try {
+                selector.close();
+            } catch (IOException ex) {
+                ex.printStackTrace(System.err);
+            }
         }
     }
 }

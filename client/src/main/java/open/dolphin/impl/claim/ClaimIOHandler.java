@@ -18,7 +18,7 @@ public class ClaimIOHandler {
     private static final byte ACK = 0x06;
     private static final byte NAK = 0x15;
     
-    private ClaimMessageEvent evt;
+    private final ClaimMessageEvent evt;
     private ByteBuffer writeBuffer;
 
     
