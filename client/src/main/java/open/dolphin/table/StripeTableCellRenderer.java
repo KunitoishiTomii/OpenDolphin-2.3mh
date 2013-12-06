@@ -54,7 +54,6 @@ public class StripeTableCellRenderer extends DefaultTableCellRenderer {
     public void setDefaultRenderer() {
         table.setDefaultRenderer(String.class, this);
         table.setDefaultRenderer(Integer.class, this);
-        table.setDefaultRenderer(Boolean.class, this);
     }
 
     // 選択・非選択の色分けはここでする。特に指定したいときは後で上書き
@@ -70,18 +69,17 @@ public class StripeTableCellRenderer extends DefaultTableCellRenderer {
         if (isSelected) {
             setForeground(table.getSelectionForeground());
             setBackground(table.getSelectionBackground());
+            ((JComponent) table.getDefaultRenderer(Boolean.class)).setOpaque(true);
         } else {
             setForeground(table.getForeground());
             setBackground(table.getBackground());
+            ((JComponent) table.getDefaultRenderer(Boolean.class)).setOpaque(false);
         }
 
         // 内容に応じてborderとAlignmentを設定する
         if (value instanceof Integer) {
             setBorder(rtPadding);
             setHorizontalAlignment(RIGHT);
-        } else if (value instanceof Boolean) {
-            setBorder(emptyBorder);
-            setHorizontalAlignment(CENTER);
         } else {
             setBorder(emptyBorder);
             setHorizontalAlignment(LEFT);
