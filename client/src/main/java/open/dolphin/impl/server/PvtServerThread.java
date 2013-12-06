@@ -32,7 +32,8 @@ public class PvtServerThread implements Runnable {
 
     public void stop() {
         isRunning = false;
-        selector.wakeup();
+        //selector.wakeup();
+        dispose();
     }
 
     private void initialize(InetSocketAddress address) throws IOException {
@@ -69,19 +70,29 @@ public class PvtServerThread implements Runnable {
             logger.warn("Socket was already closed.");
         } catch (IOException ex) {
             logger.warn("I/O error occured.");
-        } finally {
+        }// finally {
+        //    dispose();
+        //}
+    }
+    
+    private void dispose() {
+
+        for (SelectionKey key : selector.keys()) {
             try {
-                for (SelectionKey key : selector.keys()) {
-                    key.channel().close();
-                }
+                key.channel().close();
             } catch (IOException ex) {
-                ex.printStackTrace(System.err);
+                //ex.printStackTrace(System.err);
             }
-            try {
-                selector.close();
-            } catch (IOException ex) {
-                ex.printStackTrace(System.err);
-            }
+        }
+        try {
+            selector.close();
+        } catch (IOException ex) {
+            //ex.printStackTrace(System.err);
+        }
+        try {
+            ssc.close();
+        } catch (IOException ex) {
+            //ex.printStackTrace(System.err);
         }
     }
 }
