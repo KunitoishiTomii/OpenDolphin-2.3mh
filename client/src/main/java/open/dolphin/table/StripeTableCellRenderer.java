@@ -1,4 +1,3 @@
-
 package open.dolphin.table;
 
 import java.awt.Color;
@@ -23,6 +22,7 @@ import open.dolphin.client.ClientContext;
 public class StripeTableCellRenderer extends DefaultTableCellRenderer {
 
     private static final Border emptyBorder = BorderFactory.createEmptyBorder();
+    private static final Border rtPadding = BorderFactory.createEmptyBorder(0, 0, 0, 8);
     private static final Color DEFAULT_ODD_COLOR = ClientContext.getColor("color.odd");
     //private static final Color DEFAULT_EVEN_COLOR = ClientContext.getColor("color.even");
     private static final Color DEFAULT_EVEN_COLOR = ClientContext.getZebraColor();
@@ -50,8 +50,11 @@ public class StripeTableCellRenderer extends DefaultTableCellRenderer {
         table.setUI(new StripeTableUI());
     }
 
+    // このレンダラでレンダリングするデフォルトクラスを指定する
     public void setDefaultRenderer() {
-        table.setDefaultRenderer(Object.class, this);
+        table.setDefaultRenderer(String.class, this);
+        table.setDefaultRenderer(Integer.class, this);
+        table.setDefaultRenderer(Boolean.class, this);
     }
 
     // 選択・非選択の色分けはここでする。特に指定したいときは後で上書き
@@ -67,16 +70,23 @@ public class StripeTableCellRenderer extends DefaultTableCellRenderer {
         if (isSelected) {
             setForeground(table.getSelectionForeground());
             setBackground(table.getSelectionBackground());
-            ((JComponent) table.getDefaultRenderer(Boolean.class)).setOpaque(true);
         } else {
             setForeground(table.getForeground());
             setBackground(table.getBackground());
-            ((JComponent) table.getDefaultRenderer(Boolean.class)).setOpaque(false);
         }
 
-        // 選択したときにcellに枠がつくのを消す。Nimbusでは効果がないｗ
-        this.setBorder(emptyBorder);
-
+        // 内容に応じてborderとAlignmentを設定する
+        if (value instanceof Integer) {
+            setBorder(rtPadding);
+            setHorizontalAlignment(RIGHT);
+        } else if (value instanceof Boolean) {
+            setBorder(emptyBorder);
+            setHorizontalAlignment(CENTER);
+        } else {
+            setBorder(emptyBorder);
+            setHorizontalAlignment(LEFT);
+        }
+        
         return this;
     }
 

@@ -986,6 +986,7 @@ public class WatingListImpl extends AbstractMainComponent {
                 ImageIcon icon = null;
                 
                 // 状態アイコン　ラベル付きbreak文を使ってみる
+                setHorizontalAlignment(CENTER);
                 bitLoop:
                 for (int i = 0; i < bitAndIconPairs.length; ++i) {
                     if (!pvt.getStateBit(bitAndIconPairs[i].getBit())) {

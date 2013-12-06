@@ -450,7 +450,6 @@ public class AdmissionList extends AbstractMainComponent {
                 int row, int col) {
 
             super.getTableCellRendererComponent(table, value, isSelected, isFocused, row, col);
-            this.setHorizontalAlignment(JLabel.LEFT);
             PatientModel pm = sorter.getObject(row);
             
             if (pm != null && col == stateColumn) {

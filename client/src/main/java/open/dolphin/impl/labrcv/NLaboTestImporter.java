@@ -660,10 +660,10 @@ public class NLaboTestImporter extends AbstractMainComponent {
 
             super.getTableCellRendererComponent(table, value, isSelected, isFocused, row, col);
 
-            this.setHorizontalAlignment(JLabel.LEFT);
+            //this.setHorizontalAlignment(JLabel.LEFT);
             NLaboImportSummary summary = tableModel.getObject(row);
             if (summary != null && summary.getKarteId() == null) {
-                this.setBackground(UNCONSTRAINED_COLOR);
+                setBackground(UNCONSTRAINED_COLOR);
             }
             
             if (col == stateColumn) {

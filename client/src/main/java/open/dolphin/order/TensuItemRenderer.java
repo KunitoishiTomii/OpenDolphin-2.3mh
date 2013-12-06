@@ -6,7 +6,7 @@ import java.util.regex.Pattern;
 import javax.swing.JTable;
 import open.dolphin.infomodel.ClaimConst;
 import open.dolphin.infomodel.TensuMaster;
-import open.dolphin.table.ListTableModel;
+import open.dolphin.table.ListTableSorter;
 import open.dolphin.table.StripeTableCellRenderer;
 
 /**
@@ -37,10 +37,10 @@ public final class TensuItemRenderer extends StripeTableCellRenderer {
 
         super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
-        @SuppressWarnings("unchecked")
-        ListTableModel<TensuMaster> tm = (ListTableModel<TensuMaster>) table.getModel();
-        
-        TensuMaster item = tm.getObject(row);
+        //ListTableModel<TensuMaster> tm = (ListTableModel<TensuMaster>) table.getModel();
+        //TensuMaster item = tm.getObject(row);
+        ListTableSorter<TensuMaster> sorter = (ListTableSorter<TensuMaster>) table.getModel();
+        TensuMaster item = sorter.getObject(row);
 
         if (item != null) {
 

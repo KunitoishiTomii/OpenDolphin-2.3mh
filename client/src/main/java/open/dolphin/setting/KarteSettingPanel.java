@@ -738,12 +738,18 @@ public class KarteSettingPanel extends AbstractSettingPanel {
         defaultCapsuleNum.addFocusListener(AutoRomanListener.getInstance());
         defaultRpNum.addFocusListener(AutoRomanListener.getInstance());
         masterItemColoring.setSelected(model.isMasterItemColoring());
-        if ("icon".equals(model.getEditorButtonType())) {
-            stampEditorButtonIcon.doClick();
-        } else if ("text".equals(model.getEditorButtonType())) {
-            stampEditorButtonText.doClick();
-        }
-
+        
+        
+        //if ("icon".equals(model.getEditorButtonType())) {
+        //    stampEditorButtonIcon.doClick();
+        //} else if ("text".equals(model.getEditorButtonType())) {
+        //    stampEditorButtonText.doClick();
+        //}
+        stampEditorButtonIcon.setSelected(true);
+        stampEditorButtonIcon.setEnabled(false);
+        stampEditorButtonText.setSelected(false);
+        stampEditorButtonText.setEnabled(false);
+        
         //
         // CLAIM 送信関係
         // 仮保存の時は送信できない。理由は CRC 等の入力するケース。

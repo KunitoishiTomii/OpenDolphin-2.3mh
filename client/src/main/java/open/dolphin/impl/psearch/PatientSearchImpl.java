@@ -1226,7 +1226,7 @@ public class PatientSearchImpl extends AbstractMainComponent {
                 }
                 setText("");
             } else {
-                setHorizontalAlignment(JLabel.LEFT);
+                //setHorizontalAlignment(JLabel.LEFT);
                 setIcon(null);
                 setText(value == null ? "" : value.toString());
             }
