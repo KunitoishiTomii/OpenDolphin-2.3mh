@@ -126,14 +126,16 @@ public class KarteRenderer_2 {
         }
 
         // P Pane をレンダリングする
-        if (pSpec == null || pSpec.isEmpty()) {
-            // 前回処方など適用
-            pPane.initKarteStyledDocument();    // 忘れてたｗ
-            for (ModuleModel mm : pModules) {
-                pPane.stamp(mm);
+        if (pPane != null) {
+            if (pSpec == null || pSpec.isEmpty()) {
+                // 前回処方など適用
+                pPane.initKarteStyledDocument();    // 忘れてたｗ
+                for (ModuleModel mm : pModules) {
+                    pPane.stamp(mm);
+                }
+            } else {
+                new KartePaneRenderer_ElementSpec().renderPane(pSpec, pModules, schemas, pPane);
             }
-        } else {
-            new KartePaneRenderer_ElementSpec().renderPane(pSpec, pModules, schemas, pPane);
         }
     }
     

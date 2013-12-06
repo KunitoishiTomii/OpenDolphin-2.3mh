@@ -176,6 +176,7 @@ public class TensuMaster {
         return ten;
     }
     
+    // Integer返しだ！ by ドル沢
     public Integer getTenInteger() {
         return Integer.valueOf(ten);
     }
