@@ -20,7 +20,7 @@ public class PvtPostTask implements Runnable {
     
     private static final Logger logger = Logger.getLogger(PvtPostTask.class.getSimpleName());
     
-    private String pvtXml;
+    private final String pvtXml;
     
 
     public PvtPostTask(String pvtXml) {

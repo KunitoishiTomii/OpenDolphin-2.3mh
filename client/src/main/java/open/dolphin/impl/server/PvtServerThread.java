@@ -18,7 +18,7 @@ public class PvtServerThread implements Runnable {
     
     private static final Logger logger = ClientContext.getPvtLogger();
 
-    private PVTClientServer server;
+    private final PVTClientServer server;
 
     private ServerSocketChannel ssc;
     private Selector selector;

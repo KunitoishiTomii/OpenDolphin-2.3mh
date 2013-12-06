@@ -9,6 +9,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.regex.Pattern;
 import javax.swing.*;
+import javax.swing.text.BadLocationException;
 import javax.swing.tree.DefaultMutableTreeNode;
 import open.dolphin.infomodel.ModuleInfoBean;
 import open.dolphin.project.Project;
@@ -199,7 +200,7 @@ public abstract class AbstractCodeHelper {
             Rectangle r = textPane.modelToView(pos);
             popup.show (textPane, r.x, r.y);
 
-        } catch (Exception e) {
+        } catch (BadLocationException e) {
             e.printStackTrace(System.err);
         }
     }
@@ -247,7 +248,7 @@ public abstract class AbstractCodeHelper {
                     break;
                 }
                 
-            } catch (Exception e) {
+            } catch (BadLocationException e) {
                 e.printStackTrace(System.err);
             }
         }
@@ -261,7 +262,7 @@ public abstract class AbstractCodeHelper {
                 showPopup();
             }
 
-        } catch (Exception e) {
+        } catch (BadLocationException e) {
             e.printStackTrace(System.err);
         }
     }

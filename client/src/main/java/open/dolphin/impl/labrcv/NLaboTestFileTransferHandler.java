@@ -27,7 +27,7 @@ import open.dolphin.infomodel.PatientLiteModel;
  */
 public class NLaboTestFileTransferHandler extends TransferHandler {
 
-    private NLaboTestImporter context;
+    private final NLaboTestImporter context;
     
     public NLaboTestFileTransferHandler(NLaboTestImporter context) {
         this.context = context;
@@ -44,7 +44,7 @@ public class NLaboTestFileTransferHandler extends TransferHandler {
             // Drag & Drop されたファイルのリストを得る
             Transferable t = support.getTransferable();
             List<File> files = (List<File>) t.getTransferData(DataFlavor.javaFileListFlavor);
-            List<File> labFiles = new ArrayList<File>(files.size());
+            List<File> labFiles = new ArrayList<>(files.size());
 
             // 拡張子が .DAT のファイルのみ queue へ追加する
             for (File file : files) {
@@ -62,7 +62,7 @@ public class NLaboTestFileTransferHandler extends TransferHandler {
                 }
             }
 
-            if (labFiles != null && labFiles.size() > 0) {
+            if (labFiles.size() > 0) {
                 parseFiles(labFiles);
             }
 
@@ -92,16 +92,16 @@ public class NLaboTestFileTransferHandler extends TransferHandler {
 
             @Override
             protected List<NLaboImportSummary> doInBackground() throws Exception {
-                List<NLaboImportSummary> allModules = new ArrayList<NLaboImportSummary>();
+                List<NLaboImportSummary> allModules = new ArrayList<>();
                 for (File lab : labFiles) {
                     LabResultParser parse = LabParserFactory.getParser(lab.getName());
                     List<NLaboImportSummary> dataList = parse.parse(lab);
                     allModules.addAll(dataList);
                 }
 
-                if (allModules!=null && allModules.size()>0) {
+                if (allModules.size()>0) {
 
-                    List<String> idList = new ArrayList<String>(allModules.size());
+                    List<String> idList = new ArrayList<>(allModules.size());
                     for (NLaboImportSummary sm : allModules) {
                         idList.add(sm.getPatientId());
                     }

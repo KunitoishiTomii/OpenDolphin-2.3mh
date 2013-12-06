@@ -84,7 +84,7 @@ public abstract class AbstractBrowser extends AbstractChartDocument {
     public String getCurrentDir() {
         return currentDir;
     }
-    private Map<String, ImageEntry> iconCache;
+    private final Map<String, ImageEntry> iconCache;
 //masuda$
     
     public AbstractBrowser() {
@@ -94,7 +94,7 @@ public abstract class AbstractBrowser extends AbstractChartDocument {
         } else {
             ClientContext.getBootLogger().warn("Desktop is not supported");
         }
-        listModel = new DefaultListModel<ImageEntry>();
+        listModel = new DefaultListModel<>();
         iconCache = new HashMap<>();
     }
 
@@ -139,7 +139,10 @@ public abstract class AbstractBrowser extends AbstractChartDocument {
     }
 
     protected String getSuffix(String path) {
-        int index = (path != null) ? path.lastIndexOf('.') : -1;
+        if (path == null) {
+            return null;
+        }
+        int index = path.lastIndexOf('.');
         return (index >= 0) ? path.substring(index + 1).toLowerCase() : null;
     }
     
@@ -425,7 +428,7 @@ public abstract class AbstractBrowser extends AbstractChartDocument {
             // from 2.4.1
             Path path = Paths.get(entry.getPath());
             desktop.browse(path.toUri());
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             ClientContext.getBootLogger().warn(ex);
         }
     }

@@ -106,7 +106,7 @@ public class TouchaServiceBean {
             }
         }
         
-        List<PatientModelS> sList = new ArrayList<PatientModelS>();
+        List<PatientModelS> sList = new ArrayList<>();
         for (PatientModel pm : list) {
             PatientModelS sModel = new PatientModelS();
             sModel.setLiteModel(pm);
@@ -124,7 +124,7 @@ public class TouchaServiceBean {
                 .setParameter(DATE, new Date())
                 .getResultList();
         
-        List<DiagnosisModelS> list = new ArrayList<DiagnosisModelS>();
+        List<DiagnosisModelS> list = new ArrayList<>();
         for (RegisteredDiagnosisModel rd : rdList) {
             DiagnosisModelS diag = new DiagnosisModelS(rd);
             list.add(diag);
@@ -179,7 +179,7 @@ public class TouchaServiceBean {
 
         if (c != null && !c.isEmpty()) {
 
-            List<PVTHealthInsuranceModel> list = new ArrayList<PVTHealthInsuranceModel>(c.size());
+            List<PVTHealthInsuranceModel> list = new ArrayList<>(c.size());
 
             for (HealthInsuranceModel model : c) {
                 try {
@@ -223,7 +223,7 @@ public class TouchaServiceBean {
                 .setParameter(DATE, pvtDate + "%")
                 .getResultList();
         
-        List<PatientVisitModelS> sList = new ArrayList<PatientVisitModelS>();
+        List<PatientVisitModelS> sList = new ArrayList<>();
         for (PatientVisitModel pvt : pvtList) {
             sList.add(new PatientVisitModelS(pvt));
         }

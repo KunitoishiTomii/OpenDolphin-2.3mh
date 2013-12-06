@@ -42,8 +42,8 @@ public final class PVTClientServer implements PVTServer {
     private MainWindow context;
     private String name;
     private UserModel user;
-    private boolean DEBUG;
-    private Logger logger;
+    private final boolean DEBUG;
+    private final Logger logger;
 
     /**
      * Creates new ClaimServer

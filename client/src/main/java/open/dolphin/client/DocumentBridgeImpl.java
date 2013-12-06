@@ -36,7 +36,7 @@ public class DocumentBridgeImpl extends AbstractChartDocument
     public DocumentBridgeImpl() {
         setTitle(TITLE);
 //masuda^   使い回し
-        viewerCache = new HashMap<String, DocumentViewer>();
+        viewerCache = new HashMap<>();
 //masuda$
     }
     
@@ -118,7 +118,7 @@ public class DocumentBridgeImpl extends AbstractChartDocument
                     curViwer = createLetterModuleViewer(handleClass);
                     curViwer.setContext(getContext());
                     curViwer.start();
-                } catch (Throwable e) {
+                } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
                     e.printStackTrace(System.err);
                 }
             }
@@ -145,10 +145,12 @@ public class DocumentBridgeImpl extends AbstractChartDocument
         
         String prop = evt.getPropertyName();
         
-        if (prop.equals(DocumentHistory.DOCUMENT_TYPE)) {
+        if (DocumentHistory.DOCUMENT_TYPE.equals(prop)) {
 
             // 文書種別が変更された場合
             String docType = (String) evt.getNewValue();
+            
+            
             
             if (docType.equals(IInfoModel.DOCTYPE_LETTER)) {
                 // 紹介状

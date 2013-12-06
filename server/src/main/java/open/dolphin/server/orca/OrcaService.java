@@ -32,7 +32,7 @@ public class OrcaService {
     private Thread thread;
     private Map<String, DataSource> dataSourceMap;
     
-    private static OrcaService instance;
+    private static final OrcaService instance;
     
     static {
         instance = new OrcaService();
@@ -47,7 +47,7 @@ public class OrcaService {
     
     public void start() {
         
-        dataSourceMap = new ConcurrentHashMap<String, DataSource>();
+        dataSourceMap = new ConcurrentHashMap<>();
         task = new SendClaimTask();
         thread = new Thread(task, "Claim send thread");
         thread.start();
@@ -82,17 +82,14 @@ public class OrcaService {
     
     private void executeStatement(OrcaSqlModel sqlModel) {
         
-        Connection con = null;
-        Statement st;
-        List<List<String>> valuesList = new ArrayList<List<String>>();
+        List<List<String>> valuesList = new ArrayList<>();
 
-        try {
-            con = getConnection(sqlModel.getUrl());
-            st = con.createStatement();
-            ResultSet rs = st.executeQuery(sqlModel.getSql());
+        try (Connection con = getConnection(sqlModel.getUrl());
+                Statement st = con.createStatement();
+                ResultSet rs = st.executeQuery(sqlModel.getSql());){
 
             while (rs.next()) {
-                List<String> values = new ArrayList<String>();
+                List<String> values = new ArrayList<>();
                 ResultSetMetaData meta = rs.getMetaData();
                 int columnCount = meta.getColumnCount();
                 for (int i = 1; i <= columnCount; ++i) {
@@ -110,17 +107,9 @@ public class OrcaService {
                 }
                 valuesList.add(values);
             }
-            
-            rs.close();
-            st.close();
-        } catch (SQLException ex) {
+
+        } catch (SQLException | ClassNotFoundException | NullPointerException ex) {
             sqlModel.setErrorMessage(ex.getMessage());
-        } catch (ClassNotFoundException ex) {
-            sqlModel.setErrorMessage(ex.getMessage());
-        } catch (NullPointerException ex) {
-            sqlModel.setErrorMessage(ex.getMessage());
-        } finally {
-            closeConnection(con);
         }
 
         sqlModel.setValuesList(valuesList);
@@ -128,13 +117,10 @@ public class OrcaService {
     
     private void executePreparedStatement(OrcaSqlModel sqlModel) {
         
-        Connection con = null;
-        PreparedStatement ps;
-        List<List<String>> valuesList = new ArrayList<List<String>>();
+        List<List<String>> valuesList = new ArrayList<>();
         
-        try {
-            con = getConnection(sqlModel.getUrl());
-            ps = con.prepareStatement(sqlModel.getSql());
+        try (Connection con = getConnection(sqlModel.getUrl());
+                PreparedStatement ps = con.prepareStatement(sqlModel.getSql());) {
 
             int paramCount = sqlModel.getParamList().size();
             for (int i = 0; i < paramCount; ++i) {
@@ -156,38 +142,32 @@ public class OrcaService {
                         break;
                 }
             }
-            ResultSet rs = ps.executeQuery();
             
-            while (rs.next()) {
-                List<String> values = new ArrayList<String>();
-                ResultSetMetaData meta = rs.getMetaData();
-                int columnCount = meta.getColumnCount();
-                for (int i = 1; i <= columnCount; ++i) {
-                    int type = meta.getColumnType(i);
-                    switch (type) {
-                        case Types.SMALLINT:
-                        case Types.NUMERIC:
-                        case Types.INTEGER:
-                            values.add(String.valueOf(rs.getInt(i)));
-                            break;
-                        default:
-                            values.add(rs.getString(i));
-                            break;
+            try (ResultSet rs = ps.executeQuery()) {
+
+                while (rs.next()) {
+                    List<String> values = new ArrayList<>();
+                    ResultSetMetaData meta = rs.getMetaData();
+                    int columnCount = meta.getColumnCount();
+                    for (int i = 1; i <= columnCount; ++i) {
+                        int type = meta.getColumnType(i);
+                        switch (type) {
+                            case Types.SMALLINT:
+                            case Types.NUMERIC:
+                            case Types.INTEGER:
+                                values.add(String.valueOf(rs.getInt(i)));
+                                break;
+                            default:
+                                values.add(rs.getString(i));
+                                break;
+                        }
                     }
+                    valuesList.add(values);
                 }
-                valuesList.add(values);
             }
-            
-            rs.close();
-            ps.close();
-        } catch (SQLException ex) {
+
+        } catch (SQLException | ClassNotFoundException | NullPointerException ex) {
             sqlModel.setErrorMessage(ex.getMessage());
-        } catch (ClassNotFoundException ex) {
-            sqlModel.setErrorMessage(ex.getMessage());
-        } catch (NullPointerException ex) {
-            sqlModel.setErrorMessage(ex.getMessage());
-        } finally {
-            closeConnection(con);
         }
 
         sqlModel.setValuesList(valuesList);
@@ -233,11 +213,4 @@ public class OrcaService {
         return ds;
     }
     
-    private void closeConnection(Connection con) {
-        try {
-            con.close();
-        } catch (SQLException e) {
-        } catch (NullPointerException e) {
-        }
-    }
 }

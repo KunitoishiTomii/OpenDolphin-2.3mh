@@ -2,6 +2,7 @@ package open.dolphin.client;
 
 import java.awt.Color;
 import java.awt.event.ActionEvent;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 import javax.swing.*;

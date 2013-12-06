@@ -37,9 +37,9 @@ public class DisconItemPanel {
     private static final ImageIcon saveIcon = ClientContext.getImageIconAlias("icon_save_small");
     
     private ListTableModel<DisconItemModel> tableModel;
-    private List<DisconItemModel> addedList = new ArrayList<DisconItemModel>();
-    private List<DisconItemModel> removedList = new ArrayList<DisconItemModel>();
-    private List<DisconItemModel> updatedList = new ArrayList<DisconItemModel>();     // 編集したモデル
+    private final List<DisconItemModel> addedList = new ArrayList<>();
+    private final List<DisconItemModel> removedList = new ArrayList<>();
+    private final List<DisconItemModel> updatedList = new ArrayList<>();     // 編集したモデル
     private JDialog dialog;
     private JPanel view;
     private JButton btn_add;
@@ -163,7 +163,7 @@ public class DisconItemPanel {
         DisconItemSubPanel panel = new DisconItemSubPanel(dialog);
         panel.enter();
         DisconItemModel model = panel.getModel();
-        panel = null;
+        //panel = null;
         tableModel.addObject(model);
         addedList.add(model);
     }
@@ -266,7 +266,7 @@ public class DisconItemPanel {
         private JTextField tf_memo;
         private JDialog dialog_sub;
         private JPanel view_sub;
-        private JDialog parent;
+        private final JDialog parent;
         private DisconItemModel newModel;
 
         private DisconItemSubPanel(JDialog parent) {

@@ -65,7 +65,7 @@ public class AppoServiceBean {
 
         // 抽出期間は別けられている
         int len = fromDate.size();
-        List<List<AppointmentModel>> ret = new ArrayList<List<AppointmentModel>>(len);
+        List<List<AppointmentModel>> ret = new ArrayList<>(len);
 
         // 抽出期間ごとに検索しコレクションに加える
         for (int i = 0; i < len; i++) {

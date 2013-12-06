@@ -15,11 +15,11 @@ import open.dolphin.client.ClientContext;
  */
 public class DefaultSetting {
 
-    private AbstractBrowser context;
-    private Component parent;
+    private final AbstractBrowser context;
+    private final Component parent;
     private DefaultConfigView view;
     private JDialog dialog;
-    private Properties properties;
+    private final Properties properties;
    
     public DefaultSetting(AbstractBrowser context, Component parent) {
         this.context = context;

@@ -279,7 +279,7 @@ public class ChartEventServiceBean {
         for (Map.Entry entry : map.entrySet()) {
             List<PatientVisitModel> pvtList = (List<PatientVisitModel>) entry.getValue();
             
-            List<PatientVisitModel> toRemove = new ArrayList<PatientVisitModel>();
+            List<PatientVisitModel> toRemove = new ArrayList<>();
             for (PatientVisitModel pvt : pvtList) {
                 // BIT_SAVE_CLAIMとBIT_MODIFY_CLAIMは削除する
                 if (pvt.getStateBit(PatientVisitModel.BIT_SAVE_CLAIM) 

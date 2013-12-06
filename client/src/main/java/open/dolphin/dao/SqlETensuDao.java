@@ -73,7 +73,7 @@ public class SqlETensuDao extends SqlDaoBean {
     public List<ETensuModel1> getETensu1List(long offset, int limit) {
         
         // 結果を格納するリスト
-        List<ETensuModel1> ret = new ArrayList<ETensuModel1>();
+        List<ETensuModel1> ret = new ArrayList<>();
         
         String sql = SELECT_ETENSU_1 + WHERE_ETENSU_RELATED + " limit ? offset ?";
         
@@ -105,7 +105,7 @@ public class SqlETensuDao extends SqlDaoBean {
         sb.append(" and yukoedymd >= ").append(ymd);
         
         String sql = sb.toString();
-        List<ETensuModel1> list = new ArrayList<ETensuModel1>();
+        List<ETensuModel1> list = new ArrayList<>();
         
         List<List<String>> valuesList = executeStatement(sql);
         
@@ -133,7 +133,7 @@ public class SqlETensuDao extends SqlDaoBean {
         sb.append(" and yukoedymd >= ").append(ymd);
         
         String sql = sb.toString();
-        List<ETensuModel2> list = new ArrayList<ETensuModel2>();
+        List<ETensuModel2> list = new ArrayList<>();
         
         List<List<String>> valuesList = executeStatement(sql);
         
@@ -176,7 +176,7 @@ public class SqlETensuDao extends SqlDaoBean {
         sb.append(" and yukoedymd >= ").append(ymd);
         
         String sql = sb.toString();
-        List<ETensuModel3> list = new ArrayList<ETensuModel3>();
+        List<ETensuModel3> list = new ArrayList<>();
         
         List<List<String>> valuesList = executeStatement(sql);
         
@@ -203,7 +203,7 @@ public class SqlETensuDao extends SqlDaoBean {
         sb.append(" and yukoedymd >= ").append(ymd);
         
         String sql = sb.toString();
-        List<ETensuModel5> list = new ArrayList<ETensuModel5>();
+        List<ETensuModel5> list = new ArrayList<>();
         
         List<List<String>> valuesList = executeStatement(sql);
         

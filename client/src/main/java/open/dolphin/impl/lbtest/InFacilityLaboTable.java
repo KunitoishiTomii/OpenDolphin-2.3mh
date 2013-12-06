@@ -99,11 +99,11 @@ public class InFacilityLaboTable {
 
 
     static {
-        groupMap = new HashMap<String, String>();
+        groupMap = new HashMap<>();
         for (String[] strs : groupArray) {
             groupMap.put(strs[0], strs[1]);
         }
-        specimenMap = new HashMap<String, String>();
+        specimenMap = new HashMap<>();
         for (String[] strs : specimenArray) {
             specimenMap.put(strs[0], strs[1]);
         }
@@ -111,7 +111,7 @@ public class InFacilityLaboTable {
     
     public static List<InFacilityLaboItem> createLaboItemList() {
         
-        List<InFacilityLaboItem> list = new ArrayList<InFacilityLaboItem>();
+        List<InFacilityLaboItem> list = new ArrayList<>();
         
         for (String[] strs : laboArray) {
             InFacilityLaboItem item = new InFacilityLaboItem(

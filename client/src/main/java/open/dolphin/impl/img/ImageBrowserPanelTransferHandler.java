@@ -29,7 +29,7 @@ import open.dolphin.tr.FileListTransferable;
  */
 public class ImageBrowserPanelTransferHandler extends DolphinTransferHandler {
 
-    private AbstractBrowser browser;
+    private final AbstractBrowser browser;
     
     public ImageBrowserPanelTransferHandler(AbstractBrowser browser) {
         this.browser = browser;
@@ -70,7 +70,7 @@ public class ImageBrowserPanelTransferHandler extends DolphinTransferHandler {
             // Drag & Drop されたファイルのリストを得る
             Transferable t = support.getTransferable();
             List<File> files = (List<File>) t.getTransferData(DataFlavor.javaFileListFlavor);
-            List<File> allFiles = new ArrayList<File>();
+            List<File> allFiles = new ArrayList<>();
 
             for (File file : files) {
                 if (!file.isDirectory()) {

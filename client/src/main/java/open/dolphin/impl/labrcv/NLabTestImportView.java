@@ -17,7 +17,7 @@ public class NLabTestImportView extends JPanel {
     private JButton clearBtn;
     private JLabel countLbl;
     private JButton fileBtn;
-    private JTable table;
+    private final JTable table;
     private static final Font lblFont = new Font("Lucida Grande", 0, 12);
 
     public NLabTestImportView(){

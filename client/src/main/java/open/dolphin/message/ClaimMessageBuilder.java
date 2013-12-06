@@ -381,6 +381,7 @@ public class ClaimMessageBuilder {
                                         .addContent(pubIns.getPaymentRatio()))
                         );
                     }
+                    addContent(pubInsElem);
                 }
             }
         }

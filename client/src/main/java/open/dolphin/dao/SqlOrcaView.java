@@ -85,7 +85,7 @@ public class SqlOrcaView extends SqlDaoBean {
 
         List<List<String>> valuesList = executePreparedStatement(sql, types, params);
 
-        List<RegisteredDiagnosisModel> collection = new ArrayList<RegisteredDiagnosisModel>();
+        List<RegisteredDiagnosisModel> collection = new ArrayList<>();
 
         for (List<String> values : valuesList) {
             RegisteredDiagnosisModel ord = getRegisteredDiagnosisModel(values);
@@ -123,7 +123,7 @@ public class SqlOrcaView extends SqlDaoBean {
         String[] params = {String.valueOf(orcaPtId), " ", "1", String.valueOf(hospNum)};
 
         List<List<String>> valuesList = executePreparedStatement(sql, types, params);
-        List<RegisteredDiagnosisModel> collection = new ArrayList<RegisteredDiagnosisModel>();
+        List<RegisteredDiagnosisModel> collection = new ArrayList<>();
         for (List<String> values : valuesList) {
             RegisteredDiagnosisModel ord = getRegisteredDiagnosisModel(values);
             collection.add(ord);
@@ -134,27 +134,30 @@ public class SqlOrcaView extends SqlDaoBean {
     
     // ORCA カテゴリ
     private void storeSuspectedDiagnosis(RegisteredDiagnosisModel rdm, String test) {
-        if (test!=null) {
-            if (test.equals("1")) {
-                rdm.setCategory("suspectedDiagnosis");
-                rdm.setCategoryDesc("疑い病名");
-                rdm.setCategoryCodeSys("MML0015");
-
-            } else if (test.equals("2")) {
-//                rdm.setCategory("suspectedDiagnosis");
-//                rdm.setCategoryDesc("急性");
-//                rdm.setCategoryCodeSys("MML0012");
-
-            } else if (test.equals("3")) {
-                rdm.setCategory("suspectedDiagnosis");
-                rdm.setCategoryDesc("疑い病名");
-                rdm.setCategoryCodeSys("MML0015");
+        
+        if (test != null) {
+            switch (test) {
+                case "1":
+                    rdm.setCategory("suspectedDiagnosis");
+                    rdm.setCategoryDesc("疑い病名");
+                    rdm.setCategoryCodeSys("MML0015");
+                    break;
+                case "2":
+//                  rdm.setCategory("suspectedDiagnosis");
+//                  rdm.setCategoryDesc("急性");
+//                  rdm.setCategoryCodeSys("MML0012");
+                    break;
+                case "3":
+                    rdm.setCategory("suspectedDiagnosis");
+                    rdm.setCategoryDesc("疑い病名");
+                    rdm.setCategoryCodeSys("MML0015");
+                    break;
             }
         }
     }
     
     private void storeMainDiagnosis(RegisteredDiagnosisModel rdm, String test) {
-        if (test!=null && test.equals("1")) {
+        if ("1".equals(test)) {
             rdm.setCategory("mainDiagnosis");
             rdm.setCategoryDesc("主病名");
             rdm.setCategoryCodeSys("MML0012");
@@ -163,32 +166,36 @@ public class SqlOrcaView extends SqlDaoBean {
 
     // ORCA 転帰
     private void storeOutcome(RegisteredDiagnosisModel rdm, String data) {
+        
         if (data != null) {
-            if (data.equals("1")) {
-                rdm.setOutcome("fullyRecovered");
-                rdm.setOutcomeDesc("全治");
-                rdm.setOutcomeCodeSys("MML0016");
+            switch (data) {
+                case "1":
+                    rdm.setOutcome("fullyRecovered");
+                    rdm.setOutcomeDesc("全治");
+                    rdm.setOutcomeCodeSys("MML0016");
+                    break;
+                case "2":
+                    rdm.setOutcome("died");
+                    rdm.setOutcomeDesc("死亡");
+                    rdm.setOutcomeCodeSys("MML0016");
+                    break;
+                case "3":
+                    rdm.setOutcome("pause");
+                    rdm.setOutcomeDesc("中止");
+                    rdm.setOutcomeCodeSys("MML0016");
+                    break;
+                case "8":
+                    rdm.setOutcome("transfer");
+                    rdm.setOutcomeDesc("転医");
+                    rdm.setOutcomeCodeSys("MML0016");
+                    break;
 
-            } else if (data.equals("2")) {
-                rdm.setOutcome("died");
-                rdm.setOutcomeDesc("死亡");
-                rdm.setOutcomeCodeSys("MML0016");
-
-            } else if (data.equals("3")) {
-                rdm.setOutcome("pause");
-                rdm.setOutcomeDesc("中止");
-                rdm.setOutcomeCodeSys("MML0016");
-
-            } else if (data.equals("8")) {
-                rdm.setOutcome("transfer");
-                rdm.setOutcomeDesc("転医");
-                rdm.setOutcomeCodeSys("MML0016");
             }
         }
     }
 
     private String toDolphinDateStr(String orcaDate) {
-        if (orcaDate==null || orcaDate.equals("")) {
+        if (orcaDate==null || orcaDate.isEmpty()) {
             return null;
         }
         try {

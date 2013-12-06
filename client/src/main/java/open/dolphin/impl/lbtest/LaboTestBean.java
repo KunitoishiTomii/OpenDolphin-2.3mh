@@ -110,7 +110,7 @@ public class LaboTestBean extends AbstractChartDocument {
 
         // 結果がゼロであれば返る
         if (modules == null || modules.isEmpty()) {
-            tableModel = new ListTableModel<LabTestRowObject>(header, 0);
+            tableModel = new ListTableModel<>(header, 0);
             table.setModel(tableModel);
             setColumnWidth();
             return;
@@ -119,9 +119,9 @@ public class LaboTestBean extends AbstractChartDocument {
         // 検体採取日の降順なので昇順にソートする
         Collections.sort(modules, new SampleDateComparator());
 
-        List<LabTestRowObject> bloodExams = new ArrayList<LabTestRowObject>();
-        List<LabTestRowObject> urineExams = new ArrayList<LabTestRowObject>();
-        List<LabTestRowObject> otherExams = new ArrayList<LabTestRowObject>();
+        List<LabTestRowObject> bloodExams = new ArrayList<>();
+        List<LabTestRowObject> urineExams = new ArrayList<>();
+        List<LabTestRowObject> otherExams = new ArrayList<>();
 
         int moduleIndex = 0;
 
@@ -137,7 +137,7 @@ public class LaboTestBean extends AbstractChartDocument {
                 // 検体名を取得する
                 String specimenName = item.getSpecimenName();
                 // 検体で分類してリストを選択する
-                List<LabTestRowObject> rowObjectList = null;
+                List<LabTestRowObject> rowObjectList;
                 if (specimenName != null) {     // null check 橋本先生のご指摘
                     if (specimenName.contains("血")) {
                         rowObjectList = bloodExams;
@@ -192,7 +192,7 @@ public class LaboTestBean extends AbstractChartDocument {
             moduleIndex++;
         }
         
-        List<LabTestRowObject> dataProvider = new ArrayList<LabTestRowObject>();
+        List<LabTestRowObject> dataProvider = new ArrayList<>();
         
         if (!bloodExams.isEmpty()) {
             Collections.sort(bloodExams);
@@ -217,7 +217,7 @@ public class LaboTestBean extends AbstractChartDocument {
         }
 
         // Table Model
-        tableModel = new ListTableModel<LabTestRowObject>(header, 0);
+        tableModel = new ListTableModel<>(header, 0);
 
         // 検査結果テーブルを生成する
         table.setModel(tableModel);
@@ -479,7 +479,7 @@ public class LaboTestBean extends AbstractChartDocument {
             };
             task.execute();
             
-        } catch (Exception ex) {
+        } catch (HeadlessException ex) {
         }
     }
 //masuda$
@@ -601,7 +601,7 @@ public class LaboTestBean extends AbstractChartDocument {
                 try {
                     double val = Double.parseDouble(value.getValue());
                     dataset.setValue(val, rowObj.nameWithUnit(), sampleTime);
-                } catch (Exception e) {
+                } catch (NumberFormatException e) {
                     dataset.setValue(null, rowObj.nameWithUnit(), sampleTime);
                 }
             }
@@ -651,7 +651,7 @@ public class LaboTestBean extends AbstractChartDocument {
                 IntervalMarker marker = new IntervalMarker(low, hi);
                 marker.setPaint(new Color(200, 230, 200));
                 plot.addRangeMarker(marker, Layer.BACKGROUND);
-            } catch (Exception e) {
+            } catch (NumberFormatException e) {
             }
         }
 //masuda$

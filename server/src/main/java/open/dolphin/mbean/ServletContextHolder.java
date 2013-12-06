@@ -25,7 +25,7 @@ public class ServletContextHolder {
     private final Map<String, List<PatientVisitModel>> pvtListMap;
     
     // サーバーのUUID
-    private String serverUUID;
+    private final String serverUUID;
     
     // ユーザーのキャッシュ
     private final Map<String, String> userMap;
@@ -49,9 +49,9 @@ public class ServletContextHolder {
         return serverUUID;
     }
     
-    public void setServerUUID(String uuid) {
-        serverUUID = uuid;
-    }
+    //public void setServerUUID(String uuid) {
+    //    serverUUID = uuid;
+    //}
 
     public Map<String, List<PatientVisitModel>> getPvtListMap() {
         return pvtListMap;

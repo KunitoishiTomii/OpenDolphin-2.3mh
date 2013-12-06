@@ -28,7 +28,7 @@ public class SendClaimTask implements Runnable {
     
     private static final Logger logger = Logger.getLogger(SendClaimTask.class.getSimpleName());
 
-    private List<AsyncContext> queue;
+    private final List<AsyncContext> queue;
     
     private Selector selector;
     private boolean isRunning;
@@ -36,7 +36,7 @@ public class SendClaimTask implements Runnable {
     
     public  SendClaimTask() {
         
-        queue = new LinkedList<AsyncContext>();
+        queue = new LinkedList<>();
         isRunning = true;
         
         try {

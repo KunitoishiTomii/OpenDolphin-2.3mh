@@ -64,7 +64,7 @@ public final class SqlMasterDao extends SqlDaoBean {
     public List<TensuMaster> getTensuMasterByShinku(String shinku, String now) {
 
         // 結果を格納するリスト
-        List<TensuMaster> ret = new ArrayList<TensuMaster>();
+        List<TensuMaster> ret = new ArrayList<>();
 
         // SQL 文
         String sql = QUERY_TENSU_BY_SHINKU;
@@ -86,7 +86,7 @@ public final class SqlMasterDao extends SqlDaoBean {
     public List<TensuMaster> getTensuMasterByName(String name, String now, boolean partialMatch) {
 
         // 結果を格納するリスト
-        List<TensuMaster> ret = new ArrayList<TensuMaster>();
+        List<TensuMaster> ret = new ArrayList<>();
 
         // 半角英数字を全角へ変換する
         name = StringTool.toZenkakuUpperLower(name);
@@ -123,7 +123,7 @@ public final class SqlMasterDao extends SqlDaoBean {
     public List<TensuMaster> getTensuMasterByCode(String regExp, String now) {
 
         // 結果を格納するリスト
-        List<TensuMaster> ret = new ArrayList<TensuMaster>();
+        List<TensuMaster> ret = new ArrayList<>();
 
         // SQL 文
         String sql = QUERY_TENSU_BY_CODE;
@@ -145,7 +145,7 @@ public final class SqlMasterDao extends SqlDaoBean {
     public List<TensuMaster> getTensuMasterByTen(String ten, String now) {
 
         // 結果を格納するリスト
-        List<TensuMaster> ret = new ArrayList<TensuMaster>();
+        List<TensuMaster> ret = new ArrayList<>();
 
         // SQL 文
         String sql =QUERY_TENSU_BY_TEN;
@@ -175,7 +175,7 @@ public final class SqlMasterDao extends SqlDaoBean {
     public List<DiseaseEntry> getDiseaseByName(String name, String now, boolean partialMatch) {
 
         // 結果を格納するリスト
-        List<DiseaseEntry> ret = new ArrayList<DiseaseEntry>();
+        List<DiseaseEntry> ret = new ArrayList<>();
 
         // SQL 文
         String sql = SyskanriInfo.getInstance().isOrca45()
@@ -202,7 +202,7 @@ public final class SqlMasterDao extends SqlDaoBean {
     public List<DiseaseEntry> getDiseaseByCode(String code, String now, boolean partialMatch) {
 
         // 結果を格納するリスト
-        List<DiseaseEntry> ret = new ArrayList<DiseaseEntry>();
+        List<DiseaseEntry> ret = new ArrayList<>();
 
         // SQL 文
         String sql = SyskanriInfo.getInstance().isOrca45()

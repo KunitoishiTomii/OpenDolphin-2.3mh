@@ -9,11 +9,11 @@ import javax.ws.rs.container.AsyncResponse;
  */
 public class AsyncResponseModel {
     
-    private AsyncResponse asyncResponse;
+    private final AsyncResponse asyncResponse;
     
-    private String clientUUID;
+    private final String clientUUID;
     
-    private String fid;
+    private final String fid;
     
     public AsyncResponseModel(AsyncResponse asyncResponse, String fid, String clientUUID) {
         this.asyncResponse = asyncResponse;
@@ -30,7 +30,7 @@ public class AsyncResponseModel {
     public String getFid() {
         return fid;
     }
-    
+/*
     public void setAsyncResponse(AsyncResponse asyncResponse) {
         this.asyncResponse = asyncResponse;
     }
@@ -40,4 +40,5 @@ public class AsyncResponseModel {
     public void setFid(String fid) {
         this.fid = fid;
     }
+*/
 }

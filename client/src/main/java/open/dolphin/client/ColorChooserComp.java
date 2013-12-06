@@ -18,13 +18,13 @@ public class ColorChooserComp extends JComponent implements MouseListener, Mouse
     
     public static final String SELECTED_COLOR = "selectedColor";
     
-    private Color[] colors;
+    private final Color[] colors;
     
     private Color[] colorStart;
     
-    private Dimension size;
+    private final Dimension size;
     
-    private Color strokeColor = Color.DARK_GRAY;
+    private final Color strokeColor = Color.DARK_GRAY;
     
     private int strokeWidth = 2;
     

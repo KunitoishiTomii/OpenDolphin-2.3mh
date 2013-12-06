@@ -22,11 +22,11 @@ public class PvtClaimIOHandler implements IHandler {
     //private static final byte NAK = 0x15;
 
     private static final int bufferSize = 8192;
-    private ByteBuffer byteBuffer;
+    private final ByteBuffer byteBuffer;
     
-    private PVTClientServer server;
-    private ByteArrayOutputStream baos;
-    private BufferedOutputStream bos;
+    private final PVTClientServer server;
+    private final ByteArrayOutputStream baos;
+    private final BufferedOutputStream bos;
    
 
     public PvtClaimIOHandler(PVTClientServer server) {

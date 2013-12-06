@@ -696,7 +696,7 @@ public class CheckSantei implements ICheckSanteiConst {
     
     private void setupCurrentSanteiHistory() {
 
-        allClaimItems = new HashMap<String, ClaimItem>();
+        allClaimItems = new HashMap<>();
         hasLabo = false;
 
         // 現在のカルテにある全てのsrycdをとりあえず列挙する
@@ -717,13 +717,13 @@ public class CheckSantei implements ICheckSanteiConst {
         // 現在のカルテの電子点数表に関連する項目を取得する
         List<ETensuModel1> eTenList = eTenDao.getETensuModel1(karteDate, allClaimItems.keySet());
         // 一旦HashMapに登録
-        Map<String, ETensuModel1> map = new HashMap<String, ETensuModel1>();
+        Map<String, ETensuModel1> map = new HashMap<>();
         for (ETensuModel1 etm : eTenList) {
             map.put(etm.getSrycd(), etm);
         }
         
         // 全てのModuleModelをスキャンして、現在のカルテの算定履歴リストを作成する。
-        currentSanteiList = new ArrayList<SanteiHistoryModel>();
+        currentSanteiList = new ArrayList<>();
         for (ModuleModel mm : stamps) {
             ClaimBundle cb = (ClaimBundle) mm.getModel();
             int bundleNumber = parseInt(cb.getBundleNumber());
@@ -795,7 +795,7 @@ public class CheckSantei implements ICheckSanteiConst {
     // 外来管理加算算定可否と腫瘍マーカーの有無を設定する
     private void setupGairaiKanriAndTumorMarkers() {
 
-        Set<String> srycdList = new HashSet<String>();
+        Set<String> srycdList = new HashSet<>();
         for (SanteiHistoryModel shm : currentSanteiList) {
             srycdList.add(shm.getSrycd());
         }
@@ -812,7 +812,7 @@ public class CheckSantei implements ICheckSanteiConst {
     // 移行病名と病関連区分を設定する
     private void updateIkouTokutei2(List<RegisteredDiagnosisModel> list) {
 
-        List<String> srycdList = new ArrayList<String>();
+        List<String> srycdList = new ArrayList<>();
         for (RegisteredDiagnosisModel rd : list) {
             // 病名コードを切り出し（接頭語，接尾語は捨てる）
             String[] code = rd.getDiagnosisCode().split("\\.");
@@ -864,7 +864,7 @@ public class CheckSantei implements ICheckSanteiConst {
         int num = 1;
         try {
             num = Integer.valueOf(str);
-        } catch (Exception e) {
+        } catch (NumberFormatException e) {
         }
         return num;
     }
@@ -897,7 +897,7 @@ public class CheckSantei implements ICheckSanteiConst {
         final String yakuzaiClassCode = "2";    // 薬剤のclaim class code
 
         // 編集中のカルテから薬剤を収集
-        List<RpModel> currentRpContents = new ArrayList<RpModel>();
+        List<RpModel> currentRpContents = new ArrayList<>();
         for (ModuleModel mm : stamps) {
             if (IInfoModel.ENTITY_MED_ORDER.equals(mm.getModuleInfoBean().getEntity())) {
 
@@ -921,13 +921,13 @@ public class CheckSantei implements ICheckSanteiConst {
                     allHokatsuMed = false;
                 }
                 // 最大日数を調べる
-                int rpDay = 0;
+                int rpDay;
                 try {
                     rpDay= Integer.valueOf(cb.getBundleNumber());
                     if (rpDay > maxBundleNumber) {
                         maxBundleNumber = rpDay;
                     }
-                } catch (Exception e) {
+                } catch (NumberFormatException e) {
                 }
                 // 薬剤を収集
                 for (ClaimItem ci : cb.getClaimItem()) {

@@ -1038,10 +1038,10 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
             PVTHealthInsuranceModel[] ins = getHealthInsurances();
             params.setPVTHealthInsurance(ins[0]);
             if (insuranceUid != null) {
-                for (int i = 0; i < ins.length; i++) {
-                    if (ins[i].getGUID() != null) {
-                        if (insuranceUid.equals(ins[i].getGUID())) {
-                            params.setPVTHealthInsurance(ins[i]);
+                for (PVTHealthInsuranceModel in : ins) {
+                    if (in.getGUID() != null) {
+                        if (insuranceUid.equals(in.getGUID())) {
+                            params.setPVTHealthInsurance(in);
                             break;
                         }
                     }
@@ -1385,7 +1385,7 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
             editor = new KarteEditor();
             editor.addMMLListner(mmlListener);
             editor.addCLAIMListner(claimListener);
-        } catch (Exception e) {
+        } catch (TooManyListenersException e) {
             ClientContext.getBootLogger().warn(e);
             editor = null;
         }
@@ -1657,10 +1657,10 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
                 PVTHealthInsuranceModel[] ins = getHealthInsurances();
                 params.setPVTHealthInsurance(ins[0]);
                 if (insuranceUid != null) {
-                    for (int i = 0; i < ins.length; i++) {
-                        if (ins[i].getGUID() != null) {
-                            if (insuranceUid.equals(ins[i].getGUID())) {
-                                params.setPVTHealthInsurance(ins[i]);
+                    for (PVTHealthInsuranceModel in : ins) {
+                        if (in.getGUID() != null) {
+                            if (insuranceUid.equals(in.getGUID())) {
+                                params.setPVTHealthInsurance(in);
                                 break;
                             }
                         }
@@ -1692,7 +1692,7 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
                 addChartDocument(doc, doc.getTitle());
             }
 
-        } catch (Exception e) {
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
             ClientContext.getBootLogger().warn(e);
         }
     }
@@ -2262,7 +2262,7 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
                                 "インスペクタを閉じる前にカルテエディタを閉じてください。",
                                 title, JOptionPane.WARNING_MESSAGE);
                         return false;
-                    } catch (Exception e) {
+                    } catch (HeadlessException e) {
                     }
                 }
             }

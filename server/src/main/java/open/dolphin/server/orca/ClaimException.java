@@ -13,8 +13,8 @@ public class ClaimException extends Exception {
         NO_ERROR, CONNECTION_REJECT, IO_ERROR, NAK_SIGNAL
     };
     
-    private ERROR_CODE code;
-    private AsyncContext ac;
+    private final ERROR_CODE code;
+    private final AsyncContext ac;
 
     public ClaimException(ERROR_CODE code, AsyncContext ac) {
         this.code = code;

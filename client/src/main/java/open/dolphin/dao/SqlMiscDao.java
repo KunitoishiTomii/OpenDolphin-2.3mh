@@ -327,7 +327,6 @@ public final class SqlMiscDao extends SqlDaoBean {
             return false;
         }
         int hospNum = getHospNum();
-        boolean ret = false;
 
         StringBuilder sb = new StringBuilder();
         sb.append("select gaikanrikbn from tbl_tensu ");
@@ -343,7 +342,7 @@ public final class SqlMiscDao extends SqlDaoBean {
         String sql = sb.toString();
 
         List<List<String>> valuesList = executeStatement(sql);
-        ret = !valuesList.isEmpty();
+        boolean ret = !valuesList.isEmpty();
 
         return ret;
     }
@@ -356,7 +355,6 @@ public final class SqlMiscDao extends SqlDaoBean {
         }
 
         int hospNum = getHospNum();
-        boolean ret = false;
 
         StringBuilder sb = new StringBuilder();
         sb.append("select houksnkbn from tbl_tensu ");
@@ -372,7 +370,7 @@ public final class SqlMiscDao extends SqlDaoBean {
         String sql = sb.toString();
         
         List<List<String>> valuesList = executeStatement(sql);
-        ret = !valuesList.isEmpty();
+        boolean ret = !valuesList.isEmpty();
 
         return ret;
     }

@@ -7,6 +7,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import javax.swing.*;
 import open.dolphin.dao.SqlMasterDao;
 import open.dolphin.dao.SqlMiscDao;
@@ -96,11 +97,11 @@ public class CheckInteractionPanel {
 
     private void collectMedicine() throws Exception {
 
-        rirekiItems = new HashMap<String, String[]>();
+        rirekiItems = new HashMap<>();
 
         // 過去３ヶ月の薬剤・注射ののModuleModelを取得する
         MasudaDelegater del = MasudaDelegater.getInstance();
-        List<String> entities = new ArrayList<String>();
+        List<String> entities = new ArrayList<>();
         entities.add(IInfoModel.ENTITY_MED_ORDER);
         entities.add(IInfoModel.ENTITY_INJECTION_ORDER);
 
@@ -147,7 +148,7 @@ public class CheckInteractionPanel {
                 try {
                     get();
                     blockGlass.unblock();
-                } catch (Exception ex) {
+                } catch (InterruptedException | ExecutionException ex) {
                 }
             }
         };
@@ -176,7 +177,7 @@ public class CheckInteractionPanel {
         }
 
         StringBuilder sb = new StringBuilder();
-        kensakuItems = new HashMap<String, String>();
+        kensakuItems = new HashMap<>();
         // ORCAでキーワードに当てはまる薬剤を取得する。
         SimpleDateFormat effectiveFormat = new SimpleDateFormat("yyyyMMdd");
         String d = effectiveFormat.format(new Date());

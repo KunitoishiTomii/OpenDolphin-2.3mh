@@ -726,7 +726,7 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
                 if (status == null ||
                         DIAGNOSIS_FINAL.equals(status) ||
                         DIAGNOSIS_EDITED.equals(status)) {
-                    continue;
+                    //continue;
                 } else {
                     flag = false;
                     break;
@@ -2105,8 +2105,7 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
                         }
                     }
                     diagTable.repaint();
-                } catch (InterruptedException ex) {
-                } catch (ExecutionException ex) {
+                } catch (InterruptedException | ExecutionException ex) {
                 }
             }
         };

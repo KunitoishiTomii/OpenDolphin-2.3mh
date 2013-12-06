@@ -7,7 +7,7 @@ package open.dolphin.session;
  */
 public final class CanNotDeleteException extends RuntimeException {
     
-    private String message;
+    private final String message;
     
     public CanNotDeleteException(String message) {
         super(message);

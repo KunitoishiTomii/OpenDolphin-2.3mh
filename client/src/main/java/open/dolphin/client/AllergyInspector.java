@@ -34,7 +34,7 @@ public final class AllergyInspector {
     private AllergyView view;
 
     // Chart
-    private ChartImpl context;
+    private final ChartImpl context;
 
     /**
      * AllergyInspectorオブジェクトを生成する。
@@ -71,7 +71,7 @@ public final class AllergyInspector {
         // アレルギーテーブルを設定する
         String[] columnNames = ClientContext.getStringArray("patientInspector.allergyInspector.columnNames");
         String[] methodNames = ClientContext.getStringArray("patientInspector.allergyInspector.methodNames");
-        tableModel = new ListTableModel<AllergyModel>(columnNames, 0, methodNames, null);
+        tableModel = new ListTableModel<>(columnNames, 0, methodNames, null);
         view.getTable().setModel(tableModel);
         //view.getTable().setFillsViewportHeight(true);
         //view.getTable().setRowHeight(ClientContext.getHigherRowHeight());
@@ -206,7 +206,7 @@ public final class AllergyInspector {
         // GUI の同定日をTimeStampに変更する
         Date date = ModelUtils.getDateTimeAsObject(model.getIdentifiedDate()+"T00:00:00");
 
-        final List<ObservationModel> addList = new ArrayList<ObservationModel>(1);
+        final List<ObservationModel> addList = new ArrayList<>(1);
 
         ObservationModel observation = new ObservationModel();
         observation.setKarteBean(context.getKarte());
@@ -291,7 +291,7 @@ public final class AllergyInspector {
             return;
         }
 
-        final List<Long> list = new ArrayList<Long>(1);
+        final List<Long> list = new ArrayList<>(1);
         list.add(new Long(model.getObservationId()));
 
         DBTask task = new DBTask<Void, Void>(this.context) {

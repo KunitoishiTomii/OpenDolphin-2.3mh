@@ -19,7 +19,7 @@ public class IncReader {
     private static final String[] IGNORES = new String[]{"GF"};
     private static final String ENCODING = "UTF-8";
     
-    private String kanricd;
+    private final String kanricd;
     private String orcaVer;
     
     public IncReader(String kanricd, String orcaVer) {
@@ -40,79 +40,77 @@ public class IncReader {
         sb.append("CPSK").append(kanricd).append(".csv");
         String incResource = sb.toString();
         
-        InputStream is=  ClientContext.getResourceAsStream(incResource);
-        BufferedReader br = new BufferedReader(new InputStreamReader(is, ENCODING));
-        
         String line;
         String kanriTblLevel = null;
-        Map<String, Integer> nameNumMap = new HashMap<String, Integer>();
-        Map<String, String> ret = new HashMap<String, String>();
+        Map<String, Integer> nameNumMap = new HashMap<>();
+        Map<String, String> ret = new HashMap<>();
         String tableName = String.format(TABLE, kanricd);
         int pos = 0;
-
-        while ((line = br.readLine()) != null) {
+        
+        try (InputStream is = ClientContext.getResourceAsStream(incResource);
+                BufferedReader br = new BufferedReader(new InputStreamReader(is, ENCODING))) {
             
-            // コメントならcontinue;
-            if (line.startsWith(COMMENT_MARK)) {
-                continue;
-            }
-            
-            // データを取得
-            String[] datum = line.split(CAMMA);
-            if (datum.length != COLUMN_COUNT) {
-                continue;
-            }
-            String level = datum[1];
-            String name = datum[2];
-            String type = datum[3];
-            String length = datum[4];
-            
-            // SYS-XXXX-TBL行を探す
-            if (kanriTblLevel == null) {
-                if (name.equals(tableName)) {
-                   kanriTblLevel = level; 
+            while ((line = br.readLine()) != null) {
+                
+                // コメントならcontinue;
+                if (line.startsWith(COMMENT_MARK)) {
+                    continue; 
                 }
-                continue;
-            }
-            
-            // GFなどならcontinue
-            boolean skip = false;
-            for (String ignore : IGNORES) {
-                if (ignore.equals(type)) {
-                    skip = true;
+                
+                // データを取得
+                String[] datum = line.split(CAMMA);
+                if (datum.length != COLUMN_COUNT) {
+                    continue;
+                }
+                String level = datum[1];
+                String name = datum[2];
+                String type = datum[3];
+                String length = datum[4];
+                
+                // SYS-XXXX-TBL行を探す
+                if (kanriTblLevel == null) {
+                    if (name.equals(tableName)) {
+                        kanriTblLevel = level;
+                    }
+                    continue;
+                }
+                
+                // GFなどならcontinue
+                boolean skip = false;
+                for (String ignore : IGNORES) {
+                    if (ignore.equals(type)) {
+                        skip = true;
+                        break;
+                    }
+                }
+                if (skip) {
+                    continue;
+                }
+                
+                // SYS-XXXX-TBLと同じレベルが出現したらkanriTblの終了
+                if (kanriTblLevel.equals(level)) {
                     break;
                 }
+                
+                // 出現回数を記録する
+                Integer num = nameNumMap.get(name);
+                if (num == null) {
+                    num = 0;
+                }
+                nameNumMap.put(name, ++num);
+                
+                // 複数回出現するものは番号をつける
+                String keyName = (num == 1)
+                        ? name
+                        : name + "-" + String.valueOf(num);
+                int len = Integer.valueOf(length);
+                String value = getString(charArray, pos, len);
+                if (!value.isEmpty()) {
+                    ret.put(keyName, value);
+                }
+                pos += len;
             }
-            if (skip) {
-                continue;
-            }
-            
-            // SYS-XXXX-TBLと同じレベルが出現したらkanriTblの終了
-            if (kanriTblLevel != null && kanriTblLevel.equals(level)) {
-                break;
-            }
-            
-            // 出現回数を記録する
-            Integer num = nameNumMap.get(name);
-            if (num == null) {
-                num = 0;
-            }
-            nameNumMap.put(name, ++num);
-
-            // 複数回出現するものは番号をつける
-            String keyName = (num == 1)
-                    ? name
-                    : name + "-" + String.valueOf(num);
-            int len = Integer.valueOf(length);
-            String value = getString(charArray, pos, len);
-            if (!value.isEmpty()) {
-                ret.put(keyName, value);
-            }
-            pos += len;
         }
-        
-        br.close();
-        is.close();
         
         return ret;
     }

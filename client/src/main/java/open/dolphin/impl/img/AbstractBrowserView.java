@@ -10,10 +10,10 @@ import open.dolphin.client.ClientContext;
  */
 public class AbstractBrowserView extends JPanel {
     
-    private JPanel north;
-    private JLabel dirLbl;
-    private JButton refreshBtn;
-    private JButton settingBtn;
+    private final JPanel north;
+    private final JLabel dirLbl;
+    private final JButton refreshBtn;
+    private final JButton settingBtn;
 
     protected AbstractBrowserView() {
         

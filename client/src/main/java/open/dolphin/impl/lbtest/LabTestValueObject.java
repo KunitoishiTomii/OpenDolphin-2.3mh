@@ -56,9 +56,8 @@ public class LabTestValueObject {
      * @param comment1 the comment1 to set
      */
     public void setComment1(String comment1) {
-        if (comment1!=null) {
-            comment1.trim();
-            this.comment1 = comment1;
+        if (comment1 != null) {
+            this.comment1 = comment1.trim();
         }
     }
 
@@ -73,9 +72,8 @@ public class LabTestValueObject {
      * @param comment2 the comment2 to set
      */
     public void setComment2(String comment2) {
-        if (comment2!=null) {
-            comment2.trim();
-            this.comment2 = comment2;
+        if (comment2 != null) {
+            this.comment2 = comment2.trim();
         }
     }
 

@@ -162,7 +162,7 @@ public class PatientServiceBean {
                 .setParameter(DATE, pvtDate+PERCENT)
                 .getResultList();
 
-        List<PatientModel> ret = new ArrayList<PatientModel>();
+        List<PatientModel> ret = new ArrayList<>();
 
         for (PatientVisitModel pvt : list) {
             PatientModel patient = pvt.getPatientModel();
@@ -195,7 +195,7 @@ public class PatientServiceBean {
                 .setParameter(DATE, mmlDate)
                 .getResultList();
 
-        List<PatientModel> ret = new ArrayList<PatientModel>();
+        List<PatientModel> ret = new ArrayList<>();
 
         for (PatientVisitModel pvt : list) {
             PatientModel patient = pvt.getPatientModel();

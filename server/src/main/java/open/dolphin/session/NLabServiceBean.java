@@ -49,7 +49,7 @@ public class NLabServiceBean {
     
     public List<PatientLiteModel> getConstrainedPatients(String fid, List<String>idList) {
 
-        List<PatientLiteModel> ret = new ArrayList<PatientLiteModel>(idList.size());
+        List<PatientLiteModel> ret = new ArrayList<>(idList.size());
 
         for (String pid : idList) {
 
@@ -122,10 +122,10 @@ public class NLabServiceBean {
             } 
         }
 
-        NLaboModule exist = null;
+        NLaboModule exist;
 
         try {
-            if (moduleKey!=null) {
+            if (moduleKey != null) {
                 exist = (NLaboModule)
                         em.createQuery(QUERY_MODULE_BY_MODULE_KEY)
                         .setParameter(MODULEKEY, moduleKey)
@@ -309,7 +309,7 @@ public class NLabServiceBean {
         }
         
         // LaboModule -> NLaboModule
-        List<NLaboModule> list = new ArrayList<NLaboModule>();
+        List<NLaboModule> list = new ArrayList<>();
         for (LaboModuleValue module : modules) {
             NLaboModule nLaboModule = convert(fidPid, module);
             list.add(nLaboModule);
@@ -324,7 +324,7 @@ public class NLabServiceBean {
         String laboCenterCode = labo13.getLaboratoryCenter();
         String sampleDate = labo13.getSampleTime().substring(0, "yyyy-MM-dd".length());
 
-        List<NLaboItem> nLaboItems = new ArrayList<NLaboItem>();
+        List<NLaboItem> nLaboItems = new ArrayList<>();
         List<LaboSpecimenValue> specimens = labo13.getLaboSpecimens();
         
         for (LaboSpecimenValue specimen : specimens) {

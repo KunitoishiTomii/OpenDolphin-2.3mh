@@ -21,10 +21,10 @@ public class PvtClaimIOHandler implements IHandler {
     private static final String UTF8 = "UTF-8";
 
     private static final int bufferSize = 8192;
-    private ByteBuffer byteBuffer;
+    private final ByteBuffer byteBuffer;
     
-    private ByteArrayOutputStream baos;
-    private BufferedOutputStream bos;
+    private final ByteArrayOutputStream baos;
+    private final BufferedOutputStream bos;
    
     private static final Logger logger = Logger.getLogger(PvtClaimIOHandler.class.getSimpleName());
     private static final boolean DEBUG = false;
