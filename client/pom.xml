@@ -32,7 +32,7 @@
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-core</artifactId>
-            <version>4.2.7.SP1</version>
+            <version>4.2.8.Final</version>
         </dependency>
         <dependency>
             <groupId>log4j</groupId>
@@ -52,7 +52,7 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>9.2-1003-jdbc4</version>
+            <version>9.3-1100-jdbc41</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.core</groupId>
