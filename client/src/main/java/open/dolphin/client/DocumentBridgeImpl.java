@@ -153,7 +153,9 @@ public class DocumentBridgeImpl extends AbstractChartDocument
             case DocumentHistory.DOCUMENT_TYPE:
                 // 文書種別が変更された場合
                 String docType = (String) evt.getNewValue();
-                
+                if (docType == null) {
+                    break;
+                }
                 switch (docType) {
                     case IInfoModel.DOCTYPE_LETTER:         // 紹介状
                     case IInfoModel.DOCTYPE_LETTER_REPLY:   // 紹介状返書

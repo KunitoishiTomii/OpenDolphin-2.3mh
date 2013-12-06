@@ -97,21 +97,20 @@ public class ListPluginLoader<S> implements Iterable<S> {
                 while (configs.hasMoreElements()) {
                     
                     URL url = configs.nextElement();
-                    InputStream in = url.openStream();
-                    BufferedReader r = new BufferedReader(new InputStreamReader(in, "UTF-8"));
-                    String line;
-                    while ((line=r.readLine()) != null) {
-                        line = line.trim();
-                        int index = line.indexOf("=");
-                        if (index > 0) {
-                            String id = line.substring(0, index++);
-                            String value = line.substring(index);
-                            allPlugins.add(new IdValuePair(id, value));
+                    try (InputStream in = url.openStream();
+                            BufferedReader r = new BufferedReader(new InputStreamReader(in, "UTF-8"));) {
+                        
+                        String line;
+                        while ((line = r.readLine()) != null) {
+                            line = line.trim();
+                            int index = line.indexOf("=");
+                            if (index > 0) {
+                                String id = line.substring(0, index++);
+                                String value = line.substring(index);
+                                allPlugins.add(new IdValuePair(id, value));
+                            }
                         }
                     }
-                    
-                    r.close();
-                    in.close();
                 }
                 
                 iterator = allPlugins.iterator();  

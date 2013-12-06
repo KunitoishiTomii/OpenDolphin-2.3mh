@@ -833,9 +833,8 @@ public class PatientSearchImpl extends AbstractMainComponent {
             File file = fileChooser.getSelectedFile();
 
             if (!file.exists() || isOverwriteConfirmed(file)) {
-
-                try {
-                    FileWriter writer = new FileWriter(file);
+                
+                try (FileWriter writer = new FileWriter(file)) {
                     JTable table = view.getTable();
                     // 書き出す内容
                     StringBuilder sb = new StringBuilder();
@@ -849,6 +848,7 @@ public class PatientSearchImpl extends AbstractMainComponent {
                         sb.append('\n');
                     }
                     writer.write(sb.toString());
+                    
                     // close
                     writer.close();
 
@@ -929,8 +929,7 @@ public class PatientSearchImpl extends AbstractMainComponent {
                     } else {
                         tableModel.clear();
                     }
-                } catch (InterruptedException ex) {
-                } catch (ExecutionException ex) {
+                } catch (InterruptedException | ExecutionException ex) {
                 } finally{
                     doStopProgress();
                     updateStatusLabel();
@@ -964,8 +963,7 @@ public class PatientSearchImpl extends AbstractMainComponent {
                     } else {
                         tableModel.clear();
                     }
-                } catch (InterruptedException ex) {
-                } catch (ExecutionException ex) {
+                } catch (InterruptedException | ExecutionException ex) {
                 } finally{
                     doStopProgress();
                     updateStatusLabel();

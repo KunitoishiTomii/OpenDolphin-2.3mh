@@ -344,7 +344,7 @@ public class PacsDicomDocImpl extends AbstractChartDocument implements PropertyC
                     // listTableに結果を設定する
                     List<DicomObject> result = get();
                     if (result != null && !result.isEmpty()) {
-                        List<ListDicomObject> newList = new ArrayList<ListDicomObject>();
+                        List<ListDicomObject> newList = new ArrayList<>();
                         for (DicomObject obj : result) {
                             newList.add(new ListDicomObject(obj));
                         }
@@ -352,8 +352,7 @@ public class PacsDicomDocImpl extends AbstractChartDocument implements PropertyC
                         Collections.sort(newList, Collections.reverseOrder());
                         listTableModel.setDataProvider(newList);
                     }
-                } catch (InterruptedException ex) {
-                } catch (ExecutionException ex) {
+                } catch (InterruptedException | ExecutionException ex) {
                 }
             }
         };
@@ -443,9 +442,7 @@ public class PacsDicomDocImpl extends AbstractChartDocument implements PropertyC
             if (desktop.isSupported(Desktop.Action.BROWSE)) {
                 try {
                     desktop.browse(new URI(url));
-                } catch (IOException ex) {
-                    //ex.printStackTrace(System.err);
-                } catch (URISyntaxException ex) {
+                } catch (IOException | URISyntaxException ex) {
                     //ex.printStackTrace(System.err);
                 }
             }

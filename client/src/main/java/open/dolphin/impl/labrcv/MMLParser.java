@@ -290,16 +290,20 @@ public class MMLParser implements LabResultParser {
                     val = child.getAttributeValue("statusCode", ns);
                     logger.debug("statusCode = " + val);
                     laboModule.setReportStatusCode(val);
-                    switch (val) {
-                        case "final":
-                            reportStatus = "E";
-                            break;
-                        case "mid":
-                            reportStatus = "M";
-                            break;
-                        default:
-                            reportStatus = null;
-                            break;
+                    if (val != null) {
+                        switch (val) {
+                            case "final":
+                                reportStatus = "E";
+                                break;
+                            case "mid":
+                                reportStatus = "M";
+                                break;
+                            default:
+                                reportStatus = null;
+                                break;
+                        }
+                    } else {
+                        reportStatus = null;
                     }
                     val = child.getAttributeValue("statusCodeId", ns);
                     logger.debug("statusCodeId = " + val);

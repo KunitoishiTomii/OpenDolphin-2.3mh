@@ -8,8 +8,8 @@ package open.dolphin.util;
  */
 public class LapTimer {
 
-    private long sTime;
-    private StringBuilder sb;
+    private final long sTime;
+    private final StringBuilder sb;
     
     public LapTimer() {
         sTime = System.currentTimeMillis();
@@ -25,7 +25,7 @@ public class LapTimer {
     
     public void stop() {
         long t = System.currentTimeMillis();
-        sb.append("Lap timer stopped at").append(t);;
+        sb.append("Lap timer stopped at").append(t);
         sb.append(" (").append(t - sTime).append(")\n");
         System.out.println(sb.toString());
 

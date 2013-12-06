@@ -56,8 +56,8 @@ public class DicomViewer {
     private static final int MAX_IMAGE_SIZE = 120;
     private static final int CELL_WIDTH_MARGIN = 20;
     private static final int CELL_HEIGHT_MARGIN = 20;
-    private int cellWidth = MAX_IMAGE_SIZE + CELL_WIDTH_MARGIN;
-    private int cellHeight = MAX_IMAGE_SIZE + CELL_HEIGHT_MARGIN;
+    private final int cellWidth = MAX_IMAGE_SIZE + CELL_WIDTH_MARGIN;
+    private final int cellHeight = MAX_IMAGE_SIZE + CELL_HEIGHT_MARGIN;
     private final int columnCount = 1;
     private int index = 0;
     private final static DecimalFormat frmt = new DecimalFormat("0.0");

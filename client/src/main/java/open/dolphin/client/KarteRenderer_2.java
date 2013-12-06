@@ -77,6 +77,9 @@ public class KarteRenderer_2 {
         for (ModuleModel bean : modules) {
 
             String role = bean.getModuleInfoBean().getStampRole();
+            if (role == null) {
+                continue;
+            }
             switch (role) {
                 case IInfoModel.ROLE_SOA:
                     soaModules.add(bean);
@@ -195,7 +198,11 @@ public class KarteRenderer_2 {
         private void startElement(XMLStreamReader reader) throws XMLStreamException {
 
             String eName = reader.getName().getLocalPart();
-
+            
+            if (eName == null) {
+                return;
+            }
+            
             switch (eName) {
                 case PARAGRAPH_NAME:
                     String alignStr = reader.getAttributeValue(null, ALIGNMENT_NAME);
@@ -237,7 +244,11 @@ public class KarteRenderer_2 {
         private void endElement(XMLStreamReader reader) {
 
             String eName = reader.getName().getLocalPart();
-
+            
+            if (eName == null) {
+                return;
+            }
+            
             switch (eName) {
                 case PARAGRAPH_NAME:
                     endParagraph();
@@ -316,22 +327,24 @@ public class KarteRenderer_2 {
 
         private void startComponent(String name, String number) {
 
-            if (name != null) {
-                int index = Integer.valueOf(number);
-                switch (name) {
-                    case STAMP_HOLDER:
-                        // StampHolderを作成する。JTextPaneにDocumentは未設定なのでKartePane.flowStampは使えない
-                        StampHolder stamp = new StampHolder(kartePane, modules.get(index));
-                        stamp.setTransferHandler(StampHolderTransferHandler.getInstance());
-                        doc.flowComponent(stamp);
-                        break;
-                    case SCHEMA_HOLDER:
-                        // SchemaHolderを作成する
-                        SchemaHolder schema = new SchemaHolder(kartePane, schemas.get(index));
-                        schema.setTransferHandler(SchemaHolderTransferHandler.getInstance());
-                        doc.flowComponent(schema);
-                        break;
-                }
+            if (name == null) {
+                return;
+            }
+
+            int index = Integer.parseInt(number);
+            switch (name) {
+                case STAMP_HOLDER:
+                    // StampHolderを作成する。JTextPaneにDocumentは未設定なのでKartePane.flowStampは使えない
+                    StampHolder stamp = new StampHolder(kartePane, modules.get(index));
+                    stamp.setTransferHandler(StampHolderTransferHandler.getInstance());
+                    doc.flowComponent(stamp);
+                    break;
+                case SCHEMA_HOLDER:
+                    // SchemaHolderを作成する
+                    SchemaHolder schema = new SchemaHolder(kartePane, schemas.get(index));
+                    schema.setTransferHandler(SchemaHolderTransferHandler.getInstance());
+                    doc.flowComponent(schema);
+                    break;
             }
         }
     }
@@ -405,7 +418,11 @@ public class KarteRenderer_2 {
         private void startElement(XMLStreamReader reader) throws XMLStreamException {
 
             String eName = reader.getName().getLocalPart();
-
+            
+            if (eName == null) {
+                return;
+            }
+            
             switch (eName) {
                 case SECTION_NAME:
                     startSection();
@@ -453,7 +470,11 @@ public class KarteRenderer_2 {
         private void endElement(XMLStreamReader reader) {
 
             String eName = reader.getName().getLocalPart();
-
+            
+            if (eName == null) {
+                return;
+            }
+            
             switch (eName) {
                 case PARAGRAPH_NAME:
                     endParagraph();
@@ -533,28 +554,30 @@ public class KarteRenderer_2 {
         }
 
         private void startComponent(String name, String number) {
+            
+            if (name == null) {
+                return;
+            }
 
-            if (name != null) {
-                int index = Integer.valueOf(number);
-                switch (name) {
-                    case STAMP_HOLDER: {
-                        // StampHolderを作成する
-                        StampHolder sh = new StampHolder(kartePane, modules.get(index));
-                        sh.setTransferHandler(StampHolderTransferHandler.getInstance());
-                        // このスタンプ用のスタイルを生成する
-                        MutableAttributeSet atts = doc.createComponentAttribute(sh);
-                        insertString(" ", atts);
-                        break;
-                    }
-                    case SCHEMA_HOLDER: {
-                        // SchemaHolderを作成する
-                        SchemaHolder sh = new SchemaHolder(kartePane, schemas.get(index));
-                        sh.setTransferHandler(SchemaHolderTransferHandler.getInstance());
-                        // このスタンプ用のスタイルを生成する
-                        MutableAttributeSet atts = doc.createComponentAttribute(sh);
-                        insertString(" ", atts);
-                        break;
-                    }
+            int index = Integer.parseInt(number);
+            switch (name) {
+                case STAMP_HOLDER: {
+                    // StampHolderを作成する
+                    StampHolder sh = new StampHolder(kartePane, modules.get(index));
+                    sh.setTransferHandler(StampHolderTransferHandler.getInstance());
+                    // このスタンプ用のスタイルを生成する
+                    MutableAttributeSet atts = doc.createComponentAttribute(sh);
+                    insertString(" ", atts);
+                    break;
+                }
+                case SCHEMA_HOLDER: {
+                    // SchemaHolderを作成する
+                    SchemaHolder sh = new SchemaHolder(kartePane, schemas.get(index));
+                    sh.setTransferHandler(SchemaHolderTransferHandler.getInstance());
+                    // このスタンプ用のスタイルを生成する
+                    MutableAttributeSet atts = doc.createComponentAttribute(sh);
+                    insertString(" ", atts);
+                    break;
                 }
             }
         }

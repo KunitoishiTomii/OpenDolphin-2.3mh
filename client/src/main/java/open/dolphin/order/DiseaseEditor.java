@@ -676,16 +676,16 @@ public final class DiseaseEditor extends AbstractStampEditor {
             String srycd = rd.getDiagnosisCode();
             if (prePosition) {
                 if (srycd.matches("ZZZ[0-7][0-9]{3}")) {
-                    continue;
+                    //continue;
                 } else if (!srycd.startsWith("ZZZ")) {
                     prePosition = false;
-                    continue;
+                    //continue;
                 } else {
                     return false;
                 }
             } else {
                 if (srycd.startsWith("ZZZ8")){
-                    continue;
+                    //continue;
                 } else {
                     return false;
                 }

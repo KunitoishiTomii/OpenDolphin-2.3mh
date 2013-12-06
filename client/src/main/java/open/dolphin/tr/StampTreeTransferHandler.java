@@ -28,13 +28,13 @@ import open.dolphin.stampbox.StampTreeNode;
 public class StampTreeTransferHandler extends DolphinTransferHandler {
 
     // StampTreeNode Flavor
-    private DataFlavor stampTreeNodeFlavor = LocalStampTreeNodeTransferable.localStampTreeNodeFlavor;
+    private final DataFlavor stampTreeNodeFlavor = LocalStampTreeNodeTransferable.localStampTreeNodeFlavor;
     // KartePaneからDropされるオーダのFlavor
-    private DataFlavor orderFlavor = OrderListTransferable.orderListFlavor;
+    private final DataFlavor orderFlavor = OrderListTransferable.orderListFlavor;
     // KartePaneからDropされるテキストFlavor
     //private DataFlavor stringFlavor = DataFlavor.stringFlavor;
     // 病名エディタからDropされるRegisteredDiagnosis Flavor
-    private DataFlavor infoModelFlavor = InfoModelTransferable.infoModelFlavor;
+    private final DataFlavor infoModelFlavor = InfoModelTransferable.infoModelFlavor;
 
     /**
      * 選択されたノードでDragを開始する。
@@ -198,11 +198,8 @@ public class StampTreeTransferHandler extends DolphinTransferHandler {
                 imported = false;
             }
 
-        } catch (UnsupportedFlavorException ue) {
+        } catch (UnsupportedFlavorException | IOException ue) {
             ue.printStackTrace(System.err);
-
-        } catch (IOException ie) {
-            ie.printStackTrace(System.err);
         }
 
         if (imported) {

@@ -33,32 +33,40 @@ public class StampEditor implements PropertyChangeListener {
     
     public StampEditor(ModuleModel[] stamps, final PropertyChangeListener listener, Chart chart) {
 
-
         String entity = stamps[0].getModuleInfoBean().getEntity();
-
-        if (entity.equals(IInfoModel.ENTITY_MED_ORDER)) {
-            // RP
-            editor = new RpEditor(entity);
-
-        } else if (entity.equals(IInfoModel.ENTITY_RADIOLOGY_ORDER)) {
-            // Injection
-            editor = new RadEditor(entity);
-
-        } else if (entity.equals(IInfoModel.ENTITY_INJECTION_ORDER)) {
-            // Rad
-            editor = new InjectionEditor(entity);
-
-        } else if (entity.equals("text")) {
-            // テキストスタンプエディタ
-            editor = new TextStampEditor(entity);
-        } else if (entity.equals(IInfoModel.ENTITY_INSTRACTION_CHARGE_ORDER)) {
-            // 指導
-            editor = new InstractionEditor(entity);
+        
+        if (entity != null) {
+            switch (entity) {
+                case IInfoModel.ENTITY_MED_ORDER:
+                    // RP
+                    editor = new RpEditor(entity);
+                    break;
+                case IInfoModel.ENTITY_RADIOLOGY_ORDER:
+                    // Injection
+                    editor = new RadEditor(entity);
+                    break;
+                case IInfoModel.ENTITY_INJECTION_ORDER:
+                    // Rad
+                    editor = new InjectionEditor(entity);
+                    break;
+                case "text":
+                    // テキストスタンプエディタ
+                    editor = new TextStampEditor(entity);
+                    break;
+                case IInfoModel.ENTITY_INSTRACTION_CHARGE_ORDER:
+                    // 指導
+                    editor = new InstractionEditor(entity);
+                    break;
+                default:
+                    // others, ex. physiology. most simple and basic editor
+                    editor = new BaseEditor(entity);
+                    break;
+            }
         } else {
             // others, ex. physiology. most simple and basic editor
-            editor = new BaseEditor(entity);
+            //editor = new BaseEditor(entity);
         }
-
+        
         editor.addPropertyChangeListener(AbstractStampEditor.VALUE_PROP, listener);
         editor.addPropertyChangeListener(AbstractStampEditor.EDIT_END_PROP, StampEditor.this);
         editor.setValue(stamps);

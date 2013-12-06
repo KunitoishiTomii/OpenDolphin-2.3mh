@@ -27,7 +27,7 @@ public class StmapTreePopupBuilder {
     public void build(StampTree stampTree, JPopupMenu popup, JComponent cmp, TransferHandler handler) {
         
         if (parents == null) {
-            parents = new HashMap<Object, JMenu>(10, 0.75f);
+            parents = new HashMap<>(10, 0.75f);
         } else {
             parents.clear();
         }

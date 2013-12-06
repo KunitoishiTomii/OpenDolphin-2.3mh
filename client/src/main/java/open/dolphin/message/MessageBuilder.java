@@ -49,7 +49,7 @@ public class MessageBuilder {
         
         logger.debug("MessageBuilder build");
         
-        Template template = null;
+        Template template;
         VelocityContext context = new VelocityContext();
         
         if (helper instanceof ClaimHelper) {
@@ -58,6 +58,8 @@ public class MessageBuilder {
         } else if (helper instanceof DiseaseHelper) {
             template = diseaseTemplate;
             context.put("diseaseHelper", helper);
+        } else {
+            return null;
         }
         
         StringWriter sw = new StringWriter();

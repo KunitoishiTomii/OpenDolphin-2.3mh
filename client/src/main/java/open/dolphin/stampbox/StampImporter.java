@@ -5,6 +5,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.*;
@@ -287,7 +288,7 @@ public class StampImporter {
 
         try {
             importTree.setTreeXml(new String(importTree.getTreeBytes(), "UTF-8"));
-        } catch (Exception e) {
+        } catch (UnsupportedEncodingException e) {
             e.printStackTrace(System.err);
         }
         

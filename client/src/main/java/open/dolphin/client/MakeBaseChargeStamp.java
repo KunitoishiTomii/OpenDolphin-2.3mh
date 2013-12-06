@@ -284,7 +284,7 @@ public class MakeBaseChargeStamp extends CheckSantei {
         BundleDolphin bundle = (BundleDolphin) sh.getStamp().getModel();
         ClaimItem[] ci = bundle.getClaimItem();
         for (ClaimItem item : ci) {
-            int srycd = Integer.valueOf(item.getCode());
+            int srycd = Integer.parseInt(item.getCode());
             switch (srycd) {
                 case srycd_Saishin:
                     rb_saishin.setSelected(true);

@@ -254,7 +254,7 @@ public class TouchaServiceBean {
                         .setMaxResults(1)
                         .getSingleResult();
                 docPk = model.getId();
-            } catch (Exception ex) {
+            } catch (ParseException ex) {
             }
         } else {
             if ("0".equals(docPkStr)) {

@@ -3,6 +3,8 @@ package open.dolphin.tr;
 import java.awt.Image;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JComponent;
@@ -17,7 +19,7 @@ import open.dolphin.table.ListTableModel;
  */
 public class InFacilityLaboTransferHandler extends DolphinTransferHandler {
 
-    private DataFlavor inFacilityLaboItem = InFacilityLaboItemTransferable.inFacilityLaboItemFlavor;
+    private final DataFlavor inFacilityLaboItem = InFacilityLaboItemTransferable.inFacilityLaboItemFlavor;
     
     private boolean editable;
     
@@ -92,7 +94,7 @@ public class InFacilityLaboTransferHandler extends DolphinTransferHandler {
                 }
                 return true;
             }
-        } catch (Exception ioe) {
+        } catch (UnsupportedFlavorException | IOException ioe) {
             ioe.printStackTrace(System.err);
         }
         
@@ -118,7 +120,7 @@ public class InFacilityLaboTransferHandler extends DolphinTransferHandler {
                     tableModel.delete(item);
                 }
             }
-        } catch (Exception e) {
+        } catch (UnsupportedFlavorException | IOException e) {
         }
         
         endTransfer();

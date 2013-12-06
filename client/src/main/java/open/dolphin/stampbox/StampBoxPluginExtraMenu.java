@@ -325,9 +325,7 @@ public class StampBoxPluginExtraMenu extends MouseAdapter {
                     blockGlass.unblock();
                     String msg = get();
                     JOptionPane.showMessageDialog(null, msg, "ゾンビ退治", JOptionPane.WARNING_MESSAGE);
-                } catch (InterruptedException ex) {
-                    processException(ex);
-                } catch (ExecutionException ex) {
+                } catch (InterruptedException | ExecutionException ex) {
                     processException(ex);
                 }
             }

@@ -121,6 +121,7 @@ public class PrintLabel {
 
 
     private void collectModuleModel() {
+        
         for (StampHolder sh : stampHolders) {
             ModuleModel stamp = sh.getStamp();
             String entity = stamp.getModuleInfoBean().getEntity();

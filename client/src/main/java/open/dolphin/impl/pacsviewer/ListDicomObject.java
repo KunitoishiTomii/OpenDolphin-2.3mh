@@ -12,15 +12,15 @@ import org.dcm4che2.data.Tag;
  */
 public class ListDicomObject implements Comparable {
     
-    private DicomObject object;
-    private String ptId;
-    private String ptName;
-    private String ptSex;
-    private String ptBirthDate;
-    private String modalities;
-    private String description;
-    private String studyDate;
-    private String numberOfImage;
+    private final DicomObject object;
+    private final String ptId;
+    private final String ptName;
+    private final String ptSex;
+    private final String ptBirthDate;
+    private final String modalities;
+    private final String description;
+    private final String studyDate;
+    private final String numberOfImage;
 
 
     public ListDicomObject(DicomObject obj) {

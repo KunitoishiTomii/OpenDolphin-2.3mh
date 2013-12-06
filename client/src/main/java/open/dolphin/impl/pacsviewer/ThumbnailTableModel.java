@@ -13,7 +13,7 @@ import open.dolphin.util.DicomImageEntry;
 
 public class ThumbnailTableModel extends AbstractTableModel {
     
-    private int columnCount;
+    private final int columnCount;
     private List<DicomImageEntry> imageList;
     
     public ThumbnailTableModel(int columnCount) {
@@ -64,7 +64,7 @@ public class ThumbnailTableModel extends AbstractTableModel {
 
     public void addImage(DicomImageEntry entry){
         if (imageList == null){
-            imageList = new ArrayList<DicomImageEntry>();
+            imageList = new ArrayList<>();
         }
         imageList.add(entry);
         this.fireTableDataChanged();

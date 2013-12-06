@@ -907,7 +907,7 @@ public class MasudaServiceBean {
         int num = 1;
         try {
             num = Integer.valueOf(str);
-        } catch (Exception e) {
+        } catch (NumberFormatException e) {
         }
         return num;
     }
@@ -1125,8 +1125,7 @@ public class MasudaServiceBean {
                     .setParameter("value", jmariCode)
                     .getSingleResult();
             fid = model.getFacilityId();
-        } catch (NoResultException ex) {
-        } catch (NonUniqueResultException ex) {
+        } catch (NoResultException | NonUniqueResultException ex) {
         }
         return fid;
     }

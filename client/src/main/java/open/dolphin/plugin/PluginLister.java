@@ -53,20 +53,19 @@ public class PluginLister<S> {
             while (configs.hasMoreElements()) {
 
                 URL url = configs.nextElement();
-                InputStream in = url.openStream();
-                BufferedReader r = new BufferedReader(new InputStreamReader(in, "UTF-8"));
-                String line;
-                while ((line = r.readLine()) != null) {
-                    line = line.trim();
-                    Scanner s = new Scanner(line).useDelimiter("\\s*,\\s*");
-                    String menu = s.next();
-                    String cmd = s.next();
-                    String value = s.next();
-                    providers.put(cmd, value); 
-                }
+                try (InputStream in = url.openStream();
+                        BufferedReader r = new BufferedReader(new InputStreamReader(in, "UTF-8"));) {
 
-                r.close();
-                in.close();
+                    String line;
+                    while ((line = r.readLine()) != null) {
+                        line = line.trim();
+                        Scanner s = new Scanner(line).useDelimiter("\\s*,\\s*");
+                        String menu = s.next();
+                        String cmd = s.next();
+                        String value = s.next();
+                        providers.put(cmd, value);
+                    }
+                }
             }
 
         } catch (IOException x) {

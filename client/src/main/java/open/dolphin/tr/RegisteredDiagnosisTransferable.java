@@ -14,7 +14,7 @@ public final class RegisteredDiagnosisTransferable extends DolphinTransferable {
     public static final DataFlavor registeredDiagnosisFlavor 
             = new DataFlavor(RegisteredDiagnosisModel.class, "RegisteredDiagnosis");
     public static final DataFlavor[] flavors = {registeredDiagnosisFlavor};
-    private RegisteredDiagnosisModel diagnosis;
+    private final RegisteredDiagnosisModel diagnosis;
 
     public RegisteredDiagnosisTransferable(RegisteredDiagnosisModel diagnosis) {
         this.diagnosis = diagnosis;

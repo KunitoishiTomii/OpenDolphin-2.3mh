@@ -44,6 +44,6 @@ public class MultiTaskExecutor<T> {
 
     // CompletionService
     public CompletionService createCompletionService() {
-        return new ExecutorCompletionService<T>(exec);
+        return new ExecutorCompletionService<>(exec);
     }
 }

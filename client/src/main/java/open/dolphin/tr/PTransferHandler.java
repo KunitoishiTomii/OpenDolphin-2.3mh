@@ -1,9 +1,12 @@
 package open.dolphin.tr;
 
+import java.awt.HeadlessException;
 import java.awt.Toolkit;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import javax.swing.ActionMap;
@@ -183,7 +186,7 @@ public class PTransferHandler extends AbstractKarteTransferHandler {
                 pPane.stampInfoDropped(addList);
             }
             return true;
-        } catch (Exception e) {
+        } catch (UnsupportedFlavorException | IOException e) {
             e.printStackTrace(System.err);
         }
         return false;
@@ -226,13 +229,13 @@ public class PTransferHandler extends AbstractKarteTransferHandler {
             }
 //masuda$
             // pPaneにスタンプを挿入する
-            for (int i = 0; i < stamps.length; i++) {
-                kartePane.stamp(stamps[i]);
+            for (ModuleModel stamp : stamps) {
+                kartePane.stamp(stamp);
             }
 
             return true;
 
-        } catch (Exception e) {
+        } catch (HeadlessException | UnsupportedFlavorException | IOException e) {
             e.printStackTrace(System.err);
         }
         return false;

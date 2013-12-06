@@ -25,7 +25,7 @@ import open.dolphin.table.ListTableSorter;
 public class DiagnosisTransferHandler extends DolphinTransferHandler {
     
     private static final DataFlavor FLAVOR = LocalStampTreeNodeTransferable.localStampTreeNodeFlavor;
-    private DiagnosisDocument parent;
+    private final DiagnosisDocument parent;
     private int action;
 
     public DiagnosisTransferHandler(DiagnosisDocument parent) {

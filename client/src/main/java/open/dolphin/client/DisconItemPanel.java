@@ -64,11 +64,7 @@ public class DisconItemPanel {
                     case DATE_COL:
                     case NAME_COL:
                     case MEMO_COL:
-                        if (row <= tableModel.getObjectCount() - 1) {
-                            return true;
-                        } else {
-                            return false;
-                        }
+                        return row <= tableModel.getObjectCount() - 1;
                     default:
                         return false;
                 }

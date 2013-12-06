@@ -16,7 +16,7 @@ public class InFacilityLaboItemTransferable extends DolphinTransferable {
 
     public static final DataFlavor[] flavors = {InFacilityLaboItemTransferable.inFacilityLaboItemFlavor};
 
-    private InFacilityLaboItem[] items;
+    private final InFacilityLaboItem[] items;
     
     public InFacilityLaboItemTransferable(InFacilityLaboItem[] items) {
         this.items = items;

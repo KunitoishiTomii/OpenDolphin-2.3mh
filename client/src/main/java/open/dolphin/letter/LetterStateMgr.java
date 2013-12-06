@@ -9,11 +9,11 @@ import open.dolphin.client.Letter;
  */
 public class LetterStateMgr {
 
-    private Letter letterImpl;
-    private LetterState emptyState = new EmptyState();
-    private LetterState cleanState = new CleanState();
-    private StartEditingState startEditingState = new StartEditingState();
-    private DirtyState dirtyState = new DirtyState();
+    private final Letter letterImpl;
+    private final LetterState emptyState = new EmptyState();
+    private final LetterState cleanState = new CleanState();
+    private final StartEditingState startEditingState = new StartEditingState();
+    private final DirtyState dirtyState = new DirtyState();
     private LetterState currentState;
 
     public LetterStateMgr(Letter letterImpl) {

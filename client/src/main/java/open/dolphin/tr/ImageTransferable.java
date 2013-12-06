@@ -12,8 +12,8 @@ import java.io.IOException;
  */
 public class ImageTransferable extends DolphinTransferable {
 
-    private Image image;
-    private DataFlavor[] flavor;
+    private final Image image;
+    private final DataFlavor[] flavor;
 
     public ImageTransferable(Image image) {
         this.image = image;

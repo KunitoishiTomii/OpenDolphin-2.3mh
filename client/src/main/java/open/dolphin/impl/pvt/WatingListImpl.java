@@ -1227,8 +1227,7 @@ public class WatingListImpl extends AbstractMainComponent {
                 try {
                     pvtList = get();
 
-                } catch (InterruptedException ex) {
-                } catch (ExecutionException ex) {
+                } catch (InterruptedException | ExecutionException ex) {
                 }
                 // フィルタリング
                 filterPatients();

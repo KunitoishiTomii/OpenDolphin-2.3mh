@@ -12,11 +12,7 @@ public final class OrderList implements Serializable {
 
     //private static final long serialVersionUID = -6049175115811888229L;
 
-    private ModuleModel[] orderList;
-
-    /** Creates new OrderList */
-    public OrderList() {
-    }
+    private final ModuleModel[] orderList;
 
     public OrderList(ModuleModel[] stamp) {
     	orderList = stamp;
@@ -26,7 +22,4 @@ public final class OrderList implements Serializable {
     	return orderList;
     }
 
-    public void setOrderStamp(ModuleModel[] stamp) {
-    	orderList = stamp;
-    }
 }

@@ -15,7 +15,7 @@ public final class SchemaListTransferable extends DolphinTransferable {
 
     public static final DataFlavor[] flavors = {SchemaListTransferable.schemaListFlavor};
 
-    private SchemaList list;
+    private final SchemaList list;
 
     /** Creates new SchemaListTransferable */
     public SchemaListTransferable(SchemaList list) {

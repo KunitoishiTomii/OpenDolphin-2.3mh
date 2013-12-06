@@ -60,9 +60,9 @@ public final class NewKarteDialog {
         content = createComponent();
     }
     
-    public void setValue(Object o) {
+    public void setValue(NewKarteParams params) {
         
-        this.params = (NewKarteParams) o;
+        this.params = params;
         setDepartmentName(params.getDepartmentName());
         setInsurance(params.getInsurances());
         

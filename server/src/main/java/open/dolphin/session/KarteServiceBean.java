@@ -1013,7 +1013,7 @@ public class KarteServiceBean {
         int num = 1;
         try {
             num = Integer.valueOf(str);
-        } catch (Exception e) {
+        } catch (NumberFormatException e) {
         }
         return num;
     }

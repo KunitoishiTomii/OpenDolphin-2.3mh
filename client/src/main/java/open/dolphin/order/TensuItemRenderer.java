@@ -58,16 +58,21 @@ public final class TensuItemRenderer extends StripeTableCellRenderer {
                 } else if (srycd.startsWith(ClaimConst.YAKUZAI_CODE_START)) {
                     //内用1、外用6、注射薬4
                     String ykzkbn = item.getYkzkbn();
-
-                    if (ykzkbn.equals(ClaimConst.YKZ_KBN_NAIYO)) {
-                        setBackground(MEDICINE_COLOR);
-
-                    } else if (ykzkbn.equals(ClaimConst.YKZ_KBN_INJECTION)) {
-                        setBackground(MEDICINE_COLOR);
-
-                    } else if (ykzkbn.equals(ClaimConst.YKZ_KBN_GAIYO)) {
-                        setBackground(MEDICINE_COLOR);
-
+                    if (ykzkbn != null) {
+                        switch (ykzkbn) {
+                            case ClaimConst.YKZ_KBN_NAIYO:
+                                setBackground(MEDICINE_COLOR);
+                                break;
+                            case ClaimConst.YKZ_KBN_INJECTION:
+                                setBackground(MEDICINE_COLOR);
+                                break;
+                            case ClaimConst.YKZ_KBN_GAIYO:
+                                setBackground(MEDICINE_COLOR);
+                                break;
+                            default:
+                                setBackground(OTHER_COLOR);
+                                break;
+                        }
                     } else {
                         setBackground(OTHER_COLOR);
                     }

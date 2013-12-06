@@ -20,14 +20,14 @@ public class LocalStampTreeNodeTransferable extends DolphinTransferable {
             //localStampTreeNodeFlavor = new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType + ";class=open.dolphin.client.StampTreeNode");
             localStampTreeNodeFlavor = new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType + ";class=" + StampTreeNode.class.getName());
 //masuda$
-        } catch (Exception e) {
+        } catch (ClassNotFoundException e) {
             e.printStackTrace(System.err);
         }
     }
 
     public static final DataFlavor[] flavors = {LocalStampTreeNodeTransferable.localStampTreeNodeFlavor};
 
-    private StampTreeNode node;
+    private final StampTreeNode node;
 
     /** Creates new StampTreeTransferable */
     public LocalStampTreeNodeTransferable(StampTreeNode node) {
