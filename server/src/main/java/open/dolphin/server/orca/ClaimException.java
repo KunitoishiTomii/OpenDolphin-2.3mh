@@ -1,6 +1,6 @@
 package open.dolphin.server.orca;
 
-import javax.servlet.AsyncContext;
+import open.dolphin.infomodel.ClaimMessageModel;
 
 /**
  * ClaimException
@@ -14,18 +14,18 @@ public class ClaimException extends Exception {
     };
     
     private final ERROR_CODE code;
-    private final AsyncContext ac;
+    private final ClaimMessageModel model;
 
-    public ClaimException(ERROR_CODE code, AsyncContext ac) {
+    public ClaimException(ERROR_CODE code, ClaimMessageModel model) {
         this.code = code;
-        this.ac = ac;
+        this.model = model;
     }
 
     public ERROR_CODE getErrorCode() {
         return code;
     }
 
-    public AsyncContext getAsyncContext() {
-        return ac;
+    public ClaimMessageModel getClaimMessageModel() {
+        return model;
     }
 }

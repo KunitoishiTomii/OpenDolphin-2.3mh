@@ -6,7 +6,6 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 import java.util.logging.Logger;
-import javax.servlet.AsyncContext;
 import open.dolphin.infomodel.ClaimMessageModel;
 
 /**
@@ -22,17 +21,15 @@ public class ClaimIOHandler {
     private static final byte ACK = 0x06;
     private static final byte NAK = 0x15;
     
-    private final AsyncContext ac;
+    private final ClaimMessageModel model;
     private ByteBuffer writeBuffer;
 
     
-    public ClaimIOHandler(AsyncContext ac, String encoding) {
+    public ClaimIOHandler(ClaimMessageModel model, String encoding) {
         
-        this.ac = ac;
+        this.model = model;
 
         try {
-            ClaimMessageModel model = (ClaimMessageModel) 
-                    ac.getRequest().getAttribute(ClaimMessageModel.class.getSimpleName());
             byte[] bytes = model.getContent().getBytes(encoding);
             writeBuffer = ByteBuffer.allocate(bytes.length + 1);
             writeBuffer.put(bytes);
@@ -68,7 +65,7 @@ public class ClaimIOHandler {
             }
             key.interestOps(SelectionKey.OP_WRITE);
         } catch (IOException ex) {
-            throw new ClaimException(ClaimException.ERROR_CODE.IO_ERROR, ac);
+            throw new ClaimException(ClaimException.ERROR_CODE.IO_ERROR, model);
         }
     }
     
@@ -83,7 +80,7 @@ public class ClaimIOHandler {
                 key.interestOps(SelectionKey.OP_READ);
             }
         } catch (IOException ex) {
-            throw new ClaimException(ClaimException.ERROR_CODE.IO_ERROR, ac);
+            throw new ClaimException(ClaimException.ERROR_CODE.IO_ERROR, model);
         }
     }
 
@@ -120,6 +117,6 @@ public class ClaimIOHandler {
             }
         }
         // ClaimExceptionを投げて通信終了する
-        throw new ClaimException(errorCode, ac);
+        throw new ClaimException(errorCode, model);
     }
 }

@@ -12,13 +12,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
-import javax.servlet.AsyncContext;
+import open.dolphin.infomodel.ClaimMessageModel;
 import open.dolphin.infomodel.OrcaSqlModel;
 import org.apache.tomcat.jdbc.pool.DataSource;
 import org.apache.tomcat.jdbc.pool.PoolProperties;
 
 /**
  * OrcaService
+ * 
  * @author masuda, Masuda Naika
  */
 public class OrcaService {
@@ -28,8 +29,7 @@ public class OrcaService {
     private static final String user = "orca";
     private static final String passwd = "";
     
-    private SendClaimTask task;
-    private Thread thread;
+    private SendClaimImpl sendClaim;
     private Map<String, DataSource> dataSourceMap;
     
     private static final OrcaService instance;
@@ -48,16 +48,12 @@ public class OrcaService {
     public void start() {
         
         dataSourceMap = new ConcurrentHashMap<>();
-        task = new SendClaimTask();
-        thread = new Thread(task, "Claim send thread");
-        thread.start();
+        sendClaim = new SendClaimImpl();
         logger.info("Server ORCA service started.");
     }
     
     public void dispose() {
-        task.stop();
-        thread.interrupt();
-        thread = null;
+        sendClaim.stop();
         for (DataSource ds : dataSourceMap.values()) {
             ds.close(true);
         }
@@ -65,8 +61,8 @@ public class OrcaService {
         logger.info("Server ORCA service stopped.");
     }
 
-    public void sendClaim(AsyncContext ac) {
-        task.sendClaim(ac);
+    public void sendClaim(ClaimMessageModel model) {
+        sendClaim.sendClaim(model);
     }
     
     public OrcaSqlModel executeSql(OrcaSqlModel sqlModel) {
