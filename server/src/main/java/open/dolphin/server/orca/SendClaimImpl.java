@@ -57,10 +57,11 @@ public class SendClaimImpl {
     
     public void sendClaim(ClaimMessageModel model) {
         
+        SocketChannel channel = null;
         try {
             InetSocketAddress address = new InetSocketAddress(model.getAddress(), getPort(model));
             String encoding = getEncoding(model);
-            SocketChannel channel = SocketChannel.open();
+            channel = SocketChannel.open();
             channel.socket().setReuseAddress(true);
             channel.configureBlocking(false);
             channel.connect(address);
@@ -72,25 +73,29 @@ public class SendClaimImpl {
                     SelectionKey key = itr.next();
                     itr.remove();
                     ClaimIOHandler ch = (ClaimIOHandler) key.attachment();
-                    try {
-                        ch.handle(key);
-                    } catch (ClaimException ex) {
-                        processException(ex);
-                    }
+                    ch.handle(key);
                 }
             }
         } catch (IOException ex) {
+            model.setClaimErrorCode(ClaimMessageModel.ERROR_CODE.IO_ERROR);
+        } finally {
+            if (channel != null && channel.isOpen()) {
+                try {
+                    channel.close();
+                } catch (IOException ex) {
+                }
+            }
         }
+        
+        processSendResult(model);
     }
     
-    private void processException(ClaimException ex) {
+    private void processSendResult(ClaimMessageModel model) {
         
-        ClaimException.ERROR_CODE code = ex.getErrorCode();
+        ClaimMessageModel.ERROR_CODE code = model.getClaimErrorCode();
         String errMsg = getErrorInfo(code);
         
-        ClaimMessageModel model = ex.getClaimMessageModel();
-        
-        if (code == ClaimException.ERROR_CODE.NO_ERROR) {
+        if (code == ClaimMessageModel.ERROR_CODE.NO_ERROR) {
             model.setErrorCode(NO_ERROR);
         } else {
             model.setErrorCode(ERROR);
@@ -98,7 +103,7 @@ public class SendClaimImpl {
         }
     }
     
-    private String getErrorInfo(ClaimException.ERROR_CODE errorCode) {
+    private String getErrorInfo(ClaimMessageModel.ERROR_CODE errorCode) {
 
         String ret;
         switch (errorCode) {

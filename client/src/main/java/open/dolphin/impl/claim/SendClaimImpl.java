@@ -143,9 +143,10 @@ public class SendClaimImpl implements ClaimMessageListener {
     }
     
     private void sendClaim(ClaimMessageEvent evt) {
-        
+
+        SocketChannel channel = null;
         try {
-            SocketChannel channel = SocketChannel.open();
+            channel = SocketChannel.open();
             channel.socket().setReuseAddress(true);
             channel.configureBlocking(false);
             channel.connect(address);
@@ -157,24 +158,30 @@ public class SendClaimImpl implements ClaimMessageListener {
                     SelectionKey key = itr.next();
                     itr.remove();
                     ClaimIOHandler ch = (ClaimIOHandler) key.attachment();
-                    try {
-                        ch.handle(key);
-                    } catch (ClaimException ex) {
-                        processException(ex);
-                    }
+                    ch.handle(key);
                 }
             }
         } catch (IOException ex) {
+            evt.setErrorCode(ClaimMessageEvent.ERROR_CODE.IO_ERROR);
+        } finally {
+            if (channel != null && channel.isOpen()) {
+                try {
+                    channel.close();
+                } catch (IOException ex) {
+                }
+            }
         }
+        
+        processSendResult(evt);
     }
 
-    private void processException(ClaimException ex) {
+    private void processSendResult(ClaimMessageEvent evt) {
 
-        ClaimException.ERROR_CODE errCode = ex.getErrorCode();
+        ClaimMessageEvent.ERROR_CODE errCode = evt.getErrorCode();
         String errMsg = getErrorInfo(errCode);
-        boolean noError = (errCode == ClaimException.ERROR_CODE.NO_ERROR);
+        boolean noError = (errCode == ClaimMessageEvent.ERROR_CODE.NO_ERROR);
 
-        Object evtSource = ex.getClaimEvent().getSource();
+        Object evtSource = evt.getSource();
         if (evtSource instanceof ClaimSender) {
             ClaimSender sender = (ClaimSender) evtSource;
             KarteSenderResult result = !noError
@@ -190,7 +197,7 @@ public class SendClaimImpl implements ClaimMessageListener {
         }
     }
 
-    private String getErrorInfo(ClaimException.ERROR_CODE errorCode) {
+    private String getErrorInfo(ClaimMessageEvent.ERROR_CODE errorCode) {
 
         String ret;
         switch (errorCode) {

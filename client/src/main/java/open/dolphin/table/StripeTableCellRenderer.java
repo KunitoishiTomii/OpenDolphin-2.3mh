@@ -11,6 +11,7 @@ import javax.swing.JTable;
 import javax.swing.border.Border;
 import javax.swing.plaf.basic.BasicTableUI;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellRenderer;
 import open.dolphin.client.ClientContext;
 
 /**
@@ -30,7 +31,9 @@ public class StripeTableCellRenderer extends DefaultTableCellRenderer {
     private static final int ROW_HEIGHT = 18;
 
     private JTable table;
+    private TableCellRenderer booleanRenderer;
 
+    
     public StripeTableCellRenderer() {
         super();
     }
@@ -48,12 +51,15 @@ public class StripeTableCellRenderer extends DefaultTableCellRenderer {
         table.setShowGrid(false);
         table.setIntercellSpacing(new Dimension(0, 0));
         table.setUI(new StripeTableUI());
+        // JTable.BooleanRendererを保存
+        booleanRenderer = table.getDefaultRenderer(Boolean.class);
     }
 
-    // このレンダラでレンダリングするデフォルトクラスを指定する
+    // このレンダラでレンダリングするクラスを指定する
     public void setDefaultRenderer() {
         table.setDefaultRenderer(String.class, this);
-        table.setDefaultRenderer(Integer.class, this);
+        table.setDefaultRenderer(Boolean.class, this);
+        table.setDefaultRenderer(Number.class, this);
     }
 
     // 選択・非選択の色分けはここでする。特に指定したいときは後で上書き
@@ -63,31 +69,40 @@ public class StripeTableCellRenderer extends DefaultTableCellRenderer {
             boolean isSelected, boolean hasFocus,
             int row, int column) {
 
+        // オブジェクトに応じたComponentを取得する
+        JComponent jc;
         setOpaque(true);
-        super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-
-        if (isSelected) {
-            setForeground(table.getSelectionForeground());
-            setBackground(table.getSelectionBackground());
-            ((JComponent) table.getDefaultRenderer(Boolean.class)).setOpaque(true);
-        } else {
-            setForeground(table.getForeground());
-            setBackground(table.getBackground());
-            ((JComponent) table.getDefaultRenderer(Boolean.class)).setOpaque(false);
-        }
-
-        // 内容に応じてborderとAlignmentを設定する
-        if (value instanceof Integer) {
-            setBorder(rtPadding);
-            setHorizontalAlignment(RIGHT);
-        } else {
+        if (value instanceof Boolean) {
+            jc = (JComponent) booleanRenderer.getTableCellRendererComponent(
+                    table, value, isSelected, hasFocus, row, column);
+            //setHorizontalAlignment(CEHNTER);
             setBorder(emptyBorder);
+        } else if (value instanceof Number) {
+            jc = (JComponent) super.getTableCellRendererComponent(
+                    table, value, isSelected, hasFocus, row, column);
+            setHorizontalAlignment(RIGHT);
+            setBorder(rtPadding);
+        } else {
+            jc = (JComponent) super.getTableCellRendererComponent(
+                    table, value, isSelected, hasFocus, row, column);
             setHorizontalAlignment(LEFT);
+            setBorder(emptyBorder);
         }
         
-        return this;
+        // 選択・非選択に応じて色分けを設定する
+        if (isSelected) {
+            jc.setForeground(table.getSelectionForeground());
+            jc.setBackground(table.getSelectionBackground());
+            //jc.setOpaque(true);
+        } else {
+            jc.setForeground(table.getForeground());
+            jc.setBackground(table.getBackground());
+            //jc.setOpaque(false);
+        }
+        
+        return jc;
     }
-
+    
     // テーブルにストライプの背景を描く
     // http://explodingpixels.wordpress.com/2008/10/05/making-a-jtable-fill-the-view-without-extension/
     // を改変。popupやtooltip表示後乱れるのを修正

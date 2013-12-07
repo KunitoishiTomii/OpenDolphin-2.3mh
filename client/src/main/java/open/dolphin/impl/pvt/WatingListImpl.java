@@ -13,6 +13,7 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.concurrent.*;
 import javax.swing.*;
+import javax.swing.border.Border;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import open.dolphin.client.*;
@@ -158,6 +159,8 @@ public class WatingListImpl extends AbstractMainComponent {
     private final String clientUUID;
     private final ChartEventListener cel;
     private final String orcaId;
+    
+    private static final Border emptyBorder = BorderFactory.createEmptyBorder();
 
     /**
      * Creates new WatingList
@@ -984,9 +987,10 @@ public class WatingListImpl extends AbstractMainComponent {
             if (value != null && COLUMN_IDENTIFIER_STATE.equals(identifier)) {
 //minagawa$
                 ImageIcon icon = null;
+                setBorder(emptyBorder);
+                setHorizontalAlignment(CENTER);
                 
                 // 状態アイコン　ラベル付きbreak文を使ってみる
-                setHorizontalAlignment(CENTER);
                 bitLoop:
                 for (int i = 0; i < bitAndIconPairs.length; ++i) {
                     if (!pvt.getStateBit(bitAndIconPairs[i].getBit())) {

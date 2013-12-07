@@ -4,9 +4,17 @@ import java.io.Serializable;
 
 /**
  * サーバー経由CLAIMモデル
+ * 
  * @author masuda, Masuda Naika
  */
 public class ClaimMessageModel implements Serializable {
+    
+    public static enum ERROR_CODE {
+
+        NO_ERROR, CONNECTION_REJECT, IO_ERROR, NAK_SIGNAL
+    };
+    
+    private ERROR_CODE claimErrorCode;
     
     private String address;
     private int port;
@@ -55,5 +63,13 @@ public class ClaimMessageModel implements Serializable {
     }
     public String getErrorMsg() {
         return errorMsg;
+    }
+    
+    public ERROR_CODE getClaimErrorCode() {
+        return claimErrorCode;
+    }
+    
+    public void setClaimErrorCode(ERROR_CODE code) {
+        claimErrorCode = code;
     }
 }

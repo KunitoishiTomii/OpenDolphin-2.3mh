@@ -40,7 +40,7 @@ public class ClaimIOHandler {
         }
     }
     
-    public void handle(SelectionKey key) throws ClaimException {
+    public void handle(SelectionKey key) throws IOException {
 
         if (key.isConnectable()) {
             doConnect(key);
@@ -55,68 +55,52 @@ public class ClaimIOHandler {
     }
 
     // 接続する
-    private void doConnect(SelectionKey key) throws ClaimException {
+    private void doConnect(SelectionKey key) throws IOException {
         
         SocketChannel channel = (SocketChannel) key.channel();
 
-        try {
-            if (channel.isConnectionPending()) {
-                channel.finishConnect();
-            }
-            key.interestOps(SelectionKey.OP_WRITE);
-        } catch (IOException ex) {
-            throw new ClaimException(ClaimException.ERROR_CODE.IO_ERROR, model);
+        if (channel.isConnectionPending()) {
+            channel.finishConnect();
         }
+        
+        key.interestOps(SelectionKey.OP_WRITE);
     }
     
     // データを書き出す
-    private void doWrite(SelectionKey key) throws ClaimException {
+    private void doWrite(SelectionKey key) throws IOException {
 
         SocketChannel channel = (SocketChannel) key.channel();
 
-        try {
-            channel.write(writeBuffer);
-            if (writeBuffer.remaining() == 0) {
-                key.interestOps(SelectionKey.OP_READ);
-            }
-        } catch (IOException ex) {
-            throw new ClaimException(ClaimException.ERROR_CODE.IO_ERROR, model);
+        channel.write(writeBuffer);
+        
+        if (writeBuffer.remaining() == 0) {
+            key.interestOps(SelectionKey.OP_READ);
         }
     }
 
     // 返事を受け取る
-    private void doRead(SelectionKey key) throws ClaimException {
+    private void doRead(SelectionKey key) throws IOException {
 
-        ClaimException.ERROR_CODE errorCode;
         SocketChannel channel = (SocketChannel) key.channel();
 
-        try {
-            ByteBuffer byteBuffer = ByteBuffer.allocate(1);
-            channel.read(byteBuffer);
-            byteBuffer.flip();
-            byte b = byteBuffer.get();
+        ByteBuffer byteBuffer = ByteBuffer.allocate(1);
+        channel.read(byteBuffer);
+        byteBuffer.flip();
+        byte b = byteBuffer.get();
 
-            switch (b) {
-                case ACK:
-                    errorCode = ClaimException.ERROR_CODE.NO_ERROR;
-                    break;
-                case NAK:
-                    errorCode = ClaimException.ERROR_CODE.NAK_SIGNAL;
-                    break;
-                default:
-                    errorCode = ClaimException.ERROR_CODE.IO_ERROR;
-                    break;
-            }
-        } catch (IOException ex) {
-            errorCode = ClaimException.ERROR_CODE.IO_ERROR;
-        } finally {
-            try {
-                channel.close();
-            } catch (IOException ex) {
-                //errorCode = ClaimException.ERROR_CODE.IO_ERROR;
-            }
+        switch (b) {
+            case ACK:
+                model.setClaimErrorCode(ClaimMessageModel.ERROR_CODE.NO_ERROR);
+                break;
+            case NAK:
+                model.setClaimErrorCode(ClaimMessageModel.ERROR_CODE.NAK_SIGNAL);
+                break;
+            default:
+                model.setClaimErrorCode(ClaimMessageModel.ERROR_CODE.IO_ERROR);
+                break;
         }
-        // ClaimExceptionを投げて通信終了する
-        throw new ClaimException(errorCode, model);
+
+        channel.close();
     }
+    
 }

@@ -3,7 +3,6 @@ package open.dolphin.impl.pacsviewer;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.table.AbstractTableModel;
-import open.dolphin.util.DicomImageEntry;
 
 /**
  * ThumbnailTableModel
@@ -11,10 +10,10 @@ import open.dolphin.util.DicomImageEntry;
  * @author masuda, Masuda Naika
  */
 
-public class ThumbnailTableModel extends AbstractTableModel {
+public class ThumbnailTableModel<T>extends AbstractTableModel {
     
     private final int columnCount;
-    private List<DicomImageEntry> imageList;
+    private List<T> imageList;
     
     public ThumbnailTableModel(int columnCount) {
         this.columnCount = columnCount;
@@ -39,17 +38,17 @@ public class ThumbnailTableModel extends AbstractTableModel {
     }
     
     @Override
-    public Object getValueAt(int row, int col) {
+    public T getValueAt(int row, int col) {
         int index = row * columnCount + col;
         if (!isValidIndex(index)) {
             return null;
         }
         
-        DicomImageEntry entry = imageList.get(index);
-        return (Object) entry;
+        T entry = imageList.get(index);
+        return  entry;
     }
 
-    public void setImageList(List<DicomImageEntry> list) {
+    public void setImageList(List<T> list) {
         if (imageList != null) {
             imageList.clear();
             imageList = null;
@@ -58,11 +57,11 @@ public class ThumbnailTableModel extends AbstractTableModel {
         this.fireTableDataChanged();
     }
     
-    public List<DicomImageEntry> getImageList() {
+    public List<T> getImageList() {
         return imageList;
     }
 
-    public void addImage(DicomImageEntry entry){
+    public void addImage(T entry){
         if (imageList == null){
             imageList = new ArrayList<>();
         }
