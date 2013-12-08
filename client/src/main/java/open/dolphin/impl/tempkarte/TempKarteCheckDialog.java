@@ -7,6 +7,7 @@ import java.awt.event.*;
 import java.util.GregorianCalendar;
 import java.util.List;
 import javax.swing.*;
+import javax.swing.border.Border;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import open.dolphin.client.ChartEventListener;
@@ -332,24 +333,22 @@ public class TempKarteCheckDialog extends JDialog implements IChartEventListener
     }
     
     private class PatientListTableRenderer extends StripeTableCellRenderer {
-
-        public PatientListTableRenderer() {
-            super();
-        }
-
+        
+        private final Border emptyBorder = BorderFactory.createEmptyBorder();
+        
         @Override
         public Component getTableCellRendererComponent(JTable table,
-                Object value,
-                boolean isSelected,
-                boolean isFocused,
-                int row, int col) {
+                Object value, boolean isSelected, boolean isFocused, int row, int col) {
 
             super.getTableCellRendererComponent(table, value, isSelected, isFocused, row, col);
-            //this.setHorizontalAlignment(JLabel.LEFT);
-            PatientModel pm = sorter.getObject(row);
+            setBorder(emptyBorder);
             
-            if (pm != null && col == stateColumn) {
-                setHorizontalAlignment(JLabel.CENTER);
+            PatientModel pm = sorter.getObject(row);
+            if (pm == null) {
+                return this;
+            }
+            
+            if (col == stateColumn) {
                 if (pm.isOpened()) {
                     if (clientUUID.equals(pm.getOwnerUUID())) {
                         setIcon(OPEN_ICON);
