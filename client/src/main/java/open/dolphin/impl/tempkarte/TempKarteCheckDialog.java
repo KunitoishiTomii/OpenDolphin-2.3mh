@@ -57,6 +57,7 @@ public class TempKarteCheckDialog extends JDialog implements IChartEventListener
     private ColumnSpecHelper columnHelper;
     
     private int stateColumn;
+    private int genderColumn;
     
     // 選択されている行を保存
     private int selectedRow;
@@ -93,6 +94,7 @@ public class TempKarteCheckDialog extends JDialog implements IChartEventListener
         columnHelper.loadProperty();
         // Scan して state カラムを設定する
         stateColumn = columnHelper.getColumnPosition("isOpened");
+        genderColumn = columnHelper.getColumnPosition("genderDesc");
     }
     
     private void initComponents() {
@@ -357,6 +359,9 @@ public class TempKarteCheckDialog extends JDialog implements IChartEventListener
                 }
                 setText("");
             } else {
+                if (col == genderColumn) {
+                    setHorizontalAlignment(CENTER);
+                }
                 setIcon(null);
                 setText(value == null ? "" : value.toString());
             }

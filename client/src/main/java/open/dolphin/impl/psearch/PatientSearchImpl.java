@@ -77,6 +77,7 @@ public class PatientSearchImpl extends AbstractMainComponent {
     private int ageColumn;
     private int pvtDateColumn;
     private int stateColumn;
+    private int genderColumn;
     
     private ListTableModel<PatientModel> tableModel;
     private ListTableSorter<PatientModel> sorter;
@@ -263,6 +264,7 @@ public class PatientSearchImpl extends AbstractMainComponent {
         ageColumn = columnHelper.getColumnPositionEndsWith("birthday");
         pvtDateColumn = columnHelper.getColumnPositionStartWith("pvtdate");
         stateColumn = columnHelper.getColumnPosition("isOpened");
+        genderColumn = columnHelper.getColumnPosition("genderDesc");
         
         ageDisplay = Project.getBoolean(KEY_AGE_DISPLAY, true);
     }
@@ -1223,6 +1225,9 @@ public class PatientSearchImpl extends AbstractMainComponent {
                 }
                 setText("");
             } else {
+                if (col == genderColumn) {
+                    setHorizontalAlignment(CENTER);
+                }
                 setIcon(null);
                 setText(value == null ? "" : value.toString());
             }

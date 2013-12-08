@@ -69,6 +69,7 @@ public class AdmissionList extends AbstractMainComponent {
     private ListTableSorter<PatientModel> sorter;
 
     private int stateColumn;
+    private int genderColumn;
     
     // 選択されている行を保存
     private int selectedRow;
@@ -123,6 +124,7 @@ public class AdmissionList extends AbstractMainComponent {
 
         // Scan して state カラムを設定する
         stateColumn = columnHelper.getColumnPosition("isOpened");
+        genderColumn = columnHelper.getColumnPosition("genderDesc");
     }
     
     /**
@@ -463,6 +465,9 @@ public class AdmissionList extends AbstractMainComponent {
                 }
                 setText("");
             } else {
+                if (col == genderColumn) {
+                    setHorizontalAlignment(CENTER);
+                }
                 setIcon(null);
                 setText(value == null ? "" : value.toString());
             }
