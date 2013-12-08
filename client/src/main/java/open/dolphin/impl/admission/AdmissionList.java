@@ -8,7 +8,6 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import javax.swing.*;
-import javax.swing.border.Border;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import open.dolphin.client.AbstractMainComponent;
@@ -45,7 +44,7 @@ public class AdmissionList extends AbstractMainComponent {
     // 来院テーブルのクラス名
     private static final Class[] COLUMN_CLASSES = {
         String.class, String.class, String.class, String.class, String.class, 
-        String.class, String.class, String.class, String.class};
+        String.class, String.class, String.class, Integer.class};
     // 来院テーブルのカラム幅
     private static final int[] COLUMN_WIDTH = {
         30, 40, 100, 20, 40, 80, 50, 80, 20};
@@ -439,14 +438,11 @@ public class AdmissionList extends AbstractMainComponent {
     
     private class PatientListTableRenderer extends StripeTableCellRenderer {
         
-        private final Border emptyBorder = BorderFactory.createEmptyBorder();
-        
         @Override
         public Component getTableCellRendererComponent(JTable table,
                 Object value, boolean isSelected, boolean isFocused, int row, int col) {
 
             super.getTableCellRendererComponent(table, value, isSelected, isFocused, row, col);
-            setBorder(emptyBorder);
             
             PatientModel pm = sorter.getObject(row);
             if (pm == null) {
@@ -454,6 +450,8 @@ public class AdmissionList extends AbstractMainComponent {
             }
             
             if (col == stateColumn) {
+                setHorizontalAlignment(CENTER);
+                setBorder(null);
                 if (pm.isOpened()) {
                     if (clientUUID.equals(pm.getOwnerUUID())) {
                         setIcon(OPEN_ICON);

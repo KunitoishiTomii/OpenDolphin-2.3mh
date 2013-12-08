@@ -22,7 +22,6 @@ import open.dolphin.client.ClientContext;
 
 public class StripeTableCellRenderer extends DefaultTableCellRenderer {
 
-    private static final Border emptyBorder = BorderFactory.createEmptyBorder();
     private static final Border rtPadding = BorderFactory.createEmptyBorder(0, 0, 0, 8);
     private static final Color DEFAULT_ODD_COLOR = ClientContext.getColor("color.odd");
     //private static final Color DEFAULT_EVEN_COLOR = ClientContext.getColor("color.even");
@@ -71,15 +70,24 @@ public class StripeTableCellRenderer extends DefaultTableCellRenderer {
         // valueの種類に応じてアライメントとボーダーを設定する
         if (value instanceof Boolean) {
             //setHorizontalAlignment(CENTER);
-            setBorder(emptyBorder);
+            setBorder(null);
         } else if (value instanceof Number) {
             setHorizontalAlignment(RIGHT);
             setBorder(rtPadding);
         } else {
             setHorizontalAlignment(LEFT);
-            setBorder(emptyBorder);
+            setBorder(null);
         }
         
+        // 選択・非選択に応じて色分けを設定する
+        if (isSelected) {
+            setForeground(table.getSelectionForeground());
+            setBackground(table.getSelectionBackground());
+        } else {
+            setForeground(table.getForeground());
+            setBackground(table.getBackground());
+        }
+
         return this;
     }
     

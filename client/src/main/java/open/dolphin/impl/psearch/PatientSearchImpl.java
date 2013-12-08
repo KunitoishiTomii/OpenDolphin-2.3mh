@@ -15,7 +15,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import javax.swing.*;
-import javax.swing.border.Border;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import open.dolphin.client.*;
@@ -48,7 +47,7 @@ public class PatientSearchImpl extends AbstractMainComponent {
             = {"patientId", "fullName", "kanaName", "genderDesc", "ageBirthday", "pvtDateTrimTime", "getElapsedDay", "isOpened"};
     private static final Class[] COLUMN_CLASSES = {
         String.class, String.class, String.class, String.class, String.class, 
-        String.class, Integer.class, String.class};
+        String.class, Integer.class, Integer.class};
     private final int[] COLUMN_WIDTH = {50, 100, 120, 30, 100, 80, 20, 20};
     private final int START_NUM_ROWS = 1;
    
@@ -1199,14 +1198,11 @@ public class PatientSearchImpl extends AbstractMainComponent {
     
     private class PatientListTableRenderer extends StripeTableCellRenderer {
         
-        private final Border emptyBorder = BorderFactory.createEmptyBorder();
-        
         @Override
         public Component getTableCellRendererComponent(JTable table,
                 Object value, boolean isSelected, boolean isFocused, int row, int col) {
 
             super.getTableCellRendererComponent(table, value, isSelected, isFocused, row, col);
-            setBorder(emptyBorder);
             
             PatientModel pm = sorter.getObject(row);
             if (pm == null) {
@@ -1214,6 +1210,8 @@ public class PatientSearchImpl extends AbstractMainComponent {
             }
             
             if (col == stateColumn) {
+                setHorizontalAlignment(CENTER);
+                setBorder(null);
                 if (pm.isOpened()) {
                     if (clientUUID.equals(pm.getOwnerUUID())) {
                         setIcon(OPEN_ICON);

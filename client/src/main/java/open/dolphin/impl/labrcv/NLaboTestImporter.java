@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import javax.swing.*;
-import javax.swing.border.Border;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -652,14 +651,11 @@ public class NLaboTestImporter extends AbstractMainComponent {
     // ストライプテーブル
     private class LabTestRenderer extends StripeTableCellRenderer {
         
-        private final Border emptyBorder = BorderFactory.createEmptyBorder();
-        
         @Override
         public Component getTableCellRendererComponent(JTable table,
                 Object value, boolean isSelected, boolean isFocused, int row, int col) {
 
             super.getTableCellRendererComponent(table, value, isSelected, isFocused, row, col);
-            setBorder(emptyBorder);
             
             NLaboImportSummary summary = tableModel.getObject(row);
             if (summary == null) {
@@ -670,6 +666,8 @@ public class NLaboTestImporter extends AbstractMainComponent {
             }
             
             if (col == stateColumn) {
+                setHorizontalAlignment(CENTER);
+                setBorder(null);
                 if (summary.isOpened()) {
                     PatientModel pm = summary.getPatient();
                     if (clientUUID.equals(pm.getOwnerUUID())) {
