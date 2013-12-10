@@ -49,10 +49,9 @@ public class OrcaResource extends AbstractResource {
         ClaimMessageModel model = (ClaimMessageModel)
                 getConverter().fromJson(json, ClaimMessageModel.class);
         
-        OrcaService.getInstance().sendClaim(model);
+        ClaimMessageModel ret = OrcaService.getInstance().sendClaim(model);
         
-        model.setContent(null);
-        StreamingOutput so = getJsonOutStream(model);
+        StreamingOutput so = getJsonOutStream(ret);
         
         return Response.ok(so).build();
     }

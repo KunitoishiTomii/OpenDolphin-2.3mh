@@ -2,10 +2,6 @@ package open.dolphin.impl.claim;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
-import java.nio.channels.SocketChannel;
-import java.util.Iterator;
 import open.dolphin.client.*;
 import open.dolphin.delegater.OrcaDelegater;
 import open.dolphin.project.Project;
@@ -26,9 +22,6 @@ public class SendClaimImpl implements ClaimMessageListener {
     private String name;
     private MainWindow context;
     private final Logger logger;
-    
-    private Selector selector;
-    private InetSocketAddress address;
     
     private static final String CLAIM = "CLAIM";
 
@@ -68,14 +61,6 @@ public class SendClaimImpl implements ClaimMessageListener {
         setHost(Project.getString(Project.CLAIM_ADDRESS));
         setPort(Project.getInt(Project.CLAIM_PORT));
         setEncoding(Project.getString(Project.CLAIM_ENCODING));
-        
-        address = new InetSocketAddress(getHost(), getPort());
-        
-        try {
-            selector = Selector.open();
-        } catch (IOException ex) {
-            ex.printStackTrace(System.err);
-        }
 
         logger.info("SendClaim started with = host = " + getHost() + " port = " + getPort());
     }
@@ -85,11 +70,6 @@ public class SendClaimImpl implements ClaimMessageListener {
      */
     @Override
     public void stop() {
-        try {
-            selector.close();
-        } catch (IOException ex) {
-            ex.printStackTrace(System.err);
-        }
     }
 
     @Override
@@ -144,34 +124,14 @@ public class SendClaimImpl implements ClaimMessageListener {
     
     private void sendClaim(ClaimMessageEvent evt) {
 
-        SocketChannel channel = null;
         try {
-            channel = SocketChannel.open();
-            channel.socket().setReuseAddress(true);
-            channel.configureBlocking(false);
-            channel.connect(address);
-            ClaimIOHandler handler = new ClaimIOHandler(evt, getEncoding());
-            channel.register(selector, SelectionKey.OP_CONNECT, handler);
-
-            while (channel.isOpen() && selector.select() > 0) {
-                for (Iterator<SelectionKey> itr = selector.selectedKeys().iterator(); itr.hasNext();) {
-                    SelectionKey key = itr.next();
-                    itr.remove();
-                    ClaimIOHandler ch = (ClaimIOHandler) key.attachment();
-                    ch.handle(key);
-                }
-            }
+            InetSocketAddress address = new InetSocketAddress(getHost(), getPort());
+            ClaimIOHandler handler = new ClaimIOHandler(getEncoding(), address);
+            handler.sendClaim(evt);
         } catch (IOException ex) {
             evt.setErrorCode(ClaimMessageEvent.ERROR_CODE.IO_ERROR);
-        } finally {
-            if (channel != null && channel.isOpen()) {
-                try {
-                    channel.close();
-                } catch (IOException ex) {
-                }
-            }
         }
-        
+
         processSendResult(evt);
     }
 

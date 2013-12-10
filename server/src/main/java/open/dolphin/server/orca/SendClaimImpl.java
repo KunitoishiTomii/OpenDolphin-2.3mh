@@ -2,11 +2,6 @@ package open.dolphin.server.orca;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
-import java.nio.channels.SocketChannel;
-import java.util.Iterator;
-import java.util.logging.Logger;
 import open.dolphin.infomodel.ClaimMessageModel;
 
 /**
@@ -22,28 +17,8 @@ public class SendClaimImpl {
     private static final String NO_ERROR = "00";
     private static final String ERROR = "XXX";
     
-    private static final Logger logger = Logger.getLogger(SendClaimImpl.class.getSimpleName());
+    //private static final Logger logger = Logger.getLogger(SendClaimImpl.class.getSimpleName());
     
-    private Selector selector;
-
-
-    public  SendClaimImpl() {
-        
-        try {
-            // セレクタの生成
-            selector = Selector.open();
-        } catch (IOException ex) {
-            logger.warning(ex.getMessage());
-        }
-    }
-
-    public void stop() {
-        try {
-            selector.close();
-        } catch (IOException ex) {
-            logger.warning(ex.getMessage());
-        }
-    }
     
     private int getPort(ClaimMessageModel model) {
         int port = model.getPort();
@@ -55,39 +30,19 @@ public class SendClaimImpl {
         return (encoding == null) ? UTF8 : encoding;
     }
     
-    public void sendClaim(ClaimMessageModel model) {
+    public ClaimMessageModel sendClaim(ClaimMessageModel model) {
         
-        SocketChannel channel = null;
         try {
             InetSocketAddress address = new InetSocketAddress(model.getAddress(), getPort(model));
-            String encoding = getEncoding(model);
-            channel = SocketChannel.open();
-            channel.socket().setReuseAddress(true);
-            channel.configureBlocking(false);
-            channel.connect(address);
-            ClaimIOHandler handler = new ClaimIOHandler(model, encoding);
-            channel.register(selector, SelectionKey.OP_CONNECT, handler);
-
-            while (channel.isOpen() && selector.select() > 0) {
-                for (Iterator<SelectionKey> itr = selector.selectedKeys().iterator(); itr.hasNext();) {
-                    SelectionKey key = itr.next();
-                    itr.remove();
-                    ClaimIOHandler ch = (ClaimIOHandler) key.attachment();
-                    ch.handle(key);
-                }
-            }
+            ClaimIOHandler handler = new ClaimIOHandler(getEncoding(model), address);
+            handler.sendClaim(model);
         } catch (IOException ex) {
             model.setClaimErrorCode(ClaimMessageModel.ERROR_CODE.IO_ERROR);
-        } finally {
-            if (channel != null && channel.isOpen()) {
-                try {
-                    channel.close();
-                } catch (IOException ex) {
-                }
-            }
         }
         
         processSendResult(model);
+        
+        return model;
     }
     
     private void processSendResult(ClaimMessageModel model) {
@@ -101,6 +56,8 @@ public class SendClaimImpl {
             model.setErrorCode(ERROR);
             model.setErrorMsg(errMsg);
         }
+        
+        model.setContent(null);
     }
     
     private String getErrorInfo(ClaimMessageModel.ERROR_CODE errorCode) {

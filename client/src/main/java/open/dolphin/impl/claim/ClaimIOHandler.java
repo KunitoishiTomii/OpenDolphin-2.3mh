@@ -1,14 +1,17 @@
 package open.dolphin.impl.claim;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
+import java.util.Iterator;
 import open.dolphin.client.ClaimMessageEvent;
 
 /**
  * ClaimIOHandler
+ * 
  * @author masuda, Masuda Naika
  */
 public class ClaimIOHandler {
@@ -18,26 +21,50 @@ public class ClaimIOHandler {
     private static final byte ACK = 0x06;
     private static final byte NAK = 0x15;
     
-    private final ClaimMessageEvent evt;
+    private final String encoding;
+    private final InetSocketAddress address;
+    
+    private ClaimMessageEvent evt;
+    
     private ByteBuffer writeBuffer;
 
     
-    public ClaimIOHandler(ClaimMessageEvent evt, String encoding) {
+    public ClaimIOHandler(String encoding, InetSocketAddress address) {
+
+        this.encoding = encoding;
+        this.address = address;
+    }
+    
+    public void sendClaim(ClaimMessageEvent evt) throws IOException {
         
         this.evt = evt;
 
-        try {
-            byte[] bytes = evt.getClaimInsutance().getBytes(encoding);
-            writeBuffer = ByteBuffer.allocate(bytes.length + 1);
-            writeBuffer.put(bytes);
-            writeBuffer.put(EOT);
-            writeBuffer.flip();
-        } catch (UnsupportedEncodingException ex) {
-            ex.printStackTrace(System.err);
+        byte[] bytes = evt.getClaimInsutance().getBytes(encoding);
+        writeBuffer = ByteBuffer.allocate(bytes.length + 1);
+        writeBuffer.put(bytes);
+        writeBuffer.put(EOT);
+        writeBuffer.flip();
+
+
+        try (Selector selector = Selector.open(); 
+                SocketChannel channel = SocketChannel.open()) {
+
+            channel.socket().setReuseAddress(true);
+            channel.configureBlocking(false);
+            channel.connect(address);
+            channel.register(selector, SelectionKey.OP_CONNECT);
+
+            while (channel.isOpen() && selector.select() > 0) {
+                for (Iterator<SelectionKey> itr = selector.selectedKeys().iterator(); itr.hasNext();) {
+                    SelectionKey key = itr.next();
+                    itr.remove();
+                    handle(key);
+                }
+            }
         }
     }
     
-    public void handle(SelectionKey key) throws IOException {
+    private void handle(SelectionKey key) throws IOException {
 
         if (key.isConnectable()) {
             doConnect(key);
@@ -53,9 +80,9 @@ public class ClaimIOHandler {
 
     // 接続する
     private void doConnect(SelectionKey key) throws IOException {
-        
-        SocketChannel channel = (SocketChannel) key.channel();
 
+        SocketChannel channel = (SocketChannel) key.channel();
+        
         if (channel.isConnectionPending()) {
             channel.finishConnect();
         }
@@ -79,7 +106,7 @@ public class ClaimIOHandler {
     private void doRead(SelectionKey key) throws IOException {
         
         SocketChannel channel = (SocketChannel) key.channel();
-
+        
         ByteBuffer byteBuffer = ByteBuffer.allocate(1);
         channel.read(byteBuffer);
         byteBuffer.flip();
@@ -96,7 +123,8 @@ public class ClaimIOHandler {
                 evt.setErrorCode(ClaimMessageEvent.ERROR_CODE.IO_ERROR);
                 break;
         }
-
+        
+        // closeすることでループ脱出
         channel.close();
     }
 }

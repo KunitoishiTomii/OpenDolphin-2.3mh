@@ -53,7 +53,7 @@ public class OrcaService {
     }
     
     public void dispose() {
-        sendClaim.stop();
+
         for (DataSource ds : dataSourceMap.values()) {
             ds.close(true);
         }
@@ -61,8 +61,8 @@ public class OrcaService {
         logger.info("Server ORCA service stopped.");
     }
 
-    public void sendClaim(ClaimMessageModel model) {
-        sendClaim.sendClaim(model);
+    public ClaimMessageModel sendClaim(ClaimMessageModel model) {
+        return sendClaim.sendClaim(model);
     }
     
     public OrcaSqlModel executeSql(OrcaSqlModel sqlModel) {
