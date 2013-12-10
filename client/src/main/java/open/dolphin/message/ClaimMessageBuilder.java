@@ -96,7 +96,8 @@ public class ClaimMessageBuilder {
         return instance;
     }
 
-    public String build(IMessageHelper helper) {
+    // 診療行為
+    public String build(ClaimHelper helper) {
 
         // Mml elementを作成
         Element root = new Mml(helper);
@@ -105,20 +106,32 @@ public class ClaimMessageBuilder {
         root.addContent(new MmlHeader(helper));
 
         // MmlBodyを作成
-        if (helper instanceof ClaimHelper) {
-            root.addContent(new MmlBody((ClaimHelper) helper));
-        } else if (helper instanceof DiseaseHelper) {
-            root.addContent(new MmlBody((DiseaseHelper) helper));
-        }
+        root.addContent(new MmlBody(helper));
 
         // xml出力
         Document doc = new Document(root);
-        //String xml =  outputter.outputString(doc);
-        //System.out.println("JDOM CLAIM===");
-        //System.out.println(xml);
 
         return outputter.outputString(doc);
     }
+    
+    // 病名
+    public String build(DiseaseHelper helper) {
+
+        // Mml elementを作成
+        Element root = new Mml(helper);
+
+        // MmlHeaderを作成
+        root.addContent(new MmlHeader(helper));
+
+        // MmlBodyを作成
+        root.addContent(new MmlBody(helper));
+
+        // xml出力
+        Document doc = new Document(root);
+
+        return outputter.outputString(doc);
+    }
+    
 
     private static class Mml extends Element {
 
