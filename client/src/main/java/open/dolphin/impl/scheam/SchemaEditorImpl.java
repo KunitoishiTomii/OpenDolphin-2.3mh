@@ -479,7 +479,6 @@ public class SchemaEditorImpl implements SchemaEditor {
 
         if (editable) toolView.setVisible(true); // editable でない場合はツールパネルを出さない
         canvasView.setVisible(true);
-//masuda$
     }
     
     private void setLineWidthGUI() {

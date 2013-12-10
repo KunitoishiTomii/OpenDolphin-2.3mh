@@ -8,7 +8,6 @@ import java.util.List;
 import open.dolphin.client.ClientContext;
 import open.dolphin.infomodel.NLaboItem;
 import open.dolphin.infomodel.NLaboModule;
-import org.jboss.logging.Logger;
 
 /**
  * 

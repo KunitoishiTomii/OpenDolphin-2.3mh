@@ -19,8 +19,7 @@ import javax.persistence.*;
 @Table(name = "d_patient")
 public class PatientModel extends InfoModel {
     
-    private static final long DAY_IN_MILLISEC = 1000 * 60 * 60 * 24;
-    public  static final int  LAPDAY_MAX      = 32767;
+    private static final long DAY_IN_MILLISEC = 1000 * 60 * 60 * 24L;
     
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

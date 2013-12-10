@@ -12,7 +12,6 @@ import open.dolphin.infomodel.*;
 import open.dolphin.mbean.ServletContextHolder;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
-import org.jboss.logging.Logger;
 
 /**
  *

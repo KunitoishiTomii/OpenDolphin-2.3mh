@@ -19,7 +19,7 @@ public class PatientSearchView extends JPanel {
     private final JTextField keywordFld;
     private final JRadioButton karteSearchBtn;
     private final JRadioButton ptSearchBtn;
-    private final JComboBox methodCombo;
+    // private final JComboBox methodCombo;
 
     // public static final String HIBERNATE_SEARCH = "Ｈ検";
     // public static final String ALL_SEARCH = "全て";
