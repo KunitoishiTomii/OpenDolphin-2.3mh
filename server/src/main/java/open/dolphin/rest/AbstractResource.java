@@ -1,5 +1,6 @@
 package open.dolphin.rest;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
@@ -57,6 +58,10 @@ public class AbstractResource implements IRestConstants {
         return getConverter().toJson(obj);
     }
     
+    protected String toJson(Object obj, TypeReference typeRef) {
+        return getConverter().toJson(obj, typeRef);
+    }
+    
     protected StreamingOutput getJsonOutStream(final Object obj) {
         StreamingOutput so = new StreamingOutput() {
 
@@ -68,14 +73,38 @@ public class AbstractResource implements IRestConstants {
         return so;
     }
     
+    protected StreamingOutput getJsonOutStream(final Object obj, final TypeReference typeRef) {
+        StreamingOutput so = new StreamingOutput() {
+
+            @Override
+            public void write(OutputStream os) throws IOException, WebApplicationException {
+                getConverter().toJson(obj, typeRef, os);
+            }
+        };
+        return so;
+    }
+    
     protected StreamingOutput getGzipOutStream(final Object obj) {
         StreamingOutput so = new StreamingOutput() {
 
             @Override
             public void write(OutputStream os) throws IOException, WebApplicationException {
-                GZIPOutputStream gos = new GZIPOutputStream(os);
-                getConverter().toJson(obj, gos);
-                gos.close();
+                try (GZIPOutputStream gos = new GZIPOutputStream(os)) {
+                    getConverter().toJson(obj, gos);
+                }
+            }
+        };
+        return so;
+    }
+    
+    protected StreamingOutput getGzipOutStream(final Object obj, final TypeReference typeRef) {
+        StreamingOutput so = new StreamingOutput() {
+
+            @Override
+            public void write(OutputStream os) throws IOException, WebApplicationException {
+                try (GZIPOutputStream gos = new GZIPOutputStream(os)) {
+                    getConverter().toJson(obj, typeRef, gos);
+                }
             }
         };
         return so;

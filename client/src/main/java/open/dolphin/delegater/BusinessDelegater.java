@@ -1,5 +1,6 @@
 package open.dolphin.delegater;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
@@ -57,6 +58,10 @@ public class BusinessDelegater implements IRestConstants {
     
     protected Entity toJsonEntity(Object obj) {
         return Entity.entity(getConverter().toJson(obj), MEDIATYPE_JSON_UTF8);
+    }
+    
+    protected Entity toJsonEntity(Object obj, TypeReference typeRef) {
+        return Entity.entity(getConverter().toJson(obj, typeRef), MEDIATYPE_JSON_UTF8);
     }
     
     protected Entity toTextEntity(String text) {
