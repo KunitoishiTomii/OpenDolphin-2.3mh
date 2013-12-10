@@ -57,6 +57,8 @@ public class NLaboTestImporter extends AbstractMainComponent {
     
     private int idColumn;
     private int stateColumn;
+    private int dataSexColumn;
+    private int karteSexColumn;
         
     // 選択されている患者情報
     private NLaboImportSummary selectedLabo;
@@ -109,6 +111,8 @@ public class NLaboTestImporter extends AbstractMainComponent {
         // Scan して state カラムを設定する
         stateColumn = columnHelper.getColumnPosition("isOpened");
         idColumn = columnHelper.getColumnPosition("patientId");
+        dataSexColumn = columnHelper.getColumnPosition("patientSexKanji");
+        karteSexColumn = columnHelper.getColumnPosition("karteSex");
     }
     
     public JProgressBar getProgressBar() {
@@ -650,24 +654,24 @@ public class NLaboTestImporter extends AbstractMainComponent {
     
     // ストライプテーブル
     private class LabTestRenderer extends StripeTableCellRenderer {
-
+        
         @Override
         public Component getTableCellRendererComponent(JTable table,
-                Object value,
-                boolean isSelected,
-                boolean isFocused,
-                int row, int col) {
+                Object value, boolean isSelected, boolean isFocused, int row, int col) {
 
             super.getTableCellRendererComponent(table, value, isSelected, isFocused, row, col);
-
-            this.setHorizontalAlignment(JLabel.LEFT);
+            
             NLaboImportSummary summary = tableModel.getObject(row);
-            if (summary != null && summary.getKarteId() == null) {
-                this.setBackground(UNCONSTRAINED_COLOR);
+            if (summary == null) {
+                return this;
+            }
+            if (summary.getKarteId() == null) {
+                setBackground(UNCONSTRAINED_COLOR);
             }
             
             if (col == stateColumn) {
-                setHorizontalAlignment(JLabel.CENTER);
+                setHorizontalAlignment(CENTER);
+                setBorder(null);
                 if (summary.isOpened()) {
                     PatientModel pm = summary.getPatient();
                     if (clientUUID.equals(pm.getOwnerUUID())) {
@@ -680,6 +684,9 @@ public class NLaboTestImporter extends AbstractMainComponent {
                 }
                 setText("");
             } else {
+                if (col == dataSexColumn || col == karteSexColumn) {
+                    setHorizontalAlignment(CENTER);
+                }
                 setIcon(null);
                 setText(value == null ? "" : value.toString());
             }

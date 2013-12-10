@@ -89,6 +89,7 @@ public final class ClaimHelper implements IMessageHelper {
     public void setUseDefalutDept(boolean b) {
         useDefaultDept = b;
     }
+    @Override
     public boolean isUseDefaultDept() {
         return useDefaultDept;
     }
@@ -99,6 +100,7 @@ public final class ClaimHelper implements IMessageHelper {
         this.confirmDate = confirmDate;
     }
     
+    @Override
     public String getConfirmDate() {
         return confirmDate;
     }
@@ -107,6 +109,7 @@ public final class ClaimHelper implements IMessageHelper {
         this.creatorId = creatorId;
     }
     
+    @Override
     public String getCreatorId() {
         return creatorId;
     }
@@ -115,6 +118,7 @@ public final class ClaimHelper implements IMessageHelper {
         this.creatorName = creatorName;
     }
     
+    @Override
     public String getCreatorName() {
         return creatorName;
     }
@@ -123,6 +127,7 @@ public final class ClaimHelper implements IMessageHelper {
         this.creatorLicense = creatorLicense;
     }
     
+    @Override
     public String getCreatorLicense() {
         return creatorLicense;
     }
@@ -131,6 +136,7 @@ public final class ClaimHelper implements IMessageHelper {
         this.patientId = patientId;
     }
     
+    @Override
     public String getPatientId() {
         return patientId;
     }
@@ -139,6 +145,7 @@ public final class ClaimHelper implements IMessageHelper {
         this.generationPurpose = generationPurpose;
     }
     
+    @Override
     public String getGenerationPurpose() {
         return generationPurpose;
     }
@@ -147,6 +154,7 @@ public final class ClaimHelper implements IMessageHelper {
         this.docId = docId;
     }
     
+    @Override
     public String getDocId() {
         return docId;
     }
@@ -204,6 +212,7 @@ public final class ClaimHelper implements IMessageHelper {
         claimBundle[len] = val;
     }
 
+    @Override
     public String getCreatorDept() {
         return creatorDept;
     }
@@ -212,6 +221,7 @@ public final class ClaimHelper implements IMessageHelper {
         this.creatorDept = creatorDept;
     }
 
+    @Override
     public String getCreatorDeptDesc() {
         return creatorDeptDesc;
     }
@@ -252,6 +262,7 @@ public final class ClaimHelper implements IMessageHelper {
         this.doctorId = doctorId;
     }
 
+    @Override
     public String getJmariCode() {
         return jmariCode;
     }
@@ -260,6 +271,7 @@ public final class ClaimHelper implements IMessageHelper {
         this.jmariCode = jmariCode;
     }
 
+    @Override
     public String getFacilityName() {
         return facilityName;
     }
@@ -277,6 +289,11 @@ public final class ClaimHelper implements IMessageHelper {
 
     public void setSelectedInsurance(PVTHealthInsuranceModel selectedInsurance) {
         this.selectedInsurance = selectedInsurance;
+    }
+
+    @Override
+    public String getGroupId() {
+        return getDocId();
     }
     
 }

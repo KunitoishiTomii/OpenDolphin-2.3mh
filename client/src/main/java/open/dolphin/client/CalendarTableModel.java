@@ -22,18 +22,18 @@ public class CalendarTableModel extends AbstractTableModel {
     private String[] columnNames = COLUMN_NAMES;
     private Object[][] data;
     private Collection markDates;
-    private int year;
-    private int month;
-    private int startDay;
+    private final int year;
+    private final int month;
+    private final int startDay;
     private int firstCell;
     private int lastCell;
-    private int numCols = columnNames.length;
+    private final int numCols = columnNames.length;
     private int numRows;
-    private int numDaysOfMonth;
+    private final int numDaysOfMonth;
 
-    private GregorianCalendar startDate;
+    private final GregorianCalendar startDate;
 //masuda^ ３か月表示のときに利用
-    private int realNumRows;
+    private final int realNumRows;
     public int getRealNumRows() {
         return realNumRows;
     }

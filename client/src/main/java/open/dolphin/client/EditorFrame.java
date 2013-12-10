@@ -707,35 +707,6 @@ public class EditorFrame extends AbstractMainTool implements Chart {
         
         final DocumentModel theModel = editModel;
 //masuda^
-/*
-        Runnable r = new Runnable() {
-            
-            @Override
-            public void run() {
-                
-                editor = chart.createEditor();
-                editor.setModel(theModel);
-                editor.setEditable(true);
-                editor.setContext(EditorFrame.this);
-                editor.setMode(KarteEditor.DOUBLE_MODE);
-                
-                Runnable awt = new Runnable() {
-                    @Override
-                    public void run() {
-                        editor.initialize();
-                        editor.start();
-                        replaceView();
-                    }
-                };
-                
-                EventQueue.invokeLater(awt);
-            }
-        };
-        
-        Thread t = new Thread(r);
-        t.setPriority(Thread.NORM_PRIORITY);
-        t.start();
-*/
         SwingWorker worker = new SwingWorker<Void, Void>() {
 
             @Override
@@ -770,40 +741,6 @@ public class EditorFrame extends AbstractMainTool implements Chart {
             return;
         }
 
-/*
-        Runnable r = new Runnable() {
-            
-            @Override
-            public void run() {
-                
-                ChartImpl chart = (ChartImpl)realChart;
-                DocumentModel editModel = getKarteModelToEdit(view.getModel());
-                editor = chart.createEditor();
-                editor.setModel(editModel);
-                editor.setEditable(true);
-                editor.setContext(EditorFrame.this);
-                editor.setModify(true);
-                String docType = editModel.getDocInfoModel().getDocType();
-                int mode = docType.equals(IInfoModel.DOCTYPE_KARTE) ? KarteEditor.DOUBLE_MODE : KarteEditor.SINGLE_MODE;
-                editor.setMode(mode);
-                
-                Runnable awt = new Runnable() {
-                    @Override
-                    public void run() {
-                        editor.initialize();
-                        editor.start();
-                        replaceView();
-                    }
-                };
-                
-                EventQueue.invokeLater(awt);
-            }
-        };
-        
-        Thread t = new Thread(r);
-        t.setPriority(Thread.NORM_PRIORITY);
-        t.start();
-*/
         SwingWorker worker = new SwingWorker<Void, Void>() {
 
             @Override

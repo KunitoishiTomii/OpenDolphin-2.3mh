@@ -22,11 +22,11 @@ import open.dolphin.infomodel.PhysicalModel;
  */
 public class PhysicalEditor {
     
-    private PhysicalInspector inspector;
+    private final PhysicalInspector inspector;
     private PhysicalEditorView view;
-    private JDialog dialog;
-    private JButton addBtn;
-    private JButton clearBtn;
+    private final JDialog dialog;
+    private final JButton addBtn;
+    private final JButton clearBtn;
     private boolean ok;
 
     public PhysicalEditor(PhysicalInspector inspector) {

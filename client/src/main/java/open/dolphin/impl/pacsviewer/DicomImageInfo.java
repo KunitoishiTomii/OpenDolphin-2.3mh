@@ -9,13 +9,13 @@ import org.dcm4che2.data.Tag;
  */
 public class DicomImageInfo {
 
-    private String institutionName;
-    private String patientID;
-    private String patientName;
-    private String studyDate;
-    private String seriesNumber;
-    private String instanceNumber;
-    private String patientAgeSex;
+    private final String institutionName;
+    private final String patientID;
+    private final String patientName;
+    private final String studyDate;
+    private final String seriesNumber;
+    private final String instanceNumber;
+    private final String patientAgeSex;
 
     public DicomImageInfo(DicomObject obj) {
         institutionName = nz(obj.getString(Tag.InstitutionName));

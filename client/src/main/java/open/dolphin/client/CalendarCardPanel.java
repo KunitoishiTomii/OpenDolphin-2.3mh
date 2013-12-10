@@ -56,8 +56,8 @@ public class CalendarCardPanel extends JPanel  {
     private static final Color titleFore = ClientContext.getColor("color.calendar.title.fore");
     private static final Color titleBack = ClientContext.getColor("color.calendar.title.back");
 
-    private int titleAlign = TITLE_ALIGN;
-    private Font titleFont = TITLE_FONT;
+    private final int titleAlign = TITLE_ALIGN;
+    private final Font titleFont = TITLE_FONT;
 
     /**
      * CalendarCardPanelを生成する。

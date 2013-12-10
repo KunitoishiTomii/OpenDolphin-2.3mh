@@ -45,9 +45,9 @@ public class ImageTool {
     private static byte[] toByteArray(DicomObject obj) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         BufferedOutputStream bos = new BufferedOutputStream(baos);
-        DicomOutputStream dos = new DicomOutputStream(bos);
-        dos.writeDicomFile(obj);
-        dos.close();
+        try (DicomOutputStream dos = new DicomOutputStream(bos)) {
+            dos.writeDicomFile(obj);
+        }
         byte[] data = baos.toByteArray();
         return data;
     }
@@ -57,10 +57,11 @@ public class ImageTool {
         Iterator<ImageReader> iter = ImageIO.getImageReadersByFormatName("DICOM");
         ImageReader reader = iter.next();
         DicomImageReadParam param = (DicomImageReadParam) reader.getDefaultReadParam();
-        ImageInputStream iis = ImageIO.createImageInputStream(bais);
-        reader.setInput(iis, false);
-        BufferedImage buff = reader.read(0, param);
-        iis.close();
+        BufferedImage buff;
+        try (ImageInputStream iis = ImageIO.createImageInputStream(bais)) {
+            reader.setInput(iis, false);
+            buff = reader.read(0, param);
+        }
         if (buff == null) {
             throw new IOException("Could not read Dicom file. Maybe pixel data is invalid.");
         }

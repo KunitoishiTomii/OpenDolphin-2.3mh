@@ -54,7 +54,7 @@ public final class ClientContextStub {
 
     private String pathToDolphin;
 
-    private boolean dolphinPro;
+    private final boolean dolphinPro;
     
     private boolean isNimbus;
 
@@ -173,7 +173,7 @@ public final class ClientContextStub {
             //setUI();
 //masuda$
 
-        } catch (Throwable e) {
+        } catch (DolphinException | IOException e) {
             e.printStackTrace(System.err);
             System.exit(1);
         }
@@ -476,7 +476,7 @@ public final class ClientContextStub {
 
     private void setupEventColorTable() {
         // イベントカラーを定義する
-        eventColorTable = new HashMap<String, Color>(10, 0.75f);
+        eventColorTable = new HashMap<>(10, 0.75f);
         eventColorTable.put("TODAY", getColor("color.TODAY_BACK"));
         eventColorTable.put("BIRTHDAY", getColor("color.BIRTHDAY_BACK"));
         eventColorTable.put("PVT", getColor("color.PVT"));
@@ -612,7 +612,7 @@ public final class ClientContextStub {
             }
             return ret;
 
-        } catch (Exception e) {
+        } catch (ClassNotFoundException e) {
             e.printStackTrace(System.err);
         }
         return null;
@@ -657,7 +657,7 @@ public final class ClientContextStub {
         if (isQuaqua) {
             // QuaquaのFileChooserは慣れないので使用しない。
             if (!isMac()) {
-                Set<String> excludes = new HashSet<String>();
+                Set<String> excludes = new HashSet<>();
                 excludes.add("FileChooser");
                 excludes.add("ColorChooser");
                 QuaquaManager.setExcludedUIs(excludes);
@@ -809,7 +809,7 @@ public final class ClientContextStub {
             } else if (values.length == 4) {
                 c = new Color(intValues[0], intValues[1], intValues[2], intValues[3]);
             }
-        } catch (Exception e) {
+        } catch (NumberFormatException e) {
         }
         return c;
     }

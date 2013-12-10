@@ -67,7 +67,7 @@ public class ImportOrcaMedicinePanel {
 
     public List<MasterItem> getMasterItemList() {
         // tableで選択されているもののみ返す
-        List<MasterItem> ret = new ArrayList<MasterItem>();
+        List<MasterItem> ret = new ArrayList<>();
         int[] selected = tbl_MasterItem.getSelectedRows();
         int rowCount = tableModel.getObjectCount();
         List<MasterItem> lst = tableModel.getDataProvider();
@@ -125,8 +125,7 @@ public class ImportOrcaMedicinePanel {
                     tableModel.setDataProvider(result);
                     tbl_MasterItem.repaint();
                     blockGlass.unblock();
-                } catch (InterruptedException ex) {
-                } catch (ExecutionException ex) {
+                } catch (InterruptedException | ExecutionException ex) {
                 }
 
             }
@@ -166,7 +165,7 @@ public class ImportOrcaMedicinePanel {
                     if (cb_YMD.getItemCount() > 0) {
                         cb_YMD.setSelectedIndex(0);
                     }
-                } catch (Exception ex) {
+                } catch (InterruptedException | ExecutionException ex) {
                 }
             }
         };

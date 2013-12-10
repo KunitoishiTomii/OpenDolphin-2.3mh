@@ -5,6 +5,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.*;
@@ -15,7 +16,7 @@ import open.dolphin.client.BlockGlass;
 import open.dolphin.client.ClientContext;
 import open.dolphin.client.GUIFactory;
 import open.dolphin.delegater.StampDelegater;
-import open.dolphin.helper.SimpleWorker;
+import open.dolphin.helper.ProgressMonitorWorker;
 import open.dolphin.infomodel.IInfoModel;
 import open.dolphin.infomodel.PublishedTreeModel;
 import open.dolphin.infomodel.SubscribedTreeModel;
@@ -49,7 +50,7 @@ public class StampImporter {
     private static final ImageIcon HOME_ICON = ClientContext.getImageIconAlias("icon_hospital_small");
     private static final ImageIcon FLAG_ICON = ClientContext.getImageIconAlias("icon_flag_blue_small");
     
-    private String title = "スタンプインポート";
+    private final String title = "スタンプインポート";
     private JFrame frame;
     private BlockGlass blockGlass;
     private JTable browseTable;
@@ -61,15 +62,9 @@ public class StampImporter {
     private JLabel localLabel;
     private JLabel importedLabel;
     
-    private StampBoxPlugin stampBox;
-    private List<Long> importedTreeList;
+    private final StampBoxPlugin stampBox;
+    private final List<Long> importedTreeList;
 
-    // timerTask 関連
-    private javax.swing.Timer taskTimer;
-    private ProgressMonitor monitor;
-    private int delayCount;
-    private int maxEstimation = 90*1000;    // 90 秒
-    private int delay = 300;                // 300 mmsec
     
     public StampImporter(StampBoxPlugin stampBox) {
         this.stampBox = stampBox;
@@ -80,16 +75,17 @@ public class StampImporter {
      * 公開されているTreeのリストを取得しテーブルへ表示する。
      */
     public void start() {
-
-        final SimpleWorker worker = new SimpleWorker<List<PublishedTreeModel>, Void>() {
+        
+        String message = "スタンプインポート";
+        String note = "公開スタンプを取得しています...";
+        Component c = frame;
+        
+        ProgressMonitorWorker worker = new ProgressMonitorWorker<List<PublishedTreeModel>, Void>(c, message, note) {
 
             @Override
             protected List<PublishedTreeModel> doInBackground() throws Exception {
 
-//masuda^
-                //StampDelegater sdl = new StampDelegater();
                 StampDelegater sdl = StampDelegater.getInstance();
-//masuda$
                 List<PublishedTreeModel> result = sdl.getPublishedTrees();
                 return result;
             }
@@ -120,42 +116,7 @@ public class StampImporter {
                 ClientContext.getBootLogger().warn(cause.getMessage());
             }
 
-            @Override
-            protected void startProgress() {
-                delayCount = 0;
-                taskTimer.start();
-            }
-
-            @Override
-            protected void stopProgress() {
-                taskTimer.stop();
-                monitor.close();
-                taskTimer = null;
-                monitor = null;
-            }
         };
-
-        String message = "スタンプインポート";
-        String note = "公開スタンプを取得しています...";
-        Component c = frame;
-        monitor = new ProgressMonitor(c, message, note, 0, maxEstimation / delay);
-
-        taskTimer = new Timer(delay, new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                delayCount++;
-
-                if (monitor.isCanceled() && (!worker.isCancelled())) {
-                   // no cancel
-                } else if (delayCount >= monitor.getMaximum() && (!worker.isCancelled())) {
-                    worker.cancel(true);
-
-                } else {
-                    monitor.setProgress(delayCount);
-                }
-            }
-        });
 
         worker.execute();
     }
@@ -211,7 +172,7 @@ public class StampImporter {
         
         JPanel browsePane = new JPanel();
 
-        tableModel = new ListTableModel<PublishedTreeModel>(COLUMN_NAMES, 10, METHOD_NAMES, CLASSES);
+        tableModel = new ListTableModel<>(COLUMN_NAMES, 10, METHOD_NAMES, CLASSES);
         browseTable = new JTable(tableModel);
         for (int i = 0; i < COLUMN_WIDTH.length; i++) {
             browseTable.getColumnModel().getColumn(i).setPreferredWidth(COLUMN_WIDTH[i]);
@@ -327,7 +288,7 @@ public class StampImporter {
 
         try {
             importTree.setTreeXml(new String(importTree.getTreeBytes(), "UTF-8"));
-        } catch (Exception e) {
+        } catch (UnsupportedEncodingException e) {
             e.printStackTrace(System.err);
         }
         
@@ -335,17 +296,19 @@ public class StampImporter {
         SubscribedTreeModel sm = new SubscribedTreeModel();
         sm.setUserModel(Project.getUserModel());
         sm.setTreeId(importTree.getId());
-        final List<SubscribedTreeModel> subscribeList = new ArrayList<SubscribedTreeModel>(1);
+        final List<SubscribedTreeModel> subscribeList = new ArrayList<>(1);
         subscribeList.add(sm);
 
-        final SimpleWorker worker = new SimpleWorker<Void, Void>() {
+        String message = "スタンプインポート";
+        String note = "インポートしています...";
+        Component c = frame;
+        
+        ProgressMonitorWorker worker = new ProgressMonitorWorker<Void, Void>(c, message, note) {
 
             @Override
             protected Void doInBackground() throws Exception {
-//masuda^
-                //StampDelegater sdl = new StampDelegater();
+
                 StampDelegater sdl = StampDelegater.getInstance();
-//masuda$
                 sdl.subscribeTrees(subscribeList);
                 return null;
             }
@@ -372,48 +335,7 @@ public class StampImporter {
                         JOptionPane.WARNING_MESSAGE);
                 ClientContext.getBootLogger().warn(cause.getMessage());
             }
-
-            @Override
-            protected void startProgress() {
-                delayCount = 0;
-                blockGlass.block();
-                taskTimer.start();
-            }
-
-            @Override
-            protected void stopProgress() {
-                taskTimer.stop();
-                monitor.close();
-                blockGlass.unblock();
-                taskTimer = null;
-                monitor = null;
-            }
         };
-
-        String message = "スタンプインポート";
-        String note = "インポートしています...";
-        Component c = frame;
-        monitor = new ProgressMonitor(c, message, note, 0, maxEstimation / delay);
-
-        taskTimer = new Timer(delay, new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                delayCount++;
-
-                if (monitor.isCanceled() && (!worker.isCancelled())) {
-                    //worker.cancel(true);
-                    // No cancel
-
-                } else if (delayCount >= monitor.getMaximum() && (!worker.isCancelled())) {
-                    worker.cancel(true);
-
-                } else {
-                    monitor.setProgress(delayCount);
-                }
-            }
-        });
-
         worker.execute();
     }
     
@@ -433,19 +355,20 @@ public class StampImporter {
         SubscribedTreeModel sm = new SubscribedTreeModel();
         sm.setTreeId(removeTree.getId());
         sm.setUserModel(Project.getUserModel());
-        final List<SubscribedTreeModel> list = new ArrayList<SubscribedTreeModel>(1);
+        final List<SubscribedTreeModel> list = new ArrayList<>(1);
         list.add(sm);
         
         // Unsubscribeタスクを実行する
+        String message = "スタンプインポート";
+        String note = "インポート済みスタンプを削除しています...";
+        Component c = frame;
         
-        final SimpleWorker worker = new SimpleWorker<Void, Void>() {
+        ProgressMonitorWorker worker = new ProgressMonitorWorker<Void, Void>(c, message, note) {
   
             @Override
             protected Void doInBackground() throws Exception {
-//masuda^
-                //StampDelegater sdl = new StampDelegater();
+                
                 StampDelegater sdl = StampDelegater.getInstance();
-//masuda$
                 sdl.unsubscribeTrees(list);
                 return null;
             }
@@ -472,47 +395,7 @@ public class StampImporter {
                             JOptionPane.WARNING_MESSAGE);
                 ClientContext.getBootLogger().warn(cause.getMessage());
             }
-
-            @Override
-            protected void startProgress() {
-                delayCount = 0;
-                blockGlass.block();
-                taskTimer.start();
-            }
-
-            @Override
-            protected void stopProgress() {
-                taskTimer.stop();
-                monitor.close();
-                blockGlass.unblock();
-                taskTimer = null;
-                monitor = null;
-            }
         };
-
-        String message = "スタンプインポート";
-        String note = "インポート済みスタンプを削除しています...";
-        Component c = frame;
-        monitor = new ProgressMonitor(c, message, note, 0, maxEstimation / delay);
-
-        taskTimer = new Timer(delay, new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                delayCount++;
-
-                if (monitor.isCanceled() && (!worker.isCancelled())) {
-                    //worker.cancel(true);
-                    // No cancel
-
-                } else if (delayCount >= monitor.getMaximum() && (!worker.isCancelled())) {
-                    worker.cancel(true);
-
-                } else {
-                    monitor.setProgress(delayCount);
-                }
-            }
-        });
 
         worker.execute();
     }

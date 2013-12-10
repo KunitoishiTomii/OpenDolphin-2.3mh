@@ -1,4 +1,3 @@
-
 package open.dolphin.client;
 
 import java.awt.BorderLayout;
@@ -59,8 +58,8 @@ public class UsingDrugPanel {
     @SuppressWarnings("unchecked")
     public void enter() {
 
-        removedList= new ArrayList<UsingDrugModel>();
-        updatedList = new ArrayList<UsingDrugModel>();
+        removedList= new ArrayList<>();
+        updatedList = new ArrayList<>();
 
         tableModel = new ListTableModel<UsingDrugModel>(COLUMN_NAMES, START_NUM_ROWS, METHOD_NAMES, CLASSES) {
             // 編集は不可
@@ -133,12 +132,12 @@ public class UsingDrugPanel {
 
         // 採用薬を取得、新規のArrayListを用意する。
         UsingDrugs.getInstance().loadUsingDrugs();
-        List<UsingDrugModel>list = new ArrayList<UsingDrugModel>(UsingDrugs.getInstance().getUsingDrugModelList());
-        if (list != null) {
-            // テーブルにセット
-            Collections.sort(list);
-            tableModel.setDataProvider(list);
-        }
+        List<UsingDrugModel>list = new ArrayList<>(UsingDrugs.getInstance().getUsingDrugModelList());
+
+        // テーブルにセット
+        Collections.sort(list);
+        tableModel.setDataProvider(list);
+
         // ダイアログを表示
         showDialog();
     }

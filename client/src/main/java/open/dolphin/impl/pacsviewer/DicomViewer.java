@@ -52,12 +52,12 @@ public class DicomViewer {
     private JSlider slider;
     private JLabel sliderValue;
     private ExecutorService exec;
-    private ThumbnailTableModel thumbnailTableModel;
+    private ThumbnailTableModel<DicomImageEntry> thumbnailTableModel;
     private static final int MAX_IMAGE_SIZE = 120;
     private static final int CELL_WIDTH_MARGIN = 20;
     private static final int CELL_HEIGHT_MARGIN = 20;
-    private int cellWidth = MAX_IMAGE_SIZE + CELL_WIDTH_MARGIN;
-    private int cellHeight = MAX_IMAGE_SIZE + CELL_HEIGHT_MARGIN;
+    private final int cellWidth = MAX_IMAGE_SIZE + CELL_WIDTH_MARGIN;
+    private final int cellHeight = MAX_IMAGE_SIZE + CELL_HEIGHT_MARGIN;
     private final int columnCount = 1;
     private int index = 0;
     private final static DecimalFormat frmt = new DecimalFormat("0.0");
@@ -221,7 +221,7 @@ public class DicomViewer {
         frame.add(viewerPanel, BorderLayout.CENTER);
 
         // サムネイルパネル
-        thumbnailTableModel = new ThumbnailTableModel(columnCount);
+        thumbnailTableModel = new ThumbnailTableModel<>(columnCount);
         thumbnailTable.setModel(thumbnailTableModel);
         thumbnailTable.setTableHeader(null);
         prepareTable(thumbnailTable);
@@ -366,15 +366,17 @@ public class DicomViewer {
             int row = imageIndex % columnCount;
             int column = imageIndex / columnCount;
             try {
-            DicomImageEntry entry = (DicomImageEntry) thumbnailTableModel.getValueAt(row, column);
-            DicomObject object = entry.getDicomObject();
-            boolean isCR = "CR".equals(object.getString(Tag.Modality));
-            gammaBtn.setSelected(isCR);
-                setStudyInfoLabel(object);
-                BufferedImage image = ImageTool.getDicomImage(object);
-                viewerPanel.setPixelSpacing(object.getDoubles(Tag.PixelSpacing));
-                viewerPanel.setInfo(new DicomImageInfo(object));
-                viewerPanel.setImage(image);
+                DicomImageEntry entry = thumbnailTableModel.getValueAt(row, column);
+                if (entry != null) {
+                    DicomObject object = entry.getDicomObject();
+                    boolean isCR = "CR".equals(object.getString(Tag.Modality));
+                    gammaBtn.setSelected(isCR);
+                    setStudyInfoLabel(object);
+                    BufferedImage image = ImageTool.getDicomImage(object);
+                    viewerPanel.setPixelSpacing(object.getDoubles(Tag.PixelSpacing));
+                    viewerPanel.setInfo(new DicomImageInfo(object));
+                    viewerPanel.setImage(image);
+                }
             } catch (IOException ex) {
             }
         }

@@ -64,9 +64,9 @@ public class CheckMedication {
 
     private void makeDrugList() {
         
-        drugCodeNameMap = new HashMap<String, String>();
-        bundleList = new ArrayList<BundleDolphin>();
-        medList = new ArrayList<BundleMed>();
+        drugCodeNameMap = new HashMap<>();
+        bundleList = new ArrayList<>();
+        medList = new ArrayList<>();
         
         for (ModuleModel stamp : moduleList) {
             String entity = stamp.getModuleInfoBean().getEntity();
@@ -93,7 +93,7 @@ public class CheckMedication {
         UsingDrugs.getInstance().loadUsingDrugs();
         DisconItems.getInstance().loadDisconItems();
 
-        List<UsingDrugModel> newDrugs = new ArrayList<UsingDrugModel>();
+        List<UsingDrugModel> newDrugs = new ArrayList<>();
         for (BundleDolphin bundle : bundleList) {
             String admin = bundle.getAdmin();
             if (admin != null && admin.startsWith("１日")) {
@@ -158,7 +158,7 @@ public class CheckMedication {
                 try {
                     String numHankaku = ZenkakuUtils.toHalfNumber(admin.substring("１日".length(), posKai));
                     bunkatsu = Integer.valueOf(numHankaku);
-                } catch (Exception e) {
+                } catch (NumberFormatException e) {
                 }
             }
             // 分割投与でなくて分１以外なら

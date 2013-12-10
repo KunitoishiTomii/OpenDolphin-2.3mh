@@ -15,12 +15,12 @@ import javax.swing.event.DocumentListener;
  */
 public final class ChangeNumDatesDialog {
 
-    private JButton changeBtn;
-    private JButton cancelBtn;
+    private final JButton changeBtn;
+    private final JButton cancelBtn;
     private ChangeNumDatesView view;
-    private JDialog dialog;
-    private PropertyChangeSupport boundSupport;
-    private PropertyChangeListener listener;
+    private final JDialog dialog;
+    private final PropertyChangeSupport boundSupport;
+    private final PropertyChangeListener listener;
 
     public ChangeNumDatesDialog(JFrame parent, PropertyChangeListener pcl) {
 
@@ -106,7 +106,7 @@ public final class ChangeNumDatesDialog {
             int number = Integer.parseInt(view.getNumDatesFld().getText().trim());
             boundSupport.firePropertyChange("newNumDates", -1, number);
             close();
-        } catch (Throwable e) {
+        } catch (NumberFormatException e) {
             e.printStackTrace(System.err);
         }
     }

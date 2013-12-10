@@ -44,13 +44,13 @@ public class AdmissionList extends AbstractMainComponent {
     // 来院テーブルのクラス名
     private static final Class[] COLUMN_CLASSES = {
         String.class, String.class, String.class, String.class, String.class, 
-        String.class, String.class, String.class, String.class};
+        String.class, String.class, String.class, Integer.class};
     // 来院テーブルのカラム幅
     private static final int[] COLUMN_WIDTH = {
         30, 40, 100, 20, 40, 80, 50, 80, 20};
     
     // Status　情報　メインウィンドウの左下に表示される内容
-    private String statusInfo;
+    private final String statusInfo;
     private static final String INFO_MSG = "入院カルテはここから作成";
     private static final String CLICK_BTN_MSG = "左のボタンをクリックして入院患者リストを取得してください。";
     
@@ -66,9 +66,10 @@ public class AdmissionList extends AbstractMainComponent {
     // Table Model
     private ListTableModel<PatientModel> tableModel;
     // TableSorter
-    private ListTableSorter sorter;
+    private ListTableSorter<PatientModel> sorter;
 
     private int stateColumn;
+    private int genderColumn;
     
     // 選択されている行を保存
     private int selectedRow;
@@ -123,6 +124,7 @@ public class AdmissionList extends AbstractMainComponent {
 
         // Scan して state カラムを設定する
         stateColumn = columnHelper.getColumnPosition("isOpened");
+        genderColumn = columnHelper.getColumnPosition("genderDesc");
     }
     
     /**
@@ -326,8 +328,7 @@ public class AdmissionList extends AbstractMainComponent {
                 try {
                     List<PatientModel> list = get();
                     tableModel.setDataProvider(list);
-                } catch (InterruptedException ex) {
-                } catch (ExecutionException ex) {
+                } catch (InterruptedException | ExecutionException ex) {
                 }
 
                 updateInfo();
@@ -365,7 +366,7 @@ public class AdmissionList extends AbstractMainComponent {
     
     private PatientModel getSelectedPatient() {
         selectedRow = table.getSelectedRow();
-        return (PatientModel) sorter.getObject(selectedRow);
+        return sorter.getObject(selectedRow);
     }
     
     /**
@@ -438,24 +439,21 @@ public class AdmissionList extends AbstractMainComponent {
     }
     
     private class PatientListTableRenderer extends StripeTableCellRenderer {
-
-        public PatientListTableRenderer() {
-            super();
-        }
-
+        
         @Override
         public Component getTableCellRendererComponent(JTable table,
-                Object value,
-                boolean isSelected,
-                boolean isFocused,
-                int row, int col) {
+                Object value, boolean isSelected, boolean isFocused, int row, int col) {
 
             super.getTableCellRendererComponent(table, value, isSelected, isFocused, row, col);
-            this.setHorizontalAlignment(JLabel.LEFT);
-            PatientModel pm = (PatientModel) sorter.getObject(row);
             
-            if (pm != null && col == stateColumn) {
-                setHorizontalAlignment(JLabel.CENTER);
+            PatientModel pm = sorter.getObject(row);
+            if (pm == null) {
+                return this;
+            }
+            
+            if (col == stateColumn) {
+                setHorizontalAlignment(CENTER);
+                setBorder(null);
                 if (pm.isOpened()) {
                     if (clientUUID.equals(pm.getOwnerUUID())) {
                         setIcon(OPEN_ICON);
@@ -467,6 +465,9 @@ public class AdmissionList extends AbstractMainComponent {
                 }
                 setText("");
             } else {
+                if (col == genderColumn) {
+                    setHorizontalAlignment(CENTER);
+                }
                 setIcon(null);
                 setText(value == null ? "" : value.toString());
             }

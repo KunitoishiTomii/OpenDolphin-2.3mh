@@ -60,19 +60,35 @@ public class PvtServerThread implements Runnable {
             logger.warning("Socket was already closed.");
         } catch (IOException ex) {
             logger.warning("I/O error occured.");
-        } finally {
-            for (SelectionKey key : selector.keys()) {
-                try {
-                    key.channel().close();
-                } catch (IOException ex) {
-                    //ex.printStackTrace(System.err);
-                }
-            }
-        }
+        }// finally {
+        //    dispose();
+        //}
     }
 
     public void stop() {
         isRunning = false;
-        selector.wakeup();
+        //selector.wakeup();
+        dispose();
+    }
+    
+    private void dispose() {
+
+        for (SelectionKey key : selector.keys()) {
+            try {
+                key.channel().close();
+            } catch (IOException ex) {
+                //ex.printStackTrace(System.err);
+            }
+        }
+        try {
+            selector.close();
+        } catch (IOException ex) {
+            //ex.printStackTrace(System.err);
+        }
+        try {
+            ssc.close();
+        } catch (IOException ex) {
+            //ex.printStackTrace(System.err);
+        }
     }
 }

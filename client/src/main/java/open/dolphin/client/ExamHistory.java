@@ -279,8 +279,7 @@ public class ExamHistory {
                     }
                     tableModel.setDataProvider(list);
 
-                } catch (InterruptedException ex) {
-                } catch (ExecutionException ex) {
+                } catch (InterruptedException | ExecutionException ex) {
                 }
             }
         };

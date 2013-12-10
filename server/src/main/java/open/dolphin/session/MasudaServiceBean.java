@@ -111,7 +111,7 @@ public class MasudaServiceBean {
         }
         String[] ids = moduleIds.split(",");
 
-        List<Long> idList = new ArrayList<Long>();
+        List<Long> idList = new ArrayList<>();
         for (String id : ids) {
             idList.add(Long.valueOf(id));
         }
@@ -292,7 +292,7 @@ public class MasudaServiceBean {
                 .setParameter("docPkList", docPkList)
                 .getResultList();
 
-        List<DocInfoModel> result = new ArrayList<DocInfoModel>();
+        List<DocInfoModel> result = new ArrayList<>();
         for (DocumentModel docBean : documents) {
             // モデルからDocInfo へ必要なデータを移す
             // クライアントが DocInfo だけを利用するケースがあるため
@@ -377,8 +377,8 @@ public class MasudaServiceBean {
             return null;
         }
 
-        HashSet<PatientModel> patientModelSet = new HashSet<PatientModel>();
-        HashSet<Long> karteIdSet = new HashSet<Long>();
+        HashSet<PatientModel> patientModelSet = new HashSet<>();
+        HashSet<Long> karteIdSet = new HashSet<>();
 
         // karteId == 0なら全患者から検索。PatientMemoModelも検索する
         if (karteId == 0) {
@@ -414,13 +414,13 @@ public class MasudaServiceBean {
         // DocumentModelを取得
         List<DocumentModel> result = fullTextQuery.getResultList();
         // karteIdとDocIdの対応マップを作成
-        HashMap<Long, List<Long>> karteIdDocIdMap = new HashMap<Long, List<Long>>();
+        HashMap<Long, List<Long>> karteIdDocIdMap = new HashMap<>();
 
         for (DocumentModel dm : result) {
             long kid = dm.getKarteBean().getId();
             List<Long> docIdList = karteIdDocIdMap.get(kid);
             if (docIdList == null) {
-                docIdList = new ArrayList<Long>();
+                docIdList = new ArrayList<>();
             }
             docIdList.add(dm.getId());
             karteIdDocIdMap.put(kid, docIdList);
@@ -437,7 +437,7 @@ public class MasudaServiceBean {
             pm.setSearchText(text);
             List<Long> docIdList = karteIdDocIdMap.get(kid);
             if (docIdList != null) {
-                HashSet<Long> pkSet = new HashSet<Long>();
+                HashSet<Long> pkSet = new HashSet<>();
                 pkSet.addAll(docIdList);
                 if (pm.getDocPkList() != null) {
                     pkSet.addAll(pm.getDocPkList());
@@ -450,7 +450,7 @@ public class MasudaServiceBean {
         }
 
         // 保険情報をとPvtDateを設定する
-        List<PatientModel> ret = new ArrayList<PatientModel>(patientModelSet);
+        List<PatientModel> ret = new ArrayList<>(patientModelSet);
         setInsuranceAndPvtDate(fid, ret);
 
         return ret;
@@ -532,8 +532,8 @@ public class MasudaServiceBean {
             sql2 = sql2 + progressCourse;
         }
 
-        HashSet<PatientModel> patientModelSet = new HashSet<PatientModel>();
-        HashSet<Long> karteIdSet = new HashSet<Long>();
+        HashSet<PatientModel> patientModelSet = new HashSet<>();
+        HashSet<Long> karteIdSet = new HashSet<>();
 
         // ModuleModelを取得
         List<ModuleModel> modules =
@@ -550,7 +550,7 @@ public class MasudaServiceBean {
         long toId = modules.get(modules.size() - 1).getId();
 
         // 検索語を含むkarteIdとDocIdの対応マップを作成
-        HashMap<Long, List<Long>> karteIdDocIdMap = new HashMap<Long, List<Long>>();
+        HashMap<Long, List<Long>> karteIdDocIdMap = new HashMap<>();
         for (ModuleModel mm : modules) {
             // テキスト抽出
             IInfoModel im = (IInfoModel) BeanUtils.xmlDecode(mm.getBeanBytes());
@@ -568,7 +568,7 @@ public class MasudaServiceBean {
                 long karteId = mm.getKarteBean().getId();
                 List<Long> docIdList = karteIdDocIdMap.get(karteId);
                 if (docIdList == null) {
-                    docIdList = new ArrayList<Long>();
+                    docIdList = new ArrayList<>();
                 }
                 docIdList.add(docId);
                 karteIdDocIdMap.put(karteId, docIdList);
@@ -585,7 +585,7 @@ public class MasudaServiceBean {
             List<Long> docIdList = karteIdDocIdMap.get(kid);
 
             if (docIdList != null) {
-                HashSet<Long> pkSet = new HashSet<Long>();
+                HashSet<Long> pkSet = new HashSet<>();
                 pkSet.addAll(docIdList);
                 if (pm.getDocPkList() != null) {
                     pkSet.addAll(pm.getDocPkList());
@@ -597,7 +597,7 @@ public class MasudaServiceBean {
         }
 
         // 保険情報をとPvtDateを設定する
-        List<PatientModel> list = new ArrayList<PatientModel>(patientModelSet);
+        List<PatientModel> list = new ArrayList<>(patientModelSet);
         setInsuranceAndPvtDate(fid, list);
 
         // 総モジュール数を取得、進捗具合に利用する
@@ -613,7 +613,7 @@ public class MasudaServiceBean {
     // 通信量を減らすためサーバー側で検査履歴を調べる
     public List<ExamHistoryModel> getExamHistory(String fid, long karteId, Date fromDate, Date toDate) {
 
-        final List<String> entities = new ArrayList<String>();
+        final List<String> entities = new ArrayList<>();
         entities.add(IInfoModel.ENTITY_RADIOLOGY_ORDER);
         entities.add(IInfoModel.ENTITY_PHYSIOLOGY_ORDER);
         entities.add(IInfoModel.ENTITY_LABO_TEST);
@@ -623,7 +623,7 @@ public class MasudaServiceBean {
             return null;
         }
         // HashMapに登録しておく
-        HashMap<Long, ExamHistoryModel> examMap = new HashMap<Long, ExamHistoryModel>();
+        HashMap<Long, ExamHistoryModel> examMap = new HashMap<>();
 
         for (ModuleModel mm : models) {
             mm.setModel((InfoModel) BeanUtils.xmlDecode(mm.getBeanBytes()));
@@ -639,7 +639,7 @@ public class MasudaServiceBean {
             }
         }
         
-        return new ArrayList<ExamHistoryModel>(examMap.values());
+        return new ArrayList<>(examMap.values());
     }
     
     // 通信量を減らすためにサーバー側で処方切れを調べる
@@ -653,29 +653,29 @@ public class MasudaServiceBean {
         }
 
         // ModuleModelを患者毎に分類
-        HashMap<PatientModel, List<ModuleModel>> pmmmMap = new HashMap<PatientModel, List<ModuleModel>>();
+        HashMap<PatientModel, List<ModuleModel>> pmmmMap = new HashMap<>();
         for (ModuleModel mm : mmList){
             // いつもデコード忘れるｗ
             mm.setModel((InfoModel) BeanUtils.xmlDecode(mm.getBeanBytes()));
             PatientModel pModel = mm.getKarteBean().getPatient();
             List<ModuleModel> list = pmmmMap.get(pModel);
             if (list == null){
-                list = new ArrayList<ModuleModel>();
+                list = new ArrayList<>();
             }
             list.add(mm);
             pmmmMap.put(pModel, list);
         }
         // mmListは用なし。メモリ食いそうなのでnullにしてみるが、効果は？
         mmList.clear();
-        mmList = null;
+        //mmList = null;
         // 患者毎に処方切れかどうか調べる
-        List<PatientModel> ret = new ArrayList<PatientModel>();
+        List<PatientModel> ret = new ArrayList<>();
         for (Map.Entry entry : pmmmMap.entrySet()) {
             PatientModel model = (PatientModel) entry.getKey();
             
             List<ModuleModel> list = (List<ModuleModel>) entry.getValue();
             // 処方日と処方日数を列挙
-            HashMap<Date, Integer> dateNumberMap = new HashMap<Date, Integer>();
+            HashMap<Date, Integer> dateNumberMap = new HashMap<>();
             for (ModuleModel mm : list){
                 // 処方日を取得
                 Date date = mm.getDocumentModel().getStarted();
@@ -841,7 +841,7 @@ public class MasudaServiceBean {
         long toId = mmList.get(mmList.size() - 1).getId();
         
         // まずはsrycdをリストアップ
-        Set<String> srycds = new HashSet<String>();
+        Set<String> srycds = new HashSet<>();
         for (ModuleModel mm : mmList) {
             mm.setModel((InfoModel) BeanUtils.xmlDecode(mm.getBeanBytes()));
             ClaimBundle cb = (ClaimBundle) mm.getModel();
@@ -907,7 +907,7 @@ public class MasudaServiceBean {
         int num = 1;
         try {
             num = Integer.valueOf(str);
-        } catch (Exception e) {
+        } catch (NumberFormatException e) {
         }
         return num;
     }
@@ -953,7 +953,7 @@ public class MasudaServiceBean {
     
     public String getSanteiCount(long karteId, Date fromDate, Date toDate, List<String> srycds) {
 
-        Map<String, Integer> map = new HashMap<String, Integer>();
+        Map<String, Integer> map = new HashMap<>();
         for (String srycd : srycds) {
             map.put(srycd, 0);
         }
@@ -967,9 +967,8 @@ public class MasudaServiceBean {
         
         StringBuilder sb = new StringBuilder();
         boolean first = true;
-        for (Iterator itr = map.entrySet().iterator(); itr.hasNext();) {
-            Map.Entry entry = (Map.Entry) itr.next();
-            String srycd = (String) entry.getKey();
+        for (Map.Entry<String, Integer> entry : map.entrySet()) {
+            String srycd = entry.getKey();
             String num = String.valueOf(entry.getValue());
             if (!first) {
                 sb.append(",");
@@ -994,7 +993,7 @@ public class MasudaServiceBean {
                 "from ModuleModel m where m.document.id = :docPk "
                 + "and m.moduleInfo.entity = '" + IInfoModel.ENTITY_MED_ORDER + "'";
         
-        List<List<RpModel>> ret = new ArrayList<List<RpModel>>();
+        List<List<RpModel>> ret = new ArrayList<>();
         
         List<DocumentModel> docList;
         
@@ -1021,7 +1020,7 @@ public class MasudaServiceBean {
                 continue;
             }
             
-            List<RpModel> rpModelList = new ArrayList<RpModel>();
+            List<RpModel> rpModelList = new ArrayList<>();
             for (ModuleModel mm : mmList) {
                 mm.setModel((InfoModel) BeanUtils.xmlDecode(mm.getBeanBytes()));
                 BundleMed bm = (BundleMed) mm.getModel();
@@ -1108,7 +1107,7 @@ public class MasudaServiceBean {
                 .setParameter("fid", fid)
                 .getResultList();
         
-        Map<String, String> propMap = new HashMap<String, String>();
+        Map<String, String> propMap = new HashMap<>();
         for (UserPropertyModel model : list) {
             propMap.put(model.getKey(), model.getValue());
         }
@@ -1126,8 +1125,7 @@ public class MasudaServiceBean {
                     .setParameter("value", jmariCode)
                     .getSingleResult();
             fid = model.getFacilityId();
-        } catch (NoResultException ex) {
-        } catch (NonUniqueResultException ex) {
+        } catch (NoResultException | NonUniqueResultException ex) {
         }
         return fid;
     }
@@ -1214,7 +1212,7 @@ public class MasudaServiceBean {
                 .setParameter("id", userPk)
                 .getResultList();
 
-        Set<PatientModel> set = new HashSet<PatientModel>();
+        Set<PatientModel> set = new HashSet<>();
 
         for (DocumentModel doc : documents) {
             PatientModel pm = doc.getKarteBean().getPatientModel();
@@ -1224,7 +1222,7 @@ public class MasudaServiceBean {
         // 患者の健康保険を取得する。忘れがちｗ
         setHealthInsurances(set);
 
-        return new ArrayList<PatientModel>(set);
+        return new ArrayList<>(set);
     }
     
     // 保険情報は後でクライアントから取りに行く

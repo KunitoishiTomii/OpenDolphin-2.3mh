@@ -15,7 +15,7 @@ public final class OrderListTransferable extends DolphinTransferable {
 
     public static final DataFlavor[] flavors = {OrderListTransferable.orderListFlavor};
 
-    private OrderList list;
+    private final OrderList list;
 
 
     /** Creates new OrderListTransferable */

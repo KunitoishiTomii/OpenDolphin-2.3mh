@@ -64,7 +64,7 @@ public class RoutineMedImpl extends AbstractChartDocument {
     private JPanel medPanel;
     private JScrollPane scrlMedPanel;
     private ListTableModel<RoutineMedModel> tableModel;
-    private List<RoutineMedPanel> panelList;
+    private final List<RoutineMedPanel> panelList;
     
     // undo関連
     private Deque undoQue;      // undo用のdeque
@@ -75,11 +75,11 @@ public class RoutineMedImpl extends AbstractChartDocument {
     private Action deleteAction;
     private Action updateAction;
     
-    private ListTableSorter sorter;
+    private ListTableSorter<RoutineMedModel> sorter;
     
     public RoutineMedImpl() {
         setTitle(TITLE);
-        panelList = new ArrayList<RoutineMedPanel>();
+        panelList = new ArrayList<>();
     }
     
     @Override
@@ -110,8 +110,8 @@ public class RoutineMedImpl extends AbstractChartDocument {
         undoAction.setEnabled(false);
         redoAction = getContext().getChartMediator().getAction(GUIConst.ACTION_REDO);
         redoAction.setEnabled(false);
-        undoQue = new LinkedList<RoutineMedModel>();
-        redoQue = new LinkedList<RoutineMedModel>();
+        undoQue = new LinkedList<>();
+        redoQue = new LinkedList<>();
     }
     
     private void initComponents() {
@@ -180,7 +180,7 @@ public class RoutineMedImpl extends AbstractChartDocument {
         panel.add(btnPanel);
         
         // 表
-        tableModel = new ListTableModel<RoutineMedModel>(COLUMN_NAMES, START_NUM_ROWS, PROPERTY_NAMES, COLUMN_CLASSES);
+        tableModel = new ListTableModel<>(COLUMN_NAMES, START_NUM_ROWS, PROPERTY_NAMES, COLUMN_CLASSES);
         sorter = new ListTableSorter(tableModel);
         table = new JTable(sorter) {
 
@@ -194,7 +194,7 @@ public class RoutineMedImpl extends AbstractChartDocument {
                     return false;
                 }
                 
-                RoutineMedModel model = (RoutineMedModel) sorter.getObject(row);
+                RoutineMedModel model = sorter.getObject(row);
                 if (model == null) {
                     return false;
                 }
@@ -210,7 +210,7 @@ public class RoutineMedImpl extends AbstractChartDocument {
                 int[] selectedRows = table.getSelectedRows();
                 for (int selectedRow : selectedRows) {
 
-                    RoutineMedModel oldMed = (RoutineMedModel) sorter.getObject(selectedRow);
+                    RoutineMedModel oldMed = sorter.getObject(selectedRow);
                     if (oldMed == null) {
                         return;
                     }
@@ -352,7 +352,7 @@ public class RoutineMedImpl extends AbstractChartDocument {
         
         int[] selectedRows = table.getSelectedRows();
         for (int selectedRow : selectedRows) {
-            RoutineMedModel oldMed = (RoutineMedModel) sorter.getObject(selectedRow);
+            RoutineMedModel oldMed = sorter.getObject(selectedRow);
             RoutineMedModel newMed = oldMed.clone();
             newMed.setStatus(DELETE);
             offerUndoQue(oldMed, newMed);
@@ -395,7 +395,7 @@ public class RoutineMedImpl extends AbstractChartDocument {
                 if (row == -1) {
                     continue;
                 }
-                RoutineMedModel model = (RoutineMedModel) sorter.getObject(row);
+                RoutineMedModel model = sorter.getObject(row);
                 // ヌルの場合
                 if (model == null) {
                     flag = false;
@@ -403,7 +403,7 @@ public class RoutineMedImpl extends AbstractChartDocument {
                 }
                 String status = model.getStatus();
                 if (status == null || EDITED.equals(status)) {
-                    continue;
+                    //continue;
                 } else {
                     flag = false;
                     break;
@@ -459,8 +459,8 @@ public class RoutineMedImpl extends AbstractChartDocument {
      */
     private static class RoutineMedDequeModel {
 
-        private RoutineMedModel oldMed;
-        private RoutineMedModel newMed;
+        private final RoutineMedModel oldMed;
+        private final RoutineMedModel newMed;
 
         private RoutineMedDequeModel(RoutineMedModel oldMed, RoutineMedModel newMed){
             this.oldMed = oldMed;
@@ -568,7 +568,7 @@ public class RoutineMedImpl extends AbstractChartDocument {
                 JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             
             super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            RoutineMedModel model = (RoutineMedModel) sorter.getObject(row);
+            RoutineMedModel model = sorter.getObject(row);
             if (DELETE.equals(model.getStatus())) {
                 setForeground(DELETE_COLOR);
             }

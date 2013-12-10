@@ -53,7 +53,7 @@ public class StampServiceBean {
     public List<StampTreeModel> getPersonalTrees(long userPK) {
         
         // パーソナルツリーを取得する
-        List<StampTreeModel> ret = new ArrayList<StampTreeModel>();
+        List<StampTreeModel> ret = new ArrayList<>();
 
         List<StampTreeModel> list = 
                 em.createQuery(QUERY_TREE_BY_USER_PK)
@@ -83,14 +83,14 @@ public class StampServiceBean {
     public List<PublishedTreeModel> getPublishedTrees(long userPK) {
 
         // ユーザがサブスクライブしているStampTreeのリストを取得する
-        List<PublishedTreeModel> ret = new ArrayList<PublishedTreeModel>();
+        List<PublishedTreeModel> ret = new ArrayList<>();
         
         List<SubscribedTreeModel> subscribed =
                 em.createQuery(QUERY_SUBSCRIBED_BY_USER_PK)
                 .setParameter(USER_PK, userPK)
                 .getResultList();
 
-        HashMap<Long, String> tmp = new HashMap<Long, String>(5, 0.8f);
+        HashMap<Long, String> tmp = new HashMap<>(5, 0.8f);
 
         for (SubscribedTreeModel sm : subscribed) {
 
@@ -165,8 +165,8 @@ public class StampServiceBean {
                 .setParameter(USER_PK, userPK)
                 .getResultList();
 
-        HashMap<Long, String> tmp = new HashMap<Long, String>(5, 0.8f);
-        List<PublishedTreeModel> publishedList = new ArrayList<PublishedTreeModel>();
+        HashMap<Long, String> tmp = new HashMap<>(5, 0.8f);
+        List<PublishedTreeModel> publishedList = new ArrayList<>();
 
         for (SubscribedTreeModel sm : subscribed) {
 
@@ -383,7 +383,7 @@ public class StampServiceBean {
         // ログインユーザの施設IDを取得する
         //String fid = SessionHelper.getCallersFacilityId(ctx);
 
-        List<PublishedTreeModel> ret = new ArrayList<PublishedTreeModel>();
+        List<PublishedTreeModel> ret = new ArrayList<>();
 
         // local に公開されているTreeを取得する
         // publishType=施設ID
@@ -409,7 +409,7 @@ public class StampServiceBean {
      */
     public List<Long> subscribeTrees(List<SubscribedTreeModel> addList) {
 
-        List<Long> ret = new ArrayList<Long>();
+        List<Long> ret = new ArrayList<>();
         for (SubscribedTreeModel model : addList) {
             em.persist(model);
             ret.add(new Long(model.getId()));
@@ -452,7 +452,7 @@ public class StampServiceBean {
      * @return 保存件数
      */
     public List<String> putStamp(List<StampModel> list) {
-        List<String> ret = new ArrayList<String>();
+        List<String> ret = new ArrayList<>();
         for (StampModel model : list) {
             em.persist(model);
             ret.add(model.getId());
@@ -493,7 +493,7 @@ public class StampServiceBean {
      */
     public List<StampModel> getStamp(List<String> ids) {
 
-        List<StampModel> ret = new ArrayList<StampModel>();
+        List<StampModel> ret = new ArrayList<>();
 
         try {
             for (String stampId : ids) {

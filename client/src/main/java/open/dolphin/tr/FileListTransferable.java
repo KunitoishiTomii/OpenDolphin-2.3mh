@@ -11,7 +11,7 @@ import java.util.List;
  */
 public final class FileListTransferable extends DolphinTransferable {
     
-    private List<File> fileList;
+    private final List<File> fileList;
 
     public FileListTransferable(File[] files) {
         fileList = Arrays.asList(files);

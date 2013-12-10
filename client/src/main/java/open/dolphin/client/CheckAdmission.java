@@ -20,7 +20,7 @@ public class CheckAdmission {
     private static final Map<Integer, String> laboNgMap;
 
     static {
-        laboNgMap = new HashMap<Integer, String>();
+        laboNgMap = new HashMap<>();
         laboNgMap.put(160177770, "外来迅速検体検査加算");
         laboNgMap.put(160095710, "静脈採血(B-V)");
         laboNgMap.put(160095810, "末梢採血(B-C)");
@@ -56,9 +56,9 @@ public class CheckAdmission {
     // ModuleModelを処方・注射・検査に分類する
     private void prepareModuleList() {
 
-        medList = new ArrayList<ModuleModel>();
-        injList = new ArrayList<ModuleModel>();
-        laboList = new ArrayList<ModuleModel>();
+        medList = new ArrayList<>();
+        injList = new ArrayList<>();
+        laboList = new ArrayList<>();
 
         for (ModuleModel mm : moduleList) {
 
@@ -101,7 +101,7 @@ public class CheckAdmission {
             int days;
             try {
                 days = Integer.valueOf(cb.getBundleNumber());
-            } catch (Exception ex) {
+            } catch (NumberFormatException ex) {
                 continue;
             }
             if (!cb.getClassCode().startsWith("22") && days > 7) {

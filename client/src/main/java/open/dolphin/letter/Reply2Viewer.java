@@ -46,8 +46,8 @@ public class Reply2Viewer extends Reply2Impl implements DocumentViewer {
 
     class LetterGetTask extends DBTask<LetterModule, Void> {
 
-        private long letterPk;
-        private JScrollPane scroller;
+        private final long letterPk;
+        private final JScrollPane scroller;
 
         public LetterGetTask(Chart app, long letterPk, JScrollPane scroller) {
             super(app);

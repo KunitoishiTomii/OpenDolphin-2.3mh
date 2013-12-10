@@ -14,7 +14,7 @@ public final class CheckTonyo {
     private static final HashSet<Integer> codeSet;
 
     static {
-        codeSet = new HashSet<Integer>();
+        codeSet = new HashSet<>();
         codeSet.add(Integer.valueOf("001000101"));	//医師の指示通りに
         codeSet.add(Integer.valueOf("001000114"));	//不眠時に
         codeSet.add(Integer.valueOf("001000115"));	//不安時に

@@ -16,7 +16,7 @@ public final class ImageEntryTransferable extends DolphinTransferable {
 
     public static final DataFlavor[] flavors = {ImageEntryTransferable.imageEntryFlavor};
 
-    private ImageEntry entry;
+    private final ImageEntry entry;
 
     /** Creates new ImgeIconTransferable */
     public ImageEntryTransferable(ImageEntry entry) {

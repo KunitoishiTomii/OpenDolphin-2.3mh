@@ -130,8 +130,8 @@ public class KarteResource extends AbstractResource {
             @QueryParam(TOS) String toStr,
             @QueryParam(ENTITY) String entity) {
 
-        List<Date> fromList = new ArrayList<Date>();
-        List<Date> toList = new ArrayList<Date>();
+        List<Date> fromList = new ArrayList<>();
+        List<Date> toList = new ArrayList<>();
         String[] froms = fromStr.split(CAMMA);
         for (String str : froms) {
             fromList.add(parseDate(str));
@@ -156,8 +156,8 @@ public class KarteResource extends AbstractResource {
             @QueryParam(FROMS) String fromStr,
             @QueryParam(TOS) String toStr) {
 
-        List<Date> fromList = new ArrayList<Date>();
-        List<Date> toList = new ArrayList<Date>();
+        List<Date> fromList = new ArrayList<>();
+        List<Date> toList = new ArrayList<>();
         String[] froms = fromStr.split(CAMMA);
         for (String str : froms) {
             fromList.add(parseDate(str));
@@ -301,8 +301,8 @@ public class KarteResource extends AbstractResource {
             @QueryParam(FROMS) String fromStr,
             @QueryParam(TOS) String toStr) {
 
-        List<Date> fromList = new ArrayList<Date>();
-        List<Date> toList = new ArrayList<Date>();
+        List<Date> fromList = new ArrayList<>();
+        List<Date> toList = new ArrayList<>();
         String[] froms = fromStr.split(CAMMA);
         for (String str : froms) {
             fromList.add(parseDate(str));

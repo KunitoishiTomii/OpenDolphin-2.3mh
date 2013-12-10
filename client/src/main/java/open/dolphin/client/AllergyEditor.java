@@ -21,11 +21,11 @@ import open.dolphin.infomodel.IInfoModel;
  */
 public class AllergyEditor {
     
-    private AllergyInspector inspector;
+    private final AllergyInspector inspector;
     private AllergyEditorView view;
-    private JDialog dialog;
-    private JButton addBtn;
-    private JButton clearBtn;
+    private final JDialog dialog;
+    private final JButton addBtn;
+    private final JButton clearBtn;
     private boolean ok;
     
     

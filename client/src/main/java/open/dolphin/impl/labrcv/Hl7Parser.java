@@ -20,8 +20,8 @@ import org.apache.log4j.Logger;
  */
 public class Hl7Parser implements LabResultParser {
 
-    private Boolean DEBUG;
-    private Logger logger;
+    private final Boolean DEBUG;
+    private final Logger logger;
 
     private static final String HL7 = "HL7";
 
@@ -43,7 +43,7 @@ public class Hl7Parser implements LabResultParser {
 
         String currentKey = null;
         NLaboModule curModule = null;
-        List<NLaboModule> allModules = new ArrayList<NLaboModule>();
+        List<NLaboModule> allModules = new ArrayList<>();
 
         for (HL7ResultSet resultSet : list) {
 
@@ -152,7 +152,7 @@ public class Hl7Parser implements LabResultParser {
         }
 
         // サマリを生成する
-        List<NLaboImportSummary> retList = new ArrayList<NLaboImportSummary>();
+        List<NLaboImportSummary> retList = new ArrayList<>();
 
         for (NLaboModule module : allModules) {
 
@@ -197,12 +197,12 @@ public class Hl7Parser implements LabResultParser {
 class CodeMap {
 
     // 検体
-    static final HashMap<String, String> specimenCodeMap = new HashMap<String, String>();
+    static final HashMap<String, String> specimenCodeMap = new HashMap<>();
     // 分析物
-    static final HashMap<String, String> analyteCodeMap = new HashMap<String, String>();
+    static final HashMap<String, String> analyteCodeMap = new HashMap<>();
 
     // 項目の親コード・子コードのキャッシュ　分画関連
-    static HashMap<String, String> parentCodeMap = new HashMap<String, String>();
+    static HashMap<String, String> parentCodeMap = new HashMap<>();
 
 
     static {
@@ -779,7 +779,7 @@ class Hl7 {
 
         int pIdCount = 0;
         String line;
-        List<HL7ResultSet> retList = new ArrayList<HL7ResultSet>();
+        List<HL7ResultSet> retList = new ArrayList<>();
         BufferedReader br = null;
         Hl7MSH hl7MSH = null;
         Hl7PID hl7PID = null;

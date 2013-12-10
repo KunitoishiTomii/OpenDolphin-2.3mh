@@ -7,20 +7,20 @@ import open.dolphin.client.*;
 import open.dolphin.dao.SqlMiscDao;
 import open.dolphin.infomodel.*;
 import open.dolphin.message.ClaimHelper;
-import open.dolphin.message.MessageBuilder;
 import open.dolphin.project.Project;
-import open.dolphin.common.util.BeanUtils;
 import open.dolphin.common.util.ZenkakuUtils;
+import open.dolphin.message.ClaimMessageBuilder;
 import org.apache.log4j.Level;
 
 /**
- * Karte と Diagnosis の CLAIM を送る
- * KarteEditor の sendClaim を独立させた
+ * Karte と Diagnosis の CLAIM を送る KarteEditor の sendClaim を独立させた
  * DiagnosisDocument の CLAIM 送信部分もここにまとめた
+ *
  * @author pns
+ * @author modified by masuda, Masuda Naika
  */
 public class ClaimSender implements IKarteSender {
-    
+
     private static final String CLAIM = "CLAIM";
 
     // Context
@@ -28,14 +28,14 @@ public class ClaimSender implements IKarteSender {
     private DocumentModel sendModel;
     private PropertyChangeSupport boundSupport;
 
-    private boolean DEBUG;
-    
+    private final boolean DEBUG;
+
 //masuda^    ClaimItemの最大数
     private static final int maxClaimItemCount = 20;
 //masuda$
 
     public ClaimSender() {
-        DEBUG = (ClientContext.getBootLogger().getLevel()==Level.DEBUG);
+        DEBUG = (ClientContext.getBootLogger().getLevel() == Level.DEBUG);
     }
 
     @Override
@@ -47,7 +47,7 @@ public class ClaimSender implements IKarteSender {
     public void setContext(Chart context) {
         this.context = context;
     }
-    
+
     @Override
     public void setModel(DocumentModel sendModel) {
         this.sendModel = sendModel;
@@ -60,7 +60,7 @@ public class ClaimSender implements IKarteSender {
         }
         boundSupport.addPropertyChangeListener(KarteSenderResult.PROP_KARTE_SENDER_RESULT, listener);
     }
-    
+
     @Override
     public void removeListeners() {
         if (boundSupport != null) {
@@ -83,26 +83,26 @@ public class ClaimSender implements IKarteSender {
     @Override
     public void send() {
 
-        if (sendModel == null 
+        if (sendModel == null
                 || !sendModel.getDocInfoModel().isSendClaim()
                 || context == null) {
             fireResult(new KarteSenderResult(CLAIM, KarteSenderResult.SKIPPED, null, this));
             return;
         }
-        
+
         // ORCA API使用時はCLAIM送信しない
         if (Project.getBoolean(Project.USE_ORCA_API)) {
             fireResult(new KarteSenderResult(CLAIM, KarteSenderResult.SKIPPED, null, this));
             return;
         }
-        
+
         // CLAIM 送信リスナ
         ClaimMessageListener claimListener = context.getCLAIMListener();
 
         // DG UUID の変わりに保険情報モジュールを送信する
-        PVTHealthInsuranceModel insuranceToApply 
+        PVTHealthInsuranceModel insuranceToApply
                 = context.getHealthInsuranceToApply(sendModel.getDocInfoModel().getHealthInsuranceGUID());
-        
+
         if (claimListener == null || insuranceToApply == null) {
             fireResult(new KarteSenderResult(CLAIM, KarteSenderResult.SKIPPED, null, this));
             return;
@@ -110,7 +110,7 @@ public class ClaimSender implements IKarteSender {
 
         // ヘルパークラスを生成しVelocityが使用するためのパラメータを設定する
         ClaimHelper helper = new ClaimHelper();
-        
+
 //masuda^   入院カルテの場合はadmitFlagを立てる
         AdmissionModel admission = sendModel.getDocInfoModel().getAdmissionModel();
         if (admission != null) {
@@ -119,16 +119,14 @@ public class ClaimSender implements IKarteSender {
         boolean b = Project.getBoolean(Project.CLAIM_01);
         helper.setUseDefalutDept(b);
 //masuda$
-        
+
         //DG ------
-        //DocInfoModel docInfo = sendModel.getDocInfo();
         DocInfoModel docInfo = sendModel.getDocInfoModel();
-        Collection<ModuleModel> modules = sendModel.getModules();
+        List<ModuleModel> modules = sendModel.getModules();
         //--------DG
 
         //DG ------------------------------------------
         // 過去日で送信するために firstConfirmDate へ変更
-        //String confirmedStr = ModelUtils.getDateTimeAsString(docInfo.getConfirmDate());
         String confirmedStr = ModelUtils.getDateTimeAsString(docInfo.getFirstConfirmDate());
         //--------------------------------------------- DG
         helper.setConfirmDate(confirmedStr);
@@ -142,7 +140,7 @@ public class ClaimSender implements IKarteSender {
         }
         String doctorId = docInfo.getAssignedDoctorId();
         if (doctorId == null) {
-            doctorId = Project.getUserModel().getOrcaId()!=null
+            doctorId = Project.getUserModel().getOrcaId() != null
                     ? Project.getUserModel().getOrcaId()
                     : Project.getUserModel().getUserId();
         }
@@ -164,10 +162,8 @@ public class ClaimSender implements IKarteSender {
         helper.setCreatorLicense(Project.getUserModel().getLicenseModel().getLicense());
         helper.setJmariCode(jamriCode);
         helper.setFacilityName(Project.getUserModel().getFacilityModel().getFacilityName());
-        
+
         //DG -------------------------------------------
-        //helper.setPatientId(sendModel.getKarte().getPatient().getPatientId());
-        //helper.setPatientId(sendModel.getKarteBean().getPatientModel().getPatientId());
         helper.setPatientId(context.getPatient().getPatientId());
         //--------------------------------------------- DG
         helper.setGenerationPurpose(docInfo.getPurpose());
@@ -185,37 +181,15 @@ public class ClaimSender implements IKarteSender {
             debug(helper.getHealthInsuranceClassCode());
             debug(helper.getHealthInsuranceDesc());
         }
-//masuda^   ヘルパー登録を分離
+        
+        // ヘルパー登録を分離 masuda
         registToHelper(helper, modules);
-/*
-        // 保存する KarteModel の全モジュールをチェックし
-        // それが ClaimBundle ならヘルパーへ追加する
-        for (ModuleModel module : modules) {
-            IInfoModel m = module.getModel();
-            if (m instanceof ClaimBundle) {
-                //DG-----------------------------------
-                ClaimBundle bundle = (ClaimBundle) m;
-                ClaimItem[] items = bundle.getClaimItem();
-                if (items!=null && items.length>0) {
-                    for (ClaimItem cl : items) {
-                        cl.setName(ZenkakuUtils.utf8Replace(cl.getName()));
-                    }
-                }
-                //-------------------------------------DG
-                helper.addClaimBundle(bundle);
-            }
-        }
-*/
-//masuda$
-        MessageBuilder mb = MessageBuilder.getInstance();
+
+        ClaimMessageBuilder mb = ClaimMessageBuilder.getInstance();
         String claimMessage = mb.build(helper);
         ClaimMessageEvent cvt = new ClaimMessageEvent(this);
         cvt.setClaimInstance(claimMessage);
         //DG ----------------------------------------------
-        //cvt.setPatientId(sendModel.getKarte().getPatient().getPatientId());
-        //cvt.setPatientName(sendModel.getKarte().getPatient().getFullName());
-        //cvt.setPatientSex(sendModel.getKarte().getPatient().getGender());
-        //cvt.setTitle(sendModel.getDocInfo().getTitle());
         cvt.setPatientId(context.getPatient().getPatientId());
         cvt.setPatientName(context.getPatient().getFullName());
         cvt.setPatientSex(context.getPatient().getGender());
@@ -236,102 +210,91 @@ public class ClaimSender implements IKarteSender {
             ClientContext.getBootLogger().debug(msg);
         }
     }
-    
+
 //masuda^
-    private void registToHelper(ClaimHelper helper, Collection<ModuleModel> modules_src){
+    private void registToHelper(ClaimHelper helper, List<ModuleModel> modules_src) {
         // 保存する KarteModel の全モジュールをチェックしClaimBundleならヘルパーに登録
         // Orcaで受信できないような大きなClaimBundleを分割する
         // 処方のコメント項目は分離して、別に".980"として送信する
 
-        // 気持ちが悪いので複製をつかう
-        //byte[] bytes = BeanUtils.getXMLBytes(modules_src);
-        //Collection<ModuleModel> modules 
-        //        = (Collection<ModuleModel>) BeanUtils.xmlDecode(bytes);
-        Collection<ModuleModel> modules = 
-                (Collection<ModuleModel>) BeanUtils.deepCopy(modules_src);
-        
         boolean admission = helper.getAdmitFlag();
-        
-        List<ClaimItem> commentItem = new ArrayList<ClaimItem>();
+        List<ClaimItem> commentItem = new ArrayList<>();
+        List<ClaimBundle> bundleList = new ArrayList<>();
 
-        for (ModuleModel module : modules) {
+        // ClaimBundleを抽出する
+        for (ModuleModel mm : modules_src) {
 
-            String entity = module.getModuleInfoBean().getEntity();
-            
-            // 処方箋コメントを分離
-            if (IInfoModel.ENTITY_MED_ORDER.equals(entity)) {
-                BundleMed bundle = (BundleMed) module.getModel();
-
-                List<ClaimItem> nonCommentItem = new ArrayList<ClaimItem>();
-                for (ClaimItem ci : bundle.getClaimItem()){
-                    // 文字置換
-                    String replaced = ZenkakuUtils.utf8Replace(ci.getName());
-                    ci.setName(replaced);
-                    
-                    // それぞれの処方bundleをしらべる
-                    boolean comment = ci.getCode().matches(ClaimConst.REGEXP_PRESCRIPTION_COMMENT);
-                    // 先頭がアスタリスクならば.980に分離しない
-                    comment &= (ci.getName() != null && !ci.getName().startsWith("*") && !ci.getName().startsWith("＊"));
-                    if (comment) {
-                        commentItem.add(ci);    // コメントコード
-                    } else {
-                        nonCommentItem.add(ci); // コメントじゃない
-                    }
-                }
-                // コメントコードを抜き取った残りをbundleに登録しなおす
-                if (!commentItem.isEmpty()) {
-                    bundle.setClaimItem(nonCommentItem.toArray(new ClaimItem[0]));
-                }
+            // ClaimBundleのみを処理する
+            String entity = mm.getModuleInfoBean().getEntity();
+            IInfoModel im = mm.getModel();
+            if (entity == null || !(im instanceof ClaimBundle)) {
+                continue;
             }
-            
-            // 注射手技料なしの場合はClaim送信前に手技を抜く
-            if (IInfoModel.ENTITY_INJECTION_ORDER.equals(entity)) {
-                ClaimBundle bundle = (ClaimBundle) module.getModel();
-                String clsCode = bundle.getClassCode();
-                if (clsCode != null && clsCode.startsWith("3") && clsCode.endsWith("1")) {
-                    List<ClaimItem> ciList = new ArrayList<ClaimItem>();
+
+            // 気持ちが悪いので複製をつかう
+            ClaimBundle bundle = cloneClaimBundle((ClaimBundle) im, true);
+
+            switch (entity) {
+                case IInfoModel.ENTITY_MED_ORDER:
+                    List<ClaimItem> nonCommentItem = new ArrayList<>();
                     for (ClaimItem ci : bundle.getClaimItem()) {
-                        // int ClaimConst.SYUGI = 0
-                        if (!"0".equals(ci.getClassCode())) {
-                            ciList.add(ci);
+                        // それぞれの処方bundleをしらべる
+                        boolean comment = ci.getCode().matches(ClaimConst.REGEXP_PRESCRIPTION_COMMENT);
+                        // 先頭がアスタリスクならば.980に分離しない
+                        comment &= ci.getName() != null
+                                && !ci.getName().startsWith("*")
+                                && !ci.getName().startsWith("＊");
+                        if (comment) {
+                            commentItem.add(ci);    // コメントコード
+                        } else {
+                            nonCommentItem.add(ci); // コメントじゃない
                         }
+                    }   // コメントコードを抜き取った残りをbundleに登録しなおす
+                    if (!commentItem.isEmpty()) {
+                        ClaimItem[] newItems = new ClaimItem[nonCommentItem.size()];
+                        bundle.setClaimItem(nonCommentItem.toArray(newItems));
                     }
-                    bundle.setClaimItem(ciList.toArray(new ClaimItem[0]));
-                }
+                    break;
+                case IInfoModel.ENTITY_INJECTION_ORDER:
+                    String clsCode = bundle.getClassCode();
+                    if (clsCode != null && clsCode.startsWith("3") && clsCode.endsWith("1")) {
+                        List<ClaimItem> ciList = new ArrayList<>();
+                        for (ClaimItem ci : bundle.getClaimItem()) {
+                            // int ClaimConst.SYUGI = 0
+                            if (!"0".equals(ci.getClassCode())) {
+                                ciList.add(ci);
+                            }
+                        }
+                        ClaimItem[] newItems = new ClaimItem[ciList.size()];
+                        bundle.setClaimItem(ciList.toArray(newItems));
+                    }
+                    break;
             }
-            
-            // 20を超えるClaimItemを持つClaimBundleは分割して登録する
-            IInfoModel m = module.getModel();
 
-            if (m instanceof ClaimBundle) {
-                ClaimBundle bundle = (ClaimBundle) m;
-                // 文字置換
-                for (ClaimItem ci : bundle.getClaimItem()) {
-                    String replaced = ZenkakuUtils.utf8Replace(ci.getName());
-                    ci.setName(replaced);
-                }
+            // 文字置換
+            for (ClaimItem ci : bundle.getClaimItem()) {
+                String replaced = ZenkakuUtils.utf8Replace(ci.getName());
+                ci.setName(replaced);
+            }
 
-                // 入院の検体検査の場合は包括対象検査区分ごとに分類する
-                // そうしないと項目によってはbundleNumberが不正になってしまう。
-                // ORCAの「仕様」とのこと…
-                List<ClaimBundle> cbList = new ArrayList<ClaimBundle>();
-                if (admission && ClaimConst.RECEIPT_CODE_LABO.equals(bundle.getClassCode())) {
-                    cbList.addAll(divideBundleByHokatsuKbn(bundle));
+            List<ClaimBundle> cbList = new ArrayList();
+            // 入院の検体検査の場合は包括対象検査区分ごとに分類する
+            // そうしないと項目によってはbundleNumberが不正になってしまう。
+            // ORCAの「仕様」とのこと…
+            if (admission && ClaimConst.RECEIPT_CODE_LABO.equals(bundle.getClassCode())) {
+                cbList.addAll(divideBundleByHokatsuKbn(bundle));
+            } else {
+                cbList.add(bundle);
+            }
+
+            // ClaimItem数が20を超えないように分割する
+            for (ClaimBundle cb : cbList) {
+                int count = cb.getClaimItem().length;
+                if (count > maxClaimItemCount) {
+                    bundleList.addAll(divideClaimBundle(cb));
                 } else {
-                    cbList.add(bundle);
-                }
-                
-                // ClaimItem数が20を超えないように分割する
-                for (ClaimBundle cb1 : cbList) {
-                    int count = cb1.getClaimItem().length;
-                    if (count > maxClaimItemCount) {
-                        for (ClaimBundle cb2 : divideClaimBundle(cb1)) {
-                            helper.addClaimBundle(cb2);
-                        }
-                    } else {
-                        // 20以下なら今までどおり
-                        helper.addClaimBundle(cb1);
-                    }
+                    // 20以下なら今までどおり
+                    bundleList.add(cb);
                 }
             }
         }
@@ -343,69 +306,75 @@ public class ClaimSender implements IKarteSender {
             cb.setClassName(MMLTable.getClaimClassCodeName("980"));
             cb.setClassCode("980");                             // 処方箋備考のclass code
             cb.setClassCodeSystem(ClaimConst.CLASS_CODE_ID);    // "Claim007"
-            cb.setClaimItem(commentItem.toArray(new ClaimItem[0]));
-            helper.addClaimBundle(cb);
+            ClaimItem[] newItems = new ClaimItem[commentItem.size()];
+            cb.setClaimItem(commentItem.toArray(newItems));
+            bundleList.add(cb);
         }
+        
+        // ヘルパーに登録
+        ClaimBundle[] cbArray = new ClaimBundle[bundleList.size()];
+        helper.setClaimBundle(bundleList.toArray(cbArray));
     }
-    
+
     // 包括対象検査区分分ごとに分類する
     private List<ClaimBundle> divideBundleByHokatsuKbn(ClaimBundle cb) {
-        
+
         // srycdを列挙する
-        List<String> srycds = new ArrayList<String>();
+        List<String> srycds = new ArrayList<>();
         for (ClaimItem ci : cb.getClaimItem()) {
             srycds.add(ci.getCode());
         }
-        
+
         // 包括対象検査区分とのマップを取得する
         Map<String, Integer> kbnMap = SqlMiscDao.getInstance().getHokatsuKbnMap(srycds);
-        
+
         // 各項目をグループ分けする
-        Map<Integer, List<ClaimItem>> ciMap = new HashMap<Integer, List<ClaimItem>>();
+        Map<Integer, List<ClaimItem>> ciMap = new HashMap<>();
         for (ClaimItem ci : cb.getClaimItem()) {
             Integer kbn = kbnMap.get(ci.getCode());
             List<ClaimItem> list = ciMap.get(kbn);
             if (list == null) {
-                list = new ArrayList<ClaimItem>();
+                list = new ArrayList<>();
             }
             list.add(ci);
             ciMap.put(kbn, list);
         }
-        
+
         // ClaimBundleに戻す
-        List<ClaimBundle> ret = new ArrayList<ClaimBundle>();
-        for (Map.Entry entry : ciMap.entrySet()) {
-            int houksnkbn = (Integer) entry.getKey();
-            List<ClaimItem> ciList = (List<ClaimItem>) entry.getValue();
+        List<ClaimBundle> ret = new ArrayList<>();
+        for (Map.Entry<Integer, List<ClaimItem>> entry : ciMap.entrySet()) {
+            int houksnkbn = entry.getKey();
+            List<ClaimItem> ciList = entry.getValue();
             // ＯＳＣに問い合わせたところ、下記の返答 2012/09/26
             // 「包括対象検査の対象でない検査は、検査毎に剤を分けていただくしか方法はありません」
             if (houksnkbn != 0) {
-                ClaimBundle bundle = copyClaimBundle(cb);
-                bundle.setClaimItem(ciList.toArray(new ClaimItem[0]));
+                ClaimBundle bundle = cloneClaimBundle(cb, false);
+                ClaimItem[] newItems = new ClaimItem[ciList.size()];
+                bundle.setClaimItem(ciList.toArray(newItems));
                 ret.add(bundle);
             } else {
                 for (ClaimItem ci : ciList) {
-                    ClaimBundle bundle = copyClaimBundle(cb);
+                    ClaimBundle bundle = cloneClaimBundle(cb, false);
                     bundle.setClaimItem(new ClaimItem[]{ci});
                     ret.add(bundle);
                 }
             }
         }
-        
+
         return ret;
     }
 
     private List<ClaimBundle> divideClaimBundle(ClaimBundle cb) {
         // Orcaで同時に受信できるClaimItem数が20に限られているので
         // 20を超えていたらClaimBundleを分割する masuda
-        List<ClaimBundle> ret = new ArrayList<ClaimBundle>();
+        List<ClaimBundle> ret = new ArrayList<>();
 
         ClaimItem[] array = cb.getClaimItem();
         int size = array.length;
         int index = 0;
-        
+
         while (index < size) {
-            ClaimBundle bundle = copyClaimBundle(cb);
+            ClaimBundle bundle = cloneClaimBundle(cb, false);
             int indexTo = Math.min(index + maxClaimItemCount, size);
             ClaimItem[] ciArray = Arrays.copyOfRange(array, index, indexTo);
             bundle.setClaimItem(ciArray);
@@ -415,19 +384,45 @@ public class ClaimSender implements IKarteSender {
 
         return ret;
     }
-    
-    private ClaimBundle copyClaimBundle(ClaimBundle source) {
+
+    // 自前deep copy
+    private ClaimBundle cloneClaimBundle(ClaimBundle src, boolean copyClaimItem) {
         ClaimBundle ret = new ClaimBundle();
-        ret.setAdmin(source.getAdmin());
-        ret.setAdminCode(source.getAdminCode());
-        ret.setAdminCodeSystem(source.getAdminCodeSystem());
-        ret.setAdminMemo(source.getAdminMemo());
-        ret.setBundleNumber(source.getBundleNumber());
-        ret.setClassCode(source.getClassCode());
-        ret.setClassCodeSystem(source.getClassCodeSystem());
-        ret.setClassName(source.getClassName());
-        ret.setInsurance(source.getInsurance());
-        ret.setMemo(source.getMemo());
+        ret.setAdmin(src.getAdmin());
+        ret.setAdminCode(src.getAdminCode());
+        ret.setAdminCodeSystem(src.getAdminCodeSystem());
+        ret.setAdminMemo(src.getAdminMemo());
+        ret.setBundleNumber(src.getBundleNumber());
+        ret.setClassCode(src.getClassCode());
+        ret.setClassCodeSystem(src.getClassCodeSystem());
+        ret.setClassName(src.getClassName());
+        ret.setInsurance(src.getInsurance());
+        ret.setMemo(src.getMemo());
+
+        if (copyClaimItem && src.getClaimItem() != null) {
+            int len = src.getClaimItem().length;
+            ClaimItem[] items = new ClaimItem[len];
+            for (int i = 0; i < len; ++i) {
+                items[i] = cloneClaimItem(src.getClaimItem()[i]);
+            }
+            ret.setClaimItem(items);
+        }
+        return ret;
+    }
+
+    private ClaimItem cloneClaimItem(ClaimItem src) {
+        ClaimItem ret = new ClaimItem();
+        ret.setClassCode(src.getClassCode());
+        ret.setClassCodeSystem(src.getClassCodeSystem());
+        ret.setCode(src.getCode());
+        ret.setCodeSystem(src.getCodeSystem());
+        ret.setMemo(src.getMemo());
+        ret.setName(src.getName());
+        ret.setNumber(src.getNumber());
+        ret.setNumberCode(src.getNumberCode());
+        ret.setNumberCodeSystem(src.getNumberCodeSystem());
+        ret.setUnit(src.getUnit());
+        ret.setYkzKbn(src.getYkzKbn());
         return ret;
     }
 //masuda$

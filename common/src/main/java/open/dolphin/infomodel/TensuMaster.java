@@ -175,6 +175,11 @@ public class TensuMaster {
     public String getTen() {
         return ten;
     }
+    
+    // Integer返しだ！ by ドル沢
+    public Integer getTenInteger() {
+        return Integer.valueOf(ten);
+    }
 
     /**
      * @param ten the ten to set

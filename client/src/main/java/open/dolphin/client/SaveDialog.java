@@ -144,7 +144,7 @@ public final class SaveDialog {
         //-------------------------------
         // MML 送信の場合、アクセス権を設定する
         //-------------------------------
-        if (params.getSendMML()) {
+        if (params.isSendMML()) {
             // 患者への参照と診療歴のある施設の参照許可を設定する
             boolean permit = params.isAllowPatientRef();
             patientCheck.setSelected(permit);
@@ -402,7 +402,7 @@ public final class SaveDialog {
                 tmpButton.setEnabled(true);
                 //setFocus(okButton);  // これは不便と指摘
             }
-        } catch (Exception ex) {
+        } catch (ParseException ex) {
             okButton.setEnabled(false);
             tmpButton.setEnabled(false);
         }

@@ -92,7 +92,7 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
     //private static final SimpleDateFormat yyyyMMddFrmt = new SimpleDateFormat("yyyyMMdd");
 
     private ListTableModel<RegisteredDiagnosisModel> tableModel; // TableModel
-    private ListTableSorter sorter;
+    private ListTableSorter<RegisteredDiagnosisModel> sorter;
 
     private JCheckBox cb_wareki;                // 和暦表示チェックボックス
     private boolean importBtnEnabled = false;
@@ -545,7 +545,7 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
 
                         // 選択されている行すべてに変更を行う
                         for (int tableRow : selectedRows) {
-                            RegisteredDiagnosisModel oldRd = (RegisteredDiagnosisModel) sorter.getObject(tableRow);
+                            RegisteredDiagnosisModel oldRd = sorter.getObject(tableRow);
                             // 複製を作成
                             RegisteredDiagnosisModel newRd = duplicateRd(oldRd);
                             String oldCategory = oldRd.getCategory();
@@ -575,7 +575,7 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
                         newOutcome = ( newOutcome != null && (!newOutcome.equals("")) )? newOutcome : null;
                         selectedRows = diagTable.getSelectedRows();
                         for (int tableRow : selectedRows) {
-                            RegisteredDiagnosisModel oldRd = (RegisteredDiagnosisModel) sorter.getObject(tableRow);
+                            RegisteredDiagnosisModel oldRd = sorter.getObject(tableRow);
                             RegisteredDiagnosisModel newRd = duplicateRd(oldRd);
                             String oldOutcome = oldRd.getOutcome();
 
@@ -627,7 +627,7 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
                         }
                         selectedRows = diagTable.getSelectedRows();
                         for (int tableRow : selectedRows) {
-                            RegisteredDiagnosisModel oldRd = (RegisteredDiagnosisModel) sorter.getObject(tableRow);
+                            RegisteredDiagnosisModel oldRd = sorter.getObject(tableRow);
                             RegisteredDiagnosisModel newRd = duplicateRd(oldRd);
                             if (col == START_DATE_COL) {
                                 newRd.setStartDate(newDate);
@@ -719,7 +719,7 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
                 if (row == -1) {
                     continue;
                 }
-                RegisteredDiagnosisModel rd = (RegisteredDiagnosisModel) sorter.getObject(row);
+                RegisteredDiagnosisModel rd = sorter.getObject(row);
                 // ヌルの場合
                 if (rd == null) {
                     flag = false;
@@ -729,7 +729,7 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
                 if (status == null ||
                         DIAGNOSIS_FINAL.equals(status) ||
                         DIAGNOSIS_EDITED.equals(status)) {
-                    continue;
+                    //continue;
                 } else {
                     flag = false;
                     break;
@@ -967,7 +967,7 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
         // 選択された行のオブジェクトを取得する
         int[] selectedRows = diagTable.getSelectedRows();
         for (int row : selectedRows) {
-            RegisteredDiagnosisModel oldRd = (RegisteredDiagnosisModel) sorter.getObject(row);
+            RegisteredDiagnosisModel oldRd = sorter.getObject(row);
             if (oldRd == null) {
                 continue;
             }
@@ -1240,7 +1240,7 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
 //masuda^ 既存病名編集
     private void openEditor3() {
         selectedRow = diagTable.getSelectedRow();   // ここは一個だけ
-        RegisteredDiagnosisModel model = (RegisteredDiagnosisModel) sorter.getObject(selectedRow);
+        RegisteredDiagnosisModel model = sorter.getObject(selectedRow);
         // 編集するRegisteredDiagnosisModelをeditorに伝える
         Window lock = SwingUtilities.getWindowAncestor(this.getUI());
         StampEditor stampEditor = new StampEditor(new RegisteredDiagnosisModel[]{model}, this, lock);
@@ -1258,11 +1258,11 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
         Date confirmed = new Date();
         int rows[] = diagTable.getSelectedRows();
         for (int row : rows) {
-            RegisteredDiagnosisModel rd = (RegisteredDiagnosisModel) sorter.getObject(row);
-            rd.setKarteBean(getContext().getKarte());           // Karte
-            rd.setUserModel(Project.getUserModel());          // Creator
-            rd.setConfirmed(confirmed);                     // 確定日
-            rd.setRecorded(confirmed);                      // 記録日
+            RegisteredDiagnosisModel rd = sorter.getObject(row);
+            rd.setKarteBean(getContext().getKarte());    // Karte
+            rd.setUserModel(Project.getUserModel());     // Creator
+            rd.setConfirmed(confirmed);                  // 確定日
+            rd.setRecorded(confirmed);                   // 記録日
             // 開始日=適合開始日 not-null
             if (rd.getStarted() == null) {
                 rd.setStarted(confirmed);
@@ -1482,7 +1482,7 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
                 int row, int col) {
 
             super.getTableCellRendererComponent(table, value, isSelected, isFocused, row, col);
-            RegisteredDiagnosisModel rd = (RegisteredDiagnosisModel) sorter.getObject(row);
+            RegisteredDiagnosisModel rd = sorter.getObject(row);
 
             // 選択状態の場合はStripeTableCellRendererの配色を上書きしない
             if (rd != null && !isSelected) {
@@ -1648,7 +1648,7 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
         private void setNewDiagnosis(String itemName, String modifierCode) {
             //新しく作った診断を設定
             int r = diagTable.getSelectedRow();
-            RegisteredDiagnosisModel newRd = (RegisteredDiagnosisModel) sorter.getObject(r);
+            RegisteredDiagnosisModel newRd = sorter.getObject(r);
             RegisteredDiagnosisModel oldRd = duplicateRd(newRd);
             // 8000台は後ろにつく修飾語
             if (modifierCode.startsWith("8")) {
@@ -2105,8 +2105,7 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
                         }
                     }
                     diagTable.repaint();
-                } catch (InterruptedException ex) {
-                } catch (ExecutionException ex) {
+                } catch (InterruptedException | ExecutionException ex) {
                 }
             }
         };

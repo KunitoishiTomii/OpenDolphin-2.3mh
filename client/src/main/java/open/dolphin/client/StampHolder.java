@@ -5,9 +5,8 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
-import javax.swing.BorderFactory;
-import javax.swing.border.Border;
-import javax.swing.text.Position;
+import javax.swing.SwingUtilities;
+
 import open.dolphin.infomodel.ModuleModel;
 
 /**
@@ -16,30 +15,26 @@ import open.dolphin.infomodel.ModuleModel;
  * @author Kazushi Minagawa, Digital Globe, Inc.
  * @author modified by masuda, Masuda Naika
  */
-public final class StampHolder extends AbstractComponentHolder implements ComponentHolder {
-
-    private static final Color FOREGROUND = new Color(20, 20, 140);
-    private static final Color BACKGROUND = new Color(0, 0, 0, 0); // 透明
-    private static final Color SELECTED_BORDER = new Color(255, 0, 153);
-    private static final Color NON_SELECTED_BORDER = new Color(0, 0, 0, 0); // 透明
-    private static final Border nonSelectedBorder = BorderFactory.createLineBorder(NON_SELECTED_BORDER);
-    private static final Border selectedBorder = BorderFactory.createLineBorder(SELECTED_BORDER);
+public final class StampHolder extends AbstractComponentHolder {
+    
+    public static final String ATTRIBUTE_NAME = "stampHolder";
     private static final Color LBL_COLOR = new Color(0xFF, 0xCE, 0xD9);
-    
-    private final Color foreGround = FOREGROUND;
-    private final Color background = BACKGROUND;
-    
-    private ModuleModel stamp;
-    private final KartePane kartePane;
-    
-    private StampRenderingHints hints;
+    private static final Color FOREGROUND = new Color(20, 20, 140);
+
+    private final StampRenderingHints hints;
     private final StampHolderFunction function;
 
-    private Position start;
-    //private Position end; //endPositionはstart+1で代用
+    private ModuleModel stamp;
 
-    private boolean selected;
-
+    public StampHolder(KartePane kartePane, ModuleModel stamp) {
+        super(kartePane);
+        function = StampHolderFunction.getInstance();
+        function.setDeleteAction(StampHolder.this);
+        hints = StampRenderingHints.getInstance();
+        setForeground(FOREGROUND);
+        setStamp(stamp);
+    }
+    
     // StampRenderingHintsのlineSpacingを0にすると、ラベルの上部に隙間ができてしまう
     //　見栄えが悪いので線を追加描画する
     @Override
@@ -54,20 +49,6 @@ public final class StampHolder extends AbstractComponentHolder implements Compon
         g.setColor(c);
     }
     
-    public StampHolder(KartePane kartePane, ModuleModel stamp) {
-        super();
-        function = StampHolderFunction.getInstance();
-        function.setDeleteAction(StampHolder.this);
-        
-        this.kartePane = kartePane;
-        setHints(StampRenderingHints.getInstance());
-        setForeground(foreGround);
-        setBackground(background);
-        // 非選択状態では透明のLineBorder
-        setBorder(nonSelectedBorder);
-        setStamp(stamp);
-    }
-
     /**
      * Popupメニューを表示する。
      */
@@ -80,22 +61,6 @@ public final class StampHolder extends AbstractComponentHolder implements Compon
         }
     }
 
-    /**
-     * このスタンプホルダのKartePaneを返す。
-     */
-    @Override
-    public KartePane getKartePane() {
-        return kartePane;
-    }
-    
-    /**
-     * スタンプホルダのコンテントタイプを返す。
-     */
-    @Override
-    public int getContentType() {
-        return ComponentHolder.TT_STAMP;
-    }
-    
     /**
      * このホルダのモデルを返す。
      * @return
@@ -117,36 +82,6 @@ public final class StampHolder extends AbstractComponentHolder implements Compon
     
     public StampRenderingHints getHints() {
         return hints;
-    }
-    
-    public void setHints(StampRenderingHints hints) {
-        this.hints = hints;
-    }
-    
-    /**
-     * 選択されているかどうかを返す。
-     * @return 選択されている時 true
-     */
-    @Override
-    public boolean isSelected() {
-        return selected;
-    }
-    
-    /**
-     * 選択属性を設定する。
-     * @param selected 選択の時 true
-     */
-    @Override
-    public void setSelected(boolean selected) {
-//masuda^
-        if (selected) {
-            this.setBorder(selectedBorder);
-            this.selected = true;
-        } else {
-            this.setBorder(nonSelectedBorder);
-            this.selected = false;
-        }
-//masuda
     }
     
     /**
@@ -174,37 +109,21 @@ public final class StampHolder extends AbstractComponentHolder implements Compon
      * スタンプの内容を置き換える。
      * @param newStamp
      */
-    public void importStamp(ModuleModel newStamp) {
-        setStamp(newStamp);
+    public void importStamp(final ModuleModel newStamp) {
+        
+        SwingUtilities.invokeLater(new Runnable() {
+            
+            @Override
+            public void run() {
+                setStamp(newStamp);
+            }
+        });
+        
         kartePane.setDirty(true);
-        kartePane.getTextPane().validate();
-        kartePane.getTextPane().repaint();
     }
     
-    /**
-     * TextPane内での開始と終了ポジションを保存する。
-     */
     @Override
-    public void setEntry(Position start, Position end) {
-        this.start = start;
-        //this.end = end;
-    }
-    
-    /**
-     * 開始ポジションを返す。
-     */
-    @Override
-    public int getStartPos() {
-        return start.getOffset();
-    }
-    
-    /**
-     * 終了ポジションを返す。
-     */
-    @Override
-    public int getEndPos() {
-        //return end.getOffset();
-        int ret = getStartPos() + 1;
-        return ret;
+    public String getAttributeName() {
+        return ATTRIBUTE_NAME;
     }
 }

@@ -18,10 +18,10 @@ public class CharsetDetector {
     public static String getFileEncoding(String fileName) {
         
         String encoding = null;
-        FileInputStream fis = null;
-        try {
+
+        try (FileInputStream fis = new FileInputStream(fileName)) {
+            
             byte[] buf = new byte[4096];
-            fis = new FileInputStream(fileName);
             UniversalDetector detector = new UniversalDetector(null);
             int nread;
             while ((nread = fis.read(buf)) > 0 && !detector.isDone()) {
@@ -30,13 +30,10 @@ public class CharsetDetector {
             detector.dataEnd();
             encoding = detector.getDetectedCharset();
             detector.reset();
+            
         } catch (IOException ex) {
-        } finally {
-            try {
-                fis.close();
-            } catch (IOException ex) {
-            }
         }
+        
         return encoding;
     }
     

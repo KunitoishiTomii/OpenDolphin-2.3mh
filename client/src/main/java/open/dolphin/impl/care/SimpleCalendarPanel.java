@@ -2,12 +2,14 @@ package open.dolphin.impl.care;
 
 import java.awt.*;
 import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.IOException;
 import java.util.*;
 import java.util.List;
 import javax.swing.*;
@@ -232,9 +234,9 @@ public final class SimpleCalendarPanel extends JPanel implements DragGestureList
      */
     public List<AppointmentModel> getAppointDays() {
         
-        List<AppointmentModel> results = new ArrayList<AppointmentModel>();
-        MedicalEvent event = null;
-        AppointmentModel appoint = null;
+        List<AppointmentModel> results = new ArrayList<>();
+        MedicalEvent event;
+        AppointmentModel appoint;
         
         // 1 週目を調べる
         for (int col = firstCol; col < 7; col++) {
@@ -274,9 +276,9 @@ public final class SimpleCalendarPanel extends JPanel implements DragGestureList
      */
     public List<AppointmentModel> getUpdatedAppoints() {
         
-        List<AppointmentModel> results = new ArrayList<AppointmentModel>();
-        MedicalEvent event = null;
-        AppointmentModel appoint = null;
+        List<AppointmentModel> results = new ArrayList<>();
+        MedicalEvent event;
+        AppointmentModel appoint;
         
         // 1 週目を調べる
         for (int col = firstCol; col < 7; col++) {
@@ -320,14 +322,14 @@ public final class SimpleCalendarPanel extends JPanel implements DragGestureList
         }
         
         int size = list.size();
-        String mkDate = null;
-        MedicalEvent me = null;
-        int index = 0;
-        int[] ymd = null;
-        int row = 0;
-        int col = 0;
+        String mkDate;
+        MedicalEvent me;
+        int index;
+        int[] ymd;
+        int row;
+        int col;
         
-        ModuleModel module = null;
+        ModuleModel module;
         
         for (int i = 0; i < size; i++) {
             
@@ -360,14 +362,14 @@ public final class SimpleCalendarPanel extends JPanel implements DragGestureList
         }
         
         int size = list.size();
-        String mkDate = null;
-        MedicalEvent me = null;
-        int index = 0;
-        int[] ymd = null;
-        int row = 0;
-        int col = 0;
+        String mkDate;
+        MedicalEvent me;
+        int index;
+        int[] ymd;
+        int row;
+        int col;
         
-        ImageEntry image = null;
+        ImageEntry image;
         
         for (int i = 0; i < size; i++) {
             
@@ -439,7 +441,7 @@ public final class SimpleCalendarPanel extends JPanel implements DragGestureList
      * 現在の表示をクリアする
      */
     private void clearMark() {
-        MedicalEvent me = null;
+        MedicalEvent me;
         boolean exit = false;
         //String val = null;
         
@@ -566,11 +568,11 @@ public final class SimpleCalendarPanel extends JPanel implements DragGestureList
         }
         
         // Drop 処理
-        AppointmentModel source = null;
+        AppointmentModel source;
         try {
             source = (AppointmentModel)tr.getTransferData(AppointEntryTransferable.appointFlavor);
             
-        } catch (Exception ue) {
+        } catch (UnsupportedFlavorException | IOException ue) {
             System.out.println(ue);
             source = null;
         }
@@ -684,7 +686,7 @@ public final class SimpleCalendarPanel extends JPanel implements DragGestureList
         ((JLabel)tbl.getTableHeader().getDefaultRenderer()).setHorizontalAlignment(horizontalAlignment);
         
         // Set ColumnWidth
-        TableColumn column = null;
+        TableColumn column;
         for (int i = 0; i < 7; i++) {
             column = tbl.getColumnModel().getColumn(i);
             column.setMinWidth(columnWidth);
@@ -857,7 +859,7 @@ public final class SimpleCalendarPanel extends JPanel implements DragGestureList
      */
     private MedicalEvent[][] createDays(GregorianCalendar gc) {
         
-        MedicalEvent[][] data = null;
+        MedicalEvent[][] data;
         
         // Ｎケ月前／先の今日と同じ日
         int dayOfMonth = gc.get(Calendar.DAY_OF_MONTH);
@@ -1021,9 +1023,9 @@ public final class SimpleCalendarPanel extends JPanel implements DragGestureList
      */
     public static class SimpleCalendarPool {
         
-        private static SimpleCalendarPool instance = new SimpleCalendarPool();
+        private static final SimpleCalendarPool instance = new SimpleCalendarPool();
         
-        private HashMap<String, ArrayList> poolDictionary = new HashMap<String, ArrayList>(12,0.75f);
+        private HashMap<String, ArrayList> poolDictionary = new HashMap<>(12,0.75f);
         
         private SimpleCalendarPool() {
         }
@@ -1048,7 +1050,7 @@ public final class SimpleCalendarPanel extends JPanel implements DragGestureList
             String key = String.valueOf(n);
             ArrayList pool = poolDictionary.get(key);
             if (pool == null) {
-                pool = new ArrayList<SimpleCalendarPanel>(5);
+                pool = new ArrayList<>(5);
                 poolDictionary.put(key, pool);
             }
             pool.add(c);

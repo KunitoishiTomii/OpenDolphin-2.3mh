@@ -7,9 +7,8 @@ import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import open.dolphin.delegater.RestClient;
-//import open.dolphin.delegater.RESTEasyClient;
 import open.dolphin.delegater.UserDelegater;
-import open.dolphin.helper.SimpleWorker;
+import open.dolphin.helper.ProgressMonitorWorker;
 import open.dolphin.infomodel.*;
 import open.dolphin.project.Project;
 import open.dolphin.util.HashUtil;
@@ -48,15 +47,8 @@ public class ChangePasswordImpl extends AbstractMainTool implements ChangeProfil
     private JFrame frame;
     protected JButton okButton;
     
-    private Logger logger;
+    private final Logger logger;
 
-    // timerTask 関連
-    private SimpleWorker worker;
-    private javax.swing.Timer taskTimer;
-    private ProgressMonitor monitor;
-    private int delayCount;
-    private int maxEstimation = 120*1000;   // 120 秒
-    private int delay = 300;               // 300 mmsec
     
     /**
      * Creates a new instance of AddUserService
@@ -133,28 +125,25 @@ public class ChangePasswordImpl extends AbstractMainTool implements ChangeProfil
      */
     protected class ChangePasswordPanel extends JPanel {
         
-        private JTextField uid;                 // 利用者ID
-        private JPasswordField userPassword1;   // パスワード1
-        private JPasswordField userPassword2;   // パスワード2
-        private JTextField orcaId;              // ORCA ID
-        private JTextField sn;                  // 姓
-        private JTextField givenName;           // 名
-        private JTextField email;               // 電子メール
-        private LicenseModel[] licenses;        // 職種(MML0026)
-        private JComboBox licenseCombo;
-        private DepartmentModel[] depts;        // 診療科(MML0028)
-        private JComboBox deptCombo;
+        private final JTextField uid;               // 利用者ID
+        private JPasswordField userPassword1;       // パスワード1
+        private JPasswordField userPassword2;       // パスワード2
+        private final JTextField orcaId;            // ORCA ID
+        private JTextField sn;                      // 姓
+        private JTextField givenName;               // 名
+        private final JTextField email;             // 電子メール
+        private final LicenseModel[] licenses;      // 職種(MML0026)
+        private final JComboBox licenseCombo;
+        private final DepartmentModel[] depts;      // 診療科(MML0028)
+        private final JComboBox deptCombo;
         
-        private JButton okButton;
-        private JButton cancelButton;
+        private final JButton okButton;
+        private final JButton cancelButton;
         private boolean ok;
         
-        private int[] userIdLength;
-        private int[] passwordLength; // min,max
+        private final int[] userIdLength;
+        private final int[] passwordLength; // min,max
         
-//masuda^   生パスワード
-        //private JCheckBox chk_rawPass;
-//masuda$
         
         public ChangePasswordPanel() {
             
@@ -503,11 +492,13 @@ public class ChangePasswordImpl extends AbstractMainTool implements ChangeProfil
             }
             
             // タスクを実行する
-//masuda^   シングルトン化
-            //final UserDelegater udl = new UserDelegater();
+//masuda^
             final UserDelegater udl = UserDelegater.getInstance();
-//masuda$            
-            worker = new SimpleWorker<Void, Void>() {
+            Component c = getFrame();
+            String message = null;
+            String note = PROGRESS_NOTE;
+          
+            ProgressMonitorWorker worker = new ProgressMonitorWorker<Void, Void>(c, message, note) {
         
                 @Override
                 protected Void doInBackground() throws Exception {
@@ -549,53 +540,16 @@ public class ChangePasswordImpl extends AbstractMainTool implements ChangeProfil
                     logger.warn(cause.getCause());
                     logger.warn(cause.getMessage());
                 }
-
-                @Override
-                protected void startProgress() {
-                    delayCount = 0;
-                    okButton.setEnabled(false);
-                    taskTimer.start();
-                }
-
-                @Override
-                protected void stopProgress() {
-                    taskTimer.stop();
-                    monitor.close();
-                    okButton.setEnabled(true);
-                    taskTimer = null;
-                    monitor = null;
-                }
             };
 
-            Component c = getFrame();
-            String message = null;
-            String note = PROGRESS_NOTE;
-            maxEstimation = ClientContext.getInt("task.default.maxEstimation");
-            delay = ClientContext.getInt("task.default.delay");
-            monitor = new ProgressMonitor(c, message, note, 0, maxEstimation / delay);
-
-            taskTimer = new Timer(delay, new ActionListener() {
-
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    delayCount++;
-
-                    if (monitor.isCanceled() && (!worker.isCancelled())) {
-                        worker.cancel(true);
-
-                    } else {
-                        monitor.setProgress(delayCount);
-                    }
-                }
-            });
-
             worker.execute();
+//masuda$
         }
         
         private boolean userIdOk() {
             
             String userId = uid.getText().trim();
-            if (userId.equals("")) {
+            if (userId.isEmpty()) {
                 return false;
             }
             

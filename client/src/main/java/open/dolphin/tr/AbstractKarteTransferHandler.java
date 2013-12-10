@@ -140,8 +140,7 @@ public abstract class AbstractKarteTransferHandler extends DolphinTransferHandle
             // 他アプリからだとMOVEとしない。srcComponent = nullである。
             boolean toRemove = srcComponent != null;
             return toRemove;
-        } catch (UnsupportedFlavorException ex) {
-        } catch (IOException ex) {
+        } catch (UnsupportedFlavorException | IOException ex) {
         }
         return false;
     }

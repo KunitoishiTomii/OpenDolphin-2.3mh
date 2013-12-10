@@ -24,7 +24,6 @@ import open.dolphin.delegater.PatientDelegater;
 import open.dolphin.dto.PatientSearchSpec;
 import open.dolphin.helper.KeyBlocker;
 import open.dolphin.helper.SimpleWorker;
-import open.dolphin.helper.WindowSupport;
 import open.dolphin.infomodel.*;
 import open.dolphin.project.Project;
 import open.dolphin.setting.MiscSettingPanel;
@@ -48,7 +47,7 @@ public class PatientSearchImpl extends AbstractMainComponent {
             = {"patientId", "fullName", "kanaName", "genderDesc", "ageBirthday", "pvtDateTrimTime", "getElapsedDay", "isOpened"};
     private static final Class[] COLUMN_CLASSES = {
         String.class, String.class, String.class, String.class, String.class, 
-        String.class, Integer.class, String.class};
+        String.class, Integer.class, Integer.class};
     private final int[] COLUMN_WIDTH = {50, 100, 120, 30, 100, 80, 20, 20};
     private final int START_NUM_ROWS = 1;
    
@@ -78,9 +77,10 @@ public class PatientSearchImpl extends AbstractMainComponent {
     private int ageColumn;
     private int pvtDateColumn;
     private int stateColumn;
+    private int genderColumn;
     
     private ListTableModel<PatientModel> tableModel;
-    private ListTableSorter sorter;
+    private ListTableSorter<PatientModel> sorter;
     private AbstractAction copyAction;
     
     private final String clientUUID;
@@ -176,43 +176,8 @@ public class PatientSearchImpl extends AbstractMainComponent {
     private void controlMenu() {
 
         PatientModel pvt = getSelectedPatient();
-        boolean enabled = canOpen(pvt);
+        boolean enabled = (pvt != null);
         getContext().enabledAction(GUIConst.ACTION_OPEN_KARTE, enabled);
-    }
-
-    /**
-     * カルテを開くことが可能かどうかを返す。
-     * @return 開くことが可能な時 true
-     */
-    private boolean canOpen(PatientModel patient) {
-        if (patient == null) {
-            return false;
-        }
-
-        if (isKarteOpened(patient)) {
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * カルテがオープンされているかどうかを返す。
-     * @return オープンされている時 true
-     */
-    private boolean isKarteOpened(PatientModel patient) {
-        if (patient != null) {
-            boolean opened = false;
-            List<ChartImpl> allCharts = WindowSupport.getAllCharts();
-            for (ChartImpl chart : allCharts) {
-                if (chart.getPatient().getId() == patient.getId()) {
-                    opened = true;
-                    break;
-                }
-            }
-            return opened;
-        }
-        return false;
     }
 
     /**
@@ -237,7 +202,7 @@ public class PatientSearchImpl extends AbstractMainComponent {
                 final JPopupMenu contextMenu = new JPopupMenu();
 
                 int row = view.getTable().rowAtPoint(e.getPoint());
-                PatientModel obj = (PatientModel) sorter.getObject(row);
+                PatientModel obj = sorter.getObject(row);
                 int selected = view.getTable().getSelectedRow();
 
                 if (row == selected && obj != null) {
@@ -299,6 +264,7 @@ public class PatientSearchImpl extends AbstractMainComponent {
         ageColumn = columnHelper.getColumnPositionEndsWith("birthday");
         pvtDateColumn = columnHelper.getColumnPositionStartWith("pvtdate");
         stateColumn = columnHelper.getColumnPosition("isOpened");
+        genderColumn = columnHelper.getColumnPosition("genderDesc");
         
         ageDisplay = Project.getBoolean(KEY_AGE_DISPLAY, true);
     }
@@ -361,13 +327,12 @@ public class PatientSearchImpl extends AbstractMainComponent {
         renderer.setTable(view.getTable());
         renderer.setDefaultRenderer();
 
-        // HibernateSearchを使用するかなど Katou: 橋本医院では常時H検とする
-        // final JComboBox methodCombo = view.getMethodCombo();
-        // if (!useHibernateSearch()) {
-        //     methodCombo.setSelectedItem(PatientSearchView.ALL_SEARCH);
-        // }
+        // HibernateSearchを使用するかなど
+        final JComboBox methodCombo = view.getMethodCombo();
+        if (!useHibernateSearch()) {
+            methodCombo.setSelectedItem(PatientSearchView.ALL_SEARCH);
+        }
         
-        /*
         methodCombo.addItemListener(new ItemListener() {
 
             @Override
@@ -378,7 +343,6 @@ public class PatientSearchImpl extends AbstractMainComponent {
                 }
             }
         });
-        */
 
         // カルテ検索Radioをシフト右クリックでインデックス作成
         view.getKarteSearchBtn().addMouseListener(new MouseAdapter() {
@@ -393,8 +357,8 @@ public class PatientSearchImpl extends AbstractMainComponent {
             }
             private void maybePopup(MouseEvent e) {
                 if ( e.isPopupTrigger() && e.isShiftDown()
-                        /*&& view.getKarteSearchBtn().isSelected()
-                        && methodCombo.getSelectedItem() == PatientSearchView.HIBERNATE_SEARCH*/) {
+                        && view.getKarteSearchBtn().isSelected()
+                        && methodCombo.getSelectedItem() == PatientSearchView.HIBERNATE_SEARCH) {
                     JPopupMenu popup = new JPopupMenu();
                     JMenuItem mi;
                     mi = new JMenuItem("インデックス作成");
@@ -416,7 +380,7 @@ public class PatientSearchImpl extends AbstractMainComponent {
             @Override
             public void itemStateChanged(ItemEvent e) {
                 boolean b = !view.getPtSearchBtn().isSelected();
-                // view.getMethodCombo().setEnabled(b);
+                view.getMethodCombo().setEnabled(b);
             }
         });
 
@@ -530,7 +494,7 @@ public class PatientSearchImpl extends AbstractMainComponent {
                 int row = table.getSelectedRow();
 //pns   row = -1 でここに入ってくることあり
                 if (row >= 0) {
-                    PatientModel patient = (PatientModel) sorter.getObject(row);
+                    PatientModel patient = sorter.getObject(row);
                     setSelectedPatient(patient);
                 } else {
                     setSelectedPatient(null);
@@ -585,14 +549,11 @@ public class PatientSearchImpl extends AbstractMainComponent {
      */
     private void openKarte() {
 
-        if (canOpen(getSelectedPatient())) {
-
-            // 来院情報を生成する
-            PatientModel pm = getSelectedPatient();
-            PatientVisitModel pvt = cel.createFakePvt(pm);
-            // カルテコンテナを生成する
-            getContext().openKarte(pvt);
-        }
+        // 来院情報を生成する
+        PatientModel pm = getSelectedPatient();
+        PatientVisitModel pvt = cel.createFakePvt(pm);
+        // カルテコンテナを生成する
+        getContext().openKarte(pvt);
     }
 
     // EVT から
@@ -669,13 +630,11 @@ public class PatientSearchImpl extends AbstractMainComponent {
 
             } else if (StringTool.startsWithKatakana(text)) {
                 spec.setCode(PatientSearchSpec.KANA_SEARCH);
-                text = text.replace("　", " ");     // 全角スペースは半角に置換する
                 spec.setName(text);
 
             } else if (StringTool.startsWithHiragana(text)) {
                 text = StringTool.hiraganaToKatakana(text);
                 spec.setCode(PatientSearchSpec.KANA_SEARCH);
-                text = text.replace("　", " ");     // 全角スペースは半角に置換する
                 spec.setName(text);
 
             } else if (isNameAddress(text)) {
@@ -837,9 +796,8 @@ public class PatientSearchImpl extends AbstractMainComponent {
             File file = fileChooser.getSelectedFile();
 
             if (!file.exists() || isOverwriteConfirmed(file)) {
-
-                try {
-                    FileWriter writer = new FileWriter(file);
+                
+                try (FileWriter writer = new FileWriter(file)) {
                     JTable table = view.getTable();
                     // 書き出す内容
                     StringBuilder sb = new StringBuilder();
@@ -853,6 +811,7 @@ public class PatientSearchImpl extends AbstractMainComponent {
                         sb.append('\n');
                     }
                     writer.write(sb.toString());
+                    
                     // close
                     writer.close();
 
@@ -877,11 +836,7 @@ public class PatientSearchImpl extends AbstractMainComponent {
                 JOptionPane.WARNING_MESSAGE,
                 JOptionPane.OK_CANCEL_OPTION);
 
-        if (confirm == JOptionPane.OK_OPTION) {
-            return true;
-        }
-
-        return false;
+        return confirm == JOptionPane.OK_OPTION;
     }
 //pns$
     
@@ -933,8 +888,7 @@ public class PatientSearchImpl extends AbstractMainComponent {
                     } else {
                         tableModel.clear();
                     }
-                } catch (InterruptedException ex) {
-                } catch (ExecutionException ex) {
+                } catch (InterruptedException | ExecutionException ex) {
                 } finally{
                     doStopProgress();
                     updateStatusLabel();
@@ -968,8 +922,7 @@ public class PatientSearchImpl extends AbstractMainComponent {
                     } else {
                         tableModel.clear();
                     }
-                } catch (InterruptedException ex) {
-                } catch (ExecutionException ex) {
+                } catch (InterruptedException | ExecutionException ex) {
                 } finally{
                     doStopProgress();
                     updateStatusLabel();
@@ -1000,8 +953,7 @@ public class PatientSearchImpl extends AbstractMainComponent {
 
             progressMonitor = new ProgressMonitor(view, message, initialNote, 0, 100);
 
-            // boolean hibernateSearch = view.getMethodCombo().getSelectedItem() == PatientSearchView.HIBERNATE_SEARCH;
-            boolean hibernateSearch = true;
+            boolean hibernateSearch = view.getMethodCombo().getSelectedItem() == PatientSearchView.HIBERNATE_SEARCH;
 
             // 患者検索
             if (!hibernateSearch) {
@@ -1024,9 +976,8 @@ public class PatientSearchImpl extends AbstractMainComponent {
         private List<PatientModel> grepSearch() throws Exception {
 
             final int maxResult = 500;
-            /* final boolean progressCourseOnly 
-                    = view.getMethodCombo().getSelectedItem() == PatientSearchView.CONTENT_SEARCH;*/
-            final boolean progressCourseOnly = false;
+            final boolean progressCourseOnly 
+                    = view.getMethodCombo().getSelectedItem() == PatientSearchView.CONTENT_SEARCH;
 
             // 検索開始
             MasudaDelegater dl = MasudaDelegater.getInstance();
@@ -1056,7 +1007,7 @@ public class PatientSearchImpl extends AbstractMainComponent {
                             if (old.getId() == pm.getId()) {
                                 List<Long> docIdList = old.getDocPkList();
                                 if (docIdList != null) {
-                                    HashSet<Long> pkSet = new HashSet<Long>();
+                                    HashSet<Long> pkSet = new HashSet<>();
                                     pkSet.addAll(docIdList);
                                     if (pm.getDocPkList() != null) {
                                         pkSet.addAll(pm.getDocPkList());
@@ -1248,24 +1199,21 @@ public class PatientSearchImpl extends AbstractMainComponent {
     }
     
     private class PatientListTableRenderer extends StripeTableCellRenderer {
-
-        public PatientListTableRenderer() {
-            super();
-        }
-
+        
         @Override
         public Component getTableCellRendererComponent(JTable table,
-                Object value,
-                boolean isSelected,
-                boolean isFocused,
-                int row, int col) {
+                Object value, boolean isSelected, boolean isFocused, int row, int col) {
 
             super.getTableCellRendererComponent(table, value, isSelected, isFocused, row, col);
             
-            PatientModel pm = (PatientModel) sorter.getObject(row);
+            PatientModel pm = sorter.getObject(row);
+            if (pm == null) {
+                return this;
+            }
             
-            if (pm != null && col == stateColumn) {
-                setHorizontalAlignment(JLabel.CENTER);
+            if (col == stateColumn) {
+                setHorizontalAlignment(CENTER);
+                setBorder(null);
                 if (pm.isOpened()) {
                     if (clientUUID.equals(pm.getOwnerUUID())) {
                         setIcon(OPEN_ICON);
@@ -1277,7 +1225,9 @@ public class PatientSearchImpl extends AbstractMainComponent {
                 }
                 setText("");
             } else {
-                setHorizontalAlignment(JLabel.LEFT);
+                if (col == genderColumn) {
+                    setHorizontalAlignment(CENTER);
+                }
                 setIcon(null);
                 setText(value == null ? "" : value.toString());
             }

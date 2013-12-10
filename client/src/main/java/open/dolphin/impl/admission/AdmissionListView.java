@@ -14,9 +14,9 @@ import open.dolphin.client.ClientContext;
  */
 public class AdmissionListView extends JPanel {
     
-    private JButton updateBtn;
-    private JLabel infoLbl;
-    private JTable table;
+    private final JButton updateBtn;
+    private final JLabel infoLbl;
+    private final JTable table;
 
     public AdmissionListView() {
 

@@ -1,19 +1,18 @@
 package open.dolphin.pvtclaim;
 
-import java.beans.XMLEncoder;
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import open.dolphin.common.util.BeanUtils;
 import open.dolphin.infomodel.*;
 import org.jdom2.Attribute;
 import org.jdom2.Document;
 import org.jdom2.Element;
+import org.jdom2.JDOMException;
 import org.jdom2.Namespace;
 import org.jdom2.input.SAXBuilder;
 
@@ -123,7 +122,7 @@ public final class PVTBuilder {
     
     private String curRepCode;
 
-    private boolean DEBUG;
+    private final boolean DEBUG;
     
     private static final Logger logger = Logger.getLogger(PVTBuilder.class.getSimpleName());
     
@@ -145,7 +144,7 @@ public final class PVTBuilder {
             parseBody(root.getChild(MmlBody));
             reader.close();
             
-        } catch (Exception e) {
+        } catch (IOException | JDOMException e) {
             logger.warning(e.getMessage());
         }
     }
@@ -223,7 +222,7 @@ public final class PVTBuilder {
                     // 永続化のためのフォルダ HealthInsuranceModelに変換し
                     // それを患者属性に追加する
                     HealthInsuranceModel insModel = new HealthInsuranceModel();
-                    insModel.setBeanBytes(getXMLBytes(bean));
+                    insModel.setBeanBytes(BeanUtils.xmlEncode(bean));
                     // EJB 3.0 の関連を設定する
                     patientModel.addHealthInsurance(insModel);
                     insModel.setPatient(patientModel);
@@ -271,14 +270,12 @@ public final class PVTBuilder {
     public void parseBody(Element body) {
         
         // MmlModuleItem のリストを得る
-        List children = body.getChildren(MmlModuleItem);
+        List<Element> children = body.getChildren(MmlModuleItem);
         
         //----------------------------
         // それをイテレートする
-        //----------------------------
-        for (Iterator iterator = children.iterator(); iterator.hasNext();) {
-            
-            Element moduleItem = (Element) iterator.next();
+        //-------------------------
+        for (Element moduleItem : children) {
             
             //---------------------------------------------------
             // ModuleItem = docInfo + content なので夫々の要素を得る
@@ -289,45 +286,48 @@ public final class PVTBuilder {
             // docInfo の contentModuleType を調べる
             String attr = docInfoEle.getAttributeValue(contentModuleType);
             
+            if (attr == null) {
+                continue;
+            }
             //------------------------------
             // contentModuleTypeで分岐する
             //------------------------------
-            if (attr.equals(patientInfo)) {
-                //-----------------------
-                // 患者モジュールをパースする
-                //-----------------------
-                if (DEBUG) {
-                    debug("patientInfo　をパース中");
-                }
-                patientModel = new PatientModel();
-                parsePatientInfo(docInfoEle, contentEle);
-                
-            } else if (attr.equals(healthInsurance)) {
-                //------------------------------
-                // 健康保険モジュールをパースする
-                //------------------------------
-                String uuid = docInfoEle.getChild(docId).getChildTextTrim(uid);
-                debug("healthInsurance　をパース中");
-                debug("HealthInsurance UUID = " + uuid);
-
-                if (pvtInsurnaces == null) {
-                    pvtInsurnaces = new ArrayList<PVTHealthInsuranceModel>();
-                }
-                curInsurance = new PVTHealthInsuranceModel();
-                curInsurance.setGUID(uuid);
-                pvtInsurnaces.add(curInsurance);
-                parseHealthInsurance(docInfoEle, contentEle);
-                
-            } else if (attr.equals(e_claim)) {
-                //------------------------------
-                // 受付情報をパースする
-                //------------------------------
-                debug("claim　をパース中");
-                pvtClaim = new PVTClaim();
-                parseClaim(docInfoEle, contentEle);
-                
-            } else {
-                logger.log(Level.WARNING, "Unknown attribute value : {0}", attr);
+            switch (attr) {
+                case patientInfo:
+                    //-----------------------
+                    // 患者モジュールをパースする
+                    //-----------------------
+                    if (DEBUG) {
+                        debug("patientInfo　をパース中");
+                    }   patientModel = new PatientModel();
+                    parsePatientInfo(docInfoEle, contentEle);
+                    break;
+                case healthInsurance:
+                    //------------------------------
+                    // 健康保険モジュールをパースする
+                    //------------------------------
+                    String uuid = docInfoEle.getChild(docId).getChildTextTrim(uid);
+                    debug("healthInsurance　をパース中");
+                    debug("HealthInsurance UUID = " + uuid);
+                    if (pvtInsurnaces == null) {
+                        pvtInsurnaces = new ArrayList<>();
+                    }
+                    curInsurance = new PVTHealthInsuranceModel();
+                    curInsurance.setGUID(uuid);
+                    pvtInsurnaces.add(curInsurance);
+                    parseHealthInsurance(docInfoEle, contentEle);
+                    break;
+                case e_claim:
+                    //------------------------------
+                    // 受付情報をパースする
+                    //------------------------------
+                    debug("claim　をパース中");
+                    pvtClaim = new PVTClaim();
+                    parseClaim(docInfoEle, contentEle);
+                    break;
+                default:
+                    logger.log(Level.WARNING, "Unknown attribute value : {0}", attr);
+                    break;
             }
         }
     }
@@ -342,120 +342,152 @@ public final class PVTBuilder {
         //-------------------------------------
         // 患者モジュールの要素をイテレートする
         //-------------------------------------
-        List children = content.getChildren();
-
-        for (Iterator iterator = children.iterator(); iterator.hasNext();) {
+        List<Element> children = content.getChildren();
+        
+        for (Element child : children) {
             
-            Element child = (Element) iterator.next();
             String qname = child.getQualifiedName();
             
-            if (qname.equals(mmlCm_Id)) {
-                String pid = child.getTextTrim();
-                patientModel.setPatientId(pid);
-                debug("patientId = " + pid);
-                
-            } else if (qname.equals(mmlNm_Name)) {
-                List attrs = child.getAttributes();
-                for (Iterator iter = attrs.iterator(); iter.hasNext(); ) {
-                    Attribute attr = (Attribute) iter.next();
-                    if (attr.getName().equals(repCode)) {
-                        curRepCode = attr.getValue();
-                        debug("curRepCode = " + attr.getValue());
-                    } else if (attr.getName().equals(tableId)) {
-                        debug("tableId = " + attr.getValue());
+            if (qname == null) {
+                continue;
+            }
+            
+            switch (qname) {
+                case mmlCm_Id:
+                    String pid = child.getTextTrim();
+                    patientModel.setPatientId(pid);
+                    debug("patientId = " + pid);
+                    break;
+                case mmlNm_Name:
+                    for (Attribute attr : child.getAttributes()) {
+                        String attrName = attr.getName();
+                        if (attrName != null) {
+                            switch (attrName) {
+                                case repCode:
+                                    curRepCode = attr.getValue();
+                                    debug("curRepCode = " + attr.getValue());
+                                    break;
+                                case tableId:
+                                    debug("tableId = " + attr.getValue());
+                                    break;
+                            }
+                        }
                     }
-                }
-                
-            } else if (qname.equals(mmlNm_family)) {
-                if (curRepCode.equals(P)) {
-                    patientModel.setKanaFamilyName(child.getTextTrim());
-                } else if (curRepCode.equals(I)) {
-                    patientModel.setFamilyName(child.getTextTrim());
-                } else if (curRepCode.equals(A)) {
-                    patientModel.setRomanFamilyName(child.getTextTrim());
-                }
-                debug("family = " + child.getTextTrim());
-                
-            } else if (qname.equals(mmlNm_given)) {
-                if (curRepCode.equals(P)) {
-                    patientModel.setKanaGivenName(child.getTextTrim());
-                } else if (curRepCode.equals(I)) {
-                    patientModel.setGivenName(child.getTextTrim());
-                } else if (curRepCode.equals(A)) {
-                    patientModel.setRomanGivenName(child.getTextTrim());
-                }
-                debug("given = " + child.getTextTrim());
-                 
-            } else if (qname.equals(mmlNm_fullname)) {
-                if (curRepCode.equals(P)) {
-                    patientModel.setKanaName(child.getTextTrim());
-                } else if (curRepCode.equals(I)) {
-                    patientModel.setFullName(child.getTextTrim());
-                } else if (curRepCode.equals(A)) {
-                    patientModel.setRomanName(child.getTextTrim());
-                }
-                debug("fullName = " + child.getTextTrim());
-                 
-            } else if (qname.equals(mmlPi_birthday)) {
-                patientModel.setBirthday(child.getTextTrim());
-                debug("birthday = " + child.getTextTrim());
-                
-            } else if (qname.equals(mmlPi_sex)) {
-                patientModel.setGender(child.getTextTrim());
-                debug("gender = " + child.getTextTrim());
-                 
-            } else if (qname.equals(mmlAd_Address)) {
-                curAddress = new AddressModel();
-                patientModel.addAddress(curAddress);
-                
-                List attrs = child.getAttributes();
-                for (Iterator iter = attrs.iterator(); iter.hasNext(); ) {
-                    Attribute attr = (Attribute) iter.next();
-                    if (attr.getName().equals(addressClass)) {
-                        curRepCode = attr.getValue();
-                        curAddress.setAddressType(attr.getValue());
-                        debug("addressClass = " + attr.getValue());
-                    } else if (attr.getName().equals(tableId)) {
-                        curAddress.setAddressTypeCodeSys(attr.getValue());
-                        debug("tableId = " + attr.getValue());
+                    break;
+                case mmlNm_family:
+                    if (curRepCode != null) {
+                        switch (curRepCode) {
+                            case P:
+                                patientModel.setKanaFamilyName(child.getTextTrim());
+                                break;
+                            case I:
+                                patientModel.setFamilyName(child.getTextTrim());
+                                break;
+                            case A:
+                                patientModel.setRomanFamilyName(child.getTextTrim());
+                                break;
+                        }
+                        debug("family = " + child.getTextTrim());
                     }
+                    break;
+                case mmlNm_given:
+                    if (curRepCode != null) {
+                        switch (curRepCode) {
+                            case P:
+                                patientModel.setKanaGivenName(child.getTextTrim());
+                                break;
+                            case I:
+                                patientModel.setGivenName(child.getTextTrim());
+                                break;
+                            case A:
+                                patientModel.setRomanGivenName(child.getTextTrim());
+                                break;
+                        }
+                        debug("given = " + child.getTextTrim());
+                    }
+                    break;
+                case mmlNm_fullname:
+                    if (curRepCode != null) {
+                        switch (curRepCode) {
+                            case P:
+                                patientModel.setKanaName(child.getTextTrim());
+                                break;
+                            case I:
+                                patientModel.setFullName(child.getTextTrim());
+                                break;
+                            case A:
+                                patientModel.setRomanName(child.getTextTrim());
+                                break;
+                        }
+                        debug("fullName = " + child.getTextTrim());
+                    }
+                    break;
+                case mmlPi_birthday:
+                    patientModel.setBirthday(child.getTextTrim());
+                    debug("birthday = " + child.getTextTrim());
+                    break;
+                case mmlPi_sex:
+                    patientModel.setGender(child.getTextTrim());
+                    debug("gender = " + child.getTextTrim());
+                    break;
+                case mmlAd_Address:
+                    curAddress = new AddressModel();
+                    patientModel.addAddress(curAddress);
+                    for (Attribute attr : child.getAttributes()) {
+                        String attrName = attr.getName();
+                        if (attrName != null) {
+                            switch (attrName) {
+                                case addressClass:
+                                    curRepCode = attr.getValue();
+                                    curAddress.setAddressType(attr.getValue());
+                                    debug("addressClass = " + attr.getValue());
+                                    break;
+                                case tableId:
+                                    curAddress.setAddressTypeCodeSys(attr.getValue());
+                                    debug("tableId = " + attr.getValue());
+                                    break;
+                            }
+                        }
+                    }
+                    break;
+                case mmlAd_full:
+                    curAddress.setAddress(child.getTextTrim());
+                    debug("address = " + child.getTextTrim());
+                    break;
+                case mmlAd_zip:
+                    curAddress.setZipCode(child.getTextTrim());
+                    debug("zip = " + child.getTextTrim());
+                    break;
+                case mmlPh_Phone:
+                    curTelephone = new TelephoneModel();
+                    patientModel.addTelephone(curTelephone);
+                    break;
+                case mmlPh_area: {
+                    String val = child.getTextTrim();
+                    //val = ZenkakuUtils.utf8Replace(val);
+                    curTelephone.setArea(val);
+                    debug("area = " + val);
+                    break;
                 }
-                
-            } else if (qname.equals(mmlAd_full)) {
-                curAddress.setAddress(child.getTextTrim());
-                debug("address = " + child.getTextTrim());
-                
-            } else if (qname.equals(mmlAd_zip)) {
-                curAddress.setZipCode(child.getTextTrim());
-                debug("zip = " + child.getTextTrim());
-                
-            } else if (qname.equals(mmlPh_Phone)) {
-                curTelephone = new TelephoneModel();
-                patientModel.addTelephone(curTelephone);
-                
-            } else if (qname.equals(mmlPh_area)) {
-                String val = child.getTextTrim();
-                //val = ZenkakuUtils.utf8Replace(val);
-                curTelephone.setArea(val);
-                debug("area = " + val);
-                
-            } else if (qname.equals(mmlPh_city)) {
-                String val = child.getTextTrim();
-                //val = ZenkakuUtils.utf8Replace(val);
-                curTelephone.setCity(val);
-                debug("city = " + val);
-                
-            } else if (qname.equals(mmlPh_number)) {
-                String val = child.getTextTrim();
-                //val = ZenkakuUtils.utf8Replace(val);
-                curTelephone.setNumber(val);
-                debug("number = " + val);
-                
-            } else if (qname.equals(mmlPh_memo)) {
-                // ORCA
-                curTelephone.setMemo(child.getTextTrim());
-                debug("memo = " + child.getTextTrim());
-
+                case mmlPh_city: {
+                    String val = child.getTextTrim();
+                    //val = ZenkakuUtils.utf8Replace(val);
+                    curTelephone.setCity(val);
+                    debug("city = " + val);
+                    break;
+                }
+                case mmlPh_number: {
+                    String val = child.getTextTrim();
+                    //val = ZenkakuUtils.utf8Replace(val);
+                    curTelephone.setNumber(val);
+                    debug("number = " + val);
+                    break;
+                }
+                case mmlPh_memo:
+                    // ORCA
+                    curTelephone.setMemo(child.getTextTrim());
+                    debug("memo = " + child.getTextTrim());
+                    break;
             }
             
             parsePatientInfo(docInfo, child);
@@ -548,12 +580,9 @@ public final class PVTBuilder {
         Element publicInsuranceEle = hModule.getChild(publicInsurance, mmlHi);
         if (publicInsuranceEle != null) {
             
-            List children = publicInsuranceEle.getChildren();
+            List<Element> children = publicInsuranceEle.getChildren();
             
-            for (Iterator iterator = children.iterator(); iterator.hasNext();) {
-                
-                // publicInsuranceItem を得る
-                Element publicInsuranceItem = (Element) iterator.next();
+            for (Element publicInsuranceItem : children) {
                 
                 curPublicItem = new PVTPublicInsuranceItemModel();
                 curInsurance.addPvtPublicInsuranceItem(curPublicItem);
@@ -676,14 +705,6 @@ public final class PVTBuilder {
         debug("registTime = " + pvtClaim.getClaimRegistTime());
         debug("admitFlag = " + pvtClaim.getClaimAdmitFlag());
         debug("insuranceUid = " + pvtClaim.getInsuranceUid());
-    }
-    
-    protected byte[] getXMLBytes(Object bean) {
-        ByteArrayOutputStream bo = new ByteArrayOutputStream();
-        XMLEncoder e = new XMLEncoder(new BufferedOutputStream(bo));
-        e.writeObject(bean);
-        e.close();
-        return bo.toByteArray();
     }
     
     private void debug(String msg) {

@@ -160,6 +160,6 @@ public class ChartImplExtensions extends AbstractChartExtensions {
 
         CheckInteractionPanel panel = new CheckInteractionPanel();
         panel.enter(context);
-        panel = null;
+        //panel = null;
     }
 }

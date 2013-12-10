@@ -109,7 +109,7 @@ public class SqlDaoBean extends DaoBean {
 
         ResultSetMetaData meta = rs.getMetaData();
         int columnCount = meta.getColumnCount();
-        List<String> values = new ArrayList<String>(columnCount);
+        List<String> values = new ArrayList<>(columnCount);
 
         for (int i = 1; i <= columnCount; ++i) {
             int type = meta.getColumnType(i);
@@ -143,31 +143,20 @@ public class SqlDaoBean extends DaoBean {
    
     private List<List<String>> executeStatement1(String sql) {
 
-        Connection con = null;
-        Statement st = null;
-        List<List<String>> valuesList = new ArrayList<List<String>>();
+        List<List<String>> valuesList = new ArrayList<>();
 
-        try {
-            con = getConnection();
-            st = con.createStatement();
-            ResultSet rs = st.executeQuery(sql);
+        try (Connection con = getConnection(); 
+                Statement st = con.createStatement(); 
+                ResultSet rs = st.executeQuery(sql);) {
 
             while (rs.next()) {
                 List<String> values = getColumnValues(rs);
                 valuesList.add(values);
             }
 
-            rs.close();
-            st.close();
-
         } catch (Exception e) {
             e.printStackTrace(System.err);
             processError(e);
-        } finally {
-            try {
-                con.close();
-            } catch (Exception ex) {
-            }
         }
 
         return valuesList;
@@ -205,14 +194,11 @@ public class SqlDaoBean extends DaoBean {
     
     private List<List<String>> executePreparedStatement1(String sql, int[] types, String[] params) {
 
-        Connection con = null;
-        PreparedStatement ps = null;
-        List<List<String>> valuesList = new ArrayList<List<String>>();
+        List<List<String>> valuesList = new ArrayList<>();
 
-        try {
-            con = getConnection();
-            ps = con.prepareStatement(sql);
-            
+        try (Connection con = getConnection();
+                PreparedStatement ps = con.prepareStatement(sql);) {
+
             for (int i = 0; i < types.length; ++i) {
                 int type = types[i];
                 String param = params[i];
@@ -233,24 +219,16 @@ public class SqlDaoBean extends DaoBean {
                 }
             }
             
-            ResultSet rs = ps.executeQuery();
-
-            while (rs.next()) {
-                List<String> values = getColumnValues(rs);
-                valuesList.add(values);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    List<String> values = getColumnValues(rs);
+                    valuesList.add(values);
+                }
             }
-
-            rs.close();
-            ps.close();
 
         } catch (Exception e) {
             e.printStackTrace(System.err);
             processError(e);
-        } finally {
-            try {
-                con.close();
-            } catch (Exception ex) {
-            }
         }
 
         return valuesList;
@@ -480,7 +458,7 @@ public class SqlDaoBean extends DaoBean {
     protected void rollback(Connection con) {
         try {
             con.rollback();
-        } catch (Exception e) {
+        } catch (SQLException e) {
             e.printStackTrace(System.err);
         }
     }

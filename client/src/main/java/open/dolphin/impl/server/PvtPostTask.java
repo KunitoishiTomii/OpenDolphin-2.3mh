@@ -15,7 +15,7 @@ import open.dolphin.setting.MiscSettingPanel;
  */
 public class PvtPostTask implements Runnable {
     
-    private String pvtXml;
+    private final String pvtXml;
     
     public PvtPostTask(String pvtXml) {
         this.pvtXml = pvtXml;

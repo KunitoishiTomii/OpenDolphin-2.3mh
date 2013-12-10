@@ -1,13 +1,10 @@
 package open.dolphin.client;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
-import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
-import javax.swing.border.Border;
-import javax.swing.text.Position;
+import javax.swing.SwingUtilities;
 import open.dolphin.infomodel.SchemaModel;
 
 /**
@@ -16,38 +13,19 @@ import open.dolphin.infomodel.SchemaModel;
  * @author Kazushi Minagawa, Digital Globe, Inc.
  * @author modified by masuda, Masuda Naika
  */
-public final class SchemaHolder extends AbstractComponentHolder implements ComponentHolder {
-
-    private static final Color BACKGROUND = Color.WHITE;
-    private static final Color SELECTED_BORDER = new Color(255, 0, 153);
-    private static final Color NON_SELECTED_BORDER = new Color(0, 0, 0, 0); // 透明
-    private static final Border nonSelectedBorder = BorderFactory.createLineBorder(NON_SELECTED_BORDER);
-    private static final Border selectedBorder = BorderFactory.createLineBorder(SELECTED_BORDER);
-
+public final class SchemaHolder extends AbstractComponentHolder {
+    
+    public static final String ATTRIBUTE_NAME = "schemaHolder";
     private static final int ICON_SIZE = 192;
-    
-    private boolean selected;
-    
-    private Position start;
-    //private Position end; //endPositionはstart+1で代用
 
+    private final SchemaHolderFunction function;
+    
     private SchemaModel schema;
-    private KartePane kartePane;
-    
-    private SchemaHolderFunction function;
-    
-    
+
     public SchemaHolder(KartePane kartePane, SchemaModel schema) {
-        super();
+        super(kartePane);
         function = SchemaHolderFunction.getInstance();
         function.setDeleteAction(SchemaHolder.this);
-
-        this.kartePane = kartePane;
-        setDoubleBuffered(false);
-        setOpaque(true);
-        setBackground(BACKGROUND);
-        setBorder(nonSelectedBorder);
-        
         this.schema = schema;
         setImageIcon(schema.getIcon());
     }
@@ -58,23 +36,8 @@ public final class SchemaHolder extends AbstractComponentHolder implements Compo
         setIcon(adjusted);
     }
     
-    @Override
-    public int getContentType() {
-        return ComponentHolder.TT_IMAGE;
-    }
-    
-    @Override
-    public KartePane getKartePane() {
-        return kartePane;
-    }
-    
     public SchemaModel getSchema() {
         return schema;
-    }
-    
-    @Override
-    public boolean isSelected() {
-        return selected;
     }
     
     @Override
@@ -87,54 +50,33 @@ public final class SchemaHolder extends AbstractComponentHolder implements Compo
     }
     
     @Override
-    public void setSelected(boolean selected) {
-        
-        if (selected) {
-            this.setBorder(selectedBorder);
-            this.selected = true;
-        } else {
-            this.setBorder(nonSelectedBorder);
-            this.selected = false;
-        }
-    }
-    
-    @Override
     public void edit() {
-
         function.setSelectedSchema(this);
         function.edit();
     }
     
     @Override
     public void propertyChange(PropertyChangeEvent e) {
-        
+
         function.getLogger().debug("SchemaHolder propertyChange");
-        SchemaModel newSchema = (SchemaModel)e.getNewValue();
-        if (newSchema ==  null) {
+        SchemaModel newSchema = (SchemaModel) e.getNewValue();
+        if (newSchema == null) {
             return;
         }
-        
+
         schema = newSchema;
-        setImageIcon(schema.getIcon());
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                setImageIcon(schema.getIcon());
+            }
+        });
         kartePane.setDirty(true);
     }
-    
+
     @Override
-    public void setEntry(Position start, Position end) {
-        this.start = start;
-        //this.end = end;
+    public String getAttributeName() {
+        return ATTRIBUTE_NAME;
     }
-    
-    @Override
-    public int getStartPos() {
-        return start.getOffset();
-    }
-    
-    @Override
-    public int getEndPos() {
-        //return end.getOffset();
-        int ret = getStartPos() + 1;
-        return ret;
-    }
-    
 }

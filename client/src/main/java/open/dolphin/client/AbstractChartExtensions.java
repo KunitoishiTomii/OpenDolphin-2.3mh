@@ -37,7 +37,7 @@ public abstract class AbstractChartExtensions {
     private ScheduledExecutorService scheduler;
     private ScheduledFuture<?> beeperHandle;
     private long statred;
-    private long delay = DELAY;
+    private final long delay = DELAY;
     
     // 抽象メソッド
     public abstract JToolBar createToolBar();
@@ -119,7 +119,7 @@ public abstract class AbstractChartExtensions {
             editor.getPPane().getTextPane().setCaretPosition(0);
             editor.getPPane().stamp(mm);
         }
-        mbcs = null;
+        //mbcs = null;
     }
     
     // 診察時間タイマーと基本料入力・薬剤ラベル印刷ボタンをenableする。

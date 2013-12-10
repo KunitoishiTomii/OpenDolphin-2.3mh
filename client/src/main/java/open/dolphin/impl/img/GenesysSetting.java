@@ -16,11 +16,11 @@ import open.dolphin.client.ClientContext;
  */
 public class GenesysSetting {
 
-    private AbstractBrowser context;
-    private Component parent;
+    private final AbstractBrowser context;
+    private final Component parent;
     private GenesysConfigView view;
     private JDialog dialog;
-    private Properties properties;
+    private final Properties properties;
    
     public GenesysSetting(AbstractBrowser context, Component parent) {
         this.context = context;

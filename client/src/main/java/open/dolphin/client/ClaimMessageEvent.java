@@ -75,4 +75,19 @@ public class ClaimMessageEvent extends java.util.EventObject {
     public void setConfirmDate(String val) {
         confirmDate = val;
     }
+    
+    
+    public static enum ERROR_CODE {
+
+        NO_ERROR, CONNECTION_REJECT, IO_ERROR, NAK_SIGNAL
+    };
+    private ERROR_CODE code;
+    
+    public ERROR_CODE getErrorCode() {
+        return code;
+    }
+    
+    public void setErrorCode(ERROR_CODE code) {
+        this.code = code;
+    }
 }

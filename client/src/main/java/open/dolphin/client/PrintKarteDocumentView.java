@@ -18,7 +18,7 @@ import javax.swing.SwingUtilities;
 
 public class PrintKarteDocumentView implements Printable {
 
-    private Component toBePrint;
+    private final Component toBePrint;
     private static String patientName;
     private static String patientId;
 

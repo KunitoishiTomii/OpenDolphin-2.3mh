@@ -14,7 +14,7 @@ import open.dolphin.project.Project;
  */
 public class ImageBrowserProxy implements ChartDocument {
     
-    private AbstractBrowser browser;
+    private final AbstractBrowser browser;
 
     public ImageBrowserProxy() {
 

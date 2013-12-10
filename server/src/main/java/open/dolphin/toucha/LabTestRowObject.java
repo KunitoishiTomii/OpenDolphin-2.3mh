@@ -156,7 +156,7 @@ public class LabTestRowObject implements Comparable {
     public void addLabTestValueObjectAt(int index, LabTestValueObject value) {
 
         if (values == null) {
-            values = new ArrayList<LabTestValueObject>(5);
+            values = new ArrayList<>(5);
             for (int i = 0; i < 5; i++) {
                 values.add(null);
             }

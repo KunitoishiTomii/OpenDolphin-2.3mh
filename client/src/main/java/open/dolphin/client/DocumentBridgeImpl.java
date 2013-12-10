@@ -36,7 +36,7 @@ public class DocumentBridgeImpl extends AbstractChartDocument
     public DocumentBridgeImpl() {
         setTitle(TITLE);
 //masuda^   使い回し
-        viewerCache = new HashMap<String, DocumentViewer>();
+        viewerCache = new HashMap<>();
 //masuda$
     }
     
@@ -118,7 +118,7 @@ public class DocumentBridgeImpl extends AbstractChartDocument
                     curViwer = createLetterModuleViewer(handleClass);
                     curViwer.setContext(getContext());
                     curViwer.start();
-                } catch (Throwable e) {
+                } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
                     e.printStackTrace(System.err);
                 }
             }
@@ -144,58 +144,52 @@ public class DocumentBridgeImpl extends AbstractChartDocument
 //masuda$
         
         String prop = evt.getPropertyName();
+        if (prop == null) {
+            return;
+        }
         
-        if (prop.equals(DocumentHistory.DOCUMENT_TYPE)) {
-
-            // 文書種別が変更された場合
-            String docType = (String) evt.getNewValue();
+        switch (prop) {
             
-            if (docType.equals(IInfoModel.DOCTYPE_LETTER)) {
-                // 紹介状
-                curViwer = null;
-                handleClass = null;
+            case DocumentHistory.DOCUMENT_TYPE:
+                // 文書種別が変更された場合
+                String docType = (String) evt.getNewValue();
+                if (docType == null) {
+                    break;
+                }
+                switch (docType) {
+                    case IInfoModel.DOCTYPE_LETTER:         // 紹介状
+                    case IInfoModel.DOCTYPE_LETTER_REPLY:   // 紹介状返書
+                    case IInfoModel.DOCTYPE_LETTER_REPLY2:  // 紹介状返書2
+                    case IInfoModel.DOCTYPE_LETTER_PLUGIN:  // 紹介状 plugin type
+                        curViwer = null;
+                        handleClass = null;
+                        break;
+                    default:
+                        // カルテ文書
+                        curViwer = createKarteDocumentViewer();
+                        break;
+                }
                 
-            } else if (docType.equals(IInfoModel.DOCTYPE_LETTER_REPLY)) {
-                // 紹介状返書
-                curViwer = null;
-                handleClass = null;
-                
-            } else if (docType.equals(IInfoModel.DOCTYPE_LETTER_REPLY2)) {
-                // 紹介状返書2
-                curViwer = null;
-                handleClass = null;
-                
-            } else if (docType.equals(IInfoModel.DOCTYPE_LETTER_PLUGIN)) {
-                // 紹介状 plugin type
-                curViwer = null;
-                handleClass = null;
-                
-            } else {
-                // カルテ文書
-                curViwer = createKarteDocumentViewer();
-            }
-
-            if (curViwer != null) {
-                curViwer.setContext(getContext());
+                if (curViwer != null) {
+                    curViwer.setContext(getContext());
 //masuda^   使い回し
-                //curViwer.start();
-                curViwer.enter();
+                    //curViwer.start();
+                    curViwer.enter();
 //masuda$
-            }
+                }
             
-        } else if (prop.equals(DocumentHistory.HISTORY_UPDATED)) {
-
-            // 文書履歴の抽出期間が変更された場合
-            if (curViwer != null) {
-                curViwer.historyPeriodChanged();
-            }
-            this.scroller.setViewportView(null);
-            
-        } else if (prop.equals(DocumentHistory.SELECTED_HISTORIES)) {
-
-            // 文書履歴の選択が変更された場合
-            DocInfoModel[] selectedHistoroes = (DocInfoModel[]) evt.getNewValue();
-            this.showDocuments(selectedHistoroes);
+            case DocumentHistory.HISTORY_UPDATED:
+                // 文書履歴の抽出期間が変更された場合
+                if (curViwer != null) {
+                    curViwer.historyPeriodChanged();
+                }   this.scroller.setViewportView(null);
+                break;
+                
+            case DocumentHistory.SELECTED_HISTORIES:
+                // 文書履歴の選択が変更された場合
+                DocInfoModel[] selectedHistoroes = (DocInfoModel[]) evt.getNewValue();
+                this.showDocuments(selectedHistoroes);
+                break;
         }
     }
     

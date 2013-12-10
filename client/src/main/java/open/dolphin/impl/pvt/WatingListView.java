@@ -12,9 +12,9 @@ import open.dolphin.client.ClientContext;
  */
 public class WatingListView extends JPanel {
 
-    private JButton kutuBtn;
-    private JLabel pvtInfoLbl;
-    private RowTipsTable pvtTable;
+    private final JButton kutuBtn;
+    private final JLabel pvtInfoLbl;
+    private final RowTipsTable pvtTable;
 
     public WatingListView() {
 

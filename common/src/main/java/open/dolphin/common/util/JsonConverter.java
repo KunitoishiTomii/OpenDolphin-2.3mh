@@ -3,11 +3,9 @@ package open.dolphin.common.util;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import java.io.ByteArrayInputStream;
@@ -57,13 +55,7 @@ public class JsonConverter {
             String json =objectMapper.writeValueAsString(obj);
             debug(json);
             return json;
-        } catch (JsonGenerationException ex) {
-            processException(ex);
-        } catch (JsonMappingException ex) {
-            processException(ex);
-        } catch (IOException ex) {
-            processException(ex);
-        } catch (Exception ex) {
+        } catch (JsonProcessingException ex) {
             processException(ex);
         }
         return null;
@@ -72,13 +64,26 @@ public class JsonConverter {
     public void toJson(Object obj, OutputStream os) {
         try {
             objectMapper.writeValue(os, obj);
-        } catch (JsonGenerationException ex) {
-            processException(ex);
-        } catch (JsonMappingException ex) {
-            processException(ex);
         } catch (IOException ex) {
             processException(ex);
-        } catch (Exception ex) {
+        }
+    }
+    
+    public String toJson(Object obj, TypeReference typeRef) {
+        try {
+            String json =objectMapper.writerWithType(typeRef).writeValueAsString(obj);
+            debug(json);
+            return json;
+        } catch (JsonProcessingException ex) {
+            processException(ex);
+        }
+        return null;
+    }
+
+    public void toJson(Object obj, TypeReference typeRef, OutputStream os) {
+        try {
+            objectMapper.writerWithType(typeRef).writeValue(os, obj);
+        } catch (IOException ex) {
             processException(ex);
         }
     }
@@ -89,13 +94,7 @@ public class JsonConverter {
         try {
             debug(json);
             return objectMapper.readValue(json, clazz);
-        } catch (JsonParseException ex) {
-            processException(ex);
-        } catch (JsonMappingException ex) {
-            processException(ex);
         } catch (IOException ex) {
-            processException(ex);
-        } catch (Exception ex) {
             processException(ex);
         }
         
@@ -106,13 +105,7 @@ public class JsonConverter {
         try {
             debug(json);
             return objectMapper.readValue(json, typeRef);
-        } catch (JsonParseException ex) {
-            processException(ex);
-        } catch (JsonMappingException ex) {
-            processException(ex);
         } catch (IOException ex) {
-            processException(ex);
-        } catch (Exception ex) {
             processException(ex);
         }
         return null;
@@ -123,13 +116,7 @@ public class JsonConverter {
         try {
             Object obj = objectMapper.readValue(is, clazz);
             return obj;
-        } catch (JsonParseException ex) {
-            processException(ex);
-        } catch (JsonMappingException ex) {
-            processException(ex);
         } catch (IOException ex) {
-            processException(ex);
-        } catch (Exception ex) {
             processException(ex);
         } finally {
             try {
@@ -144,13 +131,7 @@ public class JsonConverter {
         try {
             Object obj = objectMapper.readValue(is, typeRef);
             return obj;
-        } catch (JsonParseException ex) {
-            processException(ex);
-        } catch (JsonMappingException ex) {
-            processException(ex);
         } catch (IOException ex) {
-            processException(ex);
-        } catch (Exception ex) {
             processException(ex);
         } finally {
             try {
@@ -177,40 +158,22 @@ public class JsonConverter {
     // GZipped JSON InputStream to Object
     public Object fromGzippedJson(InputStream is, Class clazz) {
 
-        GZIPInputStream gis = null;
-        try {
-            gis = new GZIPInputStream(is);
+        try (GZIPInputStream gis = new GZIPInputStream(is)) {
             Object obj = fromJson(gis, clazz);
             return obj;
         } catch (IOException ex) {
             processException(ex);
-        } finally {
-            try {
-                if (gis != null) {
-                    gis.close();
-                }
-            } catch (IOException ex) {
-            }
         }
         return null;
     }
 
     public Object fromGzippedJson(InputStream is, TypeReference typeRef) {
 
-        GZIPInputStream gis = null;
-        try {
-            gis = new GZIPInputStream(is);
+        try (GZIPInputStream gis = new GZIPInputStream(is)) {
             Object obj = fromJson(gis, typeRef);
             return obj;
         } catch (IOException ex) {
             processException(ex);
-        } finally {
-            try {
-                if (gis != null) {
-                    gis.close();
-                }
-            } catch (IOException ex) {
-            }
         }
         return null;
     }
@@ -227,7 +190,7 @@ public class JsonConverter {
     
     public List<Long> toLongList(String params) {
         String[] strArray  = params.split(CAMMA);
-        List<Long> ret = new ArrayList<Long>();
+        List<Long> ret = new ArrayList<>();
         for (String s : strArray) {
             ret.add(Long.valueOf(s));
         }

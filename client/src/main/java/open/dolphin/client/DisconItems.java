@@ -20,7 +20,7 @@ public final class DisconItems {
 
     static {
         instance = new DisconItems();
-        discontinuedItems = new CopyOnWriteArrayList<DisconItemModel>();
+        discontinuedItems = new CopyOnWriteArrayList<>();
         del = MasudaDelegater.getInstance();
         changed = true;
         instance.loadDisconItems();
@@ -63,7 +63,7 @@ public final class DisconItems {
 
     // DisconItemPanelで使用
     public List<DisconItemModel> getDisconItemList() {
-        return new ArrayList<DisconItemModel>(discontinuedItems);
+        return new ArrayList<>(discontinuedItems);
     }
 
     public void addDisconItems(List<DisconItemModel> list) {

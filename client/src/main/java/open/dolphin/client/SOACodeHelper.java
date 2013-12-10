@@ -58,13 +58,13 @@ public class SOACodeHelper extends AbstractCodeHelper {
         //
         // メニューのスタックを生成する
         //
-        LinkedList<JComponent> menus = new LinkedList<JComponent> ();
+        LinkedList<JComponent> menus = new LinkedList<> ();
         menus.addFirst(popup);
         
         //
         // 親ノードのスタックを生成する
         //
-        LinkedList<StampTreeNode> parents = new LinkedList<StampTreeNode>();
+        LinkedList<StampTreeNode> parents = new LinkedList<>();
         
         //
         // Stamp の名前がキーワードで始まり、それが１個以上あるものを補完メニューに加える

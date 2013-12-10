@@ -21,8 +21,8 @@ import open.dolphin.tr.StampHolderTransferHandler;
  */
 public class KarteRenderer_2 {
 
-    private static final String STAMP_HOLDER = "stampHolder";
-    private static final String SCHEMA_HOLDER = "schemaHolder";
+    private static final String STAMP_HOLDER = StampHolder.ATTRIBUTE_NAME;
+    private static final String SCHEMA_HOLDER = SchemaHolder.ATTRIBUTE_NAME;
     private static final String COMPONENT_NAME = StyleConstants.ComponentElementName;   // "component";
     private static final String SECTION_NAME = AbstractDocument.SectionElementName;
     private static final String CONTENT_NAME = AbstractDocument.ContentElementName;
@@ -77,6 +77,9 @@ public class KarteRenderer_2 {
         for (ModuleModel bean : modules) {
 
             String role = bean.getModuleInfoBean().getStampRole();
+            if (role == null) {
+                continue;
+            }
             switch (role) {
                 case IInfoModel.ROLE_SOA:
                     soaModules.add(bean);
@@ -123,14 +126,16 @@ public class KarteRenderer_2 {
         }
 
         // P Pane をレンダリングする
-        if (pSpec == null || pSpec.isEmpty()) {
-            // 前回処方など適用
-            pPane.initKarteStyledDocument();    // 忘れてたｗ
-            for (ModuleModel mm : pModules) {
-                pPane.stamp(mm);
+        if (pPane != null) {
+            if (pSpec == null || pSpec.isEmpty()) {
+                // 前回処方など適用
+                pPane.initKarteStyledDocument();    // 忘れてたｗ
+                for (ModuleModel mm : pModules) {
+                    pPane.stamp(mm);
+                }
+            } else {
+                new KartePaneRenderer_ElementSpec().renderPane(pSpec, pModules, schemas, pPane);
             }
-        } else {
-            new KartePaneRenderer_ElementSpec().renderPane(pSpec, pModules, schemas, pPane);
         }
     }
     
@@ -162,10 +167,9 @@ public class KarteRenderer_2 {
             this.kartePane = kartePane;
 
             // Offscreen updates trick
-            doc = new KarteStyledDocument();
-            doc.setParent(kartePane);
+            doc = new KarteStyledDocument(kartePane);
             
-            defaultStyle = doc.getStyle(DEFAULT_STYLE_NAME);
+            defaultStyle = doc.setDefaultStyle();
             
             try {
                 XMLInputFactory factory = XMLInputFactory.newInstance();
@@ -187,7 +191,7 @@ public class KarteRenderer_2 {
             }
 
             // レンダリング後はdefault styleに戻す
-            doc.setLogicalStyle(DEFAULT_STYLE_NAME);
+            doc.setDefaultStyle();
             
             // JTextPaneにKarteStyledDocumentを設定する
             kartePane.getTextPane().setDocument(doc);
@@ -196,7 +200,11 @@ public class KarteRenderer_2 {
         private void startElement(XMLStreamReader reader) throws XMLStreamException {
 
             String eName = reader.getName().getLocalPart();
-
+            
+            if (eName == null) {
+                return;
+            }
+            
             switch (eName) {
                 case PARAGRAPH_NAME:
                     String alignStr = reader.getAttributeValue(null, ALIGNMENT_NAME);
@@ -238,7 +246,11 @@ public class KarteRenderer_2 {
         private void endElement(XMLStreamReader reader) {
 
             String eName = reader.getName().getLocalPart();
-
+            
+            if (eName == null) {
+                return;
+            }
+            
             switch (eName) {
                 case PARAGRAPH_NAME:
                     endParagraph();
@@ -317,22 +329,24 @@ public class KarteRenderer_2 {
 
         private void startComponent(String name, String number) {
 
-            if (name != null) {
-                int index = Integer.valueOf(number);
-                switch (name) {
-                    case STAMP_HOLDER:
-                        // StampHolderを作成する。JTextPaneにDocumentは未設定なのでKartePane.flowStampは使えない
-                        StampHolder stamp = new StampHolder(kartePane, modules.get(index));
-                        stamp.setTransferHandler(StampHolderTransferHandler.getInstance());
-                        doc.flowStamp(stamp);
-                        break;
-                    case SCHEMA_HOLDER:
-                        // SchemaHolderを作成する
-                        SchemaHolder schema = new SchemaHolder(kartePane, schemas.get(index));
-                        schema.setTransferHandler(SchemaHolderTransferHandler.getInstance());
-                        doc.flowSchema(schema);
-                        break;
-                }
+            if (name == null) {
+                return;
+            }
+
+            int index = Integer.parseInt(number);
+            switch (name) {
+                case STAMP_HOLDER:
+                    // StampHolderを作成する。JTextPaneにDocumentは未設定なのでKartePane.flowStampは使えない
+                    StampHolder stamp = new StampHolder(kartePane, modules.get(index));
+                    stamp.setTransferHandler(StampHolderTransferHandler.getInstance());
+                    doc.flowComponent(stamp);
+                    break;
+                case SCHEMA_HOLDER:
+                    // SchemaHolderを作成する
+                    SchemaHolder schema = new SchemaHolder(kartePane, schemas.get(index));
+                    schema.setTransferHandler(SchemaHolderTransferHandler.getInstance());
+                    doc.flowComponent(schema);
+                    break;
             }
         }
     }
@@ -367,8 +381,7 @@ public class KarteRenderer_2 {
             this.kartePane = kartePane;
             specList = new ArrayList<>();
                         
-            doc = new KarteStyledDocument();
-            doc.setParent(kartePane);
+            doc = new KarteStyledDocument(kartePane);
             
             defaultStyle = doc.getStyle(DEFAULT_STYLE_NAME);
 
@@ -398,7 +411,7 @@ public class KarteRenderer_2 {
             }
 
             // レンダリング後はdefault styleに戻す
-            doc.setLogicalStyle(DEFAULT_STYLE_NAME);
+            doc.setDefaultStyle();
             
             // JTextPaneにKarteStyledDocumentを設定する
             kartePane.getTextPane().setDocument(doc);
@@ -407,7 +420,11 @@ public class KarteRenderer_2 {
         private void startElement(XMLStreamReader reader) throws XMLStreamException {
 
             String eName = reader.getName().getLocalPart();
-
+            
+            if (eName == null) {
+                return;
+            }
+            
             switch (eName) {
                 case SECTION_NAME:
                     startSection();
@@ -455,7 +472,11 @@ public class KarteRenderer_2 {
         private void endElement(XMLStreamReader reader) {
 
             String eName = reader.getName().getLocalPart();
-
+            
+            if (eName == null) {
+                return;
+            }
+            
             switch (eName) {
                 case PARAGRAPH_NAME:
                     endParagraph();
@@ -535,30 +556,30 @@ public class KarteRenderer_2 {
         }
 
         private void startComponent(String name, String number) {
+            
+            if (name == null) {
+                return;
+            }
 
-            if (name != null) {
-                int index = Integer.valueOf(number);
-                switch (name) {
-                    case STAMP_HOLDER: {
-                        // StampHolderを作成する
-                        StampHolder sh = new StampHolder(kartePane, modules.get(index));
-                        sh.setTransferHandler(StampHolderTransferHandler.getInstance());
-                        // このスタンプ用のスタイルを生成する
-                        MutableAttributeSet atts = doc.createStampAttribute();
-                        StyleConstants.setComponent(atts, sh);
-                        insertString(" ", atts);
-                        break;
-                    }
-                    case SCHEMA_HOLDER: {
-                        // SchemaHolderを作成する
-                        SchemaHolder sh = new SchemaHolder(kartePane, schemas.get(index));
-                        sh.setTransferHandler(SchemaHolderTransferHandler.getInstance());
-                        // このスタンプ用のスタイルを生成する
-                        MutableAttributeSet atts = doc.createSchemaAttribute();
-                        StyleConstants.setComponent(atts, sh);
-                        insertString(" ", atts);
-                        break;
-                    }
+            int index = Integer.parseInt(number);
+            switch (name) {
+                case STAMP_HOLDER: {
+                    // StampHolderを作成する
+                    StampHolder sh = new StampHolder(kartePane, modules.get(index));
+                    sh.setTransferHandler(StampHolderTransferHandler.getInstance());
+                    // このスタンプ用のスタイルを生成する
+                    MutableAttributeSet atts = doc.createComponentAttribute(sh);
+                    insertString(" ", atts);
+                    break;
+                }
+                case SCHEMA_HOLDER: {
+                    // SchemaHolderを作成する
+                    SchemaHolder sh = new SchemaHolder(kartePane, schemas.get(index));
+                    sh.setTransferHandler(SchemaHolderTransferHandler.getInstance());
+                    // このスタンプ用のスタイルを生成する
+                    MutableAttributeSet atts = doc.createComponentAttribute(sh);
+                    insertString(" ", atts);
+                    break;
                 }
             }
         }

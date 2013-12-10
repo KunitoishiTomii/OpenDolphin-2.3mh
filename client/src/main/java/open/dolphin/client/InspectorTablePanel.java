@@ -13,8 +13,8 @@ import javax.swing.JTable;
  */
 public class InspectorTablePanel extends JPanel {
 
-    private JScrollPane scroll;
-    private JTable table;
+    private final JScrollPane scroll;
+    private final JTable table;
 
     public InspectorTablePanel() {
         

@@ -31,14 +31,14 @@ public class OrcaApiDelegater implements IOrcaApi {
     
     private static final OrcaApiDelegater instance;
 
-    private boolean DEBUG;
-    private XMLOutputter outputter;
-    private SAXBuilder builder;
+    private final boolean DEBUG;
+    private final XMLOutputter outputter;
+    private final SAXBuilder builder;
     
     private List<PhysicianInfo> physicianList;
     private List<DepartmentInfo> deptList;
     
-    private boolean xml2;
+    private final boolean xml2;
     
     static {
         instance = new OrcaApiDelegater();
@@ -96,9 +96,7 @@ public class OrcaApiDelegater implements IOrcaApi {
             String code = parser.getApiResult();
             String msg = parser.getApiResultMessage();
             result = new KarteSenderResult(ORCA_API, code, msg);
-        } catch (JDOMException ex) {
-            result = new KarteSenderResult(ORCA_API, KarteSenderResult.ERROR, ex.getMessage());
-        } catch (IOException ex) {
+        } catch (JDOMException | IOException ex) {
             result = new KarteSenderResult(ORCA_API, KarteSenderResult.ERROR, ex.getMessage());
         }
 
@@ -138,8 +136,7 @@ public class OrcaApiDelegater implements IOrcaApi {
                 deptList = parser.getList();
             }
 
-        } catch (JDOMException ex) {
-        } catch (IOException ex) {
+        } catch (JDOMException | IOException ex) {
         }
     }
 
@@ -175,8 +172,7 @@ public class OrcaApiDelegater implements IOrcaApi {
             if (!API_NO_ERROR.equals(code)) {
                 physicianList = parser.getList();
             }
-        } catch (JDOMException ex) {
-        } catch (IOException ex) {
+        } catch (JDOMException | IOException ex) {
         }
     }
     

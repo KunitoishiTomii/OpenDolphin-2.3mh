@@ -25,7 +25,7 @@ public class StmapTreeMenuBuilder {
     public JMenu build(StampTree stampTree, JComponent cmp, TransferHandler handler) {
         
         if (parents == null) {
-            parents = new HashMap<Object, JMenu>(10, 0.75f);
+            parents = new HashMap<>(10, 0.75f);
         } else {
             parents.clear();
         }

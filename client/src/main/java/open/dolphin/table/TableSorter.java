@@ -119,8 +119,8 @@ public class TableSorter extends AbstractTableModel {
     private JTableHeader tableHeader;
     private MouseListener mouseListener;
     private TableModelListener tableModelListener;
-    private Map<Class, Comparator<Object>> columnComparators = new HashMap<Class, Comparator<Object>>();
-    private List<Directive> sortingColumns = new ArrayList<Directive>();
+    private final Map<Class, Comparator<Object>> columnComparators = new HashMap<>();
+    private final List<Directive> sortingColumns = new ArrayList<>();
 
     public TableSorter() {
         this.mouseListener = new MouseHandler();
@@ -336,15 +336,14 @@ public class TableSorter extends AbstractTableModel {
         public int compareTo(Row o) {
             int row1 = modelIndex;
             int row2 = o.modelIndex;
-
-            for (Iterator<Directive> it = sortingColumns.iterator(); it.hasNext();) {
-                Directive directive = it.next();
+            
+            for (Directive directive : sortingColumns) {
                 int column = directive.column;
 
                 Object o1 = tableModel.getValueAt(row1, column);
                 Object o2 = tableModel.getValueAt(row2, column);
 
-                int comparison = 0;
+                int comparison;
                 // Define null less than everything, except null.
                 if (o1 == null && o2 == null) {
                     comparison = 0;
@@ -462,8 +461,8 @@ public class TableSorter extends AbstractTableModel {
 
     private static class Arrow implements Icon {
 
-        private boolean descending;
-        private int size;
+        private final boolean descending;
+        private final int size;
 //masuda
         //private int priority;
 

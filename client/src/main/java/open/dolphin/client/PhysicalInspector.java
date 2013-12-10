@@ -34,9 +34,9 @@ public final class PhysicalInspector {
     
     private PhysicalView view;
     
-    private ChartImpl context;
+    private final ChartImpl context;
     
-    private Logger logger;
+    private final Logger logger;
     
     /**
      * PhysicalInspectorオブジェクトを生成する。
@@ -83,7 +83,7 @@ public final class PhysicalInspector {
         String[] methodNames = ClientContext.getStringArray("patientInspector.physicalInspector.methodNames"); // {"getHeight","getWeight","getBMI","getConfirmDate"};
 
         // 身長体重テーブルを生成する
-        tableModel = new ListTableModel<PhysicalModel>(columnNames, 0, methodNames, null);
+        tableModel = new ListTableModel<>(columnNames, 0, methodNames, null);
         view.getTable().setModel(tableModel);
         //view.getTable().setFillsViewportHeight(true);
         //view.getTable().setRowHeight(ClientContext.getHigherRowHeight());
@@ -209,7 +209,7 @@ public final class PhysicalInspector {
         List<PhysicalModel> listH = context.getKarte().getHeights();
         List<PhysicalModel> listW = context.getKarte().getWeights();
         
-        List<PhysicalModel> list = new ArrayList<PhysicalModel>();
+        List<PhysicalModel> list = new ArrayList<>();
         
         // 身長体重ともある場合
         if (listH != null && listW != null) {
@@ -302,7 +302,7 @@ public final class PhysicalInspector {
         // 記録日
         Date recorded = new Date();
 
-        final List<ObservationModel> addList = new ArrayList<ObservationModel>(2);
+        final List<ObservationModel> addList = new ArrayList<>(2);
 
         if (model.getHeight() != null) {
             ObservationModel observation = new ObservationModel();
@@ -420,7 +420,7 @@ public final class PhysicalInspector {
             return;
         }
         
-        final List<Long> list = new ArrayList<Long>(2);
+        final List<Long> list = new ArrayList<>(2);
         
         if (model.getHeight() != null) {
             list.add(model.getHeightId());

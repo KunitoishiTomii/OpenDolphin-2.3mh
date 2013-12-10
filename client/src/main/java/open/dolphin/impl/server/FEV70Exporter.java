@@ -16,8 +16,8 @@ import open.dolphin.infomodel.PatientVisitModel;
  */
 public class FEV70Exporter {
 
-    private PatientVisitModel pvt;
-    private PatientVisitModel oldPvt;
+    private final PatientVisitModel pvt;
+    private final PatientVisitModel oldPvt;
     private String sharePath;
 
     public FEV70Exporter(PatientVisitModel pvt, PatientVisitModel oldPvt, String sharePath) {

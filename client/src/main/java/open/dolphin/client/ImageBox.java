@@ -44,10 +44,10 @@ public class ImageBox extends AbstractMainTool {
     private int imageWidth = DEFAULT_IMAGE_WIDTH;
     private int imageHeight = DEFAULT_IMAGE_HEIGHT;
     private String[] suffix = DEFAULT_IMAGE_SUFFIX;
-    private int defaultWidth = 406;
-    private int defaultHeight = 587;
-    private int defaultLocX = 537;
-    private int defaultLocY = 22;
+    private final int defaultWidth = 406;
+    private final int defaultHeight = 587;
+    private final int defaultLocX = 537;
+    private final int defaultLocY = 22;
 
     private JFrame frame;
     

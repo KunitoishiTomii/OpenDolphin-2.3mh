@@ -38,7 +38,7 @@ public final class InfoModelTransferable extends DolphinTransferable {
     public static final DataFlavor[] flavors = {InfoModelTransferable.infoModelFlavor};
     
     // 複数対応 masuda
-    private IInfoModel[] infoModels;
+    private final IInfoModel[] infoModels;
 
     /** Creates new InfoModelTransferable */
     public InfoModelTransferable(IInfoModel[] infoModels) {

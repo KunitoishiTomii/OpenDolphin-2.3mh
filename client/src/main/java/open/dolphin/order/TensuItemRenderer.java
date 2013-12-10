@@ -6,7 +6,7 @@ import java.util.regex.Pattern;
 import javax.swing.JTable;
 import open.dolphin.infomodel.ClaimConst;
 import open.dolphin.infomodel.TensuMaster;
-import open.dolphin.table.ListTableModel;
+import open.dolphin.table.ListTableSorter;
 import open.dolphin.table.StripeTableCellRenderer;
 
 /**
@@ -21,8 +21,8 @@ public final class TensuItemRenderer extends StripeTableCellRenderer {
     private static final Color MEDICINE_COLOR = new Color(255, 204, 0);
     private static final Color MATERIAL_COLOR = new Color(153, 204, 255);
     private static final Color OTHER_COLOR = new Color(255, 255, 255);
-    private Pattern passPattern;
-    private Pattern shinkuPattern;
+    private final Pattern passPattern;
+    private final Pattern shinkuPattern;
 
     public TensuItemRenderer(Pattern passPattern, Pattern shinkuPattern) {
         super();
@@ -37,10 +37,10 @@ public final class TensuItemRenderer extends StripeTableCellRenderer {
 
         super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
-        @SuppressWarnings("unchecked")
-        ListTableModel<TensuMaster> tm = (ListTableModel<TensuMaster>) table.getModel();
-        
-        TensuMaster item = tm.getObject(row);
+        //ListTableModel<TensuMaster> tm = (ListTableModel<TensuMaster>) table.getModel();
+        //TensuMaster item = tm.getObject(row);
+        ListTableSorter<TensuMaster> sorter = (ListTableSorter<TensuMaster>) table.getModel();
+        TensuMaster item = sorter.getObject(row);
 
         if (item != null) {
 
@@ -58,16 +58,21 @@ public final class TensuItemRenderer extends StripeTableCellRenderer {
                 } else if (srycd.startsWith(ClaimConst.YAKUZAI_CODE_START)) {
                     //内用1、外用6、注射薬4
                     String ykzkbn = item.getYkzkbn();
-
-                    if (ykzkbn.equals(ClaimConst.YKZ_KBN_NAIYO)) {
-                        setBackground(MEDICINE_COLOR);
-
-                    } else if (ykzkbn.equals(ClaimConst.YKZ_KBN_INJECTION)) {
-                        setBackground(MEDICINE_COLOR);
-
-                    } else if (ykzkbn.equals(ClaimConst.YKZ_KBN_GAIYO)) {
-                        setBackground(MEDICINE_COLOR);
-
+                    if (ykzkbn != null) {
+                        switch (ykzkbn) {
+                            case ClaimConst.YKZ_KBN_NAIYO:
+                                setBackground(MEDICINE_COLOR);
+                                break;
+                            case ClaimConst.YKZ_KBN_INJECTION:
+                                setBackground(MEDICINE_COLOR);
+                                break;
+                            case ClaimConst.YKZ_KBN_GAIYO:
+                                setBackground(MEDICINE_COLOR);
+                                break;
+                            default:
+                                setBackground(OTHER_COLOR);
+                                break;
+                        }
                     } else {
                         setBackground(OTHER_COLOR);
                     }

@@ -18,7 +18,7 @@ public class PvtServletServer {
     private static final Logger logger = Logger.getLogger(PvtServletServer.class.getSimpleName());
     
     private static final int DEFAULT_PORT = 5002;
-    private int port = DEFAULT_PORT;
+    private final int port = DEFAULT_PORT;
     
     // ServerSocketのスレッド nio!
     private Thread thread;
@@ -26,7 +26,7 @@ public class PvtServletServer {
     // PVT登録処理のSingle Thread Executor
     private ExecutorService exec;
 
-    private static PvtServletServer instance;
+    private static final PvtServletServer instance;
     
     static {
         instance = new PvtServletServer();

@@ -133,7 +133,7 @@ public class RoutineMedPanel extends JPanel {
             // TransferHandlerを設定する
             h.setTransferHandler(StampHolderTransferHandler.getInstance());
             // textPaneにスタンプを配置する
-            doc.flowStamp(h);
+            doc.flowComponent(h);
             doc.insertFreeString("\n", null);
         }
         // リスナーを設定する

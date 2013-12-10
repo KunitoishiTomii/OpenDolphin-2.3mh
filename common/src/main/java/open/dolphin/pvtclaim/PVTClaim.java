@@ -89,7 +89,7 @@ public class PVTClaim extends InfoModel {
     
     public void addClaimAppName(String val) {
         if (claimAppName == null) {
-            claimAppName = new ArrayList<String>();
+            claimAppName = new ArrayList<>();
         }
         claimAppName.add(val);
     }

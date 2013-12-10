@@ -15,6 +15,7 @@ import open.dolphin.client.DefaultCellEditor2;
 import open.dolphin.infomodel.*;
 import open.dolphin.project.Project;
 import open.dolphin.table.ListTableModel;
+import open.dolphin.table.ListTableSorter;
 
 /**
  * RadEditor
@@ -33,8 +34,11 @@ public final class RadEditor extends AbstractStampEditor {
     private static final String[] SR_COLUMN_NAMES = 
     {"種別", "コード", "名 称", "単位", "点数", "診区", "病診", "入外", "社老", "有効期限"};
     private static final String[] SR_METHOD_NAMES = 
-    {"getSlot", "getSrycd", "getName", "getTaniname", "getTen",
+    {"getSlot", "getSrycd", "getName", "getTaniname", "getTenInteger",
         "getSrysyukbn", "getHospsrykbn", "getNyugaitekkbn", "getRoutekkbn","getYukoedymdStr"};
+    private static final Class[] SR_CLASSES = 
+    {String.class, String.class, String.class, String.class, Integer.class,
+        String.class, String.class, String.class, String.class, String.class};
     private static final int[] SR_COLUMN_WIDTH = {10, 50, 200, 10, 10, 10, 5, 5, 5, 10};
     private static final int SR_NUM_ROWS = 1;
 //masuda$
@@ -44,6 +48,7 @@ public final class RadEditor extends AbstractStampEditor {
     private ListTableModel<MasterItem> tableModel;
 
     private ListTableModel<TensuMaster> searchResultModel;
+    private ListTableSorter<TensuMaster> sorter;
 
     public RadEditor() {
         initComponents();
@@ -135,7 +140,7 @@ public final class RadEditor extends AbstractStampEditor {
         // セットテーブルのマスターアイテムを取得する
         List<MasterItem> itemList = tableModel.getDataProvider();
 
-        List<ClaimItem> tmpList = new ArrayList<ClaimItem>();
+        List<ClaimItem> tmpList = new ArrayList<>();
 
         for (MasterItem masterItem : itemList) {
 
@@ -148,7 +153,7 @@ public final class RadEditor extends AbstractStampEditor {
             }
         }
         // BundleDolphinにClaimItemをセット
-        bundle.setClaimItem(tmpList.toArray(new ClaimItem[0]));
+        bundle.setClaimItem(tmpList.toArray(new ClaimItem[tmpList.size()]));
 
         // 診療行為区分は".700"固定にする
         String c007 = view.getSelectedShinku();
@@ -383,6 +388,7 @@ public final class RadEditor extends AbstractStampEditor {
         
         JTable setTable = view.getSetTable();
         setTable.setModel(tableModel);
+        setTable.getTableHeader().setReorderingAllowed(false);
 
         // 数量カラムにセルエディタを設定する
         JTextField tf = new JTextField();
@@ -404,47 +410,43 @@ public final class RadEditor extends AbstractStampEditor {
         //
         // 検索結果テーブルを生成する
         //
-        searchResultModel = new ListTableModel<TensuMaster>(SR_COLUMN_NAMES, SR_NUM_ROWS, SR_METHOD_NAMES, null) {
+        searchResultModel = new ListTableModel<TensuMaster>(SR_COLUMN_NAMES, SR_NUM_ROWS, SR_METHOD_NAMES, SR_CLASSES) {
 
             @Override
             public Object getValueAt(int row, int col) {
 
                 Object ret = super.getValueAt(row, col);
 
-                switch (col) {
-
-                    case 6:
-                        // 病診
-                        //System.out.println((String) ret);
-                        if (ret!=null) {
+                if (ret != null) {
+                    switch (col) {
+                        case 6:
+                            // 病診
                             int index = Integer.parseInt((String) ret);
                             ret = HOSPITAL_CLINIC_FLAGS[index];
-                        }
-                        break;
-
-                    case 7:
-                        // 入外
-                        if (ret!=null) {
-                            int index = Integer.parseInt((String) ret);
+                            break;
+                        case 7:
+                            // 入外
+                            index = Integer.parseInt((String) ret);
                             ret = IN_OUT_FLAGS[index];
-                        }
-                        break;
-
-                    case 8:
-                        // 社老
-                        if (ret!=null) {
-                            int index = Integer.parseInt((String) ret);
+                            break;
+                        case 8:
+                            // 社老
+                            index = Integer.parseInt((String) ret);
                             ret = OLD_FLAGS[index];
-                        }
-                        break;
+                            break;
+                    }
                 }
-
+                
                 return ret;
-
             }
         };
+        
+        // sorter設定
         JTable searchResultTable = view.getSearchResultTable();
-        searchResultTable.setModel(searchResultModel);
+        searchResultTable.getTableHeader().setReorderingAllowed(false);
+        sorter = new ListTableSorter<>(searchResultModel);
+        searchResultTable.setModel(sorter);
+        sorter.setTableHeader(searchResultTable.getTableHeader());
 
         // 部位検索ボタン
         view.getPartBtn().addActionListener(new ActionListener() {

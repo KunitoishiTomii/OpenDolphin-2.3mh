@@ -1,5 +1,6 @@
 package open.dolphin.client;
 
+import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DragGestureEvent;
@@ -10,6 +11,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.text.Position;
 import open.dolphin.tr.DolphinTransferHandler;
 
 /**
@@ -18,9 +21,29 @@ import open.dolphin.tr.DolphinTransferHandler;
  * @author Kazushi Minagawa
  * @author modified by masuda, Masuda Naika
  */
-public abstract class AbstractComponentHolder extends JLabel implements MouseListener, DragGestureListener{
+public abstract class AbstractComponentHolder extends JLabel 
+        implements MouseListener, DragGestureListener, ComponentHolder {
+    
+    private static final Color SELECTED_BORDER = new Color(255, 0, 153);
+    private static final Color NON_SELECTED_BORDER = new Color(0, 0, 0, 0); // 透明
+    protected static final Border nonSelectedBorder = 
+            BorderFactory.createLineBorder(NON_SELECTED_BORDER);
+    protected static final Border selectedBorder = 
+            BorderFactory.createLineBorder(SELECTED_BORDER);
+    
+    private Position startPosition;
+    private boolean selected;
+    protected final KartePane kartePane;
 
-    public AbstractComponentHolder() {
+    
+    public AbstractComponentHolder(KartePane kartePane) {
+        
+        this.kartePane = kartePane;
+        setDoubleBuffered(true);
+        setOpaque(false);
+        setBackground(null);
+        setBorder(nonSelectedBorder);
+        
         setFocusable(true);
         addMouseListener(AbstractComponentHolder.this);
         addMouseListener(new PopupListner());
@@ -34,6 +57,60 @@ public abstract class AbstractComponentHolder extends JLabel implements MouseLis
         // DragGestureを使ってみる
         DragSource dragSource = DragSource.getDefaultDragSource();
         dragSource.createDefaultDragGestureRecognizer(AbstractComponentHolder.this, DnDConstants.ACTION_COPY_OR_MOVE, AbstractComponentHolder.this);
+    }
+    
+    /**
+     * このスタンプホルダのKartePaneを返す。
+     */
+    @Override
+    public KartePane getKartePane() {
+        return kartePane;
+    }
+    
+    @Override
+    public int getStartOffset() {
+        return startPosition.getOffset();
+    }
+    
+    @Override
+    public void setStartPosition(Position start) {
+        startPosition = start;
+    }
+    
+    /**
+     * 選択されているかどうかを返す。
+     * @return 選択されている時 true
+     */
+    @Override
+    public boolean isSelected() {
+        return selected;
+    }
+    
+    /**
+     * 選択属性を設定する。
+     * @param selected 選択の時 true
+     */
+    @Override
+    public void setSelected(boolean selected) {
+        if (selected) {
+            setBorder(selectedBorder);
+            this.selected = true;
+        } else {
+            setBorder(nonSelectedBorder);
+            this.selected = false;
+        }
+    }
+    
+    @Override
+    public void dragGestureRecognized(DragGestureEvent dge) {
+
+        int action = dge.getDragAction();
+        InputEvent event = dge.getTriggerEvent();
+        JComponent comp = (JComponent) dge.getComponent();
+        TransferHandler handler = comp.getTransferHandler();
+        if (handler != null) {
+            handler.exportAsDrag(comp, event, action);
+        }
     }
     
     @Override
@@ -71,10 +148,7 @@ public abstract class AbstractComponentHolder extends JLabel implements MouseLis
     public void mouseReleased(MouseEvent e) {
     }
     
-    public abstract void edit();
-    
     public abstract void mabeShowPopup(MouseEvent e);
-    
     
     private class PopupListner extends MouseAdapter {
 
@@ -90,18 +164,6 @@ public abstract class AbstractComponentHolder extends JLabel implements MouseLis
             if (e.getClickCount() != 2) {
                 mabeShowPopup(e);
             }
-        }
-    }
-    
-    @Override
-    public void dragGestureRecognized(DragGestureEvent dge) {
-
-        int action = dge.getDragAction();
-        InputEvent event = dge.getTriggerEvent();
-        JComponent comp = (JComponent) dge.getComponent();
-        TransferHandler handler = comp.getTransferHandler();
-        if (handler != null) {
-            handler.exportAsDrag(comp, event, action);
         }
     }
 }

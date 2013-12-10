@@ -9,7 +9,7 @@ import javax.swing.JPanel;
  *
  * @author  Kazushi Minagawa, Digital Globe, Inc.
  */
-public interface ChartDocument  {
+public interface ChartDocument {
 	
     public String getTitle();
     

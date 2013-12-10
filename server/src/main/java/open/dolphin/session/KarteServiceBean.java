@@ -150,7 +150,7 @@ public class KarteServiceBean {
                     .setParameter(KARTE_ID, karteId)
                     .getResultList();
             if (!list1.isEmpty()) {
-                List<AllergyModel> allergies = new ArrayList<AllergyModel>(list1.size());
+                List<AllergyModel> allergies = new ArrayList<>(list1.size());
                 for (ObservationModel observation : list1) {
                     AllergyModel allergy = new AllergyModel();
                     allergy.setObservationId(observation.getId());
@@ -169,7 +169,7 @@ public class KarteServiceBean {
                     .setParameter(KARTE_ID, karteId)
                     .getResultList();
             if (!list2.isEmpty()) {
-                List<PhysicalModel> physicals = new ArrayList<PhysicalModel>(list2.size());
+                List<PhysicalModel> physicals = new ArrayList<>(list2.size());
                 for (ObservationModel observation : list2) {
                     PhysicalModel physical = new PhysicalModel();
                     physical.setHeightId(observation.getId());
@@ -187,7 +187,7 @@ public class KarteServiceBean {
                     .setParameter(KARTE_ID, karteId)
                     .getResultList();
             if (!list3.isEmpty()) {
-                List<PhysicalModel> physicals = new ArrayList<PhysicalModel>(list3.size());
+                List<PhysicalModel> physicals = new ArrayList<>(list3.size());
                 for (ObservationModel observation : list3) {
                     PhysicalModel physical = new PhysicalModel();
                     physical.setWeightId(observation.getId());
@@ -327,11 +327,11 @@ public class KarteServiceBean {
                 .setMaxResults(1)
                 .getResultList();
         
-        Set<DocumentModel> docSet = new HashSet<DocumentModel>();
+        Set<DocumentModel> docSet = new HashSet<>();
         docSet.addAll(documents);
         docSet.addAll(summaries);
 
-        List<DocInfoModel> result = new ArrayList<DocInfoModel>();
+        List<DocInfoModel> result = new ArrayList<>();
         
         for (DocumentModel doc : docSet) {
             // モデルからDocInfo へ必要なデータを移す
@@ -408,7 +408,7 @@ public class KarteServiceBean {
                 .getResultList();
         
         // DocumentModelのMapを作る
-        HashMap<Long, DocumentModel> dmMap = new HashMap<Long, DocumentModel>();
+        HashMap<Long, DocumentModel> dmMap = new HashMap<>();
         for (DocumentModel dm : documentList) {
             // LazyFetchのdetached objectsは一旦バッサリ消す！
             dm.setModules(null);
@@ -642,7 +642,7 @@ public class KarteServiceBean {
     // 子文書を再帰で探す
     public Set<DocumentModel> getChildren(DocumentModel parent) {
         
-        Set<DocumentModel> ret = new HashSet<DocumentModel>();
+        Set<DocumentModel> ret = new HashSet<>();
         
         // 親を追加
         ret.add(parent);
@@ -682,7 +682,7 @@ public class KarteServiceBean {
 
         // 抽出期間は別けられている
         int len = fromDate.size();
-        List<List<ModuleModel>> ret = new ArrayList<List<ModuleModel>>(len);
+        List<List<ModuleModel>> ret = new ArrayList<>(len);
 
         // 抽出期間セットの数だけ繰り返す
         for (int i = 0; i < len; i++) {
@@ -712,7 +712,7 @@ public class KarteServiceBean {
 
         // 抽出期間は別けられている
         int len = fromDate.size();
-        List<List<SchemaModel>> ret = new ArrayList<List<SchemaModel>>(len);
+        List<List<SchemaModel>> ret = new ArrayList<>(len);
 
         // 抽出期間セットの数だけ繰り返す
         for (int i = 0; i < len; i++) {
@@ -793,7 +793,7 @@ public class KarteServiceBean {
      */
     public List<Long> addDiagnosis(List<RegisteredDiagnosisModel> addList) {
 
-        List<Long> ret = new ArrayList<Long>(addList.size());
+        List<Long> ret = new ArrayList<>(addList.size());
 
         for (RegisteredDiagnosisModel bean : addList) {
             em.persist(bean);
@@ -889,7 +889,7 @@ public class KarteServiceBean {
 
         if (observations != null && observations.size() > 0) {
 
-            List<Long> ret = new ArrayList<Long>(observations.size());
+            List<Long> ret = new ArrayList<>(observations.size());
 
             for (ObservationModel model : observations) {
                 em.persist(model);
@@ -944,7 +944,7 @@ public class KarteServiceBean {
 
         // 抽出期間は別けられている
         int len = fromDate.size();
-        List<List<AppointmentModel>> ret = new ArrayList<List<AppointmentModel>>(len);
+        List<List<AppointmentModel>> ret = new ArrayList<>(len);
 
         // 抽出期間セットの数だけ繰り返す
         for (int i = 0; i < len; i++) {
@@ -976,7 +976,7 @@ public class KarteServiceBean {
         Date date = document.getStarted();
         
         // 保存するDocumentで電子点数表に関連のあるsrycdを取得する
-        Set<String> srycdSet = new HashSet<String>();
+        Set<String> srycdSet = new HashSet<>();
         for (ModuleModel mm : mmList) {
             String entity = mm.getModuleInfoBean().getEntity();
             if (IInfoModel.MODULE_PROGRESS_COURSE.equals(entity)) {
@@ -1030,7 +1030,7 @@ public class KarteServiceBean {
         int num = 1;
         try {
             num = Integer.valueOf(str);
-        } catch (Exception e) {
+        } catch (NumberFormatException e) {
         }
         return num;
     }
@@ -1047,7 +1047,7 @@ public class KarteServiceBean {
 
         DocumentModel document = em.find(DocumentModel.class, docPk);
         
-        List<Long> mIds = new ArrayList<Long>();
+        List<Long> mIds = new ArrayList<>();
         
         for (ModuleModel mm : document.getModules()) {
             mIds.add(mm.getId());

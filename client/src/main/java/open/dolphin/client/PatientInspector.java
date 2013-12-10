@@ -243,30 +243,32 @@ public class PatientInspector {
     
     private void layoutRow(JPanel content, String itype) {
         
-        if (itype.equals("メモ")) {
-//masuda^   TitledBorderを復活
-           memoInspector.getPanel().setBorder(BorderFactory.createTitledBorder("メモ"));
-//masuda$
-           content.add(memoInspector.getPanel());
-           bMemo = true;
+        if (itype == null) {
+            return;
+        }
         
-        } else if (itype.equals("カレンダ")) {
-//masuda^
-            patientVisitInspector.setTitle();
-//masuda$
-            content.add(patientVisitInspector.getPanel());
-            bCalendar = true;
-        
-        } else if (itype.equals("文書履歴")) {
-            content.add(tabbedPane);
-        
-        } else if (itype.equals("アレルギ")) {
-            content.add(allergyInspector.getPanel());
-            bAllergy = true;
-        
-        } else if (itype.equals("身長体重")) {
-            content.add(physicalInspector.getPanel());
-            bPhysical = true;
+        switch (itype) {
+            case "メモ":
+                memoInspector.getPanel().setBorder(BorderFactory.createTitledBorder("メモ"));
+                content.add(memoInspector.getPanel());
+                bMemo = true;
+                break;
+            case "カレンダ":
+                patientVisitInspector.setTitle();
+                content.add(patientVisitInspector.getPanel());
+                bCalendar = true;
+                break;
+            case "文書履歴":
+                content.add(tabbedPane);
+                break;
+            case "アレルギ":
+                content.add(allergyInspector.getPanel());
+                bAllergy = true;
+                break;
+            case "身長体重":
+                content.add(physicalInspector.getPanel());
+                bPhysical = true;
+                break;
         }
     }
 }

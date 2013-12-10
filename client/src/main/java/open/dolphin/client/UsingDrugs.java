@@ -21,7 +21,7 @@ public class UsingDrugs {
 
     static {
         instance = new UsingDrugs();
-        usingDrugMap = new ConcurrentHashMap<Integer, UsingDrugModel>();
+        usingDrugMap = new ConcurrentHashMap<>();
         del = MasudaDelegater.getInstance();
         changed = true;
         instance.loadUsingDrugs();
@@ -53,7 +53,7 @@ public class UsingDrugs {
 
     // UsingDrugPanelから使用
     public List<UsingDrugModel> getUsingDrugModelList() {
-        return new ArrayList<UsingDrugModel>(usingDrugMap.values());
+        return new ArrayList<>(usingDrugMap.values());
     }
 
     // RpEditorで使用

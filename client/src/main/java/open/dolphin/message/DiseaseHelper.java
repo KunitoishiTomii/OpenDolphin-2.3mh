@@ -1,6 +1,7 @@
 package open.dolphin.message;
 
 import java.util.List;
+import open.dolphin.infomodel.IInfoModel;
 
 /**
  * DiseaseHelper
@@ -28,11 +29,13 @@ public final class DiseaseHelper implements IMessageHelper {
     public void setUseDefalutDept(boolean b) {
         useDefaultDept = b;
     }
+    @Override
     public boolean isUseDefaultDept() {
         return useDefaultDept;
     }
 //masuda$
     
+    @Override
     public String getPatientId() {
         return patientId;
     }
@@ -41,6 +44,7 @@ public final class DiseaseHelper implements IMessageHelper {
         this.patientId = patientId;
     }
 
+    @Override
     public String getConfirmDate() {
         return confirmDate;
     }
@@ -49,6 +53,7 @@ public final class DiseaseHelper implements IMessageHelper {
         this.confirmDate = confirmDate;
     }
 
+    @Override
     public String getGroupId() {
         return groupId;
     }
@@ -73,6 +78,7 @@ public final class DiseaseHelper implements IMessageHelper {
         this.departmentDesc = departmentDesc;
     }
 
+    @Override
     public String getCreatorName() {
         return creatorName;
     }
@@ -81,6 +87,7 @@ public final class DiseaseHelper implements IMessageHelper {
         this.creatorName = creatorName;
     }
 
+    @Override
     public String getCreatorId() {
         return creatorId;
     }
@@ -89,6 +96,7 @@ public final class DiseaseHelper implements IMessageHelper {
         this.creatorId = creatorId;
     }
 
+    @Override
     public String getCreatorLicense() {
         return creatorLicense;
     }
@@ -97,6 +105,7 @@ public final class DiseaseHelper implements IMessageHelper {
         this.creatorLicense = creatorLicense;
     }
 
+    @Override
     public String getFacilityName() {
         return facilityName;
     }
@@ -105,6 +114,7 @@ public final class DiseaseHelper implements IMessageHelper {
         this.facilityName = facilityName;
     }
 
+    @Override
     public String getJmariCode() {
         return jmariCode;
     }
@@ -119,5 +129,33 @@ public final class DiseaseHelper implements IMessageHelper {
 
     public void setDiagnosisModuleItems(List<DiagnosisModuleItem> diagnosisModuleItems) {
         this.diagnosisModuleItems = diagnosisModuleItems;
+    }
+
+    @Override
+    public String getCreatorDeptDesc() {
+        return getDepartmentDesc();
+    }
+
+    @Override
+    public String getCreatorDept() {
+        return getDepartment();
+    }
+
+    public void setCreatorDeptDesc(String departmentDesc) {
+        setDepartmentDesc(departmentDesc);
+    }
+
+    public void setCreatorDept(String department) {
+        setDepartment(department);
+    }
+
+    @Override
+    public String getGenerationPurpose() {
+        return IInfoModel.PURPOSE_RECORD;   // 手抜き
+    }
+
+    @Override
+    public String getDocId() {
+        return null;
     }
 }

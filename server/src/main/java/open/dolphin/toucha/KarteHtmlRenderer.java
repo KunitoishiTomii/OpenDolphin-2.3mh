@@ -70,19 +70,21 @@ public class KarteHtmlRenderer {
             bean.setModel((InfoModel) BeanUtils.xmlDecode(bean.getBeanBytes()));
 
             String role = bean.getModuleInfoBean().getStampRole();
-            switch (role) {
-                case IInfoModel.ROLE_SOA:
-                    soaModules.add(bean);
-                    break;
-                case IInfoModel.ROLE_SOA_SPEC:
-                    soaSpec = ((ProgressCourse) bean.getModel()).getFreeText();
-                    break;
-                case IInfoModel.ROLE_P:
-                    pModules.add(bean);
-                    break;
-                case IInfoModel.ROLE_P_SPEC:
-                    pSpec = ((ProgressCourse) bean.getModel()).getFreeText();
-                    break;
+            if (role != null) {
+                switch (role) {
+                    case IInfoModel.ROLE_SOA:
+                        soaModules.add(bean);
+                        break;
+                    case IInfoModel.ROLE_SOA_SPEC:
+                        soaSpec = ((ProgressCourse) bean.getModel()).getFreeText();
+                        break;
+                    case IInfoModel.ROLE_P:
+                        pModules.add(bean);
+                        break;
+                    case IInfoModel.ROLE_P_SPEC:
+                        pSpec = ((ProgressCourse) bean.getModel()).getFreeText();
+                        break;
+                }
             }
         }
 
@@ -176,6 +178,10 @@ public class KarteHtmlRenderer {
             
             String eName = reader.getName().getLocalPart();
             
+            if (eName == null) {
+                return;
+            }
+            
             switch (eName) {
                 case TEXT_ELEMENT_NAME:
                     String text = reader.getElementText();
@@ -205,22 +211,25 @@ public class KarteHtmlRenderer {
         
         private void startComponent(String name, String number) {
 
-            if (name != null) {
-                int index = Integer.valueOf(number);
-                switch (name) {
-                    case STAMP_HOLDER:
-                        ModuleModel stamp = modules.get(index);
-                        StampRenderingHints hints = StampRenderingHints.getInstance();
-                        StampHtmlRenderer stampRen = new StampHtmlRenderer(stamp, hints);
-                        writer.writeRawCharacters(stampRen.getStampHtml(false));
-                        break;
-                    case SCHEMA_HOLDER:
-                        SchemaModel schema = schemas.get(index);
-                        ImageHtmlRenderer imgRen = new ImageHtmlRenderer();
-                        writer.writeRawCharacters(imgRen.getImageHtml(schema.getJpegByte(), imageSize));
-                        break;
-                }
+            if (name == null) {
+                return;
             }
+            
+            int index = Integer.parseInt(number);
+            switch (name) {
+                case STAMP_HOLDER:
+                    ModuleModel stamp = modules.get(index);
+                    StampRenderingHints hints = StampRenderingHints.getInstance();
+                    StampHtmlRenderer stampRen = new StampHtmlRenderer(stamp, hints);
+                    writer.writeRawCharacters(stampRen.getStampHtml(false));
+                    break;
+                case SCHEMA_HOLDER:
+                    SchemaModel schema = schemas.get(index);
+                    ImageHtmlRenderer imgRen = new ImageHtmlRenderer();
+                    writer.writeRawCharacters(imgRen.getImageHtml(schema.getJpegByte(), imageSize));
+                    break;
+            }
+
         }
     }
 }

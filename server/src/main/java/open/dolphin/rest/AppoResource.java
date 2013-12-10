@@ -21,7 +21,7 @@ import open.dolphin.session.AppoServiceBean;
 @Path("appo")
 public class AppoResource extends AbstractResource {
 
-    private boolean debug = false;
+    private final boolean debug = false;
     
     @Inject
     private AppoServiceBean appoServiceBean;

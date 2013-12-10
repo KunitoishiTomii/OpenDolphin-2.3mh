@@ -11,9 +11,9 @@ import open.dolphin.infomodel.IInfoModel;
  */
 public class ExtractionPeriod {
 
-    private String name;
-    private int fromMonth;
-    private int toMonth;
+    private final String name;
+    private final int fromMonth;
+    private final int toMonth;
 
     public ExtractionPeriod(String name, int fromMonth, int toMonth) {
         this.name = name;

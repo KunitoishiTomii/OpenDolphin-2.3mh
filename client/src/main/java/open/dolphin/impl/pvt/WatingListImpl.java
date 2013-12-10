@@ -13,6 +13,7 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.concurrent.*;
 import javax.swing.*;
+import javax.swing.border.Border;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import open.dolphin.client.*;
@@ -70,8 +71,7 @@ public class WatingListImpl extends AbstractMainComponent {
     private final String[] AGE_METHOD = {"getPatientAgeBirthday", "getPatientBirthday"};
     // カラム仕様名
     private static final String COLUMN_SPEC_NAME = "pvtTable.column.spec";
-    // state Clumn Identifier
-    private static final String COLUMN_IDENTIFIER_STATE = "stateColumn";
+
     // カラム仕様ヘルパー
     private ColumnSpecHelper columnHelper;
 
@@ -86,14 +86,14 @@ public class WatingListImpl extends AbstractMainComponent {
     // 来院情報テーブルのステータスカラム
     private int stateColumn;
     // 受付番号カラム
-    private int numberColumn;
+    //private int numberColumn;
 
     // PVT Table 
     private JTable pvtTable;
     // Table Model
     private ListTableModel<PatientVisitModel> pvtTableModel;
     // TableSorter
-    private ListTableSorter sorter;
+    private ListTableSorter<PatientVisitModel> sorter;
     
     // 性別レンダラフラグ 
     private boolean sexRenderer;
@@ -158,7 +158,7 @@ public class WatingListImpl extends AbstractMainComponent {
     private final String clientUUID;
     private final ChartEventListener cel;
     private final String orcaId;
-
+    
     /**
      * Creates new WatingList
      */
@@ -193,7 +193,7 @@ public class WatingListImpl extends AbstractMainComponent {
         ageColumn = columnHelper.getColumnPositionEndsWith("Birthday");
         memoColumn = columnHelper.getColumnPosition("getMemo");
         stateColumn = columnHelper.getColumnPosition("getStateInteger");
-        numberColumn = columnHelper.getColumnPosition("getNumber");
+        //numberColumn = columnHelper.getColumnPosition("getNumber");
         
         // 修正送信アイコンを決める
         ImageIcon modifySendIcon = Project.getBoolean("change.icon.modify.send", true)
@@ -388,33 +388,28 @@ public class WatingListImpl extends AbstractMainComponent {
         pvtTable.getColumnModel().getColumn(memoColumn).setCellEditor(de);
 
         // 性別レンダラを生成する
-        MaleFemaleRenderer sRenderer = new MaleFemaleRenderer();
-        sRenderer.setTable(pvtTable);
+        MaleFemaleRenderer maleFemaleRenderer = new MaleFemaleRenderer();
+        maleFemaleRenderer.setTable(pvtTable);
         // Center Renderer
         CenterRenderer centerRenderer = new CenterRenderer();
         centerRenderer.setTable(pvtTable);
-
+        // カルテ(PVT)状態レンダラ
+        KarteStateRenderer stateRenderer = new KarteStateRenderer();
+        stateRenderer.setTable(pvtTable);
+        
         List<ColumnSpec> columnSpecs = columnHelper.getColumnSpecs();
         for (int i = 0; i < columnSpecs.size(); i++) {
-
-            if (i == visitedTimeColumn || i == sexColumn || i == numberColumn) {
+            if (i == visitedTimeColumn || i == sexColumn) {
                 pvtTable.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
-
             } else if (i == stateColumn) {
-                // カルテ(PVT)状態レンダラ
-                KarteStateRenderer renderer = new KarteStateRenderer();
-                renderer.setTable(pvtTable);
-                renderer.setHorizontalAlignment(JLabel.CENTER);
-                pvtTable.getColumnModel().getColumn(i).setCellRenderer(renderer);
-
+                pvtTable.getColumnModel().getColumn(i).setCellRenderer(stateRenderer);
             } else {
-                pvtTable.getColumnModel().getColumn(i).setCellRenderer(sRenderer);
+                pvtTable.getColumnModel().getColumn(i).setCellRenderer(maleFemaleRenderer);
             }
         }
 
         // PVT状態設定エディタ
         pvtTable.getColumnModel().getColumn(stateColumn).setCellEditor(new DefaultCellEditor(stateCmb));
-        pvtTable.getColumnModel().getColumn(stateColumn).setIdentifier(COLUMN_IDENTIFIER_STATE);
         
         // カラム幅更新
         columnHelper.updateColumnWidth();
@@ -620,7 +615,7 @@ public class WatingListImpl extends AbstractMainComponent {
      */
     public PatientVisitModel getSelectedPvt() {
         selectedRow = pvtTable.getSelectedRow();
-        return (PatientVisitModel) sorter.getObject(selectedRow);
+        return sorter.getObject(selectedRow);
     }
 
 
@@ -891,19 +886,7 @@ public class WatingListImpl extends AbstractMainComponent {
 
         // publish
         cel.publishPvtDelete(pvtModel);
-/*
-        SwingWorker worker = new SwingWorker<Boolean, Void>() {
 
-            @Override
-            protected Boolean doInBackground() throws Exception {
-
-                // サーバーから削除するとあとでStateMsgModelが届く
-                pvtDelegater.removePvt(pvtModel.getId());
-                return null;
-            }
-        };
-        worker.execute();
-*/
     }
     
     private boolean showCancelDialog(String msg) {
@@ -924,44 +907,25 @@ public class WatingListImpl extends AbstractMainComponent {
     /**
      * KarteStateRenderer カルテ（チャート）の状態をレンダリングするクラス。
      */
-    private class KarteStateRenderer extends StripeTableCellRenderer {
+    private class KarteStateRenderer extends MaleFemaleRenderer {
 
-        /**
-         * Creates new IconRenderer
-         */
-        public KarteStateRenderer() {
-            super();
-        }
+        private final Border emptyBorder = BorderFactory.createEmptyBorder();
 
         @Override
         public Component getTableCellRendererComponent(JTable table,
-                Object value,
-                boolean isSelected,
-                boolean isFocused,
-                int row, int col) {
+                Object value, boolean isSelected, boolean isFocused, int row, int col) {
 
             super.getTableCellRendererComponent(table, value, isSelected, isFocused, row, col);
+            setBorder(emptyBorder);
+            setHorizontalAlignment(CENTER);
             
-            PatientVisitModel pvt = (PatientVisitModel) sorter.getObject(row);
+            PatientVisitModel pvt = sorter.getObject(row);
             if (pvt == null) {
                 return this;
             }
             
-            // キャンセルの場合はグレーに
-            Color fore = (pvt.getStateBit(PatientVisitModel.BIT_CANCEL))
-                    ? CANCEL_PVT_COLOR 
-                    : table.getForeground();
-            this.setForeground(fore);
-            
             // 選択状態の場合はStripeTableCellRendererの配色を上書きしない
             if (!isSelected) {
-                if (isSexRenderer()) {
-                    if (IInfoModel.MALE.equals(pvt.getPatientModel().getGender())) {
-                        setBackground(MALE_COLOR);
-                    } else if (IInfoModel.FEMALE.equals(pvt.getPatientModel().getGender())) {
-                        setBackground(FEMALE_COLOR);
-                    }
-                }
                 // 病名の状態に応じて背景色を変更 pns
                 if (!pvt.getStateBit(PatientVisitModel.BIT_CANCEL)) {
                     // 初診
@@ -978,44 +942,36 @@ public class WatingListImpl extends AbstractMainComponent {
                     }
                 }
             }
-            
-//minagawa^
-            Object identifier = pvtTable.getColumnModel().getColumn(col).getIdentifier();
-            if (value != null && COLUMN_IDENTIFIER_STATE.equals(identifier)) {
-//minagawa$
-                ImageIcon icon = null;
-                
-                // 状態アイコン　ラベル付きbreak文を使ってみる
-                bitLoop:
-                for (int i = 0; i < bitAndIconPairs.length; ++i) {
-                    if (!pvt.getStateBit(bitAndIconPairs[i].getBit())) {
-                        continue;
-                    }
-                    switch (i) {
-                        case PatientVisitModel.BIT_OPEN:
-                            if (clientUUID.equals(pvt.getPatientModel().getOwnerUUID())) {
-                                icon = bitAndIconPairs[i].getIcon();
-                            } else {
-                                icon = NETWORK_ICON;
-                            }
-                            break bitLoop;
-                        case PatientVisitModel.BIT_SAVE_CLAIM:
-                            // SAVE_CLAIMとMODIFY_CLAIMは同時に立っていることがある
-                            icon = bitAndIconPairs[i].getIcon();
-                            break;
-                        default:
-                            icon = bitAndIconPairs[i].getIcon();
-                            break bitLoop;
-                    }
-                }
-                
-                setIcon(icon);
-                setText("");
 
-            } else {
-                setIcon(null);
-                setText(value == null ? "" : value.toString());
+            ImageIcon icon = null;
+
+            // 状態アイコン　ラベル付きbreak文を使ってみる
+            bitLoop:
+            for (int i = 0; i < bitAndIconPairs.length; ++i) {
+                if (!pvt.getStateBit(bitAndIconPairs[i].getBit())) {
+                    continue;
+                }
+                switch (i) {
+                    case PatientVisitModel.BIT_OPEN:
+                        if (clientUUID.equals(pvt.getPatientModel().getOwnerUUID())) {
+                            icon = bitAndIconPairs[i].getIcon();
+                        } else {
+                            icon = NETWORK_ICON;
+                        }
+                        break bitLoop;
+                    case PatientVisitModel.BIT_SAVE_CLAIM:
+                        // SAVE_CLAIMとMODIFY_CLAIMは同時に立っていることがある
+                        icon = bitAndIconPairs[i].getIcon();
+                        break;
+                    default:
+                        icon = bitAndIconPairs[i].getIcon();
+                        break bitLoop;
+                }
             }
+
+            setIcon(icon);
+            setText("");
+
             return this;
         }
     }
@@ -1025,32 +981,30 @@ public class WatingListImpl extends AbstractMainComponent {
      */
     private class MaleFemaleRenderer extends StripeTableCellRenderer {
 
-        public MaleFemaleRenderer() {
-            super();
-        }
-
         @Override
         public Component getTableCellRendererComponent(JTable table,
-                Object value,
-                boolean isSelected,
-                boolean isFocused,
-                int row, int col) {
+                Object value, boolean isSelected, boolean isFocused, int row, int col) {
 
             super.getTableCellRendererComponent(table, value, isSelected, isFocused, row, col);
             
-            PatientVisitModel pvt = (PatientVisitModel) sorter.getObject(row);
+            PatientVisitModel pvt = sorter.getObject(row);
+            if (pvt == null) {
+                return this;
+            }
             
-            if (pvt != null) {
-                if (pvt.getStateBit(PatientVisitModel.BIT_CANCEL)) {
-                    this.setForeground(CANCEL_PVT_COLOR);
-                } else {
-                    // 選択状態の場合はStripeTableCellRendererの配色を上書きしない
-                    if (isSexRenderer() && !isSelected) {
-                        if (IInfoModel.MALE.equals(pvt.getPatientModel().getGender())) {
-                            this.setBackground(MALE_COLOR);
-                        } else if (IInfoModel.FEMALE.equals(pvt.getPatientModel().getGender())) {
-                            this.setBackground(FEMALE_COLOR);
-                        }
+            if (pvt.getStateBit(PatientVisitModel.BIT_CANCEL)) {
+                setForeground(CANCEL_PVT_COLOR);
+            } else {
+                // 選択状態の場合はStripeTableCellRendererの配色を上書きしない
+                String gender = pvt.getPatientModel().getGender();
+                if (gender != null && isSexRenderer() && !isSelected) {
+                    switch (gender) {
+                        case IInfoModel.MALE:
+                            setBackground(MALE_COLOR);
+                            break;
+                        case IInfoModel.FEMALE:
+                            setBackground(FEMALE_COLOR);
+                            break;
                     }
                 }
             }
@@ -1061,9 +1015,14 @@ public class WatingListImpl extends AbstractMainComponent {
 
     private class CenterRenderer extends MaleFemaleRenderer {
 
-        public CenterRenderer() {
-            super();
-            this.setHorizontalAlignment(JLabel.CENTER);
+        @Override
+        public Component getTableCellRendererComponent(JTable table,
+                Object value, boolean isSelected, boolean isFocused, int row, int col) {
+            
+            super.getTableCellRendererComponent(table, value, isSelected, isFocused, row, col);
+            setHorizontalAlignment(CENTER);
+            
+            return this;
         }
     }
 
@@ -1078,12 +1037,8 @@ public class WatingListImpl extends AbstractMainComponent {
         }
 
         @Override
-        public Component getListCellRendererComponent(
-                JList list,
-                Object value,
-                int index,
-                boolean isSelected,
-                boolean cellHasFocus) {
+        public Component getListCellRendererComponent(JList list,
+                Object value, int index, boolean isSelected, boolean cellHasFocus) {
 
             BitAndIconPair pair = (BitAndIconPair) value;
 
@@ -1227,8 +1182,7 @@ public class WatingListImpl extends AbstractMainComponent {
                 try {
                     pvtList = get();
 
-                } catch (InterruptedException ex) {
-                } catch (ExecutionException ex) {
+                } catch (InterruptedException | ExecutionException ex) {
                 }
                 // フィルタリング
                 filterPatients();

@@ -294,7 +294,7 @@ public abstract class AbstractOrderView extends JPanel {
         cb.setMaximumRowCount(20);
         cb.setToolTipText("診療行為区分を強制指定するときに使用します。");
         cb.addItem("診療行為区分指定");
-        List<ShinkuItem> shinkuItems = new ArrayList<ShinkuItem>();
+        List<ShinkuItem> shinkuItems = new ArrayList<>();
         Map<String,String> mmlMap = MMLTable.getClaimClassCodeMap();
         for (Map.Entry<String, String> entry : mmlMap.entrySet()) {
             String number = entry.getKey();

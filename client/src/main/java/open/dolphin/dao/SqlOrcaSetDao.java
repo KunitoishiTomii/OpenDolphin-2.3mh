@@ -44,7 +44,7 @@ public class SqlOrcaSetDao extends SqlDaoBean {
     public List<OrcaInputCd> getOrcaInputSet() {
          
         debug("getOrcaInputSet()");
-        List<OrcaInputCd> collection = new ArrayList<OrcaInputCd>();
+        List<OrcaInputCd> collection = new ArrayList<>();
 
         StringBuilder sb = new StringBuilder();
         sb.append("select * from tbl_inputcd where ");
@@ -150,14 +150,14 @@ public class SqlOrcaSetDao extends SqlDaoBean {
         String sql1 = "select inputcd,suryo1,kaisu from tbl_inputset where hospnum=? and setcd=? order by setseq";
         String sql2 = "select srysyukbn,name,taniname,ykzkbn from tbl_tensu where hospnum=? and srycd=?";
 
-        List<ModuleModel> retSet = new ArrayList<ModuleModel>();
+        List<ModuleModel> retSet = new ArrayList<>();
 
         // setCd を検索する
         int[] types1 = {Types.INTEGER, Types.CHAR};
         String[] params1 = {String.valueOf(hospnum), setCd};
         List<List<String>> valuesList1 = executePreparedStatement(sql1, types1, params1);
 
-        List<OrcaInputSet> list = new ArrayList<OrcaInputSet>();
+        List<OrcaInputSet> list = new ArrayList<>();
 
         for (List<String> values1 : valuesList1) {
 

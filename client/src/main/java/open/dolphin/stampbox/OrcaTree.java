@@ -1,18 +1,14 @@
 package open.dolphin.stampbox;
 
 import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.List;
 import javax.swing.JOptionPane;
-import javax.swing.ProgressMonitor;
 import javax.swing.SwingUtilities;
-import javax.swing.Timer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 import open.dolphin.client.ClientContext;
 import open.dolphin.dao.SqlOrcaSetDao;
-import open.dolphin.helper.SimpleWorker;
+import open.dolphin.helper.ProgressMonitorWorker;
 import open.dolphin.infomodel.ModuleInfoBean;
 import open.dolphin.infomodel.OrcaInputCd;
 import open.dolphin.project.Project;
@@ -28,10 +24,6 @@ public class OrcaTree extends StampTree {
     
     /** ORCA 入力セットをフェッチしたかどうかのフラグ */
     private boolean fetched;
-
-    private ProgressMonitor monitor;
-    private Timer taskTimer;
-    private int delayCount;
 
     /** 
      * Creates a new instance of OrcaTree 
@@ -122,10 +114,8 @@ public class OrcaTree extends StampTree {
         String message = MONITOR_TITLE;
         String note = "入力セットを検索しています...  ";
         final Component c = SwingUtilities.getWindowAncestor(this);
-        int maxEstimation = 60 * 1000;
-        int delay = 300;
 
-        final SimpleWorker worker = new SimpleWorker<List<OrcaInputCd>, Void>() {
+        ProgressMonitorWorker worker = new ProgressMonitorWorker<List<OrcaInputCd>, Void>(c, message, note) {
 
             @Override
             protected List<OrcaInputCd> doInBackground() throws Exception {
@@ -148,37 +138,7 @@ public class OrcaTree extends StampTree {
                 String title = ClientContext.getFrameTitle(MONITOR_TITLE);
                 JOptionPane.showMessageDialog(c, e.getMessage(), title, JOptionPane.WARNING_MESSAGE);
             }
-
-            @Override
-            protected void startProgress() {
-                delayCount = 0;
-                taskTimer.start();
-            }
-
-            @Override
-            protected void stopProgress() {
-                taskTimer.stop();
-                monitor.close();
-                taskTimer = null;
-                monitor = null;
-            }
         };
-
-        monitor = new ProgressMonitor(c, message, note, 0, maxEstimation / delay);
-        taskTimer = new Timer(delay, new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                delayCount++;
-
-                if (monitor.isCanceled() && (!worker.isCancelled())) {
-                    worker.cancel(true);
-
-                } else {
-                    monitor.setProgress(delayCount);
-                }
-            }
-        });
 
         worker.execute();
     }

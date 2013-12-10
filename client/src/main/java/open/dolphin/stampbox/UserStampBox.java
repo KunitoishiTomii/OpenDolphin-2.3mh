@@ -53,21 +53,26 @@ public class UserStampBox extends AbstractStampBox {
                 StampTreePanel treePanel = new StampTreePanel(stampTree);
                 this.addTab(stampTree.getTreeName(), treePanel);
                 // Text、Path、ORCA のタブ番号を保存する
-                switch (stampTree.getEntity()) {
-                    case IInfoModel.ENTITY_TEXT:
-                        textIndex = index;
-                        stampTree.addMouseListener(popAdapter);
-                        break;
-                    case IInfoModel.ENTITY_PATH:
-                        pathIndex = index;
-                        stampTree.addMouseListener(popAdapter);
-                        break;
-                    case IInfoModel.ENTITY_ORCA:
-                        orcaIndex = index;
-                        break;
-                    default:
-                        stampTree.addMouseListener(popAdapter);
-                        break;
+                String entity = stampTree.getEntity();
+                if (entity != null) {
+                    switch (stampTree.getEntity()) {
+                        case IInfoModel.ENTITY_TEXT:
+                            textIndex = index;
+                            stampTree.addMouseListener(popAdapter);
+                            break;
+                        case IInfoModel.ENTITY_PATH:
+                            pathIndex = index;
+                            stampTree.addMouseListener(popAdapter);
+                            break;
+                        case IInfoModel.ENTITY_ORCA:
+                            orcaIndex = index;
+                            break;
+                        default:
+                            stampTree.addMouseListener(popAdapter);
+                            break;
+                    }
+                } else {
+                    stampTree.addMouseListener(popAdapter);
                 }
                 
                 index++;

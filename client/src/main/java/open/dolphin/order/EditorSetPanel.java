@@ -58,8 +58,8 @@ public class EditorSetPanel extends JPanel implements PropertyChangeListener, Tr
 //masuda$
     
     // 上記エディタを格納するカードパネル
-    private JPanel cardPanel;
-    private CardLayout cardLayout;
+    private final JPanel cardPanel;
+    private final CardLayout cardLayout;
 
     // 現在使用中のエディタ
     private AbstractStampEditor curEditor;
@@ -89,7 +89,7 @@ public class EditorSetPanel extends JPanel implements PropertyChangeListener, Tr
 //masuda$
     
     // 上記編集値（束縛属性）をStampBoxへ通知するサポート
-    private PropertyChangeSupport boundSupport = new PropertyChangeSupport(this);
+    private final PropertyChangeSupport boundSupport = new PropertyChangeSupport(this);
     
     
     /**
@@ -241,7 +241,7 @@ public class EditorSetPanel extends JPanel implements PropertyChangeListener, Tr
         
         String prop = e.getPropertyName();
         
-        if (prop.equals(AbstractStampEditor.VALIDA_DATA_PROP)) {
+        if (AbstractStampEditor.VALIDA_DATA_PROP.equals(prop)) {
 
             // 有効か無効かで右矢印ボタンを制御する
             Boolean i = (Boolean) e.getNewValue();
@@ -258,7 +258,7 @@ public class EditorSetPanel extends JPanel implements PropertyChangeListener, Tr
             right6001.setEnabled(valid && (right6001.isVisible()));
             right6002.setEnabled(valid && (right6002.isVisible()));
 
-        } else if (prop.equals(AbstractStampEditor.EMPTY_DATA_PROP)) {
+        } else if (AbstractStampEditor.EMPTY_DATA_PROP.equals(prop)) {
 //masuda^
             // 空なら取り込みはすべてdisable
             rightNew.setEnabled(false);
@@ -443,13 +443,13 @@ public class EditorSetPanel extends JPanel implements PropertyChangeListener, Tr
                     JButton btn = (JButton) ae.getSource();
                     String text = btn.getText();
 
-                    if (text.equals(TITLE_TO_PHYSIO)) {
+                    if (TITLE_TO_PHYSIO.equals(text)) {
                         info.setEntity(IInfoModel.ENTITY_PHYSIOLOGY_ORDER);
 
-                    } else if (text.equals(TITLE_TO_BACTERIA)) {
+                    } else if (TITLE_TO_BACTERIA.equals(text)) {
                         info.setEntity(IInfoModel.ENTITY_BACTERIA_ORDER);
 
-                    } else if (text.equals(TITLE_TO_LAB)) {
+                    } else if (TITLE_TO_LAB.equals(text)) {
                         info.setEntity(IInfoModel.ENTITY_LABO_TEST);
                     }
                 }
@@ -510,7 +510,7 @@ public class EditorSetPanel extends JPanel implements PropertyChangeListener, Tr
 //masuda$
         
         // Hashテーブルに登録し show(entity) で使用する
-        table = new HashMap<String, AbstractStampEditor>();
+        table = new HashMap<>();
         table.put(IInfoModel.ENTITY_BACTERIA_ORDER, bacteria);
         table.put(IInfoModel.ENTITY_BASE_CHARGE_ORDER, baseCharge);
         table.put(IInfoModel.ENTITY_DIAGNOSIS, diagnosis);

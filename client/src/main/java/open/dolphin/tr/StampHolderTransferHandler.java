@@ -5,7 +5,9 @@ import java.awt.Image;
 import java.awt.Window;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.InputEvent;
+import java.io.IOException;
 import java.util.List;
 import javax.swing.*;
 import open.dolphin.client.GUIConst;
@@ -131,7 +133,7 @@ public class StampHolderTransferHandler extends AbstractKarteTransferHandler {
         try {
             droppedNode = (StampTreeNode) tr.getTransferData(LocalStampTreeNodeTransferable.localStampTreeNodeFlavor);
 
-        } catch (Exception e) {
+        } catch (UnsupportedFlavorException | IOException e) {
             e.printStackTrace(System.err);
             importDataFailed();
             return false;
@@ -327,7 +329,7 @@ public class StampHolderTransferHandler extends AbstractKarteTransferHandler {
             if (test.getKartePane() != stampHolder.getKartePane()){
                 break;
             }
-            if (test.getStartPos() > stampHolder.getStartPos()) {
+            if (test.getStartOffset() > stampHolder.getStartOffset()) {
                 break;
             }
             ++pos;

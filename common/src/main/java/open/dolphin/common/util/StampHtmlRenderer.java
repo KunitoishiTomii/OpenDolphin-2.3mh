@@ -61,16 +61,20 @@ public class StampHtmlRenderer {
 
         // entityを取得
         String entity = moduleModel.getModuleInfoBean().getEntity();
-        switch (entity) {
-            case IInfoModel.ENTITY_MED_ORDER:
-                buildMedStampHtml();
-                break;
-            case IInfoModel.ENTITY_LABO_TEST:
-                buildDolphinStampHtml(hints.isLaboFold());
-                break;
-            default:
-                buildDolphinStampHtml(false);
-                break;
+        if (entity != null) {
+            switch (entity) {
+                case IInfoModel.ENTITY_MED_ORDER:
+                    buildMedStampHtml();
+                    break;
+                case IInfoModel.ENTITY_LABO_TEST:
+                    buildDolphinStampHtml(hints.isLaboFold());
+                    break;
+                default:
+                    buildDolphinStampHtml(false);
+                    break;
+            }
+        } else {
+            buildDolphinStampHtml(false);
         }
 
         String html = writer.getProduct();

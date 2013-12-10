@@ -17,7 +17,7 @@ import open.dolphin.client.ClientContext;
  */
 public class PvtClaimAcceptHandler implements IHandler {
 
-    private PVTClientServer server;
+    private final PVTClientServer server;
 
     public PvtClaimAcceptHandler(PVTClientServer server) {
         this.server = server;

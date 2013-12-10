@@ -149,6 +149,9 @@ public class KartePDFMaker extends AbstractPDFMaker {
 
                 for (ModuleModel bean : modules) {
                     String role = bean.getModuleInfoBean().getStampRole();
+                    if (role == null) {
+                        continue;
+                    }
                     switch (role) {
                         case IInfoModel.ROLE_SOA:
                             soaModules.add(bean);
@@ -265,17 +268,20 @@ public class KartePDFMaker extends AbstractPDFMaker {
     private String createTitle(DocumentModel model) {
 
         DocInfoModel docInfo = model.getDocInfoModel();
-        
+        String status = docInfo.getStatus();
         StringBuilder sb = new StringBuilder();
-        switch (docInfo.getStatus()) {
-            case IInfoModel.STATUS_DELETE:
-                sb.append("削除済／");
-                break;
-            case IInfoModel.STATUS_MODIFIED:
-                sb.append("修正:");
-                sb.append(docInfo.getVersionNumber().replace(".0", ""));
-                sb.append("／");
-                break;
+        
+        if (status != null) {
+            switch (docInfo.getStatus()) {
+                case IInfoModel.STATUS_DELETE:
+                    sb.append("削除済／");
+                    break;
+                case IInfoModel.STATUS_MODIFIED:
+                    sb.append("修正:");
+                    sb.append(docInfo.getVersionNumber().replace(".0", ""));
+                    sb.append("／");
+                    break;
+            }
         }
 
         // 確定日を分かりやすい表現に変える
@@ -409,6 +415,10 @@ public class KartePDFMaker extends AbstractPDFMaker {
         private void startElement(XMLStreamReader reader) throws XMLStreamException {
             
             String eName = reader.getName().getLocalPart();
+            
+            if (eName == null) {
+                return;
+            }
 
             switch (eName) {
                 case PARAGRAPH_NAME:
@@ -596,16 +606,20 @@ public class KartePDFMaker extends AbstractPDFMaker {
                     table.setSpacingAfter(5);
                     // スタンプの種類別に処理する
                     String entity = stamp.getModuleInfoBean().getEntity();
-                    switch (entity) {
-                        case IInfoModel.ENTITY_MED_ORDER:
-                            buildMedStamp();
-                            break;
-                        case IInfoModel.ENTITY_LABO_TEST:
-                            buildDolphinStamp(hints.isLaboFold());
-                            break;
-                        default:
-                            buildDolphinStamp(false);
-                            break;
+                    if (entity != null) {
+                        switch (entity) {
+                            case IInfoModel.ENTITY_MED_ORDER:
+                                buildMedStamp();
+                                break;
+                            case IInfoModel.ENTITY_LABO_TEST:
+                                buildDolphinStamp(hints.isLaboFold());
+                                break;
+                            default:
+                                buildDolphinStamp(false);
+                                break;
+                        }
+                    } else {
+                        buildDolphinStamp(false);
                     }
                     return table;
                 } catch (DocumentException ex) {

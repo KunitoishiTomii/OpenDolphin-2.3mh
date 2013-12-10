@@ -8,7 +8,7 @@ import java.util.concurrent.ThreadFactory;
  */
 public class NamedThreadFactory implements ThreadFactory {
     
-    private String name;
+    private final String name;
     private int number;
             
     public NamedThreadFactory(String name) {

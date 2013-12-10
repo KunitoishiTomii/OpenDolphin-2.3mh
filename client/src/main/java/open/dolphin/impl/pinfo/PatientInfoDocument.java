@@ -348,9 +348,10 @@ public class PatientInfoDocument extends AbstractChartDocument {
         // boolean値でチェックボックスを表示する
         @Override
         public Class getColumnClass(int c) {
-            return getValueAt(0, c).getClass();
+            //return getValueAt(0, c).getClass();
+            return c == 0 ? Object.class : Boolean.class;
         }
-        
+
         @Override
         public Object getValueAt(int row, int col) {
             

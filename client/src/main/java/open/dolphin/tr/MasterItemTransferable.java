@@ -13,7 +13,7 @@ public final class MasterItemTransferable extends DolphinTransferable {
 
     public static final DataFlavor masterItemFlavor = new DataFlavor(MasterItem.class, "MasterItem");
     public static final DataFlavor[] flavors = {masterItemFlavor};
-    private MasterItem masterItem;
+    private final MasterItem masterItem;
 
     public MasterItemTransferable(MasterItem masterItem) {
         this.masterItem = masterItem;

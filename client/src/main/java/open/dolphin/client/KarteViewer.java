@@ -69,17 +69,20 @@ public abstract class KarteViewer extends AbstractChartDocument {
     protected final void setTitle() {
 
         DocInfoModel docInfo = model.getDocInfoModel();
-        
+        String status = docInfo.getStatus();
         StringBuilder sb = new StringBuilder();
-        switch (docInfo.getStatus()) {
-            case IInfoModel.STATUS_DELETE:
-                sb.append("削除済／");
-                break;
-            case IInfoModel.STATUS_MODIFIED:
-                sb.append("修正:");
-                sb.append(docInfo.getVersionNumber().replace(".0", ""));
-                sb.append("／");
-                break;
+        
+        if (status != null) {
+            switch (status) {
+                case IInfoModel.STATUS_DELETE:
+                    sb.append("削除済／");
+                    break;
+                case IInfoModel.STATUS_MODIFIED:
+                    sb.append("修正:");
+                    sb.append(docInfo.getVersionNumber().replace(".0", ""));
+                    sb.append("／");
+                    break;
+            }
         }
 
         // 確定日を分かりやすい表現に変える

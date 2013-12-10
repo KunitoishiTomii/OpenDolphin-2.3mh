@@ -221,7 +221,7 @@ public class SchemaHolderTransferHandler extends AbstractKarteTransferHandler {
             if (test.getKartePane() != schemaHolder.getKartePane()){
                 break;
             }
-            if (test.getStartPos() > schemaHolder.getStartPos()) {
+            if (test.getStartOffset() > schemaHolder.getStartOffset()) {
                 break;
             }
             ++pos;

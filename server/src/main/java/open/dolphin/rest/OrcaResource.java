@@ -1,6 +1,5 @@
 package open.dolphin.rest;
 
-import javax.servlet.AsyncContext;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -44,27 +43,15 @@ public class OrcaResource extends AbstractResource {
     @POST
     @Path("claim")
     @Consumes(MEDIATYPE_JSON_UTF8)
-    public void postClaim(String json) {
+    @Produces(MEDIATYPE_JSON_UTF8)
+    public Response postClaim(String json) {
 
         ClaimMessageModel model = (ClaimMessageModel)
                 getConverter().fromJson(json, ClaimMessageModel.class);
         
-        AsyncContext ac = servletReq.startAsync();
-        ac.getRequest().setAttribute(ClaimMessageModel.class.getSimpleName(), model);
-        OrcaService.getInstance().sendClaim(ac);
-    }
-    
-    @POST
-    @Path("claimres")
-    @Consumes(MEDIATYPE_JSON_UTF8)
-    @Produces(MEDIATYPE_JSON_UTF8)
-    public Response dispachClaimResponse() {
+        ClaimMessageModel ret = OrcaService.getInstance().sendClaim(model);
         
-        ClaimMessageModel model = (ClaimMessageModel) 
-                servletReq.getAttribute(ClaimMessageModel.class.getSimpleName());
-        model.setContent(null);
-        
-        StreamingOutput so = getJsonOutStream(model);
+        StreamingOutput so = getJsonOutStream(ret);
         
         return Response.ok(so).build();
     }

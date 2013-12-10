@@ -34,7 +34,7 @@ public class TempKarteCheckDialog extends JDialog implements IChartEventListener
     private JPanel panel;
     private JTable table;
     private ListTableModel<PatientModel> tableModel;
-    private ListTableSorter sorter;
+    private ListTableSorter<PatientModel> sorter;
     
     private JCheckBox allCheck;
     private JLabel cntLbl;
@@ -46,8 +46,7 @@ public class TempKarteCheckDialog extends JDialog implements IChartEventListener
     private final String[] PROPERTY_NAMES 
             = {"patientId", "fullName", "kanaName", "genderDesc", "ageBirthday", "isOpened"};
     private static final Class[] COLUMN_CLASSES = {
-        String.class, String.class, String.class, String.class, String.class, 
-        String.class};
+        String.class, String.class, String.class, String.class, String.class, Integer.class};
     private final int[] COLUMN_WIDTH = {50, 100, 120, 30, 100, 20};
     
     private static final ImageIcon INFO_ICON = ClientContext.getImageIconAlias("icon_info_small");
@@ -58,6 +57,7 @@ public class TempKarteCheckDialog extends JDialog implements IChartEventListener
     private ColumnSpecHelper columnHelper;
     
     private int stateColumn;
+    private int genderColumn;
     
     // 選択されている行を保存
     private int selectedRow;
@@ -94,6 +94,7 @@ public class TempKarteCheckDialog extends JDialog implements IChartEventListener
         columnHelper.loadProperty();
         // Scan して state カラムを設定する
         stateColumn = columnHelper.getColumnPosition("isOpened");
+        genderColumn = columnHelper.getColumnPosition("genderDesc");
     }
     
     private void initComponents() {
@@ -277,7 +278,7 @@ public class TempKarteCheckDialog extends JDialog implements IChartEventListener
     
     private PatientModel getSelectedPatient() {
         selectedRow = table.getSelectedRow();
-        return (PatientModel) sorter.getObject(selectedRow);
+        return sorter.getObject(selectedRow);
     }
 
     // ChartEventListener
@@ -332,24 +333,21 @@ public class TempKarteCheckDialog extends JDialog implements IChartEventListener
     }
     
     private class PatientListTableRenderer extends StripeTableCellRenderer {
-
-        public PatientListTableRenderer() {
-            super();
-        }
-
+        
         @Override
         public Component getTableCellRendererComponent(JTable table,
-                Object value,
-                boolean isSelected,
-                boolean isFocused,
-                int row, int col) {
+                Object value, boolean isSelected, boolean isFocused, int row, int col) {
 
             super.getTableCellRendererComponent(table, value, isSelected, isFocused, row, col);
-            this.setHorizontalAlignment(JLabel.LEFT);
-            PatientModel pm = (PatientModel) sorter.getObject(row);
             
-            if (pm != null && col == stateColumn) {
-                setHorizontalAlignment(JLabel.CENTER);
+            PatientModel pm = sorter.getObject(row);
+            if (pm == null) {
+                return this;
+            }
+            
+            if (col == stateColumn) {
+                setHorizontalAlignment(CENTER);
+                setBorder(null);
                 if (pm.isOpened()) {
                     if (clientUUID.equals(pm.getOwnerUUID())) {
                         setIcon(OPEN_ICON);
@@ -361,6 +359,9 @@ public class TempKarteCheckDialog extends JDialog implements IChartEventListener
                 }
                 setText("");
             } else {
+                if (col == genderColumn) {
+                    setHorizontalAlignment(CENTER);
+                }
                 setIcon(null);
                 setText(value == null ? "" : value.toString());
             }

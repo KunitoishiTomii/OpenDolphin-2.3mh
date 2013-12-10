@@ -101,7 +101,7 @@ public class DocumentModel extends KarteEntryBean {
      */
     public void addSchema(SchemaModel model) {
         if (this.schema == null) {
-            this.schema = new ArrayList<SchemaModel>();
+            this.schema = new ArrayList<>();
         }
         this.schema.add(model);
     }
@@ -151,7 +151,7 @@ public class DocumentModel extends KarteEntryBean {
      */
     public void addModule(ModuleModel[] addArray) {
         if (modules == null) {
-            modules = new ArrayList<ModuleModel>(addArray.length);
+            modules = new ArrayList<>(addArray.length);
         }
         modules.addAll(Arrays.asList(addArray));
     }
@@ -162,7 +162,7 @@ public class DocumentModel extends KarteEntryBean {
      */
     public void addModule(ModuleModel addModule) {
         if (modules == null) {
-            modules = new ArrayList<ModuleModel>();
+            modules = new ArrayList<>();
         }
         modules.add(addModule);
     }
@@ -208,7 +208,7 @@ public class DocumentModel extends KarteEntryBean {
         
         if (modules != null) {
             
-            ArrayList<ModuleInfoBean> list = new ArrayList<ModuleInfoBean>(2);
+            ArrayList<ModuleInfoBean> list = new ArrayList<>(2);
             
             for (ModuleModel model : modules) {
                 
@@ -218,10 +218,10 @@ public class DocumentModel extends KarteEntryBean {
             }
             
             if (list.size() > 0) {
-                return  (ModuleInfoBean[])list.toArray(new ModuleInfoBean[list.size()]);
+                return (ModuleInfoBean[]) list.toArray(new ModuleInfoBean[list.size()]);
             }
         }
-        
+
         return null;
     }
 

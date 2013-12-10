@@ -169,13 +169,13 @@ public class KarteSettingPanel extends AbstractSettingPanel {
         //showModifiedCB = new JCheckBox("修正履歴表示");
 //masuda^        
         //periodObjects = ClientContext.getNameValuePair("docHistory.combo.period");
-        List<ExtractionPeriod> list = new ArrayList<ExtractionPeriod>();
+        List<ExtractionPeriod> list = new ArrayList<>();
         for (ExtractionPeriod period : DocumentHistory.EXTRACTION_OBJECTS) {
             if (period.getToMonth() != 0) {
                 list.add(period);
             }
         }
-        periodObjects = list.toArray(new ExtractionPeriod[0]);
+        periodObjects = list.toArray(new ExtractionPeriod[list.size()]);
 //masuda$  
         periodCombo = new JComboBox(periodObjects);
         vSc = new JRadioButton("垂直");
@@ -738,12 +738,18 @@ public class KarteSettingPanel extends AbstractSettingPanel {
         defaultCapsuleNum.addFocusListener(AutoRomanListener.getInstance());
         defaultRpNum.addFocusListener(AutoRomanListener.getInstance());
         masterItemColoring.setSelected(model.isMasterItemColoring());
-        if (model.getEditorButtonType().equals("icon")) {
-            stampEditorButtonIcon.doClick();
-        } else if (model.getEditorButtonType().equals("text")) {
-            stampEditorButtonText.doClick();
-        }
-
+        
+        
+        //if ("icon".equals(model.getEditorButtonType())) {
+        //    stampEditorButtonIcon.doClick();
+        //} else if ("text".equals(model.getEditorButtonType())) {
+        //    stampEditorButtonText.doClick();
+        //}
+        stampEditorButtonIcon.setSelected(true);
+        stampEditorButtonIcon.setEnabled(false);
+        stampEditorButtonText.setSelected(false);
+        stampEditorButtonText.setEnabled(false);
+        
         //
         // CLAIM 送信関係
         // 仮保存の時は送信できない。理由は CRC 等の入力するケース。
@@ -1012,11 +1018,11 @@ public class KarteSettingPanel extends AbstractSettingPanel {
 
         // 月齢表示年齢
         String valStr = ageToNeedMonth.getText().trim();
-        if (!valStr.equals("")) {
+        if (!valStr.isEmpty()) {
             try {
                 model.setAgeNeedMonth(Integer.parseInt(valStr));
 
-            } catch (Throwable e) {
+            } catch (NumberFormatException e) {
                 e.printStackTrace(System.err);
             }
         }

@@ -27,6 +27,7 @@ import open.dolphin.table.ListTableModel;
 import open.dolphin.table.StripeTableCellRenderer;
 import open.dolphin.tr.MasterItemTransferHandler;
 import open.dolphin.common.util.ZenkakuUtils;
+import open.dolphin.table.ListTableSorter;
 
 /**
  *　AbstractStampEditor
@@ -34,7 +35,7 @@ import open.dolphin.common.util.ZenkakuUtils;
  * @author Kazushi Minagawa, Digital Globe, Inc.
  * @author modified by masuda, Masuda Naika
  */
-public abstract class AbstractStampEditor extends StampEditorConst {
+public abstract class AbstractStampEditor implements StampEditorConst {
     
     // ドルフィンのオーダ履歴用の名前
     protected String orderName;
@@ -99,112 +100,108 @@ public abstract class AbstractStampEditor extends StampEditorConst {
      */
     private HashMap<String, String> getEditorSpec(String entity) {
 
-        HashMap<String, String> ht = new HashMap<String, String>(10, 0.75f);
+        HashMap<String, String> ht = new HashMap<>(10, 0.75f);
+        
+        if (entity == null) {
+            return ht;  // TODO
+        }
 
         String passRegExp = null;
-
-        if (entity.equals(IInfoModel.ENTITY_BASE_CHARGE_ORDER)) {
-
-            orderName = NAME_BASE_CHARGE;
-            passRegExp = REG_BASE_CHARGE;
-            shinkuRegExp = SHIN_BASE_CHARGE;
-            info = INFO_BASE_CHARGE;
-
-
-        } else if (entity.equals(IInfoModel.ENTITY_INSTRACTION_CHARGE_ORDER)) {
-
-            orderName = NAME_INSTRACTION_CHARGE;
-            passRegExp = REG_INSTRACTION_CHARGE;
-            shinkuRegExp = SHIN_INSTRACTION_CHARGE;
-            info = INFO_INSTRACTION_CHARGE;
-
-
-        } else if (entity.equals(IInfoModel.ENTITY_MED_ORDER)) {
-
-            orderName = NAME_MED_ORDER;
-            passRegExp = REG_MED_ORDER;                     // 薬剤、用法、材料、その他(保険適用外医薬品）
-            info = INFO_MED_ORDER;
-
-        } else if (entity.equals(IInfoModel.ENTITY_INJECTION_ORDER)) {
-
-            orderName = NAME_INJECTION_ORDER;
-            passRegExp = REG_INJECTION_ORDER;               // 手技、その他、注射薬、材料
-            shinkuRegExp = SHIN_INJECTION_ORDER;
-            info = INFO_INJECTION_ORDER;
-
-
-        } else if (entity.equals(IInfoModel.ENTITY_TREATMENT)) {
-
-            orderName = NAME_TREATMENT;
-            passRegExp = REG_TREATMENT;                     // 手技、その他、薬剤、材料
-            shinkuRegExp = SHIN_TREATMENT;
-            implied007 = IMPLIED_TREATMENT;
-            info = INFO_TREATMENT;
-
-
-        } else if (entity.equals(IInfoModel.ENTITY_SURGERY_ORDER)) {
-
-            orderName = NAME_SURGERY_ORDER;
-            passRegExp = REG_SURGERY_ORDER;                 // 手技、その他、薬剤、材料
-            shinkuRegExp = SHIN_SURGERY_ORDER;
-            info = INFO_SURGERY_ORDER;
-
-
-        } else if (entity.equals(IInfoModel.ENTITY_BACTERIA_ORDER)) {
-
-            orderName = NAME_BACTERIA_ORDER;
-            passRegExp = REG_BACTERIA_ORDER;                // 手技、その他、薬剤、材料
-            shinkuRegExp = SHIN_BACTERIA_ORDER;
-            implied007 = IMPLIED_BACTERIA_ORDER;
-            info = INFO_BACTERIA_ORDER;
-
-        } else if (entity.equals(IInfoModel.ENTITY_PHYSIOLOGY_ORDER)) {
-
-            orderName = NAME_PHYSIOLOGY_ORDER;
-            passRegExp = REG_PHYSIOLOGY_ORDER;              // 手技、その他、薬剤、材料
-            shinkuRegExp = SHIN_PHYSIOLOGY_ORDER;
-            implied007 = IMPLIED_PHYSIOLOGY_ORDER;
-            info = INFO_PHYSIOLOGY_ORDER;
-
-
-        } else if (entity.equals(IInfoModel.ENTITY_LABO_TEST)) {
-
-            orderName = NAME_LABO_TEST;
-            passRegExp = REG_LABO_TEST;                     // 手技、その他、薬剤、材料
-            shinkuRegExp = SHIN_LABO_TEST;
-            implied007 = IMPLIED_LABO_TEST;
-            info = INFO_LABO_TEST;
-
-
-        } else if (entity.equals(IInfoModel.ENTITY_RADIOLOGY_ORDER)) {
-
-            orderName = NAME_RADIOLOGY_ORDER;
-            passRegExp = REG_RADIOLOGY_ORDER;               // 手技、その他、薬剤、材料、部位
-            shinkuRegExp = SHIN_RADIOLOGY_ORDER;
-            implied007 = IMPLIED_RADIOLOGY_ORDER;
-            info = INFO_RADIOLOGY_ORDER;
-
-
-        }   else if (entity.equals(IInfoModel.ENTITY_OTHER_ORDER)) {
-
-            orderName = NAME_OTHER_ORDER;
-            passRegExp = REG_OTHER_ORDER;                   // 手技、その他、薬剤、材料
-            shinkuRegExp = SHIN_OTHER_ORDER;
-            implied007 = IMPLIED_OTHER_ORDER;
-            info = INFO_OTHER_ORDER;
-
-
-        } else if (entity.equals(IInfoModel.ENTITY_GENERAL_ORDER)) {
-
-            orderName = NAME_GENERAL_ORDER;
-            passRegExp = REG_GENERAL_ORDER;                 // 手技、その他、薬剤、材料、用法、部位
-            shinkuRegExp = SHIN_GENERAL_ORDER;
-            info = INFO_GENERAL_ORDER;
-
-        } else if (entity.equals(IInfoModel.ENTITY_DIAGNOSIS)) {
-
-            orderName = NAME_DIAGNOSIS;
-            passRegExp = REG_DIAGNOSIS;
+        
+        switch (entity) {
+            case IInfoModel.ENTITY_BASE_CHARGE_ORDER:
+                orderName = NAME_BASE_CHARGE;
+                passRegExp = REG_BASE_CHARGE;
+                shinkuRegExp = SHIN_BASE_CHARGE;
+                info = INFO_BASE_CHARGE;
+                break;
+                
+            case IInfoModel.ENTITY_INSTRACTION_CHARGE_ORDER:
+                orderName = NAME_INSTRACTION_CHARGE;
+                passRegExp = REG_INSTRACTION_CHARGE;
+                shinkuRegExp = SHIN_INSTRACTION_CHARGE;
+                info = INFO_INSTRACTION_CHARGE;
+                break;
+                
+            case IInfoModel.ENTITY_MED_ORDER:
+                orderName = NAME_MED_ORDER;
+                passRegExp = REG_MED_ORDER;                     // 薬剤、用法、材料、その他(保険適用外医薬品）
+                info = INFO_MED_ORDER;
+                break;
+                
+            case IInfoModel.ENTITY_INJECTION_ORDER:
+                orderName = NAME_INJECTION_ORDER;
+                passRegExp = REG_INJECTION_ORDER;               // 手技、その他、注射薬、材料
+                shinkuRegExp = SHIN_INJECTION_ORDER;
+                info = INFO_INJECTION_ORDER;
+                break;
+                
+            case IInfoModel.ENTITY_TREATMENT:
+                orderName = NAME_TREATMENT;
+                passRegExp = REG_TREATMENT;                     // 手技、その他、薬剤、材料
+                shinkuRegExp = SHIN_TREATMENT;
+                implied007 = IMPLIED_TREATMENT;
+                info = INFO_TREATMENT;
+                break;
+                
+            case IInfoModel.ENTITY_SURGERY_ORDER:
+                orderName = NAME_SURGERY_ORDER;
+                passRegExp = REG_SURGERY_ORDER;                 // 手技、その他、薬剤、材料
+                shinkuRegExp = SHIN_SURGERY_ORDER;
+                info = INFO_SURGERY_ORDER;
+                break;
+                
+            case IInfoModel.ENTITY_BACTERIA_ORDER:
+                orderName = NAME_BACTERIA_ORDER;
+                passRegExp = REG_BACTERIA_ORDER;                // 手技、その他、薬剤、材料
+                shinkuRegExp = SHIN_BACTERIA_ORDER;
+                implied007 = IMPLIED_BACTERIA_ORDER;
+                info = INFO_BACTERIA_ORDER;
+                break;
+                
+            case IInfoModel.ENTITY_PHYSIOLOGY_ORDER:
+                orderName = NAME_PHYSIOLOGY_ORDER;
+                passRegExp = REG_PHYSIOLOGY_ORDER;              // 手技、その他、薬剤、材料
+                shinkuRegExp = SHIN_PHYSIOLOGY_ORDER;
+                implied007 = IMPLIED_PHYSIOLOGY_ORDER;
+                info = INFO_PHYSIOLOGY_ORDER;
+                break;
+                
+            case IInfoModel.ENTITY_LABO_TEST:
+                orderName = NAME_LABO_TEST;
+                passRegExp = REG_LABO_TEST;                     // 手技、その他、薬剤、材料
+                shinkuRegExp = SHIN_LABO_TEST;
+                implied007 = IMPLIED_LABO_TEST;
+                info = INFO_LABO_TEST;
+                break;
+                
+            case IInfoModel.ENTITY_RADIOLOGY_ORDER:
+                orderName = NAME_RADIOLOGY_ORDER;
+                passRegExp = REG_RADIOLOGY_ORDER;               // 手技、その他、薬剤、材料、部位
+                shinkuRegExp = SHIN_RADIOLOGY_ORDER;
+                implied007 = IMPLIED_RADIOLOGY_ORDER;
+                info = INFO_RADIOLOGY_ORDER;
+                break;
+                
+            case IInfoModel.ENTITY_OTHER_ORDER:
+                orderName = NAME_OTHER_ORDER;
+                passRegExp = REG_OTHER_ORDER;                   // 手技、その他、薬剤、材料
+                shinkuRegExp = SHIN_OTHER_ORDER;
+                implied007 = IMPLIED_OTHER_ORDER;
+                info = INFO_OTHER_ORDER;
+                break;
+                
+            case IInfoModel.ENTITY_GENERAL_ORDER:
+                orderName = NAME_GENERAL_ORDER;
+                passRegExp = REG_GENERAL_ORDER;                 // 手技、その他、薬剤、材料、用法、部位
+                shinkuRegExp = SHIN_GENERAL_ORDER;
+                info = INFO_GENERAL_ORDER;
+                break;
+                
+            case IInfoModel.ENTITY_DIAGNOSIS:
+                orderName = NAME_DIAGNOSIS;
+                passRegExp = REG_DIAGNOSIS;
+                break;
         }
 
         ht.put(KEY_ORDER_NAME, orderName);
@@ -239,9 +236,7 @@ public abstract class AbstractStampEditor extends StampEditorConst {
         for (int i = 0; i < text.length(); i++) {
             char c = text.charAt(i);
             int type = Character.getType(c);
-            if (type == Character.DECIMAL_DIGIT_NUMBER) {
-                continue;
-            } else {
+            if (type != Character.DECIMAL_DIGIT_NUMBER) {
                 maybe = false;
                 break;
             }
@@ -596,19 +591,17 @@ public abstract class AbstractStampEditor extends StampEditorConst {
         if (code == null) {
             return null;
         }
-
-        if (code.equals(ClaimConst.INJECTION_311)) {
-            return ClaimConst.INJECTION_310;
-
-        } else if (code.equals(ClaimConst.INJECTION_321)) {
-            return ClaimConst.INJECTION_320;
-
-        } else if (code.equals(ClaimConst.INJECTION_331)) {
-            return ClaimConst.INJECTION_330;
-
-        } else {
-            // 注射以外のケース
-            return code;
+        
+        switch (code) {
+            case ClaimConst.INJECTION_311:
+                return ClaimConst.INJECTION_310;
+            case ClaimConst.INJECTION_321:
+                return ClaimConst.INJECTION_320;
+            case ClaimConst.INJECTION_331:
+                return ClaimConst.INJECTION_330;
+            default:
+                // 注射以外のケース
+                return code;
         }
     }
 /*
@@ -931,10 +924,12 @@ public abstract class AbstractStampEditor extends StampEditorConst {
 
             @Override
             public void valueChanged(ListSelectionEvent e) {
+                
                 if (e.getValueIsAdjusting() == false) {
                     int row = view.getSearchResultTable().getSelectedRow();
-                    ListTableModel<TensuMaster> searchResultModel =(ListTableModel<TensuMaster>) searchResultTable.getModel();
-                    TensuMaster o = searchResultModel.getObject(row);
+                    ListTableSorter<TensuMaster> sorter 
+                            = (ListTableSorter<TensuMaster>) searchResultTable.getModel();
+                    TensuMaster o = sorter.getObject(row);
                     if (o != null) {
                         addSelectedTensu(o);
                         setFocusOnSearchTextFld();
@@ -1057,7 +1052,8 @@ public abstract class AbstractStampEditor extends StampEditorConst {
         view.getDeleteBtn().addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                ListTableModel<MasterItem> tableModel = (ListTableModel<MasterItem>) view.getSetTable().getModel();
+                ListTableModel<MasterItem> tableModel 
+                        = (ListTableModel<MasterItem>) view.getSetTable().getModel();
                 int row = view.getSetTable().getSelectedRow();
                 if (tableModel.getObject(row) != null) {
                     tableModel.deleteAt(row);
@@ -1139,13 +1135,12 @@ public abstract class AbstractStampEditor extends StampEditorConst {
             }
 
             @Override
-            @SuppressWarnings("unchecked")
             protected void done() {
                 try {
                     List<TensuMaster> result = get();
                     // 採用薬をチェック、リストの上位に登録
-                    List<TensuMaster> saiyou = new ArrayList<TensuMaster>();
-                    List<TensuMaster> hisaiyou = new ArrayList<TensuMaster>();
+                    List<TensuMaster> saiyou = new ArrayList<>();
+                    List<TensuMaster> hisaiyou = new ArrayList<>();
                     for (TensuMaster tm : result) {
                          boolean inUse = UsingDrugs.getInstance().isInUse(tm.getSrycd());
                          tm.setInUse(inUse);
@@ -1159,10 +1154,13 @@ public abstract class AbstractStampEditor extends StampEditorConst {
                     result.addAll(saiyou);
                     result.addAll(hisaiyou);
                     
-                    ListTableModel<TensuMaster> srModel = (ListTableModel<TensuMaster>) view.getSearchResultTable().getModel();
-                    srModel.setDataProvider(result);
-                    int cnt = srModel.getObjectCount();
+                    ListTableSorter<TensuMaster> sorter
+                            = (ListTableSorter<TensuMaster>) view.getSearchResultTable().getModel();
+                    sorter.setDataProvider(result);
+                    
+                    int cnt = sorter.getRowCount();
                     view.getCountField().setText(String.valueOf(cnt));
+                    
                     // 検索後は最初の行を表示させる
                     showFirstResult(view.getSearchResultTable());
 
@@ -1206,15 +1204,15 @@ public abstract class AbstractStampEditor extends StampEditorConst {
     }
     
     // 編集対象スタンプからスタンプ名などを設定する
-    @SuppressWarnings("unchecked")
     protected BundleDolphin setInfoModels(IInfoModel[] value){
 
         // 連続して編集される場合があるのでテーブル内容等をクリアする
         clear();        
-        if (value == null || value.length == 0) {
+        if (value == null || value.length == 0 
+                || !(value instanceof IInfoModel[])) {
             return null;
         }
-        
+
         ModuleModel target = ((ModuleModel[]) value)[0];
         // null であればリターンする
         if (target == null) {
@@ -1293,7 +1291,7 @@ public abstract class AbstractStampEditor extends StampEditorConst {
             protected List<TensuMaster> doInBackground() throws Exception {
 
                 blockGlass.block();
-                List<String> srycdList = new ArrayList<String>();
+                List<String> srycdList = new ArrayList<>();
                 for (MasterItem mi : list) {
                     srycdList.add(mi.getCode());
                 }
@@ -1319,7 +1317,7 @@ public abstract class AbstractStampEditor extends StampEditorConst {
                         }
                     }
 
-                } catch (Exception ex) {
+                } catch (InterruptedException | ExecutionException ex) {
                 } finally {
                     checkValidation();
                     ((ListTableModel<MasterItem>) (view.getSetTable().getModel())).fireTableDataChanged();
@@ -1368,8 +1366,8 @@ public abstract class AbstractStampEditor extends StampEditorConst {
 
             super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
-            TensuMaster tm = ((ListTableModel<TensuMaster>) table.getModel()).getObject(row);
-            if (tm != null && tm.isInUse() && !isSelected){
+            TensuMaster tm = ((ListTableSorter<TensuMaster>) table.getModel()).getObject(row);
+            if (tm != null && tm.isInUse() && !isSelected) {
                 setForeground(java.awt.Color.BLUE);
             }
             return this;

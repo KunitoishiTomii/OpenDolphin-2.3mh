@@ -75,7 +75,7 @@ public class PacsDicomDocImpl extends AbstractChartDocument implements PropertyC
     private static final int START_NUM_ROWS = 1;
     private ColumnSpecHelper columnHelper;
     
-    private ListTableSorter sorter;
+    private ListTableSorter<ListDicomObject> sorter;
 
     private static final int MAX_ICON_WIDTH = ImageTool.MAX_ICON_SIZE.width;
     private DefaultListModel<DicomImageEntry> listModel;
@@ -344,7 +344,7 @@ public class PacsDicomDocImpl extends AbstractChartDocument implements PropertyC
                     // listTableに結果を設定する
                     List<DicomObject> result = get();
                     if (result != null && !result.isEmpty()) {
-                        List<ListDicomObject> newList = new ArrayList<ListDicomObject>();
+                        List<ListDicomObject> newList = new ArrayList<>();
                         for (DicomObject obj : result) {
                             newList.add(new ListDicomObject(obj));
                         }
@@ -352,8 +352,7 @@ public class PacsDicomDocImpl extends AbstractChartDocument implements PropertyC
                         Collections.sort(newList, Collections.reverseOrder());
                         listTableModel.setDataProvider(newList);
                     }
-                } catch (InterruptedException ex) {
-                } catch (ExecutionException ex) {
+                } catch (InterruptedException | ExecutionException ex) {
                 }
             }
         };
@@ -443,9 +442,7 @@ public class PacsDicomDocImpl extends AbstractChartDocument implements PropertyC
             if (desktop.isSupported(Desktop.Action.BROWSE)) {
                 try {
                     desktop.browse(new URI(url));
-                } catch (IOException ex) {
-                    //ex.printStackTrace(System.err);
-                } catch (URISyntaxException ex) {
+                } catch (IOException | URISyntaxException ex) {
                     //ex.printStackTrace(System.err);
                 }
             }
@@ -455,7 +452,7 @@ public class PacsDicomDocImpl extends AbstractChartDocument implements PropertyC
     // listTableで現在選択されているstudyを記録する
     private void setCurrentDicomObject() {
         int row = listTable.getSelectedRow();
-        ListDicomObject selected = (ListDicomObject) sorter.getObject(row);
+        ListDicomObject selected = sorter.getObject(row);
         if (selected == null) {
             currentDicomObject = null;
         } else {

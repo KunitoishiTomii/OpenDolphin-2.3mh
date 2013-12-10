@@ -2,19 +2,15 @@ package open.dolphin.client;
 
 import java.awt.Color;
 import java.awt.event.ActionEvent;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 import javax.swing.*;
 import javax.swing.event.MenuEvent;
-import javax.swing.event.UndoableEditEvent;
-import javax.swing.event.UndoableEditListener;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyledEditorKit;
-import javax.swing.undo.CannotRedoException;
-import javax.swing.undo.CannotUndoException;
-import javax.swing.undo.UndoManager;
 import open.dolphin.helper.MenuSupport;
 import open.dolphin.infomodel.IInfoModel;
 import open.dolphin.infomodel.PVTHealthInsuranceModel;
@@ -31,7 +27,7 @@ import open.dolphin.tr.IKarteTransferHandler;
  * @author Kazushi Minagawa, Digital Globe, Inc.
  * @author modified by masuda, Masuda Naika
  */
-public final class ChartMediator extends MenuSupport implements UndoableEditListener {
+public final class ChartMediator extends MenuSupport {
 
     public enum CompState {
 
@@ -42,16 +38,12 @@ public final class ChartMediator extends MenuSupport implements UndoableEditList
     private int curSize = 1;
     // CurrentComponent
     private JComponent currentFocusOwner;
-    // Undo Manager
-    private final UndoManager undoManager;
-    private Action undoAction;
-    private Action redoAction;
+
     // ChartImplとEditorFrameでdispose()するとtrueになる
     private boolean disposed;
 
     public ChartMediator(Object owner) {
         super(owner);
-        undoManager = new UndoManager();
     }
     
     public void setCurrentFocusOwner(JComponent jc) {
@@ -69,17 +61,12 @@ public final class ChartMediator extends MenuSupport implements UndoableEditList
             enabledAction(GUIConst.ACTION_CUT, false);
             enabledAction(GUIConst.ACTION_COPY, false);
             enabledAction(GUIConst.ACTION_PASTE, false);
-//masuda^
             //enabledAction(GUIConst.ACTION_UNDO, false);
             //enabledAction(GUIConst.ACTION_REDO, false);
-            enabledAction(GUIConst.ACTION_UNDO, undoManager.canUndo());
-            enabledAction(GUIConst.ACTION_REDO, undoManager.canRedo());
-//masuda$
             enabledAction(GUIConst.ACTION_INSERT_TEXT, false);
-//masuda^   シェーマ箱ボタンはいつでもenable
+//masuda    シェーマ箱ボタンはいつでもenable
             //enabledAction(GUIConst.ACTION_INSERT_SCHEMA, false);
             enabledAction(GUIConst.ACTION_INSERT_SCHEMA, true);
-//masuda$
             enabledAction(GUIConst.ACTION_INSERT_STAMP, false);
 
             // フォーカスされたKarteCompositorに入る。そこでActionを設定してもらう
@@ -96,9 +83,6 @@ public final class ChartMediator extends MenuSupport implements UndoableEditList
     public void registerActions(ActionMap map) {
 
         super.registerActions(map);
-
-        undoAction = map.get(GUIConst.ACTION_UNDO);
-        redoAction = map.get(GUIConst.ACTION_REDO);
 
         // 昇順降順を Preference から取得し設定しておく
         boolean asc = Project.getBoolean(Project.DOC_HISTORY_ASCENDING, false);
@@ -530,52 +514,6 @@ public final class ChartMediator extends MenuSupport implements UndoableEditList
         if (focusOwner != null && focusOwner instanceof JTextPane) {
             JTextPane pane = (JTextPane) focusOwner;
             pane.setCharacterAttributes(SimpleAttributeSet.EMPTY, true);
-        }
-    }
-
-    @Override
-    public void undoableEditHappened(UndoableEditEvent e) {
-        undoManager.addEdit(e.getEdit());
-        updateUndoAction();
-        updateRedoAction();
-    }
-
-    public void undo() {
-        try {
-            undoManager.undo();
-
-        } catch (CannotUndoException ex) {
-            ex.printStackTrace(System.err);
-        }
-        updateUndoAction();
-        updateRedoAction();
-    }
-
-    public void redo() {
-        try {
-            undoManager.redo();
-        } catch (CannotRedoException ex) {
-            ex.printStackTrace(System.err);
-        }
-        updateRedoAction();
-        updateUndoAction();
-    }
-
-    private void updateUndoAction() {
-
-        if (undoManager.canUndo()) {
-            undoAction.setEnabled(true);
-        } else {
-            undoAction.setEnabled(false);
-        }
-    }
-
-    private void updateRedoAction() {
-
-        if (undoManager.canRedo()) {
-            redoAction.setEnabled(true);
-        } else {
-            redoAction.setEnabled(false);
         }
     }
 
