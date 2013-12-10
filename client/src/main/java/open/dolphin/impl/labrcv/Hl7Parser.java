@@ -884,7 +884,11 @@ class Hl7 {
 //masuda^   採取日はOBRのobservationDateを使う
                     //resultSet.studyDate = hl7OBX.studyDate;
                     // CWEは無視    FALCO徳島
-                    if ("CWE".equals(hl7OBX.rType)) {
+                    // 2013.12.10 katou
+                    // "IS"も無視 (User-defined tableらしい (http://www.hl7.jp/docs/seminar/SeminarNo9Kawamata.pdf))
+                    // "特定健診"という文字列が入っていたためにそれ以降のデータが読み取れないケースがあったため、読み飛ばすようにしてみる
+                    // 評価結果待ち
+                    if ("CWE".equals(hl7OBX.rType) || "IS".equals(hl7OBX.rType)) {
                         continue;
                     }
 //masuda$
