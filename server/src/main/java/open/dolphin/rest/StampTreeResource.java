@@ -33,9 +33,10 @@ public class StampTreeResource extends AbstractResource {
     @Produces(MEDIATYPE_JSON_UTF8)
     public Response getStampTree(@PathParam("userPK") String userPK) {
 
-        UserStampTreeModel result = stampServiceBean.getTrees(Long.parseLong(userPK));
+        List<IStampTreeModel> result = stampServiceBean.getTrees(Long.parseLong(userPK));
         
-        StreamingOutput so = getJsonOutStream(result);
+        TypeReference typeRef = new TypeReference<List<IStampTreeModel>>(){};
+        StreamingOutput so = getJsonOutStream(result, typeRef);
         
         return Response.ok(so).build();
     }
@@ -62,10 +63,9 @@ public class StampTreeResource extends AbstractResource {
     @Produces(MEDIATYPE_TEXT_UTF8)
     public Response postPublishedTree(String json) {
         
-        UserStampTreeModel treeModel = (UserStampTreeModel)
-                getConverter().fromJson(json, UserStampTreeModel.class);
-
-        List<IStampTreeModel> list = treeModel.getTreeList();
+        TypeReference typeRef = new TypeReference<List<IStampTreeModel>>(){};
+        List<IStampTreeModel> list = (List<IStampTreeModel>)
+                getConverter().fromJson(json, typeRef);
 
         long pk = stampServiceBean.saveAndPublishTree(list);
         String pkStr = String.valueOf(pk);
@@ -81,10 +81,9 @@ public class StampTreeResource extends AbstractResource {
     @Produces(MEDIATYPE_TEXT_UTF8)
     public Response putPublishedTree(String json) {
 
-        UserStampTreeModel treeModel = (UserStampTreeModel)
-                getConverter().fromJson(json, UserStampTreeModel.class);
-
-        List<IStampTreeModel> list = treeModel.getTreeList();
+        TypeReference typeRef = new TypeReference<List<IStampTreeModel>>(){};
+        List<IStampTreeModel> list = (List<IStampTreeModel>)
+                getConverter().fromJson(json, typeRef);
 
         int cnt = stampServiceBean.updatePublishedTree(list);
         String cntStr = String.valueOf(cnt);
@@ -117,8 +116,8 @@ public class StampTreeResource extends AbstractResource {
 
         String fid = getRemoteFacility();
         List<PublishedTreeModel> list = stampServiceBean.getPublishedTrees(fid);
-        
-        StreamingOutput so = getJsonOutStream(list);
+        TypeReference typeRef = new TypeReference<List<PublishedTreeModel>>(){};
+        StreamingOutput so = getJsonOutStream(list, typeRef);
         
         return Response.ok(so).build();
     }
