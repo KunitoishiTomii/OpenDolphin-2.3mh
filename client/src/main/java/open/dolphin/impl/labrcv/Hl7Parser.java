@@ -111,6 +111,9 @@ public class Hl7Parser implements LabResultParser {
             }
 
             // NLaboItemを生成し関係を構築する
+            if (!resultSet.isValid() || curModule == null) {
+                continue;
+            }
             NLaboItem item = new NLaboItem();
             curModule.addItem(item);
             item.setLaboModule(curModule);
@@ -148,7 +151,7 @@ public class Hl7Parser implements LabResultParser {
             item.setComment1(resultSet.reportName1);        //報告コメント名称1
             item.setCommentCode2(resultSet.reportCode2);    //報告コメントコード2
             item.setComment2(resultSet.reportName2);        //報告コメント名称2
-
+            
         }
 
         // サマリを生成する
@@ -405,6 +408,12 @@ class HL7ResultSet {
     String number;
     String rType;               //検査結果タイプ
     String fktest;              //副成分取り出しテスト
+    
+    public boolean isValid() {
+        return studyCo != null && karteNo != null && studyDate != null
+                && groupCode != null && studyCodeP != null && studyCode != null
+                && medisCode != null && studyName != null;
+    }
 }
 
 //MSH
@@ -537,9 +546,9 @@ class Hl7OBX {
     String studyCo;             // 検査会社
     String codingSystem;        // <name of coding system (IS)> 分画区分
     String alternateID;         // <alternate identifier (ST)>
-    final String CS_SINGLE = "0";   // 単独の項目
-    final String CS_PARENT = "2";   // 分画の親
-    final String CS_CHILD  = "1";   // 分画の子
+    static final String CS_SINGLE = "0";   // 単独の項目
+    static final String CS_PARENT = "2";   // 分画の親
+    static final String CS_CHILD  = "1";   // 分画の子
 //masuda$
 
     public Hl7OBX setParam() {
@@ -602,7 +611,7 @@ class Hl7 {
 
     private boolean isNull(String str) {
         //System.out.println(str);
-        return str == null || "".equals(str.trim());
+        return str == null || str.trim().isEmpty();
     }
 
     //MSHセグメント
@@ -728,16 +737,24 @@ class Hl7 {
             ret.unit = getHL7ItemString(line, param.unit);
             //結果タイプ
             ret.rType = getHL7ItemString(line, param.rType);
-            if (ret.rType.equals("ST")) {
-                ret.studyResult = getHL7ItemString(line, param.stStudyResult);
-            } else if (ret.rType.equals("NM")) {
-                ret.studyResult = getHL7ItemString(line, param.nmStudyResult);
-            } else if (ret.rType.equals("SN")) {
-                ret.studyResult = getHL7ItemString(line, param.snStudyResult);
-            } else if (ret.rType.equals("CWE")) {
-                ret.studyResult = getHL7ItemString(line, param.cweStudyResult);
-            } else if (ret.rType.equals("RP")) {
-                ret.studyResult = "????????";
+            if (ret.rType != null) {
+                switch (ret.rType) {
+                    case "ST":
+                        ret.studyResult = getHL7ItemString(line, param.stStudyResult);
+                        break;
+                    case "NM":
+                        ret.studyResult = getHL7ItemString(line, param.nmStudyResult);
+                        break;
+                    case "SN":
+                        ret.studyResult = getHL7ItemString(line, param.snStudyResult);
+                        break;
+                    case "CWE":
+                        ret.studyResult = getHL7ItemString(line, param.cweStudyResult);
+                        break;
+                    case "RP":
+                        ret.studyResult = "????????";
+                        break;
+                }
             }
 //masuda^
             // 検査結果状態
@@ -754,16 +771,20 @@ class Hl7 {
             // 検査項目コード・親の処理
             String is = getHL7ItemString(line, param.codingSystem);
             String st = getHL7ItemString(line, param.alternateID);
-
-            if (ret.CS_SINGLE.equals(is)) {
-                ret.studyCodeP = ret.studyCode;
-            } else if (ret.CS_PARENT.equals(is)) {
-                CodeMap.parentCodeMap.put(st, ret.studyCode);
-                ret.studyCodeP = ret.studyCode;
-            } else if (ret.CS_CHILD.equals(is)) {
-                ret.studyCodeP = CodeMap.parentCodeMap.get(st);
+            if (is != null) {
+                switch (is) {
+                    case Hl7OBX.CS_SINGLE:
+                        ret.studyCodeP = ret.studyCode;
+                        break;
+                    case Hl7OBX.CS_PARENT:
+                        CodeMap.parentCodeMap.put(st, ret.studyCode);
+                        ret.studyCodeP = ret.studyCode;
+                        break;
+                    case Hl7OBX.CS_CHILD:
+                        ret.studyCodeP = CodeMap.parentCodeMap.get(st);
+                        break;
+                }
             }
-
             if (isNull(ret.studyName)) {
                 ret.studyName = ret.studyNickname;
             }
@@ -777,31 +798,26 @@ class Hl7 {
 
     public List<HL7ResultSet> getHL7ResultSets(String fname) {
 
-        int pIdCount = 0;
         String line;
         List<HL7ResultSet> retList = new ArrayList<>();
-        BufferedReader br = null;
         Hl7MSH hl7MSH = null;
         Hl7PID hl7PID = null;
         Hl7PV1 hl7PV1 = null;
         Hl7OBR hl7OBR = null;
-        Hl7OBX hl7OBX = null;
-//masuda^
-        Hl7NTE hl7NTE = null;
-//masuda$
+        Hl7OBX hl7OBX;
+        Hl7NTE hl7NTE;
+        
         CodeMap.parentCodeMap.clear();
+        
+        String encoding = CharsetDetector.getFileEncoding(fname);
+        if (!(CharsetDetector.UTF8.equals(encoding))) {
+            encoding = CharsetDetector.SJIS;
+        }
+        
+        try (FileInputStream is = new FileInputStream(fname);
+                InputStreamReader in = new InputStreamReader(is, encoding);
+                BufferedReader br = new BufferedReader(in)) {
 
-        try {
-//masuda^
-            String encoding = CharsetDetector.getFileEncoding(fname);
-            if (!(CharsetDetector.UTF8.equals(encoding))) {
-                encoding = CharsetDetector.SJIS;
-            }
-            FileInputStream is = new FileInputStream(fname);
-            InputStreamReader in = new InputStreamReader(is, encoding);
-            br = new BufferedReader(in);
-            //br = new BufferedReader(new FileReader(fname));
-//masuda$
             while ((line = br.readLine()) != null) {
                 String adt = line.substring(0, 3);
                 if (adt.equals("MSH")) {
@@ -830,7 +846,6 @@ class Hl7 {
                 }
                 if (adt.equals("PID")) {
                     hl7PID = getHl7PID(line);
-                    pIdCount++;
                     continue;
                 }
 //masuda^
@@ -844,6 +859,9 @@ class Hl7 {
                     continue;
                 }
 //masuda$
+                if (hl7MSH == null || hl7OBR == null || hl7PID == null) {
+                    continue;
+                }
                 HL7ResultSet resultSet = new HL7ResultSet();
                 previousSet = resultSet;
                 resultSet.studyCo = hl7MSH.studyCo;                     //検査会社名
@@ -937,11 +955,6 @@ class Hl7 {
         } catch (Exception ex) {
             System.out.println("その他例外" + ex + "が発生しました");
             System.out.println(ex.getStackTrace());
-        } finally {
-            try {
-                br.close();
-            } catch (Exception ex) {
-            }
         }
 
         return retList;
