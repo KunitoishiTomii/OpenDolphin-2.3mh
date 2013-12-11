@@ -18,14 +18,14 @@
  */
 package open.dolphin.infomodel;
 
-import open.dolphin.infomodel.InfoModel;
+import java.io.Serializable;
 
 /**
  * ID
  * 
  * @author  Kazushi Minagawa, Digital Globe, Inc.
  */
-public class ID extends InfoModel {
+public class ID implements Serializable {
 	
     String id;
     String idType;

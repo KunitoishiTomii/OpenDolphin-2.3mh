@@ -1,6 +1,5 @@
 package open.dolphin.dao;
 
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import open.dolphin.infomodel.DiseaseEntry;
@@ -70,10 +69,9 @@ public final class SqlMasterDao extends SqlDaoBean {
         String sql = QUERY_TENSU_BY_SHINKU;
         int hospNum = getHospNum();
         
-        int[] types = {Types.CHAR, Types.CHAR, Types.CHAR, Types.INTEGER};
-        String[] params = {shinku, now, now, String.valueOf(hospNum)};
+        Object[] params = {shinku, now, now, hospNum};
         
-        List<List<String>> valuesList = executePreparedStatement(sql, types, params);
+        List<List<String>> valuesList = executePreparedStatement(sql, params);
         
         for (List<String> values : valuesList) {
             TensuMaster t = getTensuMaster(values);
@@ -107,10 +105,9 @@ public final class SqlMasterDao extends SqlDaoBean {
         String sql = buf.toString();
         int hospNum = getHospNum();
         
-        int[] types = {Types.CHAR, Types.CHAR, Types.CHAR, Types.CHAR, Types.INTEGER};
-        String[] params = {name, kana, now, now, String.valueOf(hospNum)};
+        Object[] params = {name, kana, now, now, hospNum};
         
-        List<List<String>> valuesList = executePreparedStatement(sql, types, params);
+        List<List<String>> valuesList = executePreparedStatement(sql, params);
         
         for (List<String> values : valuesList) {
             TensuMaster t = getTensuMaster(values);
@@ -129,10 +126,9 @@ public final class SqlMasterDao extends SqlDaoBean {
         String sql = QUERY_TENSU_BY_CODE;
         int hospNum = getHospNum();
         
-        int[] types = {Types.CHAR, Types.CHAR, Types.CHAR, Types.INTEGER};
-        String[] params = {"^" + regExp, now, now, String.valueOf(hospNum)};
+        Object[] params = {"^" + regExp, now, now, hospNum};
         
-        List<List<String>> valuesList = executePreparedStatement(sql, types, params);
+        List<List<String>> valuesList = executePreparedStatement(sql, params);
         
         for (List<String> values : valuesList) {
             TensuMaster t = getTensuMaster(values);
@@ -152,8 +148,7 @@ public final class SqlMasterDao extends SqlDaoBean {
         int hospNum = getHospNum();
         
         String[] tens = ten.split("-");
-        int[] types = {Types.FLOAT, Types.FLOAT, Types.CHAR, Types.CHAR, Types.INTEGER};
-        String[] params = {null, null, now, now, String.valueOf(hospNum)};
+        Object[] params = {null, null, now, now, hospNum};
         if (tens.length > 1) {
             params[0] = tens[0];
             params[1] = tens[1];
@@ -162,7 +157,7 @@ public final class SqlMasterDao extends SqlDaoBean {
             params[1] = tens[0];
         }
 
-        List<List<String>> valuesList = executePreparedStatement(sql, types, params);
+        List<List<String>> valuesList = executePreparedStatement(sql, params);
         
         for (List<String> values : valuesList) {
             TensuMaster t = getTensuMaster(values);
@@ -186,10 +181,9 @@ public final class SqlMasterDao extends SqlDaoBean {
             name = "^" + name;
         }
 
-        int[] types = {Types.CHAR, Types.CHAR, Types.CHAR};
-        String[] params = {name, name, now};
+        Object[] params = {name, name, now};
         
-        List<List<String>> valuesList = executePreparedStatement(sql, types, params);
+        List<List<String>> valuesList = executePreparedStatement(sql, params);
         
         for (List<String> values : valuesList) {
             DiseaseEntry d = getDiseaseEntry(values);
@@ -213,10 +207,9 @@ public final class SqlMasterDao extends SqlDaoBean {
             code = "^" + code;
         }
         
-        int[] types = {Types.CHAR, Types.CHAR};
-        String[] params = {code, now};
+        Object[] params = {code, now};
         
-        List<List<String>> valuesList = executePreparedStatement(sql, types, params);
+        List<List<String>> valuesList = executePreparedStatement(sql, params);
         
         for (List<String> values : valuesList) {
             DiseaseEntry d = getDiseaseEntry(values);

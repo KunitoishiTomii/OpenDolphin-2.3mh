@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.*;
@@ -16,7 +17,7 @@ import javax.persistence.*;
  */
 @Entity
 @Table(name = "d_labo_specimen")
-public class LaboSpecimenValue extends InfoModel {
+public class LaboSpecimenValue implements Serializable {
     
     @JsonIgnore
     @Id @GeneratedValue(strategy=GenerationType.AUTO)

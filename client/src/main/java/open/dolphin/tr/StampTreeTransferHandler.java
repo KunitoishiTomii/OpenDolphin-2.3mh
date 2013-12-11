@@ -133,7 +133,7 @@ public class StampTreeTransferHandler extends DolphinTransferHandler {
                 //-----------------------------------------
                 String text = (String) tr.getTransferData(stringFlavor);
                 if (targetEntity.equals(IInfoModel.ENTITY_TEXT)) {
-                    imported = target.addTextStamp(parentNode, text, childIndex);
+                    imported = target.addTextStamp(parentNode, text, null, childIndex);
                 } else {
                     imported = false;
                 }

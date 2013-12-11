@@ -18,37 +18,36 @@
  */
 package open.dolphin.infomodel;
 
+import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.GregorianCalendar;
-import open.dolphin.infomodel.InfoModel;
 
 /**
  * MasterEntry
  *
  * @author  Minagawa,Kazushi
  */
-public class MasterEntry extends InfoModel implements java.lang.Comparable {
-    
-    private static final long serialVersionUID = -6170839610525955077L;
-    
+public class MasterEntry implements Serializable, Comparable {
+
     protected static String refDate;
+    
     static {
         GregorianCalendar gc = new GregorianCalendar();
         SimpleDateFormat f = new SimpleDateFormat("yyyyMMdd");
         refDate = f.format(gc.getTime()).toString();
     }
     
-    protected String code;
+    private String code;
     
-    protected String name;
+    private String name;
     
-    protected String kana;
+    private String kana;
     
-    protected String startDate;
+    private String startDate;
     
-    protected String endDate;
+    private String endDate;
     
-    protected String disUseDate;
+    private String disUseDate;
     
     /** Creates a new instance of DeseaseEntry */
     public MasterEntry() {

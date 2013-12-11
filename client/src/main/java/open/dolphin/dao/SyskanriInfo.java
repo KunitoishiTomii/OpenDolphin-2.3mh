@@ -2,7 +2,6 @@ package open.dolphin.dao;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -291,10 +290,9 @@ public class SyskanriInfo extends SqlDaoBean {
         final String sql = "select kbncd, kanritbl from tbl_syskanri where kanricd = ?";
         List<KanriTblModel> ret = new ArrayList<>();
         
-        int[] types = {Types.CHAR};
-        String[] params = {kanricd};
+        Object[] params = {kanricd};
         
-        List<List<String>> valuesList = executePreparedStatement(sql, types, params);
+        List<List<String>> valuesList = executePreparedStatement(sql, params);
         
         for (List<String> values : valuesList) {
             // kbccdは余分な空白は除去

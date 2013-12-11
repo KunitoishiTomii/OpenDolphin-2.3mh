@@ -146,17 +146,17 @@ public final class InstractionEditor extends AbstractStampEditor {
     }
 
     @Override
-    public IInfoModel[] getValue() {
+    public ModuleModel[] getNewValue() {
 
         // 常に新規のモデルとして返す
         ModuleModel retModel = new ModuleModel();
         ModuleInfoBean moduleInfo = retModel.getModuleInfoBean();
-        moduleInfo.setEntity(getEntity());
+        moduleInfo.setEntity(entity);
         moduleInfo.setStampRole(IInfoModel.ROLE_P);
 
         // スタンプ名を設定する
         String text = view.getStampNameField().getText().trim();
-        if (!text.equals("")) {
+        if (!text.isEmpty()) {
             moduleInfo.setStampName(text);
         } else {
             moduleInfo.setStampName(DEFAULT_STAMP_NAME);
@@ -167,7 +167,7 @@ public final class InstractionEditor extends AbstractStampEditor {
 
         // Dolphin Appli で使用するオーダ名称を設定する
         // StampHolder で使用される（タブ名に相当）
-        bundle.setOrderName(getOrderName());
+        bundle.setOrderName(orderName);
 
         // セットテーブルのマスターアイテムを取得する
         List<MasterItem> itemList = tableModel.getDataProvider();
@@ -230,7 +230,7 @@ public final class InstractionEditor extends AbstractStampEditor {
         
         // 診療行為区分を設定する
         if (c007 == null) {
-            c007 = (getClassCode() != null) ? getClassCode() : getImplied007();
+            c007 = (classCode != null) ? classCode: implied007;
         }
         if (c007 == null) {
             c007 = ClaimConst.RECEIPT_CODE_OTHER;
@@ -238,7 +238,7 @@ public final class InstractionEditor extends AbstractStampEditor {
         if (c007 != null) {
             bundle.setClassCode(c007);
             // Claim007 固定の値
-            bundle.setClassCodeSystem(getClassCodeId());
+            bundle.setClassCodeSystem(CLASS_CODE_ID);
             // 上記テーブルで定義されている診療行為の名称
             bundle.setClassName(MMLTable.getClaimClassCodeName(c007));
         }
@@ -252,7 +252,7 @@ public final class InstractionEditor extends AbstractStampEditor {
 
         // バンドルメモ復活
         String memo = view.getCommentField().getText().trim();
-        if (!memo.equals("")) {
+        if (!memo.isEmpty()) {
             bundle.setMemo(memo);
         }
         
@@ -262,10 +262,19 @@ public final class InstractionEditor extends AbstractStampEditor {
     }
 
     @Override
-     public void setValue(IInfoModel[] value) {
+     public void setValue(Object objValue) {
+         
+        // 連続して編集される場合があるのでテーブル内容等をクリアする
+        clear();
+        setOldValue(objValue);
+        if (!(objValue instanceof ModuleModel[])) {
+            return;
+        }
         
+        ModuleModel[] value = (ModuleModel[]) objValue;
+
         // 共通の設定
-        BundleDolphin bundle = setInfoModels(value);
+        BundleDolphin bundle = setModuleModels(value);
         if (bundle == null) {
             return;
         }
@@ -352,8 +361,7 @@ public final class InstractionEditor extends AbstractStampEditor {
 
         // 項目の受け入れ試験
         String test = tm.getSlot();
-
-        if (passPattern==null || (!passPattern.matcher(test).find())) {
+        if (passPattern == null || !passPattern.matcher(test).find()) {
             Toolkit.getDefaultToolkit().beep();
             return;
         }
@@ -361,7 +369,7 @@ public final class InstractionEditor extends AbstractStampEditor {
         // 診療区分の受け入れ試験
         if (test.equals(ClaimConst.SLOT_SYUGI)) {
             String shinku = tm.getSrysyukbn();
-            if (shinkuPattern==null || (!shinkuPattern.matcher(shinku).find())) {
+            if (shinkuPattern == null || !shinkuPattern.matcher(shinku).find()) {
                 Toolkit.getDefaultToolkit().beep();
                 return;
             }
@@ -373,7 +381,7 @@ public final class InstractionEditor extends AbstractStampEditor {
         // 手技の場合にスタンプ名を設定する
         if (item.getClassCode() == ClaimConst.SYUGI) {
             String stName = view.getStampNameField().getText().trim();
-            if (stName.equals("") || stName.equals(DEFAULT_STAMP_NAME)) {
+            if (stName.isEmpty() || stName.equals(DEFAULT_STAMP_NAME)) {
                 view.getStampNameField().setText(item.getName());
             }
         }
@@ -409,7 +417,7 @@ public final class InstractionEditor extends AbstractStampEditor {
         view = new InstractionView();
 
         // Info Label
-        view.getInfoLabel().setText(this.getInfo());
+        view.getInfoLabel().setText(info);
         
         //------------------------------------------
         // セットテーブルを生成する
@@ -469,7 +477,7 @@ public final class InstractionEditor extends AbstractStampEditor {
                 // 数量
                 int code = mItem.getClassCode();
 
-                if (value == null || value.equals("")) {
+                if (value == null || value.isEmpty()) {
 
                     boolean test = (code==ClaimConst.SYUGI ||
                                     code==ClaimConst.OTHER ||

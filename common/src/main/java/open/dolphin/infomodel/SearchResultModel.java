@@ -1,6 +1,7 @@
 package open.dolphin.infomodel;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -8,7 +9,7 @@ import java.util.List;
  *
  * @author masuda, Masuda Naika
  */
-public class SearchResultModel {
+public class SearchResultModel implements Serializable {
 
     private long totalCount;
     private long docPk;

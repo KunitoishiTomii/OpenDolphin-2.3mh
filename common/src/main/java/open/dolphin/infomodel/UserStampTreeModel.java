@@ -2,6 +2,7 @@
 package open.dolphin.infomodel;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,7 +10,7 @@ import java.util.List;
  * interfaceはjsonで送りにくいので…
  * @author masuda, Masuda Naika
  */
-public class UserStampTreeModel {
+public class UserStampTreeModel implements Serializable {
     
     @JsonDeserialize(contentAs=StampTreeModel.class)
     private List<StampTreeModel> stampTreeList;
@@ -38,7 +39,7 @@ public class UserStampTreeModel {
     }
     
     public List<IStampTreeModel> getTreeList() {
-        List<IStampTreeModel> ret = new ArrayList<IStampTreeModel>();
+        List<IStampTreeModel> ret = new ArrayList<>();
         if (stampTreeList != null) {
             ret.addAll(stampTreeList);
         }

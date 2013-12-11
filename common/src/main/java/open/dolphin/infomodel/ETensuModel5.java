@@ -1,12 +1,13 @@
-
 package open.dolphin.infomodel;
+
+import java.io.Serializable;
 
 /**
  * 算定回数テーブルモデル
  * 
  * @author masuda, Masuda Naika
  */
-public class ETensuModel5 {
+public class ETensuModel5 implements Serializable {
     
     // 要りそう
     public static final int UNIT_DAY = 121;

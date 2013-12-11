@@ -1,5 +1,6 @@
 package open.dolphin.infomodel;
 
+import java.io.Serializable;
 import javax.persistence.*;
 
 /**
@@ -9,7 +10,7 @@ import javax.persistence.*;
  */
 @Entity
 @Table(name="d_stamp")
-public class StampModel extends InfoModel {
+public class StampModel implements Serializable {
     
     @Id
     private String id;

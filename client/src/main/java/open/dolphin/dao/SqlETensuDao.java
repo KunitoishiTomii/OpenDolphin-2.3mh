@@ -77,10 +77,9 @@ public class SqlETensuDao extends SqlDaoBean {
         
         String sql = SELECT_ETENSU_1 + WHERE_ETENSU_RELATED + " limit ? offset ?";
         
-        int[] types = {Types.BIGINT, Types.BIGINT};
-        String[] params = {String.valueOf(limit), String.valueOf(offset)};
+        Object[] params = {limit, offset};
 
-        List<List<String>> valuesList = executePreparedStatement(sql, types, params);
+        List<List<String>> valuesList = executePreparedStatement(sql, params);
 
         for (List<String> values : valuesList) {
             ETensuModel1 model = createETensuModel1(values);

@@ -44,7 +44,7 @@ public class DocumentModel extends KarteEntryBean {
      */
     public DocumentModel() {
         docInfo = new DocInfoModel();
-        docInfo.setDocType(DOCTYPE_KARTE);
+        docInfo.setDocType(IInfoModel.DOCTYPE_KARTE);
     }
     
     public void toDetuch() {

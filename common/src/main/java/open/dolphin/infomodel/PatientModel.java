@@ -2,6 +2,7 @@ package open.dolphin.infomodel;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -17,7 +18,7 @@ import javax.persistence.*;
  */
 @Entity
 @Table(name = "d_patient")
-public class PatientModel extends InfoModel {
+public class PatientModel implements Serializable {
     
     private static final long DAY_IN_MILLISEC = 1000 * 60 * 60 * 24L;
     
@@ -786,7 +787,7 @@ public class PatientModel extends InfoModel {
      */
     public void addHealthInsurance(HealthInsuranceModel value) {
         if (healthInsurances == null) {
-            healthInsurances = new ArrayList<HealthInsuranceModel>(2);
+            healthInsurances = new ArrayList<>(2);
         }
         healthInsurances.add(value);
     }
@@ -802,7 +803,7 @@ public class PatientModel extends InfoModel {
     
     public void addPvtHealthInsurance(PVTHealthInsuranceModel model) {
         if (pvtHealthInsurances == null) {
-            pvtHealthInsurances =  new ArrayList<PVTHealthInsuranceModel>(2);
+            pvtHealthInsurances =  new ArrayList<>(2);
         }
         pvtHealthInsurances.add(model);
     }
@@ -817,7 +818,7 @@ public class PatientModel extends InfoModel {
     
     public void addAddress(AddressModel address) {
         if (addresses == null) {
-            addresses = new ArrayList<AddressModel>(1);
+            addresses = new ArrayList<>(1);
         }
         addresses.add(address);
     }
@@ -832,7 +833,7 @@ public class PatientModel extends InfoModel {
     
     public void addTelephone(TelephoneModel telephone) {
         if (telephones == null) {
-            telephones = new ArrayList<TelephoneModel>(1);
+            telephones = new ArrayList<>(1);
         }
         telephones.add(telephone);
     }
@@ -901,7 +902,7 @@ public class PatientModel extends InfoModel {
     }
     public String getAdmissionDate() {
         if (admission != null) {
-            SimpleDateFormat frmt = new SimpleDateFormat(DATE_WITHOUT_TIME);
+            SimpleDateFormat frmt = new SimpleDateFormat(IInfoModel.DATE_WITHOUT_TIME);
             return frmt.format(admission.getStarted());
         }
         return null;

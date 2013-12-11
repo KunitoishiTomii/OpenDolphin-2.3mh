@@ -1,12 +1,14 @@
 package open.dolphin.infomodel;
 
+import java.io.Serializable;
+
 /**
  * TelephoneModel
  * 
  * @author Minagawa,Kazushi
  * 
  */
-public class TelephoneModel  extends InfoModel {
+public class TelephoneModel implements Serializable {
 
     private String telephoneType;
 

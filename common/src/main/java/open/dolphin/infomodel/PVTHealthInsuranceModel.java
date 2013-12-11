@@ -1,11 +1,13 @@
 package open.dolphin.infomodel;
 
+import java.io.Serializable;
+
 /**
  * Health-Insurance class to be parsed.
  *
  * @author  Kazushi Minagawa, Digital Globe, Inc.
  */
-public class PVTHealthInsuranceModel extends InfoModel  {
+public class PVTHealthInsuranceModel implements Serializable {
     
     private String uuid;
     private String insuranceClass;

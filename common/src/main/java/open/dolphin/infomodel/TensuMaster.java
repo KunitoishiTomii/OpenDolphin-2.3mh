@@ -1,10 +1,12 @@
 package open.dolphin.infomodel;
 
+import java.io.Serializable;
+
 /**
  *
  * @author Kazushi Minagawa, Digital Globe, Inc.
  */
-public class TensuMaster {
+public class TensuMaster implements Serializable {
 
     private Integer hospnum;
 

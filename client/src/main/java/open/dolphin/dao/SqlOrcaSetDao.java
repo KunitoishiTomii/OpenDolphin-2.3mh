@@ -1,6 +1,5 @@
 package open.dolphin.dao;
 
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import open.dolphin.infomodel.*;
@@ -153,9 +152,8 @@ public class SqlOrcaSetDao extends SqlDaoBean {
         List<ModuleModel> retSet = new ArrayList<>();
 
         // setCd を検索する
-        int[] types1 = {Types.INTEGER, Types.CHAR};
-        String[] params1 = {String.valueOf(hospnum), setCd};
-        List<List<String>> valuesList1 = executePreparedStatement(sql1, types1, params1);
+        Object[] params1 = {hospnum, setCd};
+        List<List<String>> valuesList1 = executePreparedStatement(sql1, params1);
 
         List<OrcaInputSet> list = new ArrayList<>();
 
@@ -197,9 +195,8 @@ public class SqlOrcaSetDao extends SqlDaoBean {
 
             } else {
 
-                int[] types2 = {Types.INTEGER, Types.CHAR};
-                String[] params2 = {String.valueOf(hospnum), inputcd};
-                List<List<String>> valuesList2 = executePreparedStatement(sql2, types2, params2);
+                Object[] params2 = {hospnum, inputcd};
+                List<List<String>> valuesList2 = executePreparedStatement(sql2, params2);
 
                 if (!valuesList2.isEmpty()) {
                     List<String> values2 = valuesList2.get(0);

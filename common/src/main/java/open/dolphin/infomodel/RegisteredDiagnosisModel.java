@@ -83,9 +83,10 @@ public class RegisteredDiagnosisModel extends KarteEntryBean {
     }
     
     // スタンプ箱のエディタで使用
-    @JsonIgnore
     @Transient
+    @JsonIgnore
     private String stampId;
+    
     public void setStampId(String stampId) {
         this.stampId = stampId;
     }

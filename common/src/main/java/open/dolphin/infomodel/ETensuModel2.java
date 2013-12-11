@@ -1,11 +1,13 @@
 package open.dolphin.infomodel;
 
+import java.io.Serializable;
+
 /**
  * 包括・被包括テーブルモデル
  *
  * @author masuda, Masuda Naika
  */
-public class ETensuModel2 {
+public class ETensuModel2 implements Serializable {
     
     public static final String ETENSU2 = "tbl_etensu_2";
     public static final String ETENSU2JMA = "tbl_etensu_2_jma";

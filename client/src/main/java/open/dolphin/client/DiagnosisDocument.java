@@ -913,7 +913,8 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
 
         // TableSorterを導入していることもあり挿入場所の指定は無視ｗ
         if (sm != null) {
-            RegisteredDiagnosisModel module = (RegisteredDiagnosisModel) BeanUtils.xmlDecode(sm.getStampBytes());
+            RegisteredDiagnosisModel module = 
+                    (RegisteredDiagnosisModel) BeanUtils.xmlDecode(sm.getStampBytes());
 //masuda^   同じ病名のチェック
             if (disallowSameDiagnosis(module)){
                 return;
@@ -1234,7 +1235,7 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
     public void openEditor2() {
 
         Window lock = SwingUtilities.getWindowAncestor(this.getUI());
-        StampEditor editor = new StampEditor((RegisteredDiagnosisModel[])null, this, lock);
+        StampEditor editor = new StampEditor(null, this, lock);
     }
 
 //masuda^ 既存病名編集
@@ -1243,7 +1244,7 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
         RegisteredDiagnosisModel model = sorter.getObject(selectedRow);
         // 編集するRegisteredDiagnosisModelをeditorに伝える
         Window lock = SwingUtilities.getWindowAncestor(this.getUI());
-        StampEditor stampEditor = new StampEditor(new RegisteredDiagnosisModel[]{model}, this, lock);
+        StampEditor stampEditor = new StampEditor(model, this, lock);
     }
 //masuda$
 

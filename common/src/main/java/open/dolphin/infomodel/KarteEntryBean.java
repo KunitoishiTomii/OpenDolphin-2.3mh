@@ -1,5 +1,6 @@
 package open.dolphin.infomodel;
 
+import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import javax.persistence.*;
@@ -11,7 +12,7 @@ import org.hibernate.search.annotations.IndexedEmbedded;
  * @author Minagawa,Kazushi
  */
 @MappedSuperclass
-public class KarteEntryBean extends InfoModel implements Comparable {
+public class KarteEntryBean implements Serializable, Comparable {
     
     @Id @GeneratedValue(strategy=GenerationType.AUTO)
     private long id;
@@ -316,7 +317,7 @@ public class KarteEntryBean extends InfoModel implements Comparable {
     }
     
     private String dateAsString(Date date) {
-        SimpleDateFormat sdf = new SimpleDateFormat(DATE_WITHOUT_TIME);
+        SimpleDateFormat sdf = new SimpleDateFormat(IInfoModel.DATE_WITHOUT_TIME);
         return sdf.format(date);
     }
     
@@ -340,7 +341,7 @@ public class KarteEntryBean extends InfoModel implements Comparable {
     }
     
     private String timeStampAsString(Date date) {
-        SimpleDateFormat sdf = new SimpleDateFormat(ISO_8601_DATE_FORMAT);
+        SimpleDateFormat sdf = new SimpleDateFormat(IInfoModel.ISO_8601_DATE_FORMAT);
         return sdf.format(date);
     }
 

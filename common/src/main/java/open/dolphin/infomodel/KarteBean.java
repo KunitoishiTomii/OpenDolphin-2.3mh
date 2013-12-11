@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -18,7 +19,7 @@ import javax.persistence.*;
 @JsonIdentityInfo(generator=ObjectIdGenerators.IntSequenceGenerator.class, property="@id")
 @Entity
 @Table(name = "d_karte")
-public class KarteBean extends InfoModel {
+public class KarteBean implements Serializable {
     
     @Id @GeneratedValue(strategy=GenerationType.AUTO)
     private long id;

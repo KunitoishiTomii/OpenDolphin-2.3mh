@@ -2,6 +2,7 @@ package open.dolphin.infomodel;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -16,7 +17,7 @@ import org.hibernate.search.annotations.IndexedEmbedded;
  */
 @Entity
 @Table(name="d_users")
-public class UserModel extends InfoModel {
+public class UserModel implements Serializable {
     
     @Id @GeneratedValue(strategy=GenerationType.AUTO)
     private long id;
@@ -95,7 +96,7 @@ public class UserModel extends InfoModel {
      * @return 施設IDを除いたID
      */
     public String idAsLocal() {
-        int index = userId.indexOf(COMPOSITE_KEY_MAKER);
+        int index = userId.indexOf(IInfoModel.COMPOSITE_KEY_MAKER);
         return userId.substring(index+1);
     }
 
@@ -170,7 +171,7 @@ public class UserModel extends InfoModel {
     public void addRole(RoleModel value) {
         
         if (roles == null) {
-            roles = new ArrayList<RoleModel>(1);
+            roles = new ArrayList<>(1);
         }
         roles.add(value);
     }

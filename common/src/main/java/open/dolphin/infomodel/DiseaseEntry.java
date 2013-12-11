@@ -23,8 +23,8 @@ public final class DiseaseEntry extends MasterEntry {
     
     @Override
     public boolean isInUse() {
-        if (disUseDate != null) {
-            return refDate.compareTo(disUseDate) <= 0;
+        if (getDisUseDate() != null) {
+            return refDate.compareTo(getDisUseDate()) <= 0;
         }
         return false;
     }

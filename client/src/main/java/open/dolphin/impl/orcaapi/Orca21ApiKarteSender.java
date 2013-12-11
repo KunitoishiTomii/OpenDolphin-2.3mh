@@ -126,7 +126,7 @@ public class Orca21ApiKarteSender implements IKarteSender {
 
             // ClaimBundleのみを処理する
             String entity = mm.getModuleInfoBean().getEntity();
-            IInfoModel im = mm.getModel();
+            InfoModel im = mm.getModel();
             if (entity == null || !(im instanceof ClaimBundle)) {
                 continue;
             }

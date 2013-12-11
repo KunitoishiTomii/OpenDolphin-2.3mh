@@ -8,9 +8,9 @@
  */
 package open.dolphin.pvtclaim;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import open.dolphin.infomodel.InfoModel;
 
 /**
  * Simple Claim　Class used for PVT.
@@ -20,9 +20,8 @@ import open.dolphin.infomodel.InfoModel;
  * Modified by Mirror-I corp for adding 'claimDeptName' and related function to store/get Department name
  *
  */
-public class PVTClaim extends InfoModel {
-    
-    private static final long serialVersionUID = -8573272136025043849L;
+public class PVTClaim implements Serializable {
+
     private String claimStatus;
     private String claimRegistTime;
     private String claimAdmitFlag;

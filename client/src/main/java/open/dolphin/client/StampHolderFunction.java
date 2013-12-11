@@ -307,7 +307,7 @@ public class StampHolderFunction {
     // テキストとしてコピーする copyAsTextAction
     private void copyAsText() {
         
-        IInfoModel im = selectedStampHolder.getStamp().getModel();
+        InfoModel im = selectedStampHolder.getStamp().getModel();
         if (im instanceof BundleDolphin) {
             BundleDolphin bundle = (BundleDolphin) im;
             StringSelection ss = new StringSelection(bundle.toString());

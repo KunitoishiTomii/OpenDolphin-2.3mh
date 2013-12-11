@@ -1,6 +1,5 @@
 package open.dolphin.dao;
 
-import java.sql.Types;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -80,10 +79,9 @@ public class SqlOrcaView extends SqlDaoBean {
         String sql = sb.toString();
         ClientContext.getBootLogger().debug(sql);
 
-        int[] types = {Types.BIGINT, Types.CHAR, Types.CHAR, Types.CHAR, Types.INTEGER};
-        String[] params = {String.valueOf(orcaPtId), from, to, "1", String.valueOf(hospNum)};
+        Object[] params = {orcaPtId, from, to, "1", hospNum};
 
-        List<List<String>> valuesList = executePreparedStatement(sql, types, params);
+        List<List<String>> valuesList = executePreparedStatement(sql, params);
 
         List<RegisteredDiagnosisModel> collection = new ArrayList<>();
 
@@ -119,10 +117,9 @@ public class SqlOrcaView extends SqlDaoBean {
         String sql = sb.toString();
         ClientContext.getBootLogger().debug(sql);
 
-        int[] types = {Types.BIGINT, Types.CHAR, Types.CHAR, Types.INTEGER};
-        String[] params = {String.valueOf(orcaPtId), " ", "1", String.valueOf(hospNum)};
+        Object[] params = {orcaPtId, " ", "1", hospNum};
 
-        List<List<String>> valuesList = executePreparedStatement(sql, types, params);
+        List<List<String>> valuesList = executePreparedStatement(sql, params);
         List<RegisteredDiagnosisModel> collection = new ArrayList<>();
         for (List<String> values : valuesList) {
             RegisteredDiagnosisModel ord = getRegisteredDiagnosisModel(values);

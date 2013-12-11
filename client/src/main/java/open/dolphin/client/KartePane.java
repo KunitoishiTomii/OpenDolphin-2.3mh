@@ -14,7 +14,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -624,76 +623,71 @@ public class KartePane implements MouseListener, CaretListener, PropertyChangeLi
         //------------------------------------
         ModuleModel stamp = new ModuleModel();
         stamp.setModuleInfoBean(stampInfo);
-//masuda^   複数スタンプ対応
-        //StampEditor se = new StampEditor(stamp, this);
         StampEditor se = new StampEditor(new ModuleModel[]{stamp}, this, parent.getContext());
-//masuda$
     }
 
+    /**
+     * 永続化されているスタンプを取得してこのペインに展開する。
+     */
+    private void applySerializedStamp(final ModuleInfoBean stampInfo) {
+        
+        DBTask task = new DBTask<StampModel, Void>(parent.getContext()) {
+
+            @Override
+            protected StampModel doInBackground() throws Exception {
+
+                StampDelegater sdl = StampDelegater.getInstance();
+                StampModel getStamp = sdl.getStamp(stampInfo.getStampId());
+                
+                return getStamp;
+            }
+            
+            @Override
+            public void succeeded(StampModel result) {
+                
+                if (result != null) {
+                    InfoModel model = (InfoModel) BeanUtils.xmlDecode(result.getStampBytes());
+                    ModuleModel stamp = new ModuleModel();
+                    stamp.setModel(model);
+                    stamp.setModuleInfoBean(stampInfo);
+                    stamp(stamp);
+                }
+            }
+        };
+
+        task.execute();
+    }
+    
     /**
      * StampInfoがDropされた時、そのデータをペインに挿入する。
      * @param addList スタンプ情報のリスト
      */
-    public void stampInfoDropped(final ArrayList<ModuleInfoBean> addList) {
+    public void stampInfoDropped(final List<ModuleInfoBean> addList) {
         
         DBTask task = new DBTask<List<StampModel>, Void>(parent.getContext()) {
 
             @Override
             protected List<StampModel> doInBackground() throws Exception {
-//masuda^   シングルトン化       
-                //StampDelegater sdl = new StampDelegater();
+
                 StampDelegater sdl = StampDelegater.getInstance();
-//masuda$
                 List<StampModel> list = sdl.getStamps(addList);
+                
                 return list;
             }
             
             @Override
             public void succeeded(List<StampModel> list) {
+                
                 if (list != null) {
                     for (int i = 0; i < list.size(); i++) {
                         ModuleInfoBean stampInfo = addList.get(i);
                         StampModel theModel = list.get(i);
-                        IInfoModel model = (IInfoModel) BeanUtils.xmlDecode(theModel.getStampBytes());
+                        InfoModel model = (InfoModel) BeanUtils.xmlDecode(theModel.getStampBytes());
                         if (model != null) {
                             ModuleModel stamp = new ModuleModel();
                             stamp.setModel(model);
                             stamp.setModuleInfoBean(stampInfo);
                             stamp(stamp);
-                        }
-                    }
-                }
-            }
-        };
-        
-        task.execute();
-    }
-
-    /**
-     * TextStampInfo が Drop された時の処理を行なう。
-     */
-    public void textStampInfoDropped(final ArrayList<ModuleInfoBean> addList) {
-        
-        DBTask task = new DBTask<List<StampModel>, Void>(parent.getContext()) {
-
-            @Override
-            protected List<StampModel> doInBackground() throws Exception {
-//masuda^   シングルトン化       
-                //StampDelegater sdl = new StampDelegater();
-                StampDelegater sdl = StampDelegater.getInstance();
-//masuda$
-                List<StampModel> list = sdl.getStamps(addList);
-                return list;
-            }
-            
-            @Override
-            public void succeeded(List<StampModel> list) {
-                if (list != null) {
-                    for (int i = 0; i < list.size(); i++) {
-                        StampModel theModel = list.get(i);
-                        IInfoModel model = (IInfoModel) BeanUtils.xmlDecode(theModel.getStampBytes());
-                        if (model != null) {
-                            insertTextStamp(model.toString() + "\n");
                         }
                     }
                 }
@@ -712,32 +706,21 @@ public class KartePane implements MouseListener, CaretListener, PropertyChangeLi
 
             @Override
             protected StampModel doInBackground() throws Exception {
-//masuda^   シングルトン化       
-                //StampDelegater sdl = new StampDelegater();
+
                 StampDelegater sdl = StampDelegater.getInstance();
-//masuda$
                 StampModel getStamp = sdl.getStamp(stampInfo.getStampId());
+                
                 return getStamp;
             }
             
             @Override
             public void succeeded(StampModel result) {
+                
                 if (result != null) {
-                    try {
-//masuda^
-                        byte[] bytes = result.getStampBytes();
-                        //XMLDecoder d = new XMLDecoder(new BufferedInputStream(new ByteArrayInputStream(bytes)));
-                        //IInfoModel model = (IInfoModel) d.readObject();
-                        //d.close();
-                        IInfoModel model = (IInfoModel) BeanUtils.xmlDecode(bytes);
-//masuda$
-
-                        if (model != null) {
-                            insertTextStamp(model.toString());
-                        }
-
-                    } catch (Exception e) {
-                        e.printStackTrace(System.err);
+                    TextStampModel model
+                            = (TextStampModel) BeanUtils.xmlDecode(result.getStampBytes());
+                    if (model != null) {
+                        insertTextStamp(model.toString());
                     }
                 }
             }
@@ -745,36 +728,39 @@ public class KartePane implements MouseListener, CaretListener, PropertyChangeLi
         
         task.execute();
     }
-
+    
     /**
-     * 永続化されているスタンプを取得してこのペインに展開する。
+     * TextStampInfo が Drop された時の処理を行なう。
      */
-    private void applySerializedStamp(final ModuleInfoBean stampInfo) {
+    public void textStampInfoDropped(final List<ModuleInfoBean> addList) {
         
-        DBTask task = new DBTask<StampModel, Void>(parent.getContext()) {
+        DBTask task = new DBTask<List<StampModel>, Void>(parent.getContext()) {
 
             @Override
-            protected StampModel doInBackground() throws Exception {
-//masuda^   シングルトン化       
-                //StampDelegater sdl = new StampDelegater();
+            protected List<StampModel> doInBackground() throws Exception {
+
                 StampDelegater sdl = StampDelegater.getInstance();
-//masuda$
-                StampModel getStamp = sdl.getStamp(stampInfo.getStampId());
-                return getStamp;
+                List<StampModel> list = sdl.getStamps(addList);
+                
+                return list;
             }
             
             @Override
-            public void succeeded(StampModel result) {
-                if (result != null) {
-                    IInfoModel model = (IInfoModel) BeanUtils.xmlDecode(result.getStampBytes());
-                    ModuleModel stamp = new ModuleModel();
-                    stamp.setModel(model);
-                    stamp.setModuleInfoBean(stampInfo);
-                    stamp(stamp);
+            public void succeeded(List<StampModel> list) {
+                
+                if (list == null || list.isEmpty()) {
+                    return;
+                }
+                for (StampModel stampModel : list) {
+                    TextStampModel model
+                            = (TextStampModel) BeanUtils.xmlDecode(stampModel.getStampBytes());
+                    if (model != null) {
+                        insertTextStamp(model.toString() + "\n");
+                    }
                 }
             }
         };
-
+        
         task.execute();
     }
 

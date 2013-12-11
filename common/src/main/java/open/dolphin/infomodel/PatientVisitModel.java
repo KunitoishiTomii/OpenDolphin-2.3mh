@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
 import javax.persistence.*;
@@ -16,7 +17,7 @@ import javax.persistence.*;
  */
 @Entity
 @Table(name = "d_patient_visit")
-public class PatientVisitModel extends InfoModel {
+public class PatientVisitModel implements Serializable {
     
 //masuda^   ChartImplから引っ越し
     // PVT state

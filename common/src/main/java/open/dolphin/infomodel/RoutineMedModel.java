@@ -16,7 +16,7 @@ import javax.persistence.*;
  */
 @Entity
 @Table(name = "msd_routineMed")
-public class RoutineMedModel implements Serializable, Comparable, Cloneable{
+public class RoutineMedModel implements Serializable, Comparable, Cloneable {
     
     @Id 
     @GeneratedValue(strategy=GenerationType.AUTO)
@@ -127,11 +127,17 @@ public class RoutineMedModel implements Serializable, Comparable, Cloneable{
     }
 
     @Override
-    public RoutineMedModel clone() {
-        try {
-            return (RoutineMedModel) super.clone();
-        } catch (Exception ex) {
-        }
-        return null;
+    public RoutineMedModel clone() throws CloneNotSupportedException {
+        
+        RoutineMedModel ret = new RoutineMedModel();
+        ret.setId(id);
+        ret.setKarteId(karteId);
+        ret.setRegistDate(new Date(registDate.getTime()));
+        ret.setBookmark(bookmark);
+        ret.setMemo(memo);
+        ret.setModuleIds(moduleIds);
+        ret.setStatus(status);
+        ret.setModuleList(moduleList);
+        return ret;
     }
 }

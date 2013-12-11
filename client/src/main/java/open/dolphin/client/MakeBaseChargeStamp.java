@@ -590,7 +590,7 @@ public class MakeBaseChargeStamp extends CheckSantei {
         bundle.setClassName(MMLTable.getClaimClassCodeName(claimClassCode));
         bundle.setClassCodeSystem(ClaimConst.CLASS_CODE_ID);    // Claim007 固定の値
 
-        retStamp.setModel((IInfoModel) bundle);
+        retStamp.setModel(bundle);
         isModified = true;
     }
 

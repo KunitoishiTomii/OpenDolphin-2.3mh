@@ -18,6 +18,7 @@
  */
 package open.dolphin.infomodel;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -26,7 +27,7 @@ import java.util.Date;
  *
  * @author Kazushi Minagawa, Digital Globe, Inc.
  */
-public interface IStampTreeModel {
+public interface IStampTreeModel extends Serializable {
     
     public long getId();
     

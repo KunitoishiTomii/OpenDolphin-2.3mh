@@ -1,6 +1,7 @@
 package open.dolphin.infomodel;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -8,7 +9,7 @@ import java.util.Date;
  *
  * @author masuda, Masuda Naika
  */
-public class ExamHistoryModel {
+public class ExamHistoryModel implements Serializable {
     
     private static final String CODE_PHYSIOLOGY = "16";
     private static final String CODE_RADIOLOGY = "17";

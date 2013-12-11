@@ -67,11 +67,7 @@ public class OrcaService {
     
     public OrcaSqlModel executeSql(OrcaSqlModel sqlModel) {
 
-        if (sqlModel.isPreparedStatement()) {
-            executePreparedStatement(sqlModel);
-        } else {
-            executeStatement(sqlModel);
-        }
+        executeStatement(sqlModel);
 
         return sqlModel;
     }
@@ -102,64 +98,6 @@ public class OrcaService {
                     }
                 }
                 valuesList.add(values);
-            }
-
-        } catch (SQLException | ClassNotFoundException | NullPointerException ex) {
-            sqlModel.setErrorMessage(ex.getMessage());
-        }
-
-        sqlModel.setValuesList(valuesList);
-    }
-    
-    private void executePreparedStatement(OrcaSqlModel sqlModel) {
-        
-        List<List<String>> valuesList = new ArrayList<>();
-        
-        try (Connection con = getConnection(sqlModel.getUrl());
-                PreparedStatement ps = con.prepareStatement(sqlModel.getSql());) {
-
-            int paramCount = sqlModel.getParamList().size();
-            for (int i = 0; i < paramCount; ++i) {
-                int type = sqlModel.getTypeList().get(i);
-                String param = sqlModel.getParamList().get(i);
-                switch (type) {
-                    case Types.INTEGER:
-                        ps.setInt(i + 1, Integer.valueOf(param));
-                        break;
-                    case Types.BIGINT:
-                        ps.setLong(i + 1, Long.valueOf(param));
-                        break;
-                    case Types.FLOAT:
-                        ps.setFloat(i + 1, Float.valueOf(param));
-                        break;
-                    case Types.CHAR:
-                    default:
-                        ps.setString(i + 1, param);
-                        break;
-                }
-            }
-            
-            try (ResultSet rs = ps.executeQuery()) {
-
-                while (rs.next()) {
-                    List<String> values = new ArrayList<>();
-                    ResultSetMetaData meta = rs.getMetaData();
-                    int columnCount = meta.getColumnCount();
-                    for (int i = 1; i <= columnCount; ++i) {
-                        int type = meta.getColumnType(i);
-                        switch (type) {
-                            case Types.SMALLINT:
-                            case Types.NUMERIC:
-                            case Types.INTEGER:
-                                values.add(String.valueOf(rs.getInt(i)));
-                                break;
-                            default:
-                                values.add(rs.getString(i));
-                                break;
-                        }
-                    }
-                    valuesList.add(values);
-                }
             }
 
         } catch (SQLException | ClassNotFoundException | NullPointerException ex) {

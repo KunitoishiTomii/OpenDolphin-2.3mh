@@ -1,6 +1,5 @@
 package open.dolphin.dao;
 
-import java.sql.Types;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -79,10 +78,9 @@ public final class SqlMiscDao extends SqlDaoBean {
         
         List<AdmissionModel> ret = new ArrayList<>();
         
-        int[] types = {Types.CHAR, Types.CHAR, Types.INTEGER};
-        String[] params = {dateStr, dateStr, String.valueOf(hospNum)};
+        Object[] params = {dateStr, dateStr, hospNum};
         
-        List<List<String>> valuesList = executePreparedStatement(sql, types, params);
+        List<List<String>> valuesList = executePreparedStatement(sql, params);
         
         for (List<String> values : valuesList) {
             String patientId = values.get(0).trim();

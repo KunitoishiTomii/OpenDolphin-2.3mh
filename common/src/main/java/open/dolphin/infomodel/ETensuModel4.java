@@ -1,5 +1,6 @@
-
 package open.dolphin.infomodel;
+
+import java.io.Serializable;
 
 
 /**
@@ -7,7 +8,7 @@ package open.dolphin.infomodel;
  * 
  * @author masuda, Masuda Naida
  */
-public class ETensuModel4 {
+public class ETensuModel4 implements Serializable {
 
     private String n_group;     // 加算グループごとに設定した番号
     private String srycd;       // 診療行為コード

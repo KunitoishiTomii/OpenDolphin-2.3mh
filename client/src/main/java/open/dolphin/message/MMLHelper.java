@@ -33,7 +33,7 @@ public class MMLHelper {
     
     private List<AccessRightModel> accessRights;
     
-    private boolean DEBUG = false;
+    private final boolean DEBUG = false;
     
     /** Creates a new instance of MMLBuilder */
     public MMLHelper() {
@@ -54,7 +54,7 @@ public class MMLHelper {
         
         // Moduleを抽出する
         Collection<ModuleModel> moduleBeans = getDocument().getModules();
-        pModules = new ArrayList<ModuleModel>();
+        pModules = new ArrayList<>();
         
         for (ModuleModel module : moduleBeans) {
             
@@ -74,14 +74,14 @@ public class MMLHelper {
         // Schemaを抽出する
         Collection<SchemaModel> schemaC = getDocument().getSchema();
         if (schemaC != null && schemaC.size() > 0) {
-            schemas = new ArrayList<SchemaModel>(schemaC.size());
+            schemas = new ArrayList<>(schemaC.size());
             schemas.addAll(schemaC);
         }
         
         // アクセス権を抽出する
         Collection<AccessRightModel> arc = getDocument().getDocInfoModel().getAccessRights();
         if (arc != null && arc.size() > 0) {
-            accessRights = new ArrayList<AccessRightModel>(arc.size());
+            accessRights = new ArrayList<>(arc.size());
             accessRights.addAll(arc);
         }
         
@@ -271,16 +271,15 @@ public class MMLHelper {
      * soaSpec 及び pSpecをパースし xhtml の自由記載表現に変換する。
      */
     private void parse(String spec) {
-        
-        try {
-            BufferedReader reader = new BufferedReader(new StringReader(spec));
+
+        try (BufferedReader reader = new BufferedReader(new StringReader(spec))) {
+            
             SAXBuilder docBuilder = new SAXBuilder();
             Document doc = docBuilder.build(reader);
             Element root = doc.getRootElement();
             debug(root.toString());
             parseChildren(root);
-            reader.close();
-            
+
         } catch (Exception e) {
             e.printStackTrace(System.err);
         }
@@ -372,7 +371,7 @@ public class MMLHelper {
      */
     private String getStampInfo(ModuleModel module) {
         
-        IInfoModel obj = module.getModel();
+        InfoModel obj = module.getModel();
         StringBuilder buf = new StringBuilder();
         
         if (obj instanceof BundleMed) {

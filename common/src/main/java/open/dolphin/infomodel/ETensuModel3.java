@@ -1,12 +1,13 @@
-
 package open.dolphin.infomodel;
+
+import java.io.Serializable;
 
 /**
  * 背反関連テーブルモデル
  * 
  * @author masuda, Mauda Naika
  */
-public class ETensuModel3 {
+public class ETensuModel3 implements Serializable {
     
     public static final int R_DAY   = 1;
     public static final int R_MONTH = 2;

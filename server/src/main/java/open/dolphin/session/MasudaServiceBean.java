@@ -553,7 +553,7 @@ public class MasudaServiceBean {
         HashMap<Long, List<Long>> karteIdDocIdMap = new HashMap<>();
         for (ModuleModel mm : modules) {
             // テキスト抽出
-            IInfoModel im = (IInfoModel) BeanUtils.xmlDecode(mm.getBeanBytes());
+            InfoModel im = (InfoModel) BeanUtils.xmlDecode(mm.getBeanBytes());
             mm.setModel(im);
             String text;
             if (im instanceof ProgressCourse) {

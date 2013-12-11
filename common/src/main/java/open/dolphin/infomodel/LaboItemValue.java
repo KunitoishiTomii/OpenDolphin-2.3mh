@@ -2,6 +2,7 @@ package open.dolphin.infomodel;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.io.Serializable;
 import javax.persistence.*;
 
 /**
@@ -12,7 +13,7 @@ import javax.persistence.*;
  */
 @Entity
 @Table(name = "d_labo_item")
-public class LaboItemValue extends InfoModel {
+public class LaboItemValue implements Serializable {
     
     @JsonIgnore
     @Id @GeneratedValue(strategy=GenerationType.AUTO)

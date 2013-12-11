@@ -18,17 +18,15 @@
  */
 package open.dolphin.infomodel;
 
+import java.io.Serializable;
 import java.util.ArrayList;
-import open.dolphin.infomodel.BundleMed;
-import open.dolphin.infomodel.InfoModel;
-import open.dolphin.infomodel.ModuleInfoBean;
 
 /**
  * ORCA の tbl_inputcd エンティティクラス。
  *
  * @author Minagawa, Kazushi
  */
-public class OrcaInputCd extends InfoModel {
+public class OrcaInputCd implements Serializable {
     
     private String hospId;
     
@@ -169,7 +167,7 @@ public class OrcaInputCd extends InfoModel {
     
     public void addInputSet(OrcaInputSet set) {
         if (inputSet == null) {
-            inputSet = new ArrayList<OrcaInputSet>();
+            inputSet = new ArrayList<>();
         }
         inputSet.add(set);
     }
@@ -177,8 +175,8 @@ public class OrcaInputCd extends InfoModel {
     public ModuleInfoBean getStampInfo() {
         ModuleInfoBean ret = new ModuleInfoBean();
         ret.setStampName(getDspName());
-        ret.setStampRole(ROLE_ORCA_SET);
-        ret.setEntity(ENTITY_MED_ORDER);    // ?
+        ret.setStampRole(IInfoModel.ROLE_ORCA_SET);
+        ret.setEntity(IInfoModel.ENTITY_MED_ORDER);    // ?
         ret.setStampId(getInputCd());
         return ret;
     }

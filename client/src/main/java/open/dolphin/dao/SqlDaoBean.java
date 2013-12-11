@@ -184,93 +184,51 @@ public class SqlDaoBean extends DaoBean {
         return Collections.emptyList();
     }
 
-    protected List<List<String>> executePreparedStatement(String sql, int[] types, String[] params) {
-
-        if (isClient()) {
-            return executePreparedStatement1(sql, types, params);
-        }
-        return executePreparedStatement2(sql, types, params);
-    }
-    
-    private List<List<String>> executePreparedStatement1(String sql, int[] types, String[] params) {
-
-        List<List<String>> valuesList = new ArrayList<>();
-
-        try (Connection con = getConnection();
-                PreparedStatement ps = con.prepareStatement(sql);) {
-
-            for (int i = 0; i < types.length; ++i) {
-                int type = types[i];
-                String param = params[i];
-                switch (type) {
-                    case Types.INTEGER:
-                        ps.setInt(i + 1, Integer.valueOf(param));
-                        break;
-                    case Types.BIGINT:
-                        ps.setLong(i + 1, Long.valueOf(param));
-                        break;
-                    case Types.FLOAT:
-                        ps.setFloat(i + 1, Float.valueOf(param));
-                        break;
-                    case Types.CHAR:
-                    default:
-                        ps.setString(i + 1, param);
-                        break;
-                }
-            }
-            
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    List<String> values = getColumnValues(rs);
-                    valuesList.add(values);
-                }
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace(System.err);
-            processError(e);
-        }
-
-        return valuesList;
-    }
-    
-    private List<List<String>> executePreparedStatement2(String sql, int[] types, String[] params) {
+    protected List<List<String>> executePreparedStatement(String sql, Object[] params) {
         
-        OrcaSqlModel sqlModel = new OrcaSqlModel();
-        sqlModel.setPreparedStatement(true);
-        sqlModel.setUrl(getURL());
-        sqlModel.setSql(sql);
-        
-        for (int i = 0; i < types.length; ++i) {
-            int type = types[i];
-            switch (type) {
-                case Types.INTEGER:
-                case Types.FLOAT:
-                case Types.BIGINT:
-                    sqlModel.addParameter(type, String.valueOf(params[i]));
-                    break;
-                case Types.CHAR:
-                default:
-                    sqlModel.addParameter(type, params[i]);
-                    break;
-            }
-        }
         try {
-            OrcaSqlModel result = OrcaDelegater.getInstance().executeQuery(sqlModel);
-
-            if (result != null) {
-                String errMsg = result.getErrorMessage();
-                if (errMsg != null) {
-                    processError(new SQLException(result.getErrorMessage()));
-                } else {
-                    return result.getValuesList();
-                }
+            String sql2 = createSql(sql, params);
+            if (isClient()) {
+                return executeStatement1(sql2);
             }
-        } catch (Exception ex) {
+            return executeStatement2(sql2);
+        } catch (SQLException ex) {
         }
         
         return Collections.emptyList();
     }
+    
+    private String createSql(String sql, Object[] params) throws SQLException {
+        
+        int index = 0;
+        StringBuilder sb = new StringBuilder();
+
+        try {
+            char[] charArray = sql.toCharArray();
+            for (char c : charArray) {
+                if (c == '?') {
+                    Object param = params[index];
+                    if (param instanceof Number) {
+                        sb.append(String.valueOf(param));
+                    } else {
+                        sb.append('\'').append(String.valueOf(param)).append('\'');
+                    }
+                    index++;
+                } else {
+                    sb.append(c);
+                }
+            }
+        } catch (Exception ex) {
+            throw new SQLException(ex.getMessage());
+        }
+
+        if (index != params.length) {
+            throw new SQLException("Illegal parameter count.");
+        }
+
+        return sb.toString();
+    }
+
     
     protected final int getHospNum() {
         return SyskanriInfo.getInstance().getHospNumFromSysKanriInfo();
@@ -328,10 +286,9 @@ public class SqlDaoBean extends DaoBean {
         
         final String sql = "select ptid from tbl_ptnum where hospnum = ? and ptnum = ?";
         
-        int[] types = {Types.INTEGER, Types.CHAR};
-        String[] params = {String.valueOf(hospNum), patientId};
+        Object[] params = {hospNum, patientId};
         
-        List<List<String>> valuesList = executePreparedStatement(sql, types, params);
+        List<List<String>> valuesList = executePreparedStatement(sql, params);
         
         if (!valuesList.isEmpty()) {
             List<String> values = valuesList.get(0);

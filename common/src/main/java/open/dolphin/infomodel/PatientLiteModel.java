@@ -1,11 +1,13 @@
 package open.dolphin.infomodel;
 
+import java.io.Serializable;
+
 /**
  * PatientLiteModel
  *
  * @author Minagawa, kazushi
  */
-public final class PatientLiteModel extends InfoModel {
+public final class PatientLiteModel implements Serializable {
     
     private String patientId;
     private String fullName;

@@ -13,6 +13,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 
 /**
@@ -163,6 +165,11 @@ public class JsonConverter {
             return obj;
         } catch (IOException ex) {
             processException(ex);
+        } finally {
+            try {
+                is.close();
+            } catch (IOException ex) {
+            }
         }
         return null;
     }
@@ -174,6 +181,11 @@ public class JsonConverter {
             return obj;
         } catch (IOException ex) {
             processException(ex);
+        } finally {
+            try {
+                is.close();
+            } catch (IOException ex) {
+            }
         }
         return null;
     }

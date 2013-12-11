@@ -1,5 +1,6 @@
 package open.dolphin.infomodel;
 
+import java.io.Serializable;
 import javax.persistence.Embeddable;
 
 /**
@@ -9,7 +10,7 @@ import javax.persistence.Embeddable;
  *
  */
 @Embeddable
-public class DepartmentModel extends InfoModel {
+public class DepartmentModel implements Serializable {
     
     private String department;
     

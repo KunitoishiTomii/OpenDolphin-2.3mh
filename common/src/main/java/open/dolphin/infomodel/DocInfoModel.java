@@ -1,6 +1,7 @@
 package open.dolphin.infomodel;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -14,7 +15,7 @@ import javax.persistence.*;
  * @author modified by masuda, Masuda Naika
  */
 @Embeddable
-public class DocInfoModel extends InfoModel implements Comparable {
+public class DocInfoModel implements Serializable, Comparable {
     
     @Transient
     private long docPk;

@@ -1,12 +1,14 @@
 package open.dolphin.infomodel;
 
+import java.io.Serializable;
+
 /**
  * AddressModel
  * 
  * 
  * @author Minagawa,kazushi
  */
-public class AddressModel extends InfoModel {
+public class AddressModel implements Serializable {
 
     private String addressType;
     private String addressTypeDesc;

@@ -689,26 +689,39 @@ public class StampBoxPlugin extends AbstractMainTool {
     
     /**
      * EditorValueListener
-     * エディタで作成したスタンプをStampTreeに加える。
+     * エディタ(EditorSetPanel)で作成したスタンプをStampTreeに加える。
      */
     private class EditorValueListener implements PropertyChangeListener {
 
         @Override
         public void propertyChange(PropertyChangeEvent e) {
             
-            IInfoModel[] infos = (IInfoModel[]) e.getNewValue();
-            if (infos == null || infos.length == 0) {
+            Object obj = e.getNewValue();
+            if (!(obj instanceof Object[])) {
+                return;
+            }
+            Object[] valuePair = (Object[]) obj;
+            if (valuePair.length < 2) {
+                return;
+            }
+            Object oldValue = valuePair[0];
+            Object newValue = valuePair[1];
+
+            if (newValue == null) {
                 return;
             }
             
-            IInfoModel firstObj = infos[0];
-
-            if (firstObj instanceof ModuleModel) {
+            if (newValue instanceof ModuleModel[]) {
                 //--------------------
                 // 編集したスタンプ
                 //--------------------
-                ModuleModel[] newStamps = (ModuleModel[]) infos;
-                ModuleModel[] oldStamps = (ModuleModel[]) e.getOldValue();
+                ModuleModel[] newStamps = (ModuleModel[]) newValue;
+                ModuleModel[] oldStamps = (ModuleModel[]) oldValue;
+                
+                // いったんstampIdをクリアする
+                for (ModuleModel mm : newStamps) {
+                    mm.getModuleInfoBean().setStampId(null);
+                }
                 // 編集元があれば一つ目はstampIdを継承する
                 if (oldStamps != null && oldStamps.length > 0) {
                     ModuleInfoBean newInfo = newStamps[0].getModuleInfoBean();
@@ -717,27 +730,43 @@ public class StampBoxPlugin extends AbstractMainTool {
                         newInfo.setStampId(oldInfo.getStampId());
                     }
                 }
-                
+
                 String entity = newStamps[0].getModuleInfoBean().getEntity();
                 StampTree tree = getStampTree(entity);
-                if (IInfoModel.ENTITY_TEXT.equals(entity)) {
-                    tree.addOrReplaceTextStamp(newStamps);
-                } else {
-                    tree.addOrReplaceStamp(newStamps);
-                }
+                tree.addOrReplaceStamp(newStamps);
+
                 
-            } else if (firstObj instanceof RegisteredDiagnosisModel) {
+            } else if (newValue instanceof RegisteredDiagnosisModel) {
                 //-------------------
                 // 傷病名
                 //-------------------
-                RegisteredDiagnosisModel[] newRds = (RegisteredDiagnosisModel[]) infos;
-                RegisteredDiagnosisModel[] oldRds = (RegisteredDiagnosisModel[]) e.getOldValue();
-                // 編集元があれば一つ目はstampIdを継承する
-                if (oldRds != null && oldRds.length > 0) {
-                    newRds[0].setStampId(oldRds[0].getStampId());
+                RegisteredDiagnosisModel newRd = (RegisteredDiagnosisModel) newValue;
+                RegisteredDiagnosisModel oldRd = (RegisteredDiagnosisModel) oldValue;
+                
+                // 編集元があればはstampIdを継承する
+                if (oldRd != null) {
+                    newRd.setStampId(oldRd.getStampId());
+                    // 気持ちが悪いのでEditorSetPanelで-1に設定したidを戻す TODO
+                    oldRd.setId(0);
+                } else {
+                    newRd.setStampId(null);     //  新規
                 }
+                
                 StampTree tree = getStampTree(IInfoModel.ENTITY_DIAGNOSIS);
-                tree.addOrReplaceDiagnosis(newRds);
+                tree.addOrReplaceDiagnosis(newRd);
+                
+            } else if (newValue instanceof TextStampModel) {
+                // TextStamp
+                TextStampModel newText = (TextStampModel) newValue;
+                TextStampModel oldText = (TextStampModel) oldValue;
+                // 編集元があればはstampIdを継承する
+                if (oldText != null) {
+                    newText.setStampId(oldText.getStampId());
+                } else {
+                    newText.setStampId(null);   //  新規
+                }
+                StampTree tree = getStampTree(IInfoModel.ENTITY_TEXT);
+                tree.addOrReplaceTextStamp(newText);
             }
         }
     }
