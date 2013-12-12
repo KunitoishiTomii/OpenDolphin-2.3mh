@@ -221,9 +221,9 @@ public class ImageBox extends AbstractMainTool {
         } catch (IOException | DirectoryIteratorException ex) {
         }
      
-        for (Map.Entry entry : map.entrySet()) {
-            String folderName = (String) entry.getKey();
-            List<URL> urlList = (List<URL>) entry.getValue();
+        for (Map.Entry<String, List<URL>> entry : map.entrySet()) {
+            String folderName = entry.getKey();
+            List<URL> urlList = entry.getValue();
             ImagePalette imagePalette = new ImagePalette(null, 0, imageWidth, imageHeight);
             imagePalette.setUrlList(urlList);
             tabbedPane.addTab(folderName, imagePalette);

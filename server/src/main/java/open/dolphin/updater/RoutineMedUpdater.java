@@ -48,7 +48,7 @@ public class RoutineMedUpdater extends AbstractUpdaterModule {
             final String sql3 = "delete from msd_routinemed where moduleIds is null";
             final String sql4 = "drop table msd_routinemed_modulelist";
             
-            Map<Long, String> map = new HashMap<Long, String>();
+            Map<Long, String> map = new HashMap<>();
             
             Statement stmt = null;
             PreparedStatement ps = null;
@@ -79,9 +79,9 @@ public class RoutineMedUpdater extends AbstractUpdaterModule {
 
                 // msd_routinemedテーブルにidリストを記録する
                 ps = con.prepareStatement(sql2);
-                for (Map.Entry entry : map.entrySet()) {
-                    Long moduleId = (Long) entry.getKey();
-                    String ids = (String) entry.getValue();
+                for (Map.Entry<Long, String> entry : map.entrySet()) {
+                    Long moduleId = entry.getKey();
+                    String ids = entry.getValue();
                     ps.setString(1, ids);
                     ps.setLong(2, moduleId);
                     ps.executeUpdate();
@@ -115,7 +115,7 @@ public class RoutineMedUpdater extends AbstractUpdaterModule {
 
         private List<String> getTableList(Connection connection) throws SQLException {
 
-            List<String> result = new ArrayList<String>();
+            List<String> result = new ArrayList<>();
             ResultSet rs = null;
             try {
                 final String[] types = {"TABLE"};

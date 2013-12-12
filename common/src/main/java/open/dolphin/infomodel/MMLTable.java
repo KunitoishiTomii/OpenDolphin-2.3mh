@@ -59,7 +59,7 @@ public final class MMLTable {
         claimClassCode.put("970", "入院(食事療養)");
         claimClassCode.put("971", "入院(標準負担額)");
 */
-        claimClassCode = new HashMap<String, String>(100, 0.75f);
+        claimClassCode = new HashMap<>(100, 0.75f);
         claimClassCode.put("110","初診料");
         claimClassCode.put("120","再診料");
         claimClassCode.put("130","管理料");
@@ -174,7 +174,7 @@ public final class MMLTable {
     private static final HashMap<String, String> departmentCode;
     static {
      
-        departmentCode = new HashMap<String, String>(40, 1.0f);
+        departmentCode = new HashMap<>(40, 1.0f);
         departmentCode.put("内科", "01");
         departmentCode.put("精神科", "02");
         departmentCode.put("神経科", "03");
@@ -226,10 +226,10 @@ public final class MMLTable {
         if (code == null) {
             return null;
         }
-        for (Map.Entry entry : departmentCode.entrySet()) {
-            String value = (String) entry.getValue();
+        for (Map.Entry<String, String> entry : departmentCode.entrySet()) {
+            String value = entry.getValue();
             if (code.equals(value)) {
-                return (String) entry.getKey();
+                return entry.getKey();
             }
         }
         return null;
@@ -239,7 +239,7 @@ public final class MMLTable {
     private static final Map<String, String> mml0016Map;
     
     static {
-        mml0016Map = new HashMap<String, String>();
+        mml0016Map = new HashMap<>();
         mml0016Map.put("died", "死亡");
         mml0016Map.put("worsening", "悪化");
         mml0016Map.put("unchanged", "不変");
@@ -259,7 +259,7 @@ public final class MMLTable {
     private static final Map<String, String> claim011Map;
     
     static {
-        claim011Map = new HashMap<String, String>();
+        claim011Map = new HashMap<>();
         claim011Map.put("001", "入院");
         claim011Map.put("002", "退院");
         claim011Map.put("003", "転棟");
@@ -277,7 +277,7 @@ public final class MMLTable {
     private static final Map<String, String> claim012Map;
     
     static {
-        claim012Map = new HashMap<String, String>();
+        claim012Map = new HashMap<>();
         claim012Map.put("01", "一般入院");
         claim012Map.put("02", "特定入院");
     }
@@ -285,7 +285,7 @@ public final class MMLTable {
     private static final Map<String, String> claim013Map;
     
     static {
-        claim013Map = new HashMap<String, String>();
+        claim013Map = new HashMap<>();
         claim013Map.put("01", "継続入院");
     }
 }

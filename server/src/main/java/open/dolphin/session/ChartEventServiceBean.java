@@ -276,8 +276,8 @@ public class ChartEventServiceBean {
         
         Map<String, List<PatientVisitModel>> map = contextHolder.getPvtListMap();
         
-        for (Map.Entry entry : map.entrySet()) {
-            List<PatientVisitModel> pvtList = (List<PatientVisitModel>) entry.getValue();
+        for (Map.Entry<String, List<PatientVisitModel>> entry : map.entrySet()) {
+            List<PatientVisitModel> pvtList = entry.getValue();
             
             List<PatientVisitModel> toRemove = new ArrayList<>();
             for (PatientVisitModel pvt : pvtList) {
@@ -291,7 +291,7 @@ public class ChartEventServiceBean {
             pvtList.removeAll(toRemove);
             
             // クライアントに伝える。
-            String fid = (String) entry.getKey();
+            String fid = entry.getKey();
             String uuid = contextHolder.getServerUUID();
             ChartEventModel msg = new ChartEventModel(uuid);
             msg.setFacilityId(fid);

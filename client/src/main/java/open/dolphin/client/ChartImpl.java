@@ -1815,9 +1815,9 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
         PluginLister<NChartDocument> lister = PluginLister.list(NChartDocument.class);
         LinkedHashMap<String, String> nproviders = lister.getProviders();
         if (nproviders != null) {
-            for (Map.Entry entry : nproviders.entrySet()) {
-                String cmd = (String) entry.getKey();
-                String clsName = (String) entry.getValue();
+            for (Map.Entry<String, String> entry : nproviders.entrySet()) {
+                String cmd = entry.getKey();
+                String clsName = entry.getValue();
                 NameValuePair pair = new NameValuePair(cmd, clsName);
                 documents.add(pair);
                 if (DEBUG) {

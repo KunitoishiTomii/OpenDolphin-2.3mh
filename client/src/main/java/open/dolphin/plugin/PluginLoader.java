@@ -196,7 +196,7 @@ public final class PluginLoader<S> implements Iterable<S> {
         
 	return new Iterator<S>() {
 
-	    Iterator<Map.Entry<String,S>> knownProviders
+            Iterator<Map.Entry<String, S>> knownProviders
 		= providers.entrySet().iterator();
 
             @Override
