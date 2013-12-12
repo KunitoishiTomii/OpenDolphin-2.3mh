@@ -601,7 +601,7 @@ public class LaboTestBean extends AbstractChartDocument {
                 try {
                     double val = Double.parseDouble(value.getValue());
                     dataset.setValue(val, rowObj.nameWithUnit(), sampleTime);
-                } catch (NumberFormatException e) {
+                } catch (NumberFormatException | NullPointerException e) {
                     dataset.setValue(null, rowObj.nameWithUnit(), sampleTime);
                 }
             }
