@@ -244,8 +244,9 @@ public class StampDelegater extends BusinessDelegater {
 
     public List<Long> subscribeTrees(List<SubscribedTreeModel> subscribeList) throws Exception {
         
-        Entity entity = toJsonEntity(subscribeList);
-
+        TypeReference typeRef = new TypeReference<List<SubscribedTreeModel>>(){};
+        Entity entity = toJsonEntity(subscribeList, typeRef);
+        
         String path = RES_STAMP_TREE + "subscribed";
 
         Response response = getWebTarget()
@@ -312,8 +313,8 @@ public class StampDelegater extends BusinessDelegater {
         for (StampModel model : list) {
             stampCache.put(model.getId(), model);
         }
-
-        Entity entity = toJsonEntity(list);
+        TypeReference typeRef = new TypeReference<List<StampModel>>(){};
+        Entity entity = toJsonEntity(list, typeRef);
         String path = RES_STAMP + "list";
 
         Response response = getWebTarget()

@@ -75,9 +75,6 @@ public final class RpEditor extends AbstractStampEditor {
     private static HashMap<String, List<TensuMaster>> adminCache = new HashMap<>();
 //masuda$
 
-    public RpEditor() {
-        initComponents();
-    }
 
     public RpEditor(String entity) {
         this(entity, true);
@@ -85,7 +82,6 @@ public final class RpEditor extends AbstractStampEditor {
 
     public RpEditor(String entity, boolean mode) {
         super(entity, mode);
-        initComponents();
     }
     
     @Override

@@ -509,8 +509,8 @@ public class MasudaDelegater extends BusinessDelegater {
     public void updateInFacilityLaboItemList(List<InFacilityLaboItem> list) throws Exception {
         
         String path = RES_BASE + "inFacilityLabo/list";
-
-        Entity entity = toJsonEntity(list);
+        TypeReference typeRef = new TypeReference<List<InFacilityLaboItem>>(){};
+        Entity entity = toJsonEntity(list, typeRef);
 
         Response response = getWebTarget()
                 .path(path)
@@ -528,8 +528,8 @@ public class MasudaDelegater extends BusinessDelegater {
     public String updateETensu1Table(List<ETensuModel1> list) throws Exception {
         
         String path = RES_BASE + "etensu/update/";
-
-        Entity entity = toJsonEntity(list);
+        TypeReference typeRef = new TypeReference<List<ETensuModel1>>(){};
+        Entity entity = toJsonEntity(list, typeRef);
 
         Response response = getWebTarget()
                 .path(path)
@@ -619,8 +619,8 @@ public class MasudaDelegater extends BusinessDelegater {
     public void postUserProperties(String userId, List<UserPropertyModel> list) throws Exception {
         
         String path = RES_BASE + "userProperty/" + userId;
-
-        Entity entity = toJsonEntity(list);
+        TypeReference typeRef = new TypeReference<List<UserPropertyModel>>(){};
+        Entity entity = toJsonEntity(list, typeRef);
 
         Response response = getWebTarget()
                 .path(path)

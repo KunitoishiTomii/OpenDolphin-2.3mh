@@ -51,9 +51,6 @@ public final class InjectionEditor extends AbstractStampEditor {
     private ListTableModel<TensuMaster> searchResultModel;
     private ListTableSorter<TensuMaster> sorter;
 
-    public InjectionEditor() {
-        initComponents();
-    }
 
     public InjectionEditor(String entity) {
         this(entity, true);
@@ -61,7 +58,6 @@ public final class InjectionEditor extends AbstractStampEditor {
 
     public InjectionEditor(String entity, boolean mode) {
         super(entity, mode);
-        initComponents();
     }
     
     @Override

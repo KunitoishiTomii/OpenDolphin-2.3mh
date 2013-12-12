@@ -116,6 +116,7 @@ public class StampTreeResource extends AbstractResource {
 
         String fid = getRemoteFacility();
         List<PublishedTreeModel> list = stampServiceBean.getPublishedTrees(fid);
+        
         TypeReference typeRef = new TypeReference<List<PublishedTreeModel>>(){};
         StreamingOutput so = getJsonOutStream(list, typeRef);
         

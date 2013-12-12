@@ -59,7 +59,9 @@ public class KarteResource extends AbstractResource {
 
         List<DocInfoModel> result = karteServiceBean.getDocumentList(karteId, fromDate, toDate, includeModified);
 
-        StreamingOutput so = getGzipOutStream(result);
+        TypeReference typeRef = new TypeReference<List<DocInfoModel>>(){};
+        StreamingOutput so = getGzipOutStream(result, typeRef);
+        
         return Response.ok(so).build();
     }
 //katoh$
@@ -72,8 +74,9 @@ public class KarteResource extends AbstractResource {
         List<Long> list = getConverter().toLongList(ids);
 
         List<DocumentModel> result = karteServiceBean.getDocuments(list);
-
-        StreamingOutput so = getGzipOutStream(result);
+        
+        TypeReference typeRef = new TypeReference<List<DocumentModel>>(){};
+        StreamingOutput so = getGzipOutStream(result, typeRef);
         
         return Response.ok(so).build();
     }
@@ -142,8 +145,9 @@ public class KarteResource extends AbstractResource {
         }
 
         List<List<ModuleModel>> result = karteServiceBean.getModules(karteId, entity, fromList, toList);
-
-        StreamingOutput so = getJsonOutStream(result);
+        TypeReference typeRef = new TypeReference<List<List<ModuleModel>>>(){};
+        
+        StreamingOutput so = getJsonOutStream(result, typeRef);
         
         return Response.ok(so).build();
     }
@@ -169,7 +173,8 @@ public class KarteResource extends AbstractResource {
 
         List<List<SchemaModel>> result = karteServiceBean.getImages(karteId, fromList, toList);
 
-        StreamingOutput so = getJsonOutStream(result);
+        TypeReference typeRef = new TypeReference<List<List<SchemaModel>>>(){};
+        StreamingOutput so = getJsonOutStream(result, typeRef);
         
         return Response.ok(so).build();
     }
@@ -199,8 +204,9 @@ public class KarteResource extends AbstractResource {
         Date fromDate = parseDate(fromDateStr);
 
         List<RegisteredDiagnosisModel> list = karteServiceBean.getDiagnosis(karteId, fromDate, activeOnly);
-
-        StreamingOutput so = getJsonOutStream(list);
+        
+        TypeReference typeRef = new TypeReference<List<RegisteredDiagnosisModel>>(){};
+        StreamingOutput so = getJsonOutStream(list, typeRef);
         
         return Response.ok(so).build();
     }
@@ -314,7 +320,8 @@ public class KarteResource extends AbstractResource {
 
         List<List<AppointmentModel>> result = karteServiceBean.getAppointmentList(karteId, fromList, toList);
 
-        StreamingOutput so = getJsonOutStream(result);
+        TypeReference typeRef = new TypeReference<List<List<AppointmentModel>>>(){};
+        StreamingOutput so = getJsonOutStream(result, typeRef);
         
         return Response.ok(so).build();
     }

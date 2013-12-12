@@ -50,9 +50,6 @@ public final class RadEditor extends AbstractStampEditor {
     private ListTableModel<TensuMaster> searchResultModel;
     private ListTableSorter<TensuMaster> sorter;
 
-    public RadEditor() {
-        initComponents();
-    }
 
     public RadEditor(String entity) {
         this(entity, true);
@@ -60,7 +57,6 @@ public final class RadEditor extends AbstractStampEditor {
 
     public RadEditor(String entity, boolean mode) {
         super(entity, mode);
-        initComponents();
     }
     
     @Override

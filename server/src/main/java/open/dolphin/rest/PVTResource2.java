@@ -1,5 +1,6 @@
 package open.dolphin.rest;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import java.util.Collection;
 import java.util.List;
 import javax.inject.Inject;
@@ -81,7 +82,8 @@ public class PVTResource2 extends AbstractResource {
         String fid = getRemoteFacility();
         List<PatientVisitModel> model = eventServiceBean.getPvtList(fid);
         
-        StreamingOutput so = getJsonOutStream(model);
+        TypeReference typeRef = new TypeReference<List<PatientVisitModel>>(){};
+        StreamingOutput so = getJsonOutStream(model, typeRef);
         
         return Response.ok(so).build();
     }

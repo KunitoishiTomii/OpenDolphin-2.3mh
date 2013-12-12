@@ -1,5 +1,6 @@
 package open.dolphin.rest;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import java.util.List;
 import javax.inject.Inject;
 import javax.ws.rs.*;
@@ -39,7 +40,8 @@ public class PatientResource extends AbstractResource {
 
         List<PatientModel> patients = patientServiceBean.getPatientsByName(fid, name);
         
-        StreamingOutput so = getJsonOutStream(patients);
+        TypeReference typeRef = new TypeReference<List<PatientModel>>(){};
+        StreamingOutput so = getJsonOutStream(patients, typeRef);
         
         return Response.ok(so).build();
     }
@@ -55,7 +57,8 @@ public class PatientResource extends AbstractResource {
 
         List<PatientModel> patients = patientServiceBean.getPatientsByKana(fid, kana);
         
-        StreamingOutput so = getJsonOutStream(patients);
+        TypeReference typeRef = new TypeReference<List<PatientModel>>(){};
+        StreamingOutput so = getJsonOutStream(patients, typeRef);
         
         return Response.ok(so).build();
     }
@@ -73,7 +76,8 @@ public class PatientResource extends AbstractResource {
 
         List<PatientModel> patients = patientServiceBean.getPatientsByDigit(fid, digit);
         
-        StreamingOutput so = getJsonOutStream(patients);
+        TypeReference typeRef = new TypeReference<List<PatientModel>>(){};
+        StreamingOutput so = getJsonOutStream(patients, typeRef);
         
         return Response.ok(so).build();
     }
@@ -104,7 +108,8 @@ public class PatientResource extends AbstractResource {
 
         List<PatientModel> patients = patientServiceBean.getPatientsByPvtDate(fid, pvtDate);
         
-        StreamingOutput so = getJsonOutStream(patients);
+        TypeReference typeRef = new TypeReference<List<PatientModel>>(){};
+        StreamingOutput so = getJsonOutStream(patients, typeRef);
         
         return Response.ok(so).build();
     }
@@ -155,9 +160,10 @@ public class PatientResource extends AbstractResource {
         String fid = getRemoteFacility();
         List<String> idList = getConverter().toStrList(ids);
         
-        List<PatientModel> list = patientServiceBean.getPatientList(fid, idList);
+        List<PatientModel> patients = patientServiceBean.getPatientList(fid, idList);
         
-        StreamingOutput so = getJsonOutStream(list);
+        TypeReference typeRef = new TypeReference<List<PatientModel>>(){};
+        StreamingOutput so = getJsonOutStream(patients, typeRef);
         
         return Response.ok(so).build();
     }
@@ -169,7 +175,8 @@ public class PatientResource extends AbstractResource {
         
         List<HealthInsuranceModel> list = patientServiceBean.getHealthInsurances(pk);
         
-        StreamingOutput so = getJsonOutStream(list);
+        TypeReference typeRef = new TypeReference<List<HealthInsuranceModel>>(){};
+        StreamingOutput so = getJsonOutStream(list, typeRef);
         
         return Response.ok(so).build();
     }
@@ -181,9 +188,10 @@ public class PatientResource extends AbstractResource {
     public Response getPast100DayPatients(@PathParam("pastDay") int pastDay) {
         
         String fid = getRemoteFacility();
-        List<PatientModel> list = patientServiceBean.getPast100DayPatients(fid, pastDay);
+        List<PatientModel> patients = patientServiceBean.getPast100DayPatients(fid, pastDay);
         
-        StreamingOutput so = getJsonOutStream(list);
+        TypeReference typeRef = new TypeReference<List<PatientModel>>(){};
+        StreamingOutput so = getJsonOutStream(patients, typeRef);
         
         return Response.ok(so).build();
     }

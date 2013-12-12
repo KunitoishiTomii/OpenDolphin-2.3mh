@@ -488,7 +488,7 @@ public class EditorSetPanel extends JPanel implements PropertyChangeListener, Tr
         //-----------------------------------
         bacteria = new BaseEditor(IInfoModel.ENTITY_BACTERIA_ORDER, false);
         baseCharge = new BaseEditor(IInfoModel.ENTITY_BASE_CHARGE_ORDER, false);
-        diagnosis = new DiseaseEditor(false);
+        diagnosis = new DiseaseEditor(IInfoModel.ENTITY_DIAGNOSIS, false);
         general = new BaseEditor(IInfoModel.ENTITY_GENERAL_ORDER, false);
         injection = new InjectionEditor(IInfoModel.ENTITY_INJECTION_ORDER, false);
         instraction = new BaseEditor(IInfoModel.ENTITY_INSTRACTION_CHARGE_ORDER, false);

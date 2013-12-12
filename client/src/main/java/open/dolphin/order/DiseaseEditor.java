@@ -66,14 +66,12 @@ public final class DiseaseEditor extends AbstractStampEditor {
     private ListTableModel<DiseaseEntry> searchResultModel;
     private ListTableSorter<DiseaseEntry> sorter;
 
-    public DiseaseEditor() {
-        this(true);
+    public DiseaseEditor(String entity) {
+        this(entity, true);
     }
 
-    public DiseaseEditor(boolean mode) {
-        super();
-        initComponents();
-        this.setFromStampEditor(mode);
+    public DiseaseEditor(String entity, boolean mode) {
+        super(entity, mode);
     }
     
     @Override

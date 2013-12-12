@@ -105,7 +105,7 @@ public class StampEditor implements PropertyChangeListener {
 
     public StampEditor(RegisteredDiagnosisModel rd, PropertyChangeListener listener, Window lock) {
         
-        editor = new DiseaseEditor();
+        editor = new DiseaseEditor(IInfoModel.ENTITY_DIAGNOSIS);
         editor.addPropertyChangeListener(AbstractStampEditor.VALUE_PROP, listener);
         editor.addPropertyChangeListener(AbstractStampEditor.EDIT_END_PROP, StampEditor.this);
 

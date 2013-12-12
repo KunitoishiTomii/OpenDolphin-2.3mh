@@ -28,18 +28,12 @@ public class TextStampEditor extends AbstractStampEditor {
     /**
      * Creates new TextStampEditor
      */
-
-    public TextStampEditor() {
-        initComponents();
-    }
-
     public TextStampEditor(String entity) {
         this(entity, true);
     }
 
     public TextStampEditor(String entity, boolean mode) {
         super(entity, mode);
-        initComponents();
     }
     /**
      * Componentを初期化する。

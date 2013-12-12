@@ -110,9 +110,6 @@ public abstract class AbstractStampEditor implements StampEditorConst {
     
     
     // Constructor
-    public AbstractStampEditor() {
-    }
-
     public AbstractStampEditor(String entity) {
         this(entity, true);
     }
@@ -120,6 +117,7 @@ public abstract class AbstractStampEditor implements StampEditorConst {
     public AbstractStampEditor(String entity, boolean mode) {
         setupEditorSpec(entity);
         setFromStampEditor(mode);
+        AbstractStampEditor.this.initComponents();
     }
     
     

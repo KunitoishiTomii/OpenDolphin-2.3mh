@@ -1,5 +1,6 @@
 package open.dolphin.delegater;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import java.util.List;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Response;
@@ -30,7 +31,8 @@ public final class AppointmentDelegater extends BusinessDelegater {
     public int putAppointments(List<AppointmentModel> list) throws Exception {
 
         String path = "appo/";
-        Entity entity = toJsonEntity(list);
+        TypeReference typeRef = new TypeReference<List<AppointmentModel>>(){};
+        Entity entity = toJsonEntity(list, typeRef);
         
         Response response = getWebTarget()
                 .path(path)

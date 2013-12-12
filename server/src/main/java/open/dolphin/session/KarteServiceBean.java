@@ -407,7 +407,7 @@ public class KarteServiceBean {
                 .getResultList();
         
         // DocumentModelのMapを作る
-        HashMap<Long, DocumentModel> dmMap = new HashMap<>();
+        HashMap<Long, DocumentModel> dmMap = new HashMap<>(ids.size());
         for (DocumentModel dm : documentList) {
             // LazyFetchのdetached objectsは一旦バッサリ消す！
             dm.setModules(null);

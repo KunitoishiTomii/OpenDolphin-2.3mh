@@ -82,17 +82,12 @@ public final class InstractionEditor extends AbstractStampEditor {
     };
 //masuda$
     
-    public InstractionEditor() {
-        initComponents();
-    }
-
     public InstractionEditor(String entity) {
         this(entity, true);
     }
 
     public InstractionEditor(String entity, boolean mode) {
         super(entity, mode);
-        initComponents();
     }
     
     @Override

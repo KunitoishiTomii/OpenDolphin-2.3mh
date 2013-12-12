@@ -431,8 +431,8 @@ public class  DocumentDelegater extends BusinessDelegater {
     public List<Long> putDiagnosis(List<RegisteredDiagnosisModel> list) throws Exception {
         
         String path = "karte/diagnosis/";
-
-        Entity entity = toJsonEntity(list);
+        TypeReference typeRef = new TypeReference<List<RegisteredDiagnosisModel>>(){};
+        Entity entity = toJsonEntity(list, typeRef);
 
         Response response = getWebTarget()
                 .path(path)
@@ -453,8 +453,8 @@ public class  DocumentDelegater extends BusinessDelegater {
     public int updateDiagnosis(List<RegisteredDiagnosisModel> list) throws Exception {
 
         String path = "karte/diagnosis/";
-        
-        Entity entity = toJsonEntity(list);
+        TypeReference typeRef = new TypeReference<List<RegisteredDiagnosisModel>>(){};
+        Entity entity = toJsonEntity(list, typeRef);
 
         Response response = getWebTarget()
                 .path(path)
@@ -521,8 +521,8 @@ public class  DocumentDelegater extends BusinessDelegater {
     public List<Long> addObservations(List<ObservationModel> observations) throws Exception {
         
         String path = "/karte/observations";
-
-        Entity entity = toJsonEntity(observations);
+        TypeReference typeRef = new TypeReference<List<ObservationModel>>(){};
+        Entity entity = toJsonEntity(observations, typeRef);
 
         Response response = getWebTarget()
                 .path(path)

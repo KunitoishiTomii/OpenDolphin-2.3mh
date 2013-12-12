@@ -49,9 +49,6 @@ public final class BaseEditor extends AbstractStampEditor {
     private ListTableModel<TensuMaster> searchResultModel;
     private ListTableSorter<TensuMaster> sorter;
 
-    public BaseEditor() {
-        initComponents();
-    }
 
     public BaseEditor(String entity) {
         this(entity, true);
@@ -59,7 +56,6 @@ public final class BaseEditor extends AbstractStampEditor {
 
     public BaseEditor(String entity, boolean mode) {
         super(entity, mode);
-        initComponents();
     }
     
     @Override

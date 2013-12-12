@@ -1,5 +1,6 @@
 package open.dolphin.rest;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import java.util.List;
 import javax.inject.Inject;
 import javax.ws.rs.*;
@@ -52,8 +53,9 @@ public class UserResource extends AbstractResource {
         debug(fid);
 
         List<UserModel> result = userServiceBean.getAllUser(fid);
-        
-        StreamingOutput so = getJsonOutStream(result);
+
+        TypeReference typeRef = new TypeReference<List<UserModel>>(){};
+        StreamingOutput so = getJsonOutStream(result, typeRef);
         
         return Response.ok(so).build();
     }

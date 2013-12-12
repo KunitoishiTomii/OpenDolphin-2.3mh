@@ -1,5 +1,6 @@
 package open.dolphin.rest;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import java.util.List;
 import javax.inject.Inject;
 import javax.ws.rs.*;
@@ -49,7 +50,8 @@ public class LetterResource extends AbstractResource {
 
         List<LetterModule> list = letterServiceBean.getLetterList(karteId);
         
-        StreamingOutput so = getJsonOutStream(list);
+        TypeReference typeRef = new TypeReference<List<LetterModule>>(){};
+        StreamingOutput so = getJsonOutStream(list, typeRef);
         
         return Response.ok(so).build();
     }
