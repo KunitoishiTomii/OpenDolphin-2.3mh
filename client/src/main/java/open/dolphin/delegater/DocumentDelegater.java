@@ -315,7 +315,7 @@ public class  DocumentDelegater extends BusinessDelegater {
         
         for (List<ModuleModel> list : ret) {
             for (ModuleModel module : list) {
-                InfoModel model = (InfoModel) BeanUtils.xmlDecode(module.getBeanBytes());
+                IModuleModel model = (IModuleModel) BeanUtils.xmlDecode(module.getBeanBytes());
                 module.setModel(model);
             }
         }

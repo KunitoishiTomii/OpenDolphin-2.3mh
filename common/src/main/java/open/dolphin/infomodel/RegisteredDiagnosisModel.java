@@ -11,7 +11,7 @@ import javax.persistence.*;
  */
 @Entity
 @Table(name = "d_diagnosis")
-public class RegisteredDiagnosisModel extends KarteEntryBean {
+public class RegisteredDiagnosisModel extends KarteEntryBean implements IStampModel {
     
     // 疾患名
     @Column(nullable=false)

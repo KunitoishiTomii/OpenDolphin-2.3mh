@@ -67,7 +67,7 @@ public class KarteHtmlRenderer {
 
         for (ModuleModel bean : modules) {
             
-            bean.setModel((InfoModel) BeanUtils.xmlDecode(bean.getBeanBytes()));
+            bean.setModel((IModuleModel) BeanUtils.xmlDecode(bean.getBeanBytes()));
 
             String role = bean.getModuleInfoBean().getStampRole();
             if (role != null) {

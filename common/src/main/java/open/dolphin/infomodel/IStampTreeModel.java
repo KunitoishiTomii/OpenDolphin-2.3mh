@@ -29,6 +29,7 @@ import java.util.Date;
  * Userのパーソナルツリークラス。
  *
  * @author Kazushi Minagawa, Digital Globe, Inc.
+ * @author modified by masuda, Masuda Naika
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
 @JsonSubTypes({

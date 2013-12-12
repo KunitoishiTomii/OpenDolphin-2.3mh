@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import javax.persistence.*;
 
 /**
@@ -29,10 +28,6 @@ public class KarteBean implements Serializable {
     @ManyToOne
     @JoinColumn(name="patient_id", nullable=false)
     private PatientModel patient;
-    
-    @JsonIgnore // no use
-    @Transient
-    private Map<String, List> entries;
     
     @Column(nullable=false)
     @Temporal(value = TemporalType.DATE)
@@ -233,14 +228,6 @@ public class KarteBean implements Serializable {
     }
 
     //-------------------------------------------------------------
-
-    public Map<String, List> getEntries() {
-        return entries;
-    }
-    public void setEntries(Map<String, List> entries) {
-        this.entries = entries;
-    }
-
     public PatientModel getPatient() {
         return getPatientModel();
     }

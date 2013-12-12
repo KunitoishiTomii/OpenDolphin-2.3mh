@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.persistence.*;
+import open.dolphin.common.util.BeanUtils;
 import org.hibernate.search.annotations.FullTextFilterDef;
 import org.hibernate.search.annotations.FullTextFilterDefs;
 import org.hibernate.search.annotations.Indexed;
@@ -255,5 +256,15 @@ public class DocumentModel extends KarteEntryBean {
         }
 
         return ret;
+    }
+    
+    // test
+    public void beanBytesToModel() {
+        if (modules != null && !modules.isEmpty()) {
+            for (ModuleModel mm : modules) {
+                mm.setModel((IModuleModel) BeanUtils.xmlDecode(mm.getBeanBytes()));
+                //mm.setBeanBytes(null);
+            }
+        }
     }
 }

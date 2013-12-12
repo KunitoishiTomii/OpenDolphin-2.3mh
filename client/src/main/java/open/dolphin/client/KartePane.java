@@ -646,7 +646,7 @@ public class KartePane implements MouseListener, CaretListener, PropertyChangeLi
             public void succeeded(StampModel result) {
                 
                 if (result != null) {
-                    InfoModel model = (InfoModel) BeanUtils.xmlDecode(result.getStampBytes());
+                    IModuleModel model = (IModuleModel) BeanUtils.xmlDecode(result.getStampBytes());
                     ModuleModel stamp = new ModuleModel();
                     stamp.setModel(model);
                     stamp.setModuleInfoBean(stampInfo);
@@ -682,7 +682,7 @@ public class KartePane implements MouseListener, CaretListener, PropertyChangeLi
                     for (int i = 0; i < list.size(); i++) {
                         ModuleInfoBean stampInfo = addList.get(i);
                         StampModel theModel = list.get(i);
-                        InfoModel model = (InfoModel) BeanUtils.xmlDecode(theModel.getStampBytes());
+                        IModuleModel model = (IModuleModel) BeanUtils.xmlDecode(theModel.getStampBytes());
                         if (model != null) {
                             ModuleModel stamp = new ModuleModel();
                             stamp.setModel(model);

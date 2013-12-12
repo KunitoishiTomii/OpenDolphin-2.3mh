@@ -226,7 +226,7 @@ public class ClaimSender implements IKarteSender {
 
             // ClaimBundleのみを処理する
             String entity = mm.getModuleInfoBean().getEntity();
-            InfoModel im = mm.getModel();
+            IModuleModel im = mm.getModel();
             if (entity == null || !(im instanceof ClaimBundle)) {
                 continue;
             }

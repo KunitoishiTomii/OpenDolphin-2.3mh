@@ -965,7 +965,7 @@ public class KarteServiceBean {
             if (IInfoModel.MODULE_PROGRESS_COURSE.equals(entity)) {
                 continue;
             }
-            mm.setModel((InfoModel) BeanUtils.xmlDecode(mm.getBeanBytes()));
+            mm.setModel((IModuleModel) BeanUtils.xmlDecode(mm.getBeanBytes()));
             ClaimBundle cb = (ClaimBundle) mm.getModel();
             if (cb == null) {
                 continue;

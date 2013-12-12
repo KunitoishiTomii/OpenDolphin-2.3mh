@@ -57,7 +57,7 @@ public class MasudaDelegater extends BusinessDelegater {
         // いつもデコード忘れるｗ
         for (RoutineMedModel model : list) {
             for (ModuleModel mm : model.getModuleList()) {
-                mm.setModel((InfoModel) BeanUtils.xmlDecode(mm.getBeanBytes()));
+                mm.setModel((IModuleModel) BeanUtils.xmlDecode(mm.getBeanBytes()));
             }
         }
 
@@ -85,7 +85,7 @@ public class MasudaDelegater extends BusinessDelegater {
         }
         // いつもデコード忘れるｗ
         for (ModuleModel mm : model.getModuleList()) {
-            mm.setModel((InfoModel) BeanUtils.xmlDecode(mm.getBeanBytes()));
+            mm.setModel((IModuleModel) BeanUtils.xmlDecode(mm.getBeanBytes()));
         }
 
         return model;
@@ -313,7 +313,7 @@ public class MasudaDelegater extends BusinessDelegater {
         response.close();
 
         for (ModuleModel module : list) {
-            module.setModel((InfoModel) BeanUtils.xmlDecode(module.getBeanBytes()));
+            module.setModel((IModuleModel) BeanUtils.xmlDecode(module.getBeanBytes()));
         }
 
         return list;

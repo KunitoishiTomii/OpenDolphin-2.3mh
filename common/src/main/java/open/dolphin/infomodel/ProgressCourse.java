@@ -6,7 +6,7 @@ package open.dolphin.infomodel;
  * @author Kazushi Minagawa, Digital Globe, Inc.
  *
  */
-public class ProgressCourse extends InfoModel {
+public class ProgressCourse implements IModuleModel {
 
     String freeText;
 

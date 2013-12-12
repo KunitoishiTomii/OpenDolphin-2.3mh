@@ -305,7 +305,7 @@ public final class OrderHistoryPanel extends JPanel implements PropertyChangeLis
             return;
         }
         
-        InfoModel model = stamp.getModel();
+        IModuleModel model = stamp.getModel();
         
         try {
             VelocityContext context = ClientContext.getVelocityContext();

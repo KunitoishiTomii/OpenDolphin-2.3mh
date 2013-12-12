@@ -1,9 +1,9 @@
 package open.dolphin.client;
 
+import java.io.OutputStream;
 import open.dolphin.common.util.StampRenderingHints;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -65,7 +65,9 @@ public class PrintLabel {
         collectMedStampHolder();
         collectModuleModel();
         buildLineDataArray();
-        sendRawPrintData();
+        
+        String str = buildPrintString();
+        sendESCPData(str);
     }
 
     public void enter2(List<StampHolder> al) {
@@ -80,16 +82,9 @@ public class PrintLabel {
 
         collectModuleModel();
         buildLineDataArray();
-        sendRawPrintData();
-    }
-
-    private void sendRawPrintData() {
-        try {
-            String str = buildPrintString();
-            byte[] rawData = makeRawData(str);
-            sendData(rawData);
-        } catch (UnsupportedEncodingException ex) {
-        }
+        
+        String str = buildPrintString();
+        sendESCPData(str);
     }
 
     private void collectMedStampHolder() {
@@ -274,7 +269,7 @@ public class PrintLabel {
     }
 
     
-    private String buildPrintString() throws UnsupportedEncodingException {
+    private String buildPrintString() {
 
         StringBuilder sb = new StringBuilder();
 
@@ -343,48 +338,69 @@ public class PrintLabel {
         String output = sb.toString();
         return output;
     }
-
-    private byte[] makeRawData(String input) {
-
-        ByteBuffer buf = ByteBuffer.allocate(10240);
-        boolean kanjiMode = false;
-
-        buf.put(escpInitialize);
-        buf.put(escpCmdModeChange);
-        buf.put(escpKOSI);
-
-        char[] charArray = input.toCharArray();
-        for (char c : charArray) {
-            byte[] bytes = convertToJisBytes(c);
-            if (bytes != null) {
-                if (bytes.length > 4) {
-                    byte[] ctrl = {bytes[0], bytes[1], bytes[2]};
-                    if (Arrays.equals(ctrl, KI)) {
-                        if (!kanjiMode) {
-                            buf.put(escpKISO);
-                        }
-                        buf.put(bytes[3]);
-                        buf.put(bytes[4]);
-                        kanjiMode = true;
-                    }
-                } else if (bytes.length > 0){
-                    if (kanjiMode) {
-                        buf.put(escpKOSI);
-                    }
-                    buf.put(bytes[0]);
-                    kanjiMode = false;
-                }
-            }
+    
+    private void sendESCPData(final String text) {
+        
+        // esc/pのraw dataをQL-580Nに転送する
+        if (text == null || text.isEmpty()) {
+            return;
         }
 
-        buf.put(escpKOSI);
-        buf.put(escpFF);
+        final String prtAddress = Project.getString(MiscSettingPanel.LBLPRT_ADDRESS, MiscSettingPanel.DEFAULT_LBLPRT_ADDRESS);
+        final int prtPort = Project.getInt(MiscSettingPanel.LBLPRT_PORT, MiscSettingPanel.DEFAULT_LBLPRT_PORT);
 
-        buf.flip();
-        byte[] ret = new byte[buf.limit()];
-        buf.get(ret);
-        return ret;
+        final SwingWorker worker = new SwingWorker() {
+
+            @Override
+            protected Object doInBackground() throws Exception {
+                // 転送
+                try (Socket socket = new Socket(prtAddress, prtPort);
+                        OutputStream os = socket.getOutputStream()) {
+
+                    boolean kanjiMode = false;
+
+                    os.write(escpInitialize);
+                    os.write(escpCmdModeChange);
+                    os.write(escpKOSI);
+
+                    char[] charArray = text.toCharArray();
+                    for (char c : charArray) {
+                        byte[] bytes = convertToJisBytes(c);
+                        if (bytes != null) {
+                            if (bytes.length > 4) {
+                                byte[] ctrl = {bytes[0], bytes[1], bytes[2]};
+                                if (Arrays.equals(ctrl, KI)) {
+                                    if (!kanjiMode) {
+                                        os.write(escpKISO);
+                                    }
+                                    os.write(bytes[3]);
+                                    os.write(bytes[4]);
+                                    kanjiMode = true;
+                                }
+                            } else if (bytes.length > 0) {
+                                if (kanjiMode) {
+                                    os.write(escpKOSI);
+                                }
+                                os.write(bytes[0]);
+                                kanjiMode = false;
+                            }
+                        }
+                    }
+
+                    os.write(escpKOSI);
+                    os.write(escpFF);
+
+                } catch (Exception ex) {
+                    ex.printStackTrace(System.err);
+                }
+
+                return null;
+            }
+        };
+        
+        worker.execute();
     }
+
     private byte[] convertToJisBytes(char c) {
         
         // 全角マイナス等は自分でJISに変換
@@ -418,33 +434,6 @@ public class PrintLabel {
         }
         return bytes;
     }
-
-    private void sendData(final byte[] rawData) {
-        // esc/pのraw dataをQL-580Nに転送する
-        if (rawData == null || rawData.length == 0) {
-            return;
-        }
-
-        final String prtAddress = Project.getString(MiscSettingPanel.LBLPRT_ADDRESS, MiscSettingPanel.DEFAULT_LBLPRT_ADDRESS);
-        final int prtPort = Project.getInt(MiscSettingPanel.LBLPRT_PORT, MiscSettingPanel.DEFAULT_LBLPRT_PORT);
-
-        final SwingWorker worker = new SwingWorker() {
-
-            @Override
-            protected Object doInBackground() throws Exception {
-                // 転送
-                try (Socket socket = new Socket(prtAddress, prtPort)) {
-                    socket.getOutputStream().write(rawData);
-                } catch (Exception ex) {
-                    ex.printStackTrace(System.err);
-                }
-
-                return null;
-            }
-        };
-        worker.execute();
-    }
-
 
     private static class LineModel {
 

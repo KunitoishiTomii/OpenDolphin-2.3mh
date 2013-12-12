@@ -256,7 +256,7 @@ public final class InstractionEditor extends AbstractStampEditor {
             bundle.setMemo(memo);
         }
         
-        retModel.setModel((InfoModel) bundle);
+        retModel.setModel((IModuleModel) bundle);
 
         return new ModuleModel[]{retModel};
     }

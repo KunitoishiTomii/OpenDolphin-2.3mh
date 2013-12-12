@@ -371,7 +371,7 @@ public class MMLHelper {
      */
     private String getStampInfo(ModuleModel module) {
         
-        InfoModel obj = module.getModel();
+        IModuleModel obj = module.getModel();
         StringBuilder buf = new StringBuilder();
         
         if (obj instanceof BundleMed) {

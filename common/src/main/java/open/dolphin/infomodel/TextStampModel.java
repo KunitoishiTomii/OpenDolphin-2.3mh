@@ -28,7 +28,7 @@ import javax.persistence.Transient;
  * @author Kazushi Minagawa
  * @author modified by masuda, Masuda Naika
  */
-public class TextStampModel implements Serializable {
+public class TextStampModel implements IStampModel {
 
     private String text;
     

@@ -36,24 +36,6 @@ import open.dolphin.table.ListTableSorter;
  */
 public abstract class AbstractStampEditor implements StampEditorConst {
     
-    private static final String RT = "masterSearch.realTime";
-    private static final String PT = "masterSearch.partialMatch";
-
-    protected static final String REGEXP_COMMENT_ALL = "^8[1-4]|^008[1-6]"; // コメントコード全て
-    protected static final String REGEXP_COMMENT_81  = "^81|^008[156]";     // 名称編集可能
-    protected static final String REGEXP_COMMENT_83  = "^83|^0083";         // 固定文字あり、名称編集可
-    protected static final String REGEXP_COMMENT_84  = "^84|^0084";         // 数量入力必要
-    protected static final String REGEXP_RAD_BUI     = "^002";  // 放射線部位
-    protected static final String REGEXP_RAD_ZAIRYO  = "^7";    // 放射線材料（フィルムなど）
-    protected static final String REGEXP_RAD_SHUGI   = "^17";   // 放射線手技
-    protected static final String REGEXP_LABO        = "^16";   // 検体検査
-    
-    // 診療行為区分定義のテーブルID == Claim007
-    protected static final String CLASS_CODE_ID = CLAIM_007;
-    
-    // ClaimItem (項目) の種別を定義しているテーブルID = Claim003
-    protected static final String SUBCLASS_CODE_ID = CLAIM_003;
-    
     // このエディタのspecs
     // エンティティ
     protected String entity;
@@ -69,22 +51,20 @@ public abstract class AbstractStampEditor implements StampEditorConst {
     protected Pattern passPattern;
     // エディタの診区正規表現パターン
     protected Pattern shinkuPattern;
-
     
+    // GUI
     protected JTextField searchTextField;
-
     protected JTextField countField;
-
 
     // StampEditor から起動された時 true,  StampMaker から起動された時は false
     private boolean fromStampEditor;
-    
+    // 入院フラグ
     private boolean isAdmission;
 
+    // 編集元
     private Object oldValue;
-    
+    // チャート
     private Chart chart;
-    
     
     // 通知用の束縛サポート
     protected PropertyChangeSupport boundSupport;

@@ -21,7 +21,7 @@ import open.dolphin.infomodel.StampModel;
 import open.dolphin.project.Project;
 import open.dolphin.stampbox.StampTreeNode;
 import open.dolphin.common.util.BeanUtils;
-import open.dolphin.infomodel.InfoModel;
+import open.dolphin.infomodel.IModuleModel;
 
 /**
  * StampHolderTransferHandler
@@ -89,7 +89,7 @@ public class StampHolderTransferHandler extends AbstractKarteTransferHandler {
                 StampModel getStamp = sdl.getStamp(stampInfo.getStampId());
                 final ModuleModel stamp = new ModuleModel();
                 if (getStamp != null) {
-                    stamp.setModel((InfoModel) BeanUtils.xmlDecode(getStamp.getStampBytes()));
+                    stamp.setModel((IModuleModel) BeanUtils.xmlDecode(getStamp.getStampBytes()));
                     stamp.setModuleInfoBean(stampInfo);
                 }
                 target.importStamp(stamp);

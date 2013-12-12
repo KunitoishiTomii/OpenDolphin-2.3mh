@@ -1402,7 +1402,7 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
             List<ModuleModel> modules = oldModel.getModules();
             if (modules != null) {
                 for (ModuleModel bean : modules) {
-                    InfoModel model = bean.getModel();
+                    IModuleModel model = bean.getModel();
                     if (model != null && model instanceof BundleMed) {
                         newModel.addModule(ModelUtils.cloneModule(bean));
                     }

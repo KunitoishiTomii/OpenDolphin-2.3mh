@@ -3,6 +3,7 @@ package open.dolphin.infomodel;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import javax.persistence.*;
+import open.dolphin.common.util.BeanUtils;
 import org.apache.lucene.analysis.cjk.CJKAnalyzer;
 import org.hibernate.search.annotations.Analyzer;
 import org.hibernate.search.annotations.Field;
@@ -25,7 +26,7 @@ public class ModuleModel extends KarteEntryBean {
     
     @JsonIgnore
     @Transient
-    private InfoModel model;
+    private IModuleModel model;
     
     @Field(index=Index.YES)                         // hibernate search
     @FieldBridge(impl = ModuleModelBridge.class)    // hibernate search
@@ -74,7 +75,7 @@ public class ModuleModel extends KarteEntryBean {
      * モジュールの情報モデル（実体のPOJO)を設定する。
      * @param model モデル
      */
-    public void setModel(InfoModel model) {
+    public void setModel(IModuleModel model) {
         this.model = model;
     }
     
@@ -82,7 +83,7 @@ public class ModuleModel extends KarteEntryBean {
      * モジュールの情報モデル（実体のPOJO)を返す。
      * @return モデル
      */
-    public InfoModel getModel() {
+    public IModuleModel getModel() {
         return model;
     }
     
@@ -157,5 +158,13 @@ public class ModuleModel extends KarteEntryBean {
         //ret.setDocumentModel(this.getDocumentModel());
 
         return ret;
+    }
+    
+    // test
+    public void beanBytesToModel() {
+        if (beanBytes != null) {
+            model = (IModuleModel) BeanUtils.xmlDecode(beanBytes);
+            //beanBytes = null;
+        }
     }
 }

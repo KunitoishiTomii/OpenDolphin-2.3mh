@@ -356,7 +356,7 @@ public class EditorSetPanel extends JPanel implements PropertyChangeListener, Tr
                                 break;
                             default:
                                 //　それ以外
-                                InfoModel model = (InfoModel) BeanUtils.xmlDecode(stampModel.getStampBytes());
+                                IModuleModel model = (IModuleModel) BeanUtils.xmlDecode(stampModel.getStampBytes());
                                 if (model != null) {
                                     ModuleModel stampToEdit = new ModuleModel();
                                     stampToEdit.setModel(model);

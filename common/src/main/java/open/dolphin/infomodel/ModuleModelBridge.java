@@ -15,7 +15,7 @@ public class ModuleModelBridge implements StringBridge {
     public String objectToString(Object object) {
 
         byte[] beanBytes = (byte[]) object;
-        InfoModel im = (InfoModel) BeanUtils.xmlDecode(beanBytes);
+        IModuleModel im = (IModuleModel) BeanUtils.xmlDecode(beanBytes);
         
         if (im instanceof ProgressCourse) {
             String xml = ((ProgressCourse) im).getFreeText();
