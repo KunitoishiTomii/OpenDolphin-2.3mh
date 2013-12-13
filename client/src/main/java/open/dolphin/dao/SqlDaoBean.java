@@ -340,7 +340,7 @@ public class SqlDaoBean extends DaoBean {
         p.setMaxIdle(2);
         p.setMinIdle(1);
         p.setInitialSize(1);
-        p.setMaxWait(3000);
+        p.setMaxWait(5000);
         p.setRemoveAbandonedTimeout(30);
         p.setRemoveAbandoned(true);
         dataSource = new DataSource();
