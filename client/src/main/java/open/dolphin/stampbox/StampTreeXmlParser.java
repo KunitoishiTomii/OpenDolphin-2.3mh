@@ -76,8 +76,9 @@ public class StampTreeXmlParser {
     }
     
     public List<StampTree> parse(String xml) {
-        StringReader stringReader = new StringReader(xml);
-        return parse(stringReader);
+        try (StringReader stringReader = new StringReader(xml)) {
+            return  parse(stringReader);
+        }
     }
     
     public List<StampTree> parse(Reader reader) {
@@ -99,9 +100,12 @@ public class StampTreeXmlParser {
             }
         }
         
+        XMLInputFactory factory = XMLInputFactory.newInstance();
+        XMLStreamReader streamReader = null;
+        
         try {
-            XMLInputFactory factory = XMLInputFactory.newInstance();
-            XMLStreamReader streamReader = factory.createXMLStreamReader(reader);
+            
+            streamReader = factory.createXMLStreamReader(reader);
 
             while (streamReader.hasNext()) {
                 int eventType = streamReader.next();
@@ -114,9 +118,17 @@ public class StampTreeXmlParser {
                         break;
                 }
             }
+
         } catch (XMLStreamException ex) {
+        } finally {
+            try {
+                if (streamReader != null) {
+                    streamReader.close();
+                }
+            } catch (XMLStreamException ex) {
+            }
         }
-        
+
         // build を終了する。
         buidEnd();
         

@@ -171,10 +171,12 @@ public class KarteRenderer_2 {
             
             defaultStyle = doc.setDefaultStyle();
             
-            try {
-                XMLInputFactory factory = XMLInputFactory.newInstance();
-                StringReader stream = new StringReader(xml);
-                XMLStreamReader reader = factory.createXMLStreamReader(stream);
+            XMLInputFactory factory = XMLInputFactory.newInstance();
+            XMLStreamReader reader = null;
+            
+            try (StringReader stream = new StringReader(xml)) {
+
+                reader = factory.createXMLStreamReader(stream);
 
                 while (reader.hasNext()) {
                     int eventType = reader.next();
@@ -187,7 +189,15 @@ public class KarteRenderer_2 {
                             break;
                     }
                 }
+
             } catch (XMLStreamException ex) {
+            } finally {
+                try {
+                    if (reader != null) {
+                        reader.close();
+                    }
+                } catch (XMLStreamException ex) {
+                }
             }
 
             // レンダリング後はdefault styleに戻す
@@ -385,10 +395,12 @@ public class KarteRenderer_2 {
             
             defaultStyle = doc.getStyle(DEFAULT_STYLE_NAME);
 
-            try {
-                XMLInputFactory factory = XMLInputFactory.newInstance();
-                StringReader stream = new StringReader(xml);
-                XMLStreamReader reader = factory.createXMLStreamReader(stream);
+            XMLInputFactory factory = XMLInputFactory.newInstance();
+            XMLStreamReader reader = null;
+            
+            try (StringReader stream = new StringReader(xml)) {
+
+                reader = factory.createXMLStreamReader(stream);
 
                 while (reader.hasNext()) {
                     int eventType = reader.next();
@@ -401,15 +413,22 @@ public class KarteRenderer_2 {
                             break;
                     }
                 }
-                
-                // DocumentをElementSpecListで一括作成する
-                doc.createDocument(specList);
-                // ComponentHolderのPositionを設定する。ダサイが止む無し
-                doc.setComponentPositions();
 
             } catch (XMLStreamException ex) {
+            } finally {
+                try {
+                    if (reader != null) {
+                        reader.close();
+                    }
+                } catch (XMLStreamException ex) {
+                }
             }
-
+            
+            // DocumentをElementSpecListで一括作成する
+            doc.createDocument(specList);
+            // ComponentHolderのPositionを設定する。ダサイが止む無し
+            doc.setComponentPositions();
+            
             // レンダリング後はdefault styleに戻す
             doc.setDefaultStyle();
             
