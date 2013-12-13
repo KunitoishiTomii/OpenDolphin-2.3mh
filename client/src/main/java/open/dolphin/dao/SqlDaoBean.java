@@ -218,34 +218,6 @@ public class SqlDaoBean extends DaoBean {
         return SyskanriInfo.getInstance().getHospNumFromSysKanriInfo();
     }
     
-    // ひらがなをカタカナに変換
-    protected String hiraganaToKatakana(String input) {
-
-        final String Hiragana = "あいうえおかきくけこさしすせそ" +
-                                "たちつてとなにぬねのはひふへほ" +
-                                "まみむめもやゆよらりるれろわを" +
-                                 "んっゃゅょぁぃぅぇぉゎ" +
-                                "がぎぐげござじずぜぞだぢづでど" +
-                                "ばびぶべぼぱぴぷぺぽ";
-        final String Katakana = "アイウエオカキクケコサシスセソ" +
-                                "タチツテトナニヌネノハヒフヘホ" +
-                                "マミムメモヤユヨラリルレロワヲ" +
-                                "ンッャュョァィゥェォヮ" +
-                                "ガギグゲゴザジズゼゾダヂヅデド" +
-                                "バビブベボパピプペポ";
-
-        StringBuilder output = new StringBuilder();
-        for (int i = 0; i < input.length(); ++i) {
-            int pos = Hiragana.indexOf(input.substring(i, i + 1));
-            if (pos != -1) {
-                output.append(Katakana.substring(pos, pos + 1));
-            } else {
-                output.append(input.substring(i, i + 1));
-            }
-        }
-        return output.toString();
-    }
-
     // srycdのListからカンマ区切りの文字列を作る
     protected String getCodes(Collection<String> srycdList){
 
