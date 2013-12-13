@@ -239,33 +239,28 @@ public abstract class AbstractStampEditor implements StampEditorConst {
     
     private boolean isCode(String text) {
 
-        if (text == null) {
+        if (text == null || text.isEmpty()) {
             return false;
         }
 
-        boolean maybe = true;
-
-        for (int i = 0; i < text.length(); i++) {
+        int len = text.length();
+        for (int i = 0; i < len; i++) {
             char c = text.charAt(i);
-            int type = Character.getType(c);
-            if (type != Character.DECIMAL_DIGIT_NUMBER) {
-                maybe = false;
-                break;
+            if (Character.getType(c) != Character.DECIMAL_DIGIT_NUMBER) {
+                return true;
             }
         }
-        return maybe;
+        return false;
     }
 
     //-----------------------------------------
     // 点数で検索する場合の入力 =  ///11 etc
     //-----------------------------------------
     private boolean isTensuSearch(String text) {
-        
-        boolean maybe = (
-                text != null 
-                && text.length() > 3 
-                && (text.startsWith(TENSU_SEARCH_HALF) || text.startsWith(TENSU_SEARCH_FULL)) );
-        return maybe;
+
+        return text != null && text.length() > 3
+                && (text.startsWith(TENSU_SEARCH_HALF)
+                || text.startsWith(TENSU_SEARCH_FULL));
     }
 
     //---------------------------------------
@@ -273,52 +268,38 @@ public abstract class AbstractStampEditor implements StampEditorConst {
     //---------------------------------------
     protected final boolean isNameEditableComment(String code) {
 
-        if (code == null) {
-            return false;
-        }
-
-        boolean ed = (code.startsWith(EDITABLE_COMMENT_81)
+        return code != null
+                && (code.startsWith(EDITABLE_COMMENT_81)
                 || code.startsWith(EDITABLE_COMMENT_0081)
                 || code.startsWith(EDITABLE_COMMENT_83)
                 || code.startsWith(EDITABLE_COMMENT_0083)
                 || code.startsWith(EDITABLE_COMMENT_85)
                 || code.startsWith(EDITABLE_COMMENT_0085));
-
-        return ed;
     }
 
     //---------------------------------------
     protected final boolean isNumberEditableComment(String code) {
 
-        if (code == null) {
-            return false;
-        }
-
-        boolean ed = (code.startsWith(EDITABLE_COMMENT_84)
+        return code != null
+                && (code.startsWith(EDITABLE_COMMENT_84)
                 || code.startsWith(EDITABLE_COMMENT_0084));
-
-        return ed;
     }
     
     protected final boolean isEditableNumber(String code) {
-        
-        if (code == null) {
-            return false;
-        }
-        
-        boolean ret = code.startsWith(ClaimConst.YAKUZAI_CODE_START)
+
+        return code != null
+                && (code.startsWith(ClaimConst.YAKUZAI_CODE_START)
                 || code.startsWith(ClaimConst.ZAIRYO_CODE_START)
                 || code.startsWith(EDITABLE_COMMENT_84)
                 || code.startsWith(EDITABLE_COMMENT_0084)
                 || code.startsWith(ClaimConst.SYUGI_CODE_START)
-                || code.startsWith(ClaimConst.ZAIRYO_OTHER_START);
-        
-        return ret;
+                || code.startsWith(ClaimConst.ZAIRYO_OTHER_START));
     }
     
     protected final boolean hasFixedName(String code) {
-        return code != null &&
-                code.matches(REGEXP_COMMENT_83);
+        
+        return code != null
+                && code.matches(REGEXP_COMMENT_83);
     }
     
     //-----------------------------------------
@@ -331,32 +312,27 @@ public abstract class AbstractStampEditor implements StampEditorConst {
         }
 
         // *
-        if (test.equals(ASTERISK_HALF) || test.equals(ASTERISK_FULL)) {
+        if (ASTERISK_HALF.equals(test) || ASTERISK_FULL.equals(test)) {
             return TT_LIST_TECH;
         }
 
         //  ///12
         if (test.startsWith(TENSU_SEARCH_HALF) || test.startsWith(TENSU_SEARCH_FULL)) {
-
-            if (isTensuSearch(test) && hitReturn) {
-                return TT_TENSU_SEARCH;
-            } else {
-                return TT_INVALID;
-            }
+            return isTensuSearch(test) && hitReturn
+                    ? TT_TENSU_SEARCH : TT_INVALID;
         }
 
         // 81,82,83,84,85
-        if ( (test.startsWith(COMMENT_SEARCH_HALF) || test.startsWith(COMMENT_SEARCH_FULL)) && test.length() >1 ) {
-//            if (test.startsWith(COMMENT_85_SEARCH_HALF) || test.startsWith(COMMENT_85_SEARCH_FULL)) {
-//                return TT_85_SEARCH;
-//            } else {
-//                return TT_CODE_SEARCH;
-//            }
+        if (test.length() > 1
+                && (test.startsWith(COMMENT_SEARCH_HALF) 
+                || test.startsWith(COMMENT_SEARCH_FULL))) {
+
             return TT_CODE_SEARCH;
         }
 
         // .140 診療行為区分検索
-        if ((test.startsWith(".") || test.startsWith("．")) && test.length()==4) {
+        if (test.length() == 4
+                && (test.startsWith(".") || test.startsWith("．"))) {
             return TT_SHINKU_SERACH;
         }
 
@@ -368,12 +344,12 @@ public abstract class AbstractStampEditor implements StampEditorConst {
         }
 
         // ２文字以上
-        if ((!textIsCode) && test.length() > 1) {
+        if (!textIsCode && test.length() > 1) {
             return TT_LETTER_SEARCH;
         }
 
         // １文字でreturn確定
-        if ((!textIsCode) && hitReturn) {
+        if (!textIsCode && hitReturn) {
             return TT_LETTER_SEARCH;
         }
 
@@ -382,8 +358,11 @@ public abstract class AbstractStampEditor implements StampEditorConst {
 
     // 注射診区コード
     protected final boolean isInjection(String code) {
-        return code != null &&
-                (code.startsWith("31") || code.startsWith("32") || code.startsWith("33"));
+
+        return code != null
+                && (code.startsWith("31")
+                || code.startsWith("32")
+                || code.startsWith("33"));
     }
 
     public void dispose() {
@@ -515,9 +494,9 @@ public abstract class AbstractStampEditor implements StampEditorConst {
             if (ret.getUnit()!=null) {
                 ret.setNumber(DEFAULT_NUMBER);
             }
-//masuda^   DataKbnを保存
+//masuda    DataKbnを保存
             ret.setDataKbn(tm.getDataKbn());
-//masuda$
+
         } else if (Pattern.compile(ClaimConst.SLOT_MEDICINE).matcher(test).find()) {
 
             // 薬剤
@@ -560,10 +539,9 @@ public abstract class AbstractStampEditor implements StampEditorConst {
             ret.setClassCode(ClaimConst.ZAIRYO);
             ret.setNumber(DEFAULT_NUMBER);
             
-//masuda^   コメントコードはClaimConst.OTHERにしておく
+//masuda    コメントコードはClaimConst.OTHERにしておく
         } else if(ret.getCode().matches(ClaimConst.REGEXP_COMMENT_MED)){
             ret.setClassCode(ClaimConst.OTHER);
-//masuda$
             
         } else if (test.equals(ClaimConst.SLOT_YOHO)) {
             // 用法
@@ -681,7 +659,6 @@ public abstract class AbstractStampEditor implements StampEditorConst {
         this.fromStampEditor = fromStampEditor;
     }
 
-//masuda^    
     protected final void setOldValue(Object oldValue) {
         this.oldValue = oldValue;
     }
@@ -839,9 +816,8 @@ public abstract class AbstractStampEditor implements StampEditorConst {
             @Override
             public void actionPerformed(ActionEvent e) {
                 search(view.getSearchTextField().getText().trim(), true);
-//masuda^   検索後は全選択状態にする
+//masuda    検索後は全選択状態にする
                 searchTextField.selectAll();
-//masuda$
             }
         });
         searchTextField.addFocusListener(AutoKanjiListener.getInstance());

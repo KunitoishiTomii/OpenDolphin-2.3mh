@@ -357,33 +357,36 @@ public class PrintLabel {
                 try (Socket socket = new Socket(prtAddress, prtPort);
                         OutputStream os = socket.getOutputStream()) {
 
-                    boolean kanjiMode = false;
-
                     os.write(escpInitialize);
                     os.write(escpCmdModeChange);
                     os.write(escpKOSI);
 
-                    char[] charArray = text.toCharArray();
-                    for (char c : charArray) {
-                        byte[] bytes = convertToJisBytes(c);
-                        if (bytes != null) {
-                            if (bytes.length > 4) {
-                                byte[] ctrl = {bytes[0], bytes[1], bytes[2]};
-                                if (Arrays.equals(ctrl, KI)) {
-                                    if (!kanjiMode) {
-                                        os.write(escpKISO);
-                                    }
-                                    os.write(bytes[3]);
-                                    os.write(bytes[4]);
-                                    kanjiMode = true;
+                    boolean kanjiMode = false;
+                    int len = text.length();
+                    
+                    for (int i = 0; i < len; ++i) {
+                        
+                        byte[] bytes = convertToJisBytes(text.charAt(i));
+                        if (bytes == null) {
+                            continue;
+                        }
+
+                        if (bytes.length > 4) {
+                            byte[] ctrl = {bytes[0], bytes[1], bytes[2]};
+                            if (Arrays.equals(ctrl, KI)) {
+                                if (!kanjiMode) {
+                                    os.write(escpKISO);
                                 }
-                            } else if (bytes.length > 0) {
-                                if (kanjiMode) {
-                                    os.write(escpKOSI);
-                                }
-                                os.write(bytes[0]);
-                                kanjiMode = false;
+                                os.write(bytes[3]);
+                                os.write(bytes[4]);
+                                kanjiMode = true;
                             }
+                        } else if (bytes.length > 0) {
+                            if (kanjiMode) {
+                                os.write(escpKOSI);
+                            }
+                            os.write(bytes[0]);
+                            kanjiMode = false;
                         }
                     }
 
