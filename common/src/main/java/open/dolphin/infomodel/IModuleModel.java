@@ -15,7 +15,7 @@ import java.io.Serializable;
 @JsonSubTypes({
     @JsonSubTypes.Type(value = BundleDolphin.class),
     @JsonSubTypes.Type(value = BundleMed.class),
-    @JsonSubTypes.Type(value = ClaimBundle.class),
+    //@JsonSubTypes.Type(value = ClaimBundle.class),
     @JsonSubTypes.Type(value = ProgressCourse.class)})
 public interface IModuleModel extends Serializable {
 

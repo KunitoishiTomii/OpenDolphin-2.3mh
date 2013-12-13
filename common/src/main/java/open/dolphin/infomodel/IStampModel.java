@@ -15,7 +15,7 @@ import java.io.Serializable;
 @JsonSubTypes({
     @Type(value = BundleDolphin.class),
     @Type(value = BundleMed.class),
-    @Type(value = ClaimBundle.class),
+    //@Type(value = ClaimBundle.class),
     @Type(value = RegisteredDiagnosisModel.class),
     @Type(value = TextStampModel.class)})
 public interface IStampModel extends Serializable {
