@@ -13,7 +13,9 @@ import java.io.Serializable;
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
 @JsonSubTypes({
-    @Type(value = ModuleModel.class),
+    @Type(value = BundleDolphin.class),
+    @Type(value = BundleMed.class),
+    @Type(value = ClaimBundle.class),
     @Type(value = RegisteredDiagnosisModel.class),
     @Type(value = TextStampModel.class)})
 public interface IStampModel extends Serializable {
