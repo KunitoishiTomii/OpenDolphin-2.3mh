@@ -1,5 +1,6 @@
 package open.dolphin.client;
 
+import java.io.BufferedOutputStream;
 import java.io.OutputStream;
 import open.dolphin.common.util.StampRenderingHints;
 import java.io.UnsupportedEncodingException;
@@ -328,11 +329,12 @@ public class PrintLabel {
             protected Object doInBackground() throws Exception {
                 // 転送
                 try (Socket socket = new Socket(prtAddress, prtPort);
-                        OutputStream os = socket.getOutputStream()) {
+                        OutputStream os = socket.getOutputStream();
+                        BufferedOutputStream bos = new BufferedOutputStream(os)) {
 
-                    os.write(escpInitialize);
-                    os.write(escpCmdModeChange);
-                    os.write(escpKOSI);
+                    bos.write(escpInitialize);
+                    bos.write(escpCmdModeChange);
+                    bos.write(escpKOSI);
 
                     boolean kanjiMode = false;
                     int len = text.length();
@@ -348,23 +350,24 @@ public class PrintLabel {
                             byte[] ctrl = {bytes[0], bytes[1], bytes[2]};
                             if (Arrays.equals(ctrl, KI)) {
                                 if (!kanjiMode) {
-                                    os.write(escpKISO);
+                                    bos.write(escpKISO);
                                 }
-                                os.write(bytes[3]);
-                                os.write(bytes[4]);
+                                bos.write(bytes[3]);
+                                bos.write(bytes[4]);
                                 kanjiMode = true;
                             }
                         } else if (bytes.length > 0) {
                             if (kanjiMode) {
-                                os.write(escpKOSI);
+                                bos.write(escpKOSI);
                             }
-                            os.write(bytes[0]);
+                            bos.write(bytes[0]);
                             kanjiMode = false;
                         }
                     }
 
-                    os.write(escpKOSI);
-                    os.write(escpFF);
+                    bos.write(escpKOSI);
+                    bos.write(escpFF);
+                    bos.flush();
 
                 } catch (Exception ex) {
                     ex.printStackTrace(System.err);
