@@ -236,10 +236,10 @@ public abstract class AbstractStampEditor implements StampEditorConst {
         for (int i = 0; i < len; i++) {
             char c = text.charAt(i);
             if (Character.getType(c) != Character.DECIMAL_DIGIT_NUMBER) {
-                return true;
+                return false;
             }
         }
-        return false;
+        return true;
     }
 
     //-----------------------------------------
