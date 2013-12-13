@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import javax.swing.JOptionPane;
 import open.dolphin.delegater.OrcaDelegater;
 import open.dolphin.infomodel.DiseaseEntry;
 import open.dolphin.infomodel.OrcaSqlModel;
@@ -140,7 +141,7 @@ public class SqlDaoBean extends DaoBean {
         }
         return executeStatement2(sql);
     }
-   
+    
     private List<List<String>> executeStatement1(String sql) {
 
         List<List<String>> valuesList = new ArrayList<>();
@@ -155,7 +156,7 @@ public class SqlDaoBean extends DaoBean {
             }
 
         } catch (Exception e) {
-            e.printStackTrace(System.err);
+            //e.printStackTrace(System.err);
             processError(e);
         }
 
@@ -300,10 +301,18 @@ public class SqlDaoBean extends DaoBean {
 
     private Connection getConnection() throws Exception {
         Connection con;
-        if (false) {
-            con = DriverManager.getConnection(getURL(), getUser(), getPasswd());
-        } else {
-            con = getConnectionFromPool();
+        try {
+            if (false) {
+                con = DriverManager.getConnection(getURL(), getUser(), getPasswd());
+            } else {
+                con = getConnectionFromPool();
+            }
+        } catch (Exception ex) {
+            processError(ex);
+            String msg = getErrorMessage();
+            String title = "ORCA接続";
+            JOptionPane.showMessageDialog(null, msg, title, JOptionPane.WARNING_MESSAGE);
+            throw ex;
         }
         return con;
     }
@@ -331,7 +340,7 @@ public class SqlDaoBean extends DaoBean {
         p.setMaxIdle(2);
         p.setMinIdle(1);
         p.setInitialSize(1);
-        p.setMaxWait(5000);
+        p.setMaxWait(3000);
         p.setRemoveAbandonedTimeout(30);
         p.setRemoveAbandoned(true);
         dataSource = new DataSource();
