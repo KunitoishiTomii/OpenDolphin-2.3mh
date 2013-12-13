@@ -83,30 +83,10 @@ public final class RpEditor extends AbstractStampEditor {
     public RpEditor(String entity, boolean mode) {
         super(entity, mode);
     }
-    
-    @Override
-    protected String[] getColumnNames() {
-        return COLUMN_NAMES;
-    }
-
-    @Override
-    protected String[] getColumnMethods() {
-        return METHOD_NAMES;
-    }
 
     @Override
     protected int[] getColumnWidth() {
         return COLUMN_WIDTH;
-    }
-
-    @Override
-    protected String[] getSrColumnNames() {
-        return SR_COLUMN_NAMES;
-    }
-
-    @Override
-    protected String[] getSrColumnMethods() {
-        return SR_METHOD_NAMES;
     }
 
     @Override

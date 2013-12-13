@@ -57,30 +57,10 @@ public final class BaseEditor extends AbstractStampEditor {
     public BaseEditor(String entity, boolean mode) {
         super(entity, mode);
     }
-    
-    @Override
-    protected String[] getColumnNames() {
-        return COLUMN_NAMES;
-    }
-
-    @Override
-    protected String[] getColumnMethods() {
-        return METHOD_NAMES;
-    }
 
     @Override
     protected int[] getColumnWidth() {
         return COLUMN_WIDTH;
-    }
-
-    @Override
-    protected String[] getSrColumnNames() {
-        return SR_COLUMN_NAMES;
-    }
-
-    @Override
-    protected String[] getSrColumnMethods() {
-        return SR_METHOD_NAMES;
     }
 
     @Override
@@ -313,22 +293,6 @@ public final class BaseEditor extends AbstractStampEditor {
 
         // バリデーションを実行する
         checkValidation();
-    }
-
-    @Override
-    protected void search(final String text, boolean hitReturn) {
-
-        boolean pass = ipOk();
-
-        int searchType = getSearchType(text, hitReturn);
-
-        pass = pass && (searchType != TT_INVALID);
-
-        if (!pass) {
-            return;
-        }
-
-        doSearch(text, searchType);
     }
 
     @Override

@@ -71,28 +71,9 @@ public class TextStampEditor extends AbstractStampEditor {
     public JPanel getView() {
         return editorPanel;
     }
-    @Override
-    protected String[] getColumnNames() {
-        return null;
-    }
-
-    @Override
-    protected String[] getColumnMethods() {
-        return null;
-    }
 
     @Override
     protected int[] getColumnWidth() {
-        return null;
-    }
-
-    @Override
-    protected String[] getSrColumnNames() {
-        return null;
-    }
-
-    @Override
-    protected String[] getSrColumnMethods() {
         return null;
     }
 

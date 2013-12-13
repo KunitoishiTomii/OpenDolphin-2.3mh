@@ -84,23 +84,13 @@ public abstract class AbstractStampEditor implements StampEditorConst {
     // 抽象メソッド
     public abstract JPanel getView();
 
-    protected abstract void search(final String text, boolean hitRet);
-
     protected abstract void initComponents();
 
     protected abstract void checkValidation();
 
     protected abstract void addSelectedTensu(TensuMaster tm);
 
-    protected abstract String[] getColumnNames();
-
-    protected abstract String[] getColumnMethods();
-
     protected abstract int[] getColumnWidth();
-
-    protected abstract String[] getSrColumnNames();
-
-    protected abstract String[] getSrColumnMethods();
 
     protected abstract int[] getSrColumnWidth();
 
@@ -119,8 +109,7 @@ public abstract class AbstractStampEditor implements StampEditorConst {
         setFromStampEditor(mode);
         AbstractStampEditor.this.initComponents();
     }
-    
-    
+
     // entityに応じたEditorSpecを作成する
     private void setupEditorSpec(String entity) {
         
@@ -671,7 +660,6 @@ public abstract class AbstractStampEditor implements StampEditorConst {
     public void setContext(Chart chart){
         this.chart = chart;
         setAdmissionFlg();
-        
     }
     
     public final Chart getContext() {
@@ -695,6 +683,25 @@ public abstract class AbstractStampEditor implements StampEditorConst {
         return isAdmission;
     }
     
+    protected BlockGlass getBlockGlass() {
+        
+        // 親がJFrameのときとJDialogのときがある
+        BlockGlass blockGlass = new BlockGlass();
+
+        Window parent = SwingUtilities.getWindowAncestor(getView());
+        if (parent instanceof JFrame) {
+            JFrame frame = (JFrame) parent;
+            frame.setGlassPane(blockGlass);
+            blockGlass.setSize(frame.getSize());
+        } else if (parent instanceof JDialog) {
+            JDialog dialog = (JDialog) parent;
+            dialog.setGlassPane(blockGlass);
+            blockGlass.setSize(dialog.getSize());
+        }
+        
+        return blockGlass;
+    }
+
     // 共通のコンポーネントをまとめて設定する
     protected final void setupOrderComponents() {
       
@@ -906,7 +913,22 @@ public abstract class AbstractStampEditor implements StampEditorConst {
         checkValidation();
     }
     
-    // 検索ルーチンを共通に
+    // 検索ルーチンを共通に。RpEditorとDiseaseEditor, TextStampEditorはOverrideしている
+    protected void  search(final String text, boolean hitReturn) {
+
+        boolean pass = ipOk();
+
+        int searchType = getSearchType(text, hitReturn);
+
+        pass = pass && (searchType != TT_INVALID);
+
+        if (!pass) {
+            return;
+        }
+
+        doSearch(text, searchType);
+    }
+    
     protected final void doSearch(final String text, final int searchType) {
    
         // 件数をゼロにしておく
@@ -1080,25 +1102,13 @@ public abstract class AbstractStampEditor implements StampEditorConst {
 
     protected void updateMasterItems (final List<MasterItem> list){
 
-        final AbstractOrderView view = (AbstractOrderView) getView();
+        final AbstractOrderView view = getOrderView();
         // ButtonControl
         view.getClearBtn().setEnabled(false);
         view.getOkCntBtn().setEnabled(false);
         view.getOkBtn().setEnabled(false);
 
-        final BlockGlass blockGlass = new BlockGlass();
-        Window parent = SwingUtilities.getWindowAncestor(view);
-        // 親がJFrameのときとJDialogのときがある
-        if (parent instanceof JFrame) {
-            JFrame frame = (JFrame) parent;
-            frame.setGlassPane(blockGlass);
-            blockGlass.setSize(frame.getSize());
-        } else if (parent instanceof JDialog) {
-            JDialog dialog = (JDialog) parent;
-            dialog.setGlassPane(blockGlass);
-            blockGlass.setSize(dialog.getSize());
-        }
-
+        final BlockGlass blockGlass = getBlockGlass();
         final SqlMiscDao dao2 = SqlMiscDao.getInstance();
 
         SwingWorker worker = new SwingWorker<List<TensuMaster>, Void>() {

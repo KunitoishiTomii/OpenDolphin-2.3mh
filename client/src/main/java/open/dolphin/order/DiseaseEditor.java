@@ -1,6 +1,5 @@
 package open.dolphin.order;
 
-import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.SimpleDateFormat;
@@ -73,30 +72,10 @@ public final class DiseaseEditor extends AbstractStampEditor {
     public DiseaseEditor(String entity, boolean mode) {
         super(entity, mode);
     }
-    
-    @Override
-    protected String[] getColumnNames() {
-        return COLUMN_NAMES;
-    }
-
-    @Override
-    protected String[] getColumnMethods() {
-        return METHOD_NAMES;
-    }
 
     @Override
     protected int[] getColumnWidth() {
         return COLUMN_WIDTH;
-    }
-
-    @Override
-    protected String[] getSrColumnNames() {
-        return SR_COLUMN_NAMES;
-    }
-
-    @Override
-    protected String[] getSrColumnMethods() {
-        return SR_METHOD_NAMES;
     }
 
     @Override
@@ -222,18 +201,7 @@ public final class DiseaseEditor extends AbstractStampEditor {
         }
 
         final SqlMiscDao dao2 = SqlMiscDao.getInstance();
-        final BlockGlass blockGlass = new BlockGlass();
-        // 親がJFrameのときとJDialogのときがある masuda
-        Window parent = SwingUtilities.getWindowAncestor(getView());
-        if (parent instanceof JFrame) {
-            JFrame frame = (JFrame) parent;
-            frame.setGlassPane(blockGlass);
-            blockGlass.setSize(frame.getSize());
-        } else if (parent instanceof JDialog) {
-            JDialog dialog = (JDialog) parent;
-            dialog.setGlassPane(blockGlass);
-            blockGlass.setSize(dialog.getSize());
-        }
+        final BlockGlass blockGlass = getBlockGlass();
 
         SwingWorker worker = new SwingWorker<List<DiseaseEntry>, Void>() {
 
