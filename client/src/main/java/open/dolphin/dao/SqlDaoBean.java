@@ -106,18 +106,6 @@ public class SqlDaoBean extends DaoBean {
         return tm;
     }
     
-    private List<String> getColumnValues(ResultSet rs) throws SQLException {
-
-        int columnCount = rs.getMetaData().getColumnCount();
-        List<String> values = new ArrayList<>(columnCount);
-
-        for (int i = 1; i <= columnCount; ++i) {
-            values.add(String.valueOf(rs.getObject(i)));
-        }
-        
-        return values;
-    }
-    
     private boolean isClient() {
         String str = Project.getString(Project.CLAIM_SENDER);
         boolean client = (str == null || Project.CLAIM_CLIENT.equals(str));
@@ -136,18 +124,22 @@ public class SqlDaoBean extends DaoBean {
 
         List<List<String>> valuesList = new ArrayList<>();
 
-        try (Connection con = getConnection(); 
-                Statement st = con.createStatement(); 
-                ResultSet rs = st.executeQuery(sql);) {
+        try (Connection con = getConnection();
+                Statement st = con.createStatement();
+                ResultSet rs = st.executeQuery(sql)) {
 
+            int columnCount = rs.getMetaData().getColumnCount();
             while (rs.next()) {
-                List<String> values = getColumnValues(rs);
+                List<String> values = new ArrayList<>(columnCount);
+                for (int i = 1; i <= columnCount; ++i) {
+                    values.add(String.valueOf(rs.getObject(i)));
+                }
                 valuesList.add(values);
             }
 
-        } catch (Exception e) {
-            //e.printStackTrace(System.err);
-            processError(e);
+        } catch (Exception ex) {
+            //ex.printStackTrace(System.err);
+            processError(ex);
         }
 
         return valuesList;

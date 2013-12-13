@@ -1,7 +1,6 @@
 package open.dolphin.server.orca;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -78,29 +77,18 @@ public class OrcaService {
 
         try (Connection con = getConnection(sqlModel.getUrl());
                 Statement st = con.createStatement();
-                ResultSet rs = st.executeQuery(sqlModel.getSql());){
+                ResultSet rs = st.executeQuery(sqlModel.getSql())) {
 
+            int columnCount = rs.getMetaData().getColumnCount();
             while (rs.next()) {
-                List<String> values = new ArrayList<>();
-                ResultSetMetaData meta = rs.getMetaData();
-                int columnCount = meta.getColumnCount();
+                List<String> values = new ArrayList<>(columnCount);
                 for (int i = 1; i <= columnCount; ++i) {
-                    int type = meta.getColumnType(i);
-                    switch (type) {
-                        case Types.SMALLINT:
-                        case Types.NUMERIC:
-                        case Types.INTEGER:
-                            values.add(String.valueOf(rs.getInt(i)));
-                            break;
-                        default:
-                            values.add(rs.getString(i));
-                            break;
-                    }
+                    values.add(String.valueOf(rs.getObject(i)));
                 }
                 valuesList.add(values);
             }
 
-        } catch (SQLException | ClassNotFoundException | NullPointerException ex) {
+        } catch (Exception ex) {
             sqlModel.setErrorMessage(ex.getMessage());
         }
 

@@ -30,7 +30,7 @@ public final class InstractionEditor extends AbstractStampEditor {
 
 //masuda^   yukoedymdを追加
     private static final String[] SR_COLUMN_NAMES = 
-    {"種別", "コード", "名 称", "単位", "価格", "診区", "病診", "入外", "社老", "有効期限"};
+    {"種別", "コード", "名 称", "単位", "点数/薬価", "診区", "病診", "入外", "社老", "有効期限"};
     private static final String[] SR_METHOD_NAMES = 
     {"getSlot", "getSrycd", "getName", "getTaniname", "getTenFloat",
         "getSrysyukbn", "getHospsrykbn", "getNyugaitekkbn", "getRoutekkbn","getYukoedymdStr"};
