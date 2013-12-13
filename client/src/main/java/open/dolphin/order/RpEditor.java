@@ -37,11 +37,11 @@ public final class RpEditor extends AbstractStampEditor {
     private static final int BUNDLE_COLUMN = 5;
 
     private static final String[] SR_COLUMN_NAMES = 
-    {"種別", "コード", "名 称", "単位", "点数", "薬価基準", "有効期限"};
+    {"種別", "コード", "名 称", "単位", "価格", "薬価基準", "有効期限"};
     private static final String[] SR_METHOD_NAMES = 
-    {"getSlot", "getSrycd", "getName", "getTaniname", "getTenInteger","getYakkakjncd", "getYukoedymdStr"};
+    {"getSlot", "getSrycd", "getName", "getTaniname", "getTenFloat","getYakkakjncd", "getYukoedymdStr"};
         private static final Class[] SR_CLASSES = 
-    {String.class, String.class, String.class, String.class, Integer.class, String.class, String.class};
+    {String.class, String.class, String.class, String.class, Float.class, String.class, String.class};
     private static final int[] SR_COLUMN_WIDTH = {10, 50, 200, 10, 10, 10, 10};
     private static final int SR_NUM_ROWS = 1;
 

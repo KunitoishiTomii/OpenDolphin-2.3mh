@@ -178,9 +178,9 @@ public class TensuMaster implements Serializable {
         return ten;
     }
     
-    // Integer返しだ！ by ドル沢
-    public Integer getTenInteger() {
-        return Integer.valueOf(ten);
+    // Float返しだ！ by ドル沢
+    public Float getTenFloat() {
+        return Float.valueOf(ten);
     }
 
     /**

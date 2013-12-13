@@ -76,12 +76,12 @@ public class SqlDaoBean extends DaoBean {
     protected DiseaseEntry getDiseaseEntry(List<String> values) {
 
         DiseaseEntry de = new DiseaseEntry();
-        de.setCode(values.get(0));        // Code
-        de.setName(values.get(1));        // Name
-        de.setKana(values.get(2));         // Kana
-        de.setIcdTen(values.get(3));      // IcdTen
-        de.setDisUseDate(values.get(4));  // DisUseDate
-        de.setByoKanrenKbn(Integer.valueOf(values.get(5)));
+        de.setCode(values.get(0));          // Code
+        de.setName(values.get(1));          // Name
+        de.setKana(values.get(2));          // Kana
+        de.setIcdTen(values.get(3));        // IcdTen
+        de.setDisUseDate(values.get(4));    // DisUseDate
+        de.setByoKanrenKbn(Integer.parseInt(values.get(5)));
         return de;
     }
     
@@ -108,23 +108,13 @@ public class SqlDaoBean extends DaoBean {
     
     private List<String> getColumnValues(ResultSet rs) throws SQLException {
 
-        ResultSetMetaData meta = rs.getMetaData();
-        int columnCount = meta.getColumnCount();
+        int columnCount = rs.getMetaData().getColumnCount();
         List<String> values = new ArrayList<>(columnCount);
 
         for (int i = 1; i <= columnCount; ++i) {
-            int type = meta.getColumnType(i);
-            switch (type) {
-                case Types.SMALLINT:
-                case Types.NUMERIC:
-                case Types.INTEGER:
-                    values.add(String.valueOf(rs.getInt(i)));
-                    break;
-                default:
-                    values.add(rs.getString(i));
-                    break;
-            }
+            values.add(String.valueOf(rs.getObject(i)));
         }
+        
         return values;
     }
     

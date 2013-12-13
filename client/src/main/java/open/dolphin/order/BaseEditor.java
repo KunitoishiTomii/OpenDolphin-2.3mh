@@ -31,12 +31,12 @@ public final class BaseEditor extends AbstractStampEditor {
 
 //masuda^   yukoedymdを追加
     private static final String[] SR_COLUMN_NAMES = 
-    {"種別", "コード", "名 称", "単位", "点数", "診区", "病診", "入外", "社老", "有効期限"};
+    {"種別", "コード", "名 称", "単位", "価格", "診区", "病診", "入外", "社老", "有効期限"};
     private static final String[] SR_METHOD_NAMES = 
-    {"getSlot", "getSrycd", "getName", "getTaniname", "getTenInteger",
+    {"getSlot", "getSrycd", "getName", "getTaniname", "getTenFloat",
         "getSrysyukbn", "getHospsrykbn", "getNyugaitekkbn", "getRoutekkbn","getYukoedymdStr"};
     private static final Class[] SR_CLASSES = 
-    {String.class, String.class, String.class, String.class, Integer.class,
+    {String.class, String.class, String.class, String.class, Float.class,
         String.class, String.class, String.class, String.class, String.class};
     private static final int[] SR_COLUMN_WIDTH = {10, 50, 200, 10, 10, 10, 5, 5, 5, 10};
     private static final int SR_NUM_ROWS = 1;
