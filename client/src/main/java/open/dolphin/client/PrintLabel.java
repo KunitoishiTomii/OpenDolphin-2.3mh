@@ -4,14 +4,15 @@ import java.io.OutputStream;
 import open.dolphin.common.util.StampRenderingHints;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import javax.swing.SwingWorker;
 import open.dolphin.infomodel.*;
 import open.dolphin.project.Project;
 import open.dolphin.setting.MiscSettingPanel;
-import open.dolphin.util.MMLDate;
 import open.dolphin.common.util.StringTool;
 
 /**
@@ -42,12 +43,12 @@ public class PrintLabel {
     private final List<ModuleModel> rpStamp = new ArrayList<>();
     private final List<ModuleModel> exStamp = new ArrayList<>();
     private final List<ModuleModel> otherStamp = new ArrayList<>();
-    private final List<ModuleModel> otherStamp2 = new ArrayList<>();
+    //private final List<ModuleModel> otherStamp2 = new ArrayList<>();
     private final List<ModuleModel> injStamp = new ArrayList<>();
     private List<StampHolder> stampHolders = new ArrayList<>();
-    private KartePane kartePane;
 
-    private String date;
+    private String patientName;
+    private Date date;
     
     private final StampRenderingHints hints;
     
@@ -55,28 +56,20 @@ public class PrintLabel {
     public PrintLabel() {
         hints = StampRenderingHints.getInstance();
     }
-
-    public void enter(KartePane kp) {
-        // JISで送っていたが、毎文字にKI/KOを付加していたので、半角全角変更時
-        // 適宜KI/KOを送信するように変更した。
-
-        kartePane = kp;
-
-        collectMedStampHolder();
-        collectModuleModel();
-        buildLineDataArray();
+    
+    public void printLabel(String patientName, KartePane kartePane) {
         
-        String str = buildPrintString();
-        sendESCPData(str);
+        List<StampHolder> al = kartePane.getDocument().getStampHolders();
+        printLabel(patientName, al);
     }
 
-    public void enter2(List<StampHolder> al) {
-        // スタンプホルダのpopupから実行した場合
+    public void printLabel(String patientName, List<StampHolder> al) {
+
         if (al.isEmpty()) {
             return;
         }
-
-        kartePane = al.get(0).getKartePane();
+        
+        this.patientName = patientName + "　様";
         stampHolders = al;
         setDate();
 
@@ -87,32 +80,15 @@ public class PrintLabel {
         sendESCPData(str);
     }
 
-    private void collectMedStampHolder() {
-
-        List<StampHolder> list = kartePane.getDocument().getStampHolders();
-        for (StampHolder sh : list) {
-            String entity = sh.getStamp().getModuleInfoBean().getEntity();
-            if (IInfoModel.ENTITY_MED_ORDER.equals(entity) 
-                    || IInfoModel.ENTITY_INJECTION_ORDER.equals(entity)) {
-                stampHolders.add(sh);
-            }
-        }
-        setDate();
-    }
-
     private void setDate() {
         // ラベルの日付を、一個目のスタンプからDocInfoを調べて取得する。
-        date = MMLDate.getDate();
         if (!stampHolders.isEmpty()) {
-            Chart chart = stampHolders.get(0).getKartePane().getParent().getContext();
-            KarteEditor editor = chart.getKarteEditor();
-            if (editor.getModel().getDocInfoModel().getParentId() != null) {     // 新規作成でなかったら
-                date = editor.getModel().getDocInfoModel().getFirstConfirmDateTrimTime();
-
-            }
+            date = stampHolders.get(0).getStamp().getStarted();
+        }
+        if (date == null) {
+            date = new Date();
         }
     }
-
 
     private void collectModuleModel() {
         
@@ -138,7 +114,7 @@ public class PrintLabel {
                     injStamp.add(stamp);
                     break;
                 default:
-                    otherStamp2.add(stamp);
+                    //otherStamp2.add(stamp);
                     break;
             }
         }
@@ -146,14 +122,10 @@ public class PrintLabel {
 
     private void buildLineDataArray() {
 
-        String name = kartePane.getParent().getContext().getPatient().getFullName() + "　様";
-        // 印字桁数が限られているので削る
-        if (date != null) {
-            date = date.substring(2, date.length());
-            date = date.replace("-", "");
-        }
         // 一行目は患者名と処方日
-        lineData.add(new LineModel(name, hankakuNumToZenkaku(date), "　"));
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+        String dateStr = hankakuNumToZenkaku(sdf.format(date));
+        lineData.add(new LineModel(patientName, dateStr, "　"));
 
         // 定期処方・臨時処方・その他処方・注射の順で印刷データ作成
         for (ModuleModel mm : rpStamp) {
@@ -168,9 +140,9 @@ public class PrintLabel {
         for (ModuleModel mm : injStamp) {
             addLineFromModule(mm);
         }
-        for (ModuleModel mm : otherStamp2) {
-            addLineFromModule(mm);
-        }
+        //for (ModuleModel mm : otherStamp2) {
+        //    addLineFromModule(mm);
+        //}
     }
 
     private void addLineFromModule(ModuleModel stamp) {
@@ -194,7 +166,7 @@ public class PrintLabel {
                     if ("カプセル".equals(unit)) {
                         unit = "Ｃ";
                     }
-                        // 0085系のコメントはunitがnullなので""に置き換える。
+                    // 0085系のコメントはunitがnullなので""に置き換える。
                     // 手技の場合もclassCodeが"0"なので置き換える
                     if (unit == null || "0".equals(c.getClassCode())) {
                         unit = "";
@@ -338,6 +310,8 @@ public class PrintLabel {
         return output;
     }
     
+    // JISで送っていたが、毎文字にKI/KOを付加していたので、半角全角変更時
+    // 適宜KI/KOを送信するように変更した。
     private void sendESCPData(final String text) {
         
         // esc/pのraw dataをQL-580Nに転送する

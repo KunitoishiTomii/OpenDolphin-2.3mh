@@ -88,7 +88,7 @@ public abstract class AbstractChartExtensions {
             return;
         }
         PrintLabel pl = new PrintLabel();
-        pl.enter(editor.getPPane());
+        pl.printLabel(context.getPatient().getFullName(), editor.getPPane());
     }
 
     // 基本料入力

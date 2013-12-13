@@ -388,8 +388,13 @@ public class StampHolderFunction {
     private void printStampLabel() {
 
         List<StampHolder> stampHolderList = getSelectedStampHolder();
-        PrintLabel pl = new PrintLabel();
-        pl.enter2(stampHolderList);
+        
+        if (!stampHolderList.isEmpty()) {
+            KartePane kp = stampHolderList.get(0).getKartePane();
+            String patientName = kp.getParent().getContext().getPatient().getFullName();
+            PrintLabel pl = new PrintLabel();
+            pl.printLabel(patientName, stampHolderList);
+        }
     }
 
     // 処方スタンプの日数変更を行う changeBundleNumberAction
