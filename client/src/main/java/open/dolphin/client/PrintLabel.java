@@ -89,8 +89,7 @@ public class PrintLabel {
 
     private void collectMedStampHolder() {
 
-        KarteStyledDocument doc = (KarteStyledDocument) kartePane.getTextPane().getDocument();
-        List<StampHolder> list = doc.getStampHolders();
+        List<StampHolder> list = kartePane.getDocument().getStampHolders();
         for (StampHolder sh : list) {
             String entity = sh.getStamp().getModuleInfoBean().getEntity();
             if (IInfoModel.ENTITY_MED_ORDER.equals(entity) 
