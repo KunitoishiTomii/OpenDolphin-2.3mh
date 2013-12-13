@@ -187,8 +187,9 @@ public class SqlDaoBean extends DaoBean {
         StringBuilder sb = new StringBuilder();
 
         try {
-            char[] charArray = sql.toCharArray();
-            for (char c : charArray) {
+            int len = sql.length();
+            for (int i = 0; i < len; ++i) {
+                char c = sql.charAt(i);
                 if (c == '?') {
                     Object param = params[index];
                     if (param instanceof Number) {
