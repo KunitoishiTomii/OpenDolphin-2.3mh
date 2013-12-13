@@ -204,7 +204,7 @@ public class HL7Falco implements LabResultParser {
             summary.setPatientName(module.getPatientName());
             summary.setPatientSex(module.getPatientSex());
             summary.setSampleDate(module.getSampleDate());
-            summary.setNumOfTestItems(String.valueOf(module.getItems().size()));
+            summary.setNumOfTestItems(module.getItems().size());
             summary.setModule(module);
             retList.add(summary);
         }

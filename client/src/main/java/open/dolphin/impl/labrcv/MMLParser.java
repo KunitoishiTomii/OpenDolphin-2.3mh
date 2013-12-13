@@ -112,7 +112,7 @@ public class MMLParser implements LabResultParser {
         summary.setPatientName(nLaboModule.getPatientName());
         summary.setPatientSex(nLaboModule.getPatientSex());
         summary.setSampleDate(nLaboModule.getSampleDate());
-        summary.setNumOfTestItems(String.valueOf(nLaboModule.getItems().size()));
+        summary.setNumOfTestItems(nLaboModule.getItems().size());
         summary.setModule(nLaboModule);
         summary.setLabo13(laboModule);
 
