@@ -73,36 +73,36 @@ public class SqlDaoBean extends DaoBean {
         setPasswd(PASSWD);
     }
 
-    protected DiseaseEntry getDiseaseEntry(List<String> values) {
+    protected DiseaseEntry getDiseaseEntry(String[] values) {
 
         DiseaseEntry de = new DiseaseEntry();
-        de.setCode(values.get(0));          // Code
-        de.setName(values.get(1));          // Name
-        de.setKana(values.get(2));          // Kana
-        de.setIcdTen(values.get(3));        // IcdTen
-        de.setDisUseDate(values.get(4));    // DisUseDate
-        de.setByoKanrenKbn(Integer.parseInt(values.get(5)));
+        de.setCode(values[0]);          // Code
+        de.setName(values[1]);          // Name
+        de.setKana(values[2]);          // Kana
+        de.setIcdTen(values[3]);        // IcdTen
+        de.setDisUseDate(values[4]);    // DisUseDate
+        de.setByoKanrenKbn(Integer.parseInt(values[5]));
         return de;
     }
     
-    protected TensuMaster getTensuMaster(List<String> values) {
+    protected TensuMaster getTensuMaster(String[] values) {
 
         TensuMaster tm = new TensuMaster();
-        tm.setSrycd(values.get(0));
-        tm.setName(values.get(1));
-        tm.setKananame(values.get(2));
-        tm.setTaniname(values.get(3));
-        tm.setTensikibetu(values.get(4));
-        tm.setTen(values.get(5));
-        tm.setNyugaitekkbn(values.get(6));
-        tm.setRoutekkbn(values.get(7));
-        tm.setSrysyukbn(values.get(8));
-        tm.setHospsrykbn(values.get(9));
-        tm.setYkzkbn(values.get(10));
-        tm.setYakkakjncd(values.get(11));
-        tm.setYukostymd(values.get(12));
-        tm.setYukoedymd(values.get(13));
-        tm.setDataKbn(values.get(14));
+        tm.setSrycd(values[0]);
+        tm.setName(values[1]);
+        tm.setKananame(values[2]);
+        tm.setTaniname(values[3]);
+        tm.setTensikibetu(values[4]);
+        tm.setTen(values[5]);
+        tm.setNyugaitekkbn(values[6]);
+        tm.setRoutekkbn(values[7]);
+        tm.setSrysyukbn(values[8]);
+        tm.setHospsrykbn(values[9]);
+        tm.setYkzkbn(values[10]);
+        tm.setYakkakjncd(values[11]);
+        tm.setYukostymd(values[12]);
+        tm.setYukoedymd(values[13]);
+        tm.setDataKbn(values[14]);
         return tm;
     }
     
@@ -112,7 +112,7 @@ public class SqlDaoBean extends DaoBean {
         return client;
     }
     
-    protected List<List<String>> executeStatement(String sql) {
+    protected List<String[]> executeStatement(String sql) {
         
         if (isClient()) {
             return executeStatement1(sql);
@@ -120,19 +120,20 @@ public class SqlDaoBean extends DaoBean {
         return executeStatement2(sql);
     }
     
-    private List<List<String>> executeStatement1(String sql) {
+    private List<String[]> executeStatement1(String sql) {
 
-        List<List<String>> valuesList = new ArrayList<>();
+        List<String[]> valuesList = new ArrayList<>();
 
         try (Connection con = getConnection();
                 Statement st = con.createStatement();
                 ResultSet rs = st.executeQuery(sql)) {
 
             int columnCount = rs.getMetaData().getColumnCount();
+            
             while (rs.next()) {
-                List<String> values = new ArrayList<>(columnCount);
-                for (int i = 1; i <= columnCount; ++i) {
-                    values.add(String.valueOf(rs.getObject(i)));
+                final String[] values = new String[columnCount];
+                for (int i = 0; i < columnCount; ++i) {
+                    values[i] = String.valueOf(rs.getObject(i + 1));
                 }
                 valuesList.add(values);
             }
@@ -145,7 +146,7 @@ public class SqlDaoBean extends DaoBean {
         return valuesList;
     }
     
-    private List<List<String>> executeStatement2(String sql) {
+    private List<String[]> executeStatement2(String sql) {
         
         OrcaSqlModel sqlModel = new OrcaSqlModel();
         sqlModel.setUrl(getURL());
@@ -167,7 +168,7 @@ public class SqlDaoBean extends DaoBean {
         return Collections.emptyList();
     }
 
-    protected List<List<String>> executePreparedStatement(String sql, Object[] params) {
+    protected List<String[]> executePreparedStatement(String sql, Object[] params) {
         
         try {
             String sql2 = createSql(sql, params);
@@ -244,11 +245,11 @@ public class SqlDaoBean extends DaoBean {
         
         Object[] params = {hospNum, patientId};
         
-        List<List<String>> valuesList = executePreparedStatement(sql, params);
+        List<String[]> valuesList = executePreparedStatement(sql, params);
         
         if (!valuesList.isEmpty()) {
-            List<String> values = valuesList.get(0);
-            ptid = Long.valueOf(values.get(0));
+            String[] values = valuesList.get(0);
+            ptid = Long.valueOf(values[0]);
         }
 
         return ptid;

@@ -127,10 +127,10 @@ public class SyskanriInfo extends SqlDaoBean {
         sb.append("%'");
         String sql = sb.toString();
         
-        List<List<String>> valuesList = executeStatement(sql);
+        List<String[]> valuesList = executeStatement(sql);
         if (!valuesList.isEmpty()) {
-            List<String> values = valuesList.get(0);
-            hospNum = Integer.valueOf(values.get(0));
+            String[] values = valuesList.get(0);
+            hospNum = Integer.valueOf(values[0]);
         }
 
         String dbVersion = null;
@@ -138,8 +138,8 @@ public class SyskanriInfo extends SqlDaoBean {
         
         valuesList = executeStatement(sql);
         if (!valuesList.isEmpty()) {
-            List<String> values = valuesList.get(0);
-            dbVersion = values.get(0);
+            String[] values = valuesList.get(0);
+            dbVersion = values[0];
         }
 
         if (ORCA_DB_VER45.equals(dbVersion)) {
@@ -158,11 +158,11 @@ public class SyskanriInfo extends SqlDaoBean {
         final String sql = "select kbncd, kanritbl from tbl_syskanri where kanricd = '1006' order by kbncd";
         boolean success = true;
         
-        List<List<String>> valuesList = executeStatement(sql);
+        List<String[]> valuesList = executeStatement(sql);
         
-        for (List<String> values : valuesList) {
-            int kbncd = Integer.valueOf(values.get(0).trim());
-            String kanritbl = values.get(1);
+        for (String[] values : valuesList) {
+            int kbncd = Integer.valueOf(values[0].trim());
+            String kanritbl = values[1];
             for (int i = 0; i < kanritbl.length(); ++i) {
                 int index = (kbncd - 1) * 500 + i + 1;
                 char c = kanritbl.charAt(i);
@@ -292,13 +292,13 @@ public class SyskanriInfo extends SqlDaoBean {
         
         Object[] params = {kanricd};
         
-        List<List<String>> valuesList = executePreparedStatement(sql, params);
+        List<String[]> valuesList = executePreparedStatement(sql, params);
         
-        for (List<String> values : valuesList) {
+        for (String[] values : valuesList) {
             // kbccdは余分な空白は除去
-            String kbncd = values.get(0).trim();
+            String kbncd = values[0].trim();
             // これがカオスのkanritbl。こっちはそのままで
-            String kanritbl = values.get(1);
+            String kanritbl = values[1];
             KanriTblModel model = new KanriTblModel(kbncd, kanritbl);
             ret.add(model);
         }

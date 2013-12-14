@@ -54,11 +54,11 @@ public final class SqlMiscDao extends SqlDaoBean {
         
         final String sql = sb.toString();
         
-        List<List<String>> valuesList = executeStatement(sql);
-        for (List<String> values : valuesList) {
-            String srycd = values.get(0);
-            String kbnStr = values.get(1);
-            int kbn = (kbnStr != null) ? Integer.valueOf(kbnStr) : 0;
+        List<String[]> valuesList = executeStatement(sql);
+        for (String[] values : valuesList) {
+            String srycd = values[0];
+            String kbnStr = values[1];
+            int kbn = (kbnStr != null) ? Integer.parseInt(kbnStr) : 0;
             hokatsuKbnMap.put(srycd, kbn);
         }
 
@@ -80,18 +80,18 @@ public final class SqlMiscDao extends SqlDaoBean {
         
         Object[] params = {dateStr, dateStr, hospNum};
         
-        List<List<String>> valuesList = executePreparedStatement(sql, params);
+        List<String[]> valuesList = executePreparedStatement(sql, params);
         
-        for (List<String> values : valuesList) {
-            String patientId = values.get(0).trim();
-            String room = getRoomNumber(values.get(1).trim());
-            String dept = getDepartmentDesc(values.get(2).trim());
+        for (String[] values : valuesList) {
+            String patientId = values[0].trim();
+            String room = getRoomNumber(values[1].trim());
+            String dept = getDepartmentDesc(values[2].trim());
             Date aDate = null;
             try {
-                aDate = frmt.parse(values.get(3).trim());
+                aDate = frmt.parse(values[3].trim());
             } catch (ParseException ex) {
             }
-            String doctor = getOrcaStaffName(values.get(4).trim());
+            String doctor = getOrcaStaffName(values[4].trim());
 
             // 新たに作成
             AdmissionModel model = new AdmissionModel();
@@ -180,12 +180,12 @@ public final class SqlMiscDao extends SqlDaoBean {
         sb.append("))");
         String sql = sb.toString();
 
-        List<List<String>> valuesList = executeStatement(sql);
-        for (List<String> values : valuesList) {
-            String srycd1 = values.get(0);
-            String srycd2 = values.get(1);
-            String sskijo = values.get(2);
-            String syojoucd = values.get(3);
+        List<String[]> valuesList = executeStatement(sql);
+        for (String[] values : valuesList) {
+            String srycd1 = values[0];
+            String srycd2 = values[1];
+            String sskijo = values[2];
+            String syojoucd = values[3];
             String brandName1 = null;
             String brandName2 = null;
             
@@ -276,13 +276,13 @@ public final class SqlMiscDao extends SqlDaoBean {
         String sql = sb.toString();
         
         Map<String, ZoroBrandPair> yakkakjncdMap = new HashMap<>();
-        List<List<String>> valuesList = executeStatement(sql);
-        for (List<String> values : valuesList) {
+        List<String[]> valuesList = executeStatement(sql);
+        for (String[] values : valuesList) {
             ZoroBrandPair pair = new ZoroBrandPair();
-            pair.zoroSrycd = values.get(0);
-            pair.zoroName = values.get(1);
+            pair.zoroSrycd = values[0];
+            pair.zoroName = values[1];
             // javaのsubstringはyakkakjncd.substring(0,9)である
-            String yakkakjncd = values.get(2).substring(0, 9);
+            String yakkakjncd = values[2].substring(0, 9);
             yakkakjncdMap.put(yakkakjncd, pair);
         }
         
@@ -298,10 +298,10 @@ public final class SqlMiscDao extends SqlDaoBean {
         sb.append(") and kouhatukbn<>'1' and yukoedymd='99999999'");
         sql = sb.toString();
         valuesList = executeStatement(sql);
-        for (List<String> values : valuesList) {
-            String brandSrycd = values.get(0);
-            String brandName = values.get(1);
-            String yakkakjncd = values.get(2).substring(0, 9);
+        for (String[] values : valuesList) {
+            String brandSrycd = values[0];
+            String brandName = values[1];
+            String yakkakjncd = values[2].substring(0, 9);
             ZoroBrandPair mapPair = yakkakjncdMap.get(yakkakjncd);
             if (mapPair != null) {
                 ZoroBrandPair pair = new ZoroBrandPair();
@@ -339,7 +339,7 @@ public final class SqlMiscDao extends SqlDaoBean {
 
         String sql = sb.toString();
 
-        List<List<String>> valuesList = executeStatement(sql);
+        List<String[]> valuesList = executeStatement(sql);
         boolean ret = !valuesList.isEmpty();
 
         return ret;
@@ -367,7 +367,7 @@ public final class SqlMiscDao extends SqlDaoBean {
 
         String sql = sb.toString();
         
-        List<List<String>> valuesList = executeStatement(sql);
+        List<String[]> valuesList = executeStatement(sql);
         boolean ret = !valuesList.isEmpty();
 
         return ret;
@@ -443,8 +443,8 @@ public final class SqlMiscDao extends SqlDaoBean {
 
         HashMap<Integer, TensuMaster> tmMap = new HashMap<>();
         
-        List<List<String>> valuesList = executeStatement(sql);
-        for (List<String> values : valuesList) {
+        List<String[]> valuesList = executeStatement(sql);
+        for (String[] values : valuesList) {
             TensuMaster tm = getTensuMaster(values);
             // HashMapに登録していく
             int srycd = Integer.valueOf(tm.getSrycd());
@@ -482,8 +482,8 @@ public final class SqlMiscDao extends SqlDaoBean {
         List<DiseaseEntry> collection = new ArrayList<>();
         List<DiseaseEntry> outUse = new ArrayList<>();
         
-        List<List<String>> valuesList = executeStatement(sql);
-        for (List<String> values : valuesList) {
+        List<String[]> valuesList = executeStatement(sql);
+        for (String[] values : valuesList) {
             DiseaseEntry de = getDiseaseEntry(values);
             if (de.isInUse()) {
                 collection.add(de);
@@ -534,21 +534,21 @@ public final class SqlMiscDao extends SqlDaoBean {
         sb.append("<>0 order by act.rennum, act.zainum");
         String sql = sb.toString();
         
-        List<List<String>> valuesList = executeStatement(sql);
+        List<String[]> valuesList = executeStatement(sql);
         
-        for (List<String> values : valuesList) {
+        for (String[] values : valuesList) {
             
-            int dayColumnValue = Integer.valueOf(values.get(20));
+            int dayColumnValue = Integer.valueOf(values[20]);
             
             for (int i = 0; i < 4; ++i) {
                 // 外用薬ならsrykaisu=1、内服ならsrykaisu = 0
                 // 「２つ目の数量（分画数）がある場合それを表す」の意味は理解できなかったｗ
 
-                String srycd = values.get(i * 4).trim();
+                String srycd = values[i * 4].trim();
                 // 数量はfloatにしないと、0.5錠とかNGになる
-                float srysuryo = Float.valueOf(values.get(i * 4 + 1));
-                int srykaisu = Integer.valueOf(values.get(i * 4 + 2));
-                int inputnum = Integer.valueOf(values.get(i * 4 + 3));
+                float srysuryo = Float.parseFloat(values[i * 4 + 1]);
+                int srykaisu = Integer.parseInt(values[i * 4 + 2]);
+                int inputnum = Integer.parseInt(values[i * 4 + 3]);
                 // srycdが空白なら剤の終了
                 if (srycd.isEmpty()) {
                     break;
@@ -665,10 +665,10 @@ public final class SqlMiscDao extends SqlDaoBean {
         }
         String sql = sb.toString();
 
-        List<List<String>> valuesList = executeStatement(sql);
+        List<String[]> valuesList = executeStatement(sql);
         
-        for (List<String> values : valuesList) {
-            orcaVisit.add(values.get(0));
+        for (String[] values : valuesList) {
+            orcaVisit.add(values[0]);
         }
 
         return orcaVisit;
@@ -680,10 +680,10 @@ public final class SqlMiscDao extends SqlDaoBean {
 
         String sql = "select count(*) from " + tableName;
         
-        List<List<String>> valuesList = executeStatement(sql);
+        List<String[]> valuesList = executeStatement(sql);
         if (!valuesList.isEmpty()) {
-            List<String> values = valuesList.get(0);
-            count = Long.valueOf(values.get(0));
+            String[] values = valuesList.get(0);
+            count = Long.parseLong(values[0]);
         }
 
         return count;

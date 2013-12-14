@@ -11,7 +11,7 @@ public class OrcaSqlModel implements Serializable {
     
     private String url;
     private String sql;
-    private List<List<String>> valuesList;
+    private List<String[]> valuesList;
     private String errorMsg;
     
     public OrcaSqlModel() {
@@ -23,7 +23,7 @@ public class OrcaSqlModel implements Serializable {
     public void setSql(String sql) {
         this.sql = sql;
     }
-    public void setValuesList(List<List<String>> list) {
+    public void setValuesList(List<String[]> list) {
         valuesList = list;
     }
     public void setErrorMessage(String msg) {
@@ -36,7 +36,7 @@ public class OrcaSqlModel implements Serializable {
     public String getSql() {
         return sql;
     }
-    public List<List<String>> getValuesList() {
+    public List<String[]> getValuesList() {
         return valuesList;
     }
     public String getErrorMessage() {

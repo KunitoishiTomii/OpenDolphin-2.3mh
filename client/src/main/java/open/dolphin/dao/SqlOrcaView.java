@@ -81,11 +81,11 @@ public class SqlOrcaView extends SqlDaoBean {
 
         Object[] params = {orcaPtId, from, to, "1", hospNum};
 
-        List<List<String>> valuesList = executePreparedStatement(sql, params);
+        List<String[]> valuesList = executePreparedStatement(sql, params);
 
         List<RegisteredDiagnosisModel> collection = new ArrayList<>();
 
-        for (List<String> values : valuesList) {
+        for (String[] values : valuesList) {
             RegisteredDiagnosisModel ord = getRegisteredDiagnosisModel(values);
             collection.add(ord);
         }
@@ -119,9 +119,9 @@ public class SqlOrcaView extends SqlDaoBean {
 
         Object[] params = {orcaPtId, " ", "1", hospNum};
 
-        List<List<String>> valuesList = executePreparedStatement(sql, params);
+        List<String[]> valuesList = executePreparedStatement(sql, params);
         List<RegisteredDiagnosisModel> collection = new ArrayList<>();
-        for (List<String> values : valuesList) {
+        for (String[] values : valuesList) {
             RegisteredDiagnosisModel ord = getRegisteredDiagnosisModel(values);
             collection.add(ord);
         }
@@ -210,7 +210,7 @@ public class SqlOrcaView extends SqlDaoBean {
     }
     
     // ResultSetからRegisteredDiagnosisModelを
-    private RegisteredDiagnosisModel getRegisteredDiagnosisModel(List<String> values) {
+    private RegisteredDiagnosisModel getRegisteredDiagnosisModel(String[] values) {
         
         RegisteredDiagnosisModel rd = new RegisteredDiagnosisModel();
         
@@ -218,8 +218,8 @@ public class SqlOrcaView extends SqlDaoBean {
         StringBuilder sb = new StringBuilder();
         boolean first = true;
         for (int i = 0; i < 21; ++i) {
-            String code = values.get(i).trim();
-            if ("".equals(code)) {
+            String code = values[i].trim();
+            if (code.isEmpty()) {
                 break;
             }
             if (!first) {
@@ -233,17 +233,17 @@ public class SqlOrcaView extends SqlDaoBean {
         rd.setDiagnosisCode(sb.toString());
 
         // 疾患開始日
-        rd.setStartDate(toDolphinDateStr(values.get(21)));
+        rd.setStartDate(toDolphinDateStr(values[21]));
         // 疑いフラグ
-        storeSuspectedDiagnosis(rd, values.get(22));
+        storeSuspectedDiagnosis(rd, values[22]);
         // 主病名フラグ
-        storeMainDiagnosis(rd, values.get(23));
+        storeMainDiagnosis(rd, values[23]);
         // 転帰
-        storeOutcome(rd, values.get(24));
+        storeOutcome(rd, values[24]);
         // 疾患終了日（転帰）
-        rd.setEndDate(toDolphinDateStr(values.get(25)));
+        rd.setEndDate(toDolphinDateStr(values[25]));
         // 疾患名
-        rd.setDiagnosis(values.get(26));
+        rd.setDiagnosis(values[26]);
         // 制御のための Status
         rd.setStatus("ORCA");
 

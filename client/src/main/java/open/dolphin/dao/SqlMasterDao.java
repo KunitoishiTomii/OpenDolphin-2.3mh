@@ -71,9 +71,9 @@ public final class SqlMasterDao extends SqlDaoBean {
         
         Object[] params = {shinku, now, now, hospNum};
         
-        List<List<String>> valuesList = executePreparedStatement(sql, params);
+        List<String[]> valuesList = executePreparedStatement(sql, params);
         
-        for (List<String> values : valuesList) {
+        for (String[] values : valuesList) {
             TensuMaster t = getTensuMaster(values);
             ret.add(t);
         }
@@ -107,9 +107,9 @@ public final class SqlMasterDao extends SqlDaoBean {
         
         Object[] params = {name, kana, now, now, hospNum};
         
-        List<List<String>> valuesList = executePreparedStatement(sql, params);
+        List<String[]> valuesList = executePreparedStatement(sql, params);
         
-        for (List<String> values : valuesList) {
+        for (String[] values : valuesList) {
             TensuMaster t = getTensuMaster(values);
             ret.add(t);
         }
@@ -128,9 +128,9 @@ public final class SqlMasterDao extends SqlDaoBean {
         
         Object[] params = {"^" + regExp, now, now, hospNum};
         
-        List<List<String>> valuesList = executePreparedStatement(sql, params);
+        List<String[]> valuesList = executePreparedStatement(sql, params);
         
-        for (List<String> values : valuesList) {
+        for (String[] values : valuesList) {
             TensuMaster t = getTensuMaster(values);
             ret.add(t);
         }
@@ -157,9 +157,9 @@ public final class SqlMasterDao extends SqlDaoBean {
             params[1] = tens[0];
         }
 
-        List<List<String>> valuesList = executePreparedStatement(sql, params);
+        List<String[]> valuesList = executePreparedStatement(sql, params);
         
-        for (List<String> values : valuesList) {
+        for (String[] values : valuesList) {
             TensuMaster t = getTensuMaster(values);
             ret.add(t);
         }
@@ -183,9 +183,9 @@ public final class SqlMasterDao extends SqlDaoBean {
 
         Object[] params = {name, name, now};
         
-        List<List<String>> valuesList = executePreparedStatement(sql, params);
+        List<String[]> valuesList = executePreparedStatement(sql, params);
         
-        for (List<String> values : valuesList) {
+        for (String[] values : valuesList) {
             DiseaseEntry d = getDiseaseEntry(values);
             ret.add(d);
         }
@@ -209,9 +209,9 @@ public final class SqlMasterDao extends SqlDaoBean {
         
         Object[] params = {code, now};
         
-        List<List<String>> valuesList = executePreparedStatement(sql, params);
+        List<String[]> valuesList = executePreparedStatement(sql, params);
         
-        for (List<String> values : valuesList) {
+        for (String[] values : valuesList) {
             DiseaseEntry d = getDiseaseEntry(values);
             ret.add(d);
         }
