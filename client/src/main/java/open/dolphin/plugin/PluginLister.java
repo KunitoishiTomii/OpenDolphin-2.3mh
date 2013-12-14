@@ -5,13 +5,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
-import java.util.Enumeration;
 import java.util.LinkedHashMap;
-import java.util.Scanner;
+import java.util.Map;
 
 /**
  *
  * @author Kazushi Minagawa. Digital Globe, inc.
+ * @author modified by masuda, Masuda Naika
  */
 public class PluginLister<S> {
     
@@ -20,101 +20,42 @@ public class PluginLister<S> {
     // ロードするプラグインのインターフェイス
     private final Class<S> plugin;
     
-    // クラスローダ
-    private final ClassLoader loader;
-    
-    
-    /** Creates a new instance of PluginLoader */
-    private PluginLister(Class<S> plugin, ClassLoader loader) {
+    /** Creates a new instance of PluginLister */
+    private PluginLister(Class<S> plugin) {
         this.plugin = plugin;
-        this.loader = loader;
     }
     
-    private static void fail(Class plugin, String msg, Throwable cause) throws PluginConfigurationError {
-	throw new PluginConfigurationError(plugin.getName() + ": " + msg, cause);
+    public static <S> PluginLister<S> list(Class<S> plugin) {
+        return new PluginLister<>(plugin);
     }
 
-    private static void fail(Class plugin, String msg) throws PluginConfigurationError {
-	throw new PluginConfigurationError(plugin.getName() + ": " + msg);
-    }
-
-    private static void fail(Class plugin, URL u, int line, String msg) throws PluginConfigurationError {
-	fail(plugin, u + ":" + line + ": " + msg);
-    }
-    
-    public LinkedHashMap<String,String> getProviders() {
+    public Map<String,String> getProviders() {
         
-        LinkedHashMap<String,String> providers = new LinkedHashMap<>(10);
+        String fullName = PREFIX + plugin.getName();
+        Map<String,String> providers = new LinkedHashMap<>();
+        
+        ClassLoader loader = getClass().getClassLoader();
+        URL url = loader.getResource(fullName);
 
-        try {
-            String fullName = PREFIX + plugin.getName();
-            Enumeration<URL> configs = loader.getResources(fullName);
+        try (InputStream in = url.openStream();
+                BufferedReader r = new BufferedReader(new InputStreamReader(in, "UTF-8"))) {
 
-            while (configs.hasMoreElements()) {
-
-                URL url = configs.nextElement();
-                try (InputStream in = url.openStream();
-                        BufferedReader r = new BufferedReader(new InputStreamReader(in, "UTF-8"));) {
-
-                    String line;
-                    while ((line = r.readLine()) != null) {
-                        line = line.trim();
-                        Scanner s = new Scanner(line).useDelimiter("\\s*,\\s*");
-                        String menu = s.next();
-                        String cmd = s.next();
-                        String value = s.next();
-                        providers.put(cmd, value);
-                    }
-                }
+            String line;
+            while ((line = r.readLine()) != null) {
+                String[] tokens = line.trim().split(",");
+                //String menu = tokens[0].trim();
+                String cmd = tokens[1].trim();
+                String value = tokens[2].trim();
+                providers.put(cmd, value);
             }
-
-        } catch (IOException x) {
-            fail(plugin, "Error reading plugin configuration files", x);
+        } catch (IOException ex) {
+             fail(plugin, "Error reading plugin configuration files", ex);
         }
         
         return providers;
     }
     
-    public static <S> PluginLister<S> list(Class<S> plugin, ClassLoader loader) {
-	return new PluginLister<>(plugin, loader);
-    }
-    
-    public static <S> PluginLister<S> list(Class<S> plugin) {
-	ClassLoader cl = Thread.currentThread().getContextClassLoader();
-	return PluginLister.list(plugin, cl);
+    private void fail(Class plugin, String msg, Throwable cause) throws PluginConfigurationError {
+	throw new PluginConfigurationError(plugin.getName() + ": " + msg, cause);
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -1782,7 +1782,7 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
         // リストで選択させる
         List<NameValuePair> documents = new ArrayList<>(3);
         PluginLister<NChartDocument> lister = PluginLister.list(NChartDocument.class);
-        LinkedHashMap<String, String> nproviders = lister.getProviders();
+        Map<String, String> nproviders = lister.getProviders();
         if (nproviders != null) {
             for (Map.Entry<String, String> entry : nproviders.entrySet()) {
                 String cmd = entry.getKey();
