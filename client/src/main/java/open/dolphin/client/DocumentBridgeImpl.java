@@ -14,33 +14,28 @@ import open.dolphin.infomodel.IInfoModel;
  * カルテ、紹介状等のドキュメントが表示される。
  * 
  * @author kazushi Minagawa, Digital Globe, Inc.
+ * @author modified by masuda, Masuda Naika
  */
 public class DocumentBridgeImpl extends AbstractChartDocument 
     implements PropertyChangeListener, DocumentBridger {
     
     private static final String TITLE = "参 照";
         
-    // 文書表示クラスのインターフェイス
-    private DocumentViewer curViwer;
-    
     // Scroller  
     private JScrollPane scroller;
-
-    // Handle Class
-    private String handleClass;
     
-//masuda^   使い回し
-    private Map<String, DocumentViewer> viewerCache;
-//masuda$
+    // 現在の文書表示クラスのインターフェイス
+    private DocumentViewer curViewer;    
+    
+    // 使い回し
+    private final Map<String, DocumentViewer> viewerCache;
+    
     
     public DocumentBridgeImpl() {
         setTitle(TITLE);
-//masuda^   使い回し
         viewerCache = new HashMap<>();
-//masuda$
     }
     
-
     @Override
     public void start() {
         
@@ -65,36 +60,31 @@ public class DocumentBridgeImpl extends AbstractChartDocument
         // 選択
         h.addPropertyChangeListener(DocumentHistory.SELECTED_HISTORIES, this);
         
-//masuda^ 検索結果でカルテ選択するためproperty change listenerを登録しておく
+        // 検索結果でカルテ選択するためproperty change listenerを登録しておく
         SearchResultInspector sr = h.getSearchResult();
         sr.addPropertyChangeListener(DocumentHistory.SELECTED_HISTORIES, this);
         // scrollerの縁を狭くする
         scroller.setBorder(null);
-//masuda$
         
-        curViwer = createKarteDocumentViewer();
-        curViwer.setContext(getContext());
-        curViwer.start();
+        // 最初はKarteDocumentViewer
+        curViewer = createKarteDocumentViewer();
             
         enter();
     }
 
     @Override
-    public void stop() {  
-        if (curViwer != null) {
-            curViwer.stop();
+    public void stop() {
+        // viewerをすべてstopする
+        for (DocumentViewer viewer : viewerCache.values()) {
+            viewer.stop();
         }
-//masuda^
-        viewerCache.clear();
-        viewerCache = null;
-//masuda$
     }
     
     @Override
     public void enter() {
-        if (curViwer != null) {
+        if (curViewer != null) {
             // これによりメニューは viwer で制御される
-            curViwer.enter();
+            curViewer.enter();
         } else {
             super.enter();
         }
@@ -109,128 +99,98 @@ public class DocumentBridgeImpl extends AbstractChartDocument
         
         if (docs != null && docs.length > 0) {
             
-            String hClass = docs[0].getHandleClass();
+            String handleClass = docs[0].getHandleClass();
 
-            if (hClass!=null && (!hClass.equals(handleClass))) {
-                curViwer = null;
-                handleClass = hClass;
+            if (handleClass != null) {
+                // 紹介状などの場合
                 try {
-                    curViwer = createLetterModuleViewer(handleClass);
-                    curViwer.setContext(getContext());
-                    curViwer.start();
+                    curViewer = createLetterModuleViewer(handleClass);
                 } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+                    curViewer = null;
                     e.printStackTrace(System.err);
                 }
             }
+        }
 
-            if (curViwer != null) {
-                curViwer.showDocuments(docs, scroller);
-            }
-        } else {
-//masuda^   文書がない場合パネルをクリアするため
-            if (curViwer != null) {
-                curViwer.showDocuments(null, scroller);
-            }
-//masuda$
+        // current viewerで文書を表示する
+        if (curViewer != null) {
+            curViewer.showDocuments(docs, scroller);
+            curViewer.enter();
         }
     }
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         
-//masuda^
-        //ChartMediator med = this.getContext().getChartMediator();
-        //med.setCurKarteTransferHandler(null);
-//masuda$
-        
         String prop = evt.getPropertyName();
-        if (prop == null) {
-            return;
-        }
-        
+
         switch (prop) {
-            
             case DocumentHistory.DOCUMENT_TYPE:
                 // 文書種別が変更された場合
                 String docType = (String) evt.getNewValue();
-                if (docType == null) {
-                    break;
-                }
                 switch (docType) {
-                    case IInfoModel.DOCTYPE_LETTER:         // 紹介状
-                    case IInfoModel.DOCTYPE_LETTER_REPLY:   // 紹介状返書
-                    case IInfoModel.DOCTYPE_LETTER_REPLY2:  // 紹介状返書2
-                    case IInfoModel.DOCTYPE_LETTER_PLUGIN:  // 紹介状 plugin type
-                        curViwer = null;
-                        handleClass = null;
+                    case IInfoModel.DOCTYPE_LETTER:     // 紹介状
+                        curViewer = null;               // showDocumentsでcurViewerを設定する
                         break;
-                    default:
-                        // カルテ文書
-                        curViwer = createKarteDocumentViewer();
+                    case IInfoModel.DOCTYPE_KARTE:      // カルテ文書
+                        curViewer = createKarteDocumentViewer();
                         break;
                 }
-                
-                if (curViwer != null) {
-                    curViwer.setContext(getContext());
-//masuda^   使い回し
-                    //curViwer.start();
-                    curViwer.enter();
-//masuda$
-                }
+                break;
             
             case DocumentHistory.HISTORY_UPDATED:
                 // 文書履歴の抽出期間が変更された場合
-                if (curViwer != null) {
-                    curViwer.historyPeriodChanged();
-                }   this.scroller.setViewportView(null);
+                if (curViewer != null) {
+                    curViewer.historyPeriodChanged();
+                }
+                //scroller.setViewportView(null);
                 break;
                 
             case DocumentHistory.SELECTED_HISTORIES:
                 // 文書履歴の選択が変更された場合
                 DocInfoModel[] selectedHistoroes = (DocInfoModel[]) evt.getNewValue();
-                this.showDocuments(selectedHistoroes);
+                showDocuments(selectedHistoroes);
                 break;
         }
     }
     
     public KarteViewer getBaseKarte() {
-        if (curViwer != null && curViwer instanceof KarteDocumentViewer) {
-            return ((KarteDocumentViewer) curViwer).getBaseKarte();
+        if (curViewer != null && curViewer instanceof KarteDocumentViewer) {
+            KarteDocumentViewer viewer = (KarteDocumentViewer) curViewer;
+            return viewer.getBaseKarte();
         }
         return null;
     }
 
-    private KarteDocumentViewer createKarteDocumentViewer() {
-        if (curViwer != null) {
-            curViwer = null;
-        }
-//masuda^   使い回し
-        //return new KarteDocumentViewer();
+    private DocumentViewer createKarteDocumentViewer() {
+
         DocumentViewer viewer = viewerCache.get(KarteDocumentViewer.class.getName());
+        
+        // キャッシュになければ作成する
         if (viewer == null) {
             viewer = new KarteDocumentViewer();
+            viewer.setContext(getContext());
+            viewer.start();     // ここでstartしておく
             viewerCache.put(viewer.getClass().getName(), viewer);
         }
-        return (KarteDocumentViewer) viewer;
-//masuda$
-        
+
+        return viewer;
     }
 
     private DocumentViewer createLetterModuleViewer(String handleClass)
             throws ClassNotFoundException, InstantiationException, IllegalAccessException {
-        if (curViwer != null) {
-            curViwer = null;
-        }
-//masuda^   使い回し
-        //DocumentViewer doc = (DocumentViewer) Class.forName(handleClass).newInstance();
-        //return doc;
+
         DocumentViewer viewer = viewerCache.get(handleClass);
+        
+        // キャッシュになければ作成する
         if (viewer == null) {
             viewer = (DocumentViewer) Class.forName(handleClass).newInstance();
+            viewer.setContext(getContext());
+            viewer.start();     // ここでstartしておく
             viewerCache.put(viewer.getClass().getName(), viewer);
         }
+
         return viewer;
-//masuda$
-        
     }
+    
 }
