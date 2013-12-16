@@ -779,18 +779,10 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
      * 傷病名エディタからデータを受け取りテーブルへ追加する。
      */
     @Override
-    @SuppressWarnings("unchecked")
     public void propertyChange(PropertyChangeEvent e) {
 
-        RegisteredDiagnosisModel[] newRds = (RegisteredDiagnosisModel[]) e.getNewValue();
-        if (newRds == null || newRds.length == 0) {
-            return;
-        }
-        RegisteredDiagnosisModel newRd = newRds[0];   // 最初のものだけ
-
-        RegisteredDiagnosisModel[] oldRds = (RegisteredDiagnosisModel[]) e.getOldValue();
-        RegisteredDiagnosisModel oldRd =
-                (oldRds == null || oldRds.length == 0) ? null : oldRds[0];
+        RegisteredDiagnosisModel newRd = (RegisteredDiagnosisModel) e.getNewValue();
+        RegisteredDiagnosisModel oldRd = (RegisteredDiagnosisModel) e.getOldValue();
 
         if (oldRd != null) {
             // 既存病名の編集の場合、IdはoldRdのものを引き継ぐ
