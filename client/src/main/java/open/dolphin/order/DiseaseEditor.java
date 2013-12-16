@@ -106,10 +106,20 @@ public final class DiseaseEditor extends AbstractStampEditor {
      * 傷病名テーブルをスキャンし修飾語つきの傷病にして返す。
      */
     @Override
-    public RegisteredDiagnosisModel getNewValue() {
+    public RegisteredDiagnosisModel[] getNewValue() {
 
-        RegisteredDiagnosisModel diagnosis = null;
+        RegisteredDiagnosisModel diagnosis;
+                
+        // 病名以外は編集元を引き継ぐ
+        Object oldValue = getOldValue();
+        if (oldValue instanceof RegisteredDiagnosisModel) {
+            RegisteredDiagnosisModel old = (RegisteredDiagnosisModel) oldValue;
+            diagnosis = duplicateRd(old);
+        } else {
+            diagnosis = new RegisteredDiagnosisModel();
 
+        }
+        
         StringBuilder name = new StringBuilder();
         StringBuilder code = new StringBuilder();
 
@@ -121,23 +131,9 @@ public final class DiseaseEditor extends AbstractStampEditor {
             String diagCode = diag.getDiagnosisCode();
 
             if (!diagCode.startsWith(MODIFIER_CODE)) {
-                //
                 // 修飾語でない場合は基本病名と見なし、パラメータを設定する
-                //
-                
-                // 病名以外は編集元を引き継ぐ
-                Object oldValue = getOldValue();
-                if (oldValue instanceof RegisteredDiagnosisModel) {
-                    RegisteredDiagnosisModel old = (RegisteredDiagnosisModel) oldValue;
-                    diagnosis = duplicateRd(old);
-                }
-                if (diagnosis == null) {
-                    diagnosis = new RegisteredDiagnosisModel();
-                    
-                }
                 diagnosis.setByoKanrenKbn(diag.getByoKanrenKbn());
                 diagnosis.setDiagnosisCodeSystem(diag.getDiagnosisCodeSystem());
-
             } else {
                 // ZZZ をトリムする ORCA 実装
                 diagCode = diagCode.substring(MODIFIER_CODE.length());
@@ -160,7 +156,8 @@ public final class DiseaseEditor extends AbstractStampEditor {
             diagnosis.setDiagnosis(name.toString());
             diagnosis.setDiagnosisCode(code.toString());
             
-            return diagnosis;
+            // oldRdとnewRdならfirePropertyChangeしてくれないので…
+            return new RegisteredDiagnosisModel[]{diagnosis};
 
         } else {
             return null;
