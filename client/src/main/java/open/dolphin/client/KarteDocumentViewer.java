@@ -15,7 +15,6 @@ import open.dolphin.helper.WindowSupport;
 import open.dolphin.infomodel.*;
 import open.dolphin.letter.KartePDFMaker;
 import open.dolphin.project.Project;
-import open.dolphin.common.util.BeanUtils;
 import open.dolphin.util.MultiTaskExecutor;
 import org.apache.log4j.Logger;
 
@@ -656,7 +655,9 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
             Collection<ModuleModel> mc = docModel.getModules();
             if (mc != null && !mc.isEmpty()) {
                 for (ModuleModel module : mc) {
-                    module.setModel((IModuleModel) BeanUtils.xmlDecode(module.getBeanBytes()));
+                    //module.setModel((IModuleModel) BeanUtils.xmlDecode(module.getBeanBytes()));
+                    IModuleDecoder dec = new IModuleDecoder();
+                    module.setModel(dec.decode(module.getBeanBytes()));
                 }
             }
 
