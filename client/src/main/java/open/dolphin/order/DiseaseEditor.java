@@ -106,17 +106,19 @@ public final class DiseaseEditor extends AbstractStampEditor {
      * 傷病名テーブルをスキャンし修飾語つきの傷病にして返す。
      */
     @Override
-    public RegisteredDiagnosisModel[] getNewValue() {
+    public RegisteredDiagnosisModel getNewValue() {
 
-        RegisteredDiagnosisModel diagnosis;
+        RegisteredDiagnosisModel newRd;
                 
         // 病名以外は編集元を引き継ぐ
         Object oldValue = getOldValue();
         if (oldValue instanceof RegisteredDiagnosisModel) {
             RegisteredDiagnosisModel old = (RegisteredDiagnosisModel) oldValue;
-            diagnosis = duplicateRd(old);
+            newRd = duplicateRd(old);
+            // idはいったん違うものにしておく。firePropertyChangeするため
+            newRd.setId(-1L);
         } else {
-            diagnosis = new RegisteredDiagnosisModel();
+            newRd = new RegisteredDiagnosisModel();
 
         }
         
@@ -132,8 +134,8 @@ public final class DiseaseEditor extends AbstractStampEditor {
 
             if (!diagCode.startsWith(MODIFIER_CODE)) {
                 // 修飾語でない場合は基本病名と見なし、パラメータを設定する
-                diagnosis.setByoKanrenKbn(diag.getByoKanrenKbn());
-                diagnosis.setDiagnosisCodeSystem(diag.getDiagnosisCodeSystem());
+                newRd.setByoKanrenKbn(diag.getByoKanrenKbn());
+                newRd.setDiagnosisCodeSystem(diag.getDiagnosisCodeSystem());
             } else {
                 // ZZZ をトリムする ORCA 実装
                 diagCode = diagCode.substring(MODIFIER_CODE.length());
@@ -150,14 +152,13 @@ public final class DiseaseEditor extends AbstractStampEditor {
 
         }
 
-        if (diagnosis != null && name.length() > 0 && code.length() > 0) {
+        if (name.length() > 0 && code.length() > 0) {
 
             // 名前とコードを設定する
-            diagnosis.setDiagnosis(name.toString());
-            diagnosis.setDiagnosisCode(code.toString());
+            newRd.setDiagnosis(name.toString());
+            newRd.setDiagnosisCode(code.toString());
             
-            // oldRdとnewRdならfirePropertyChangeしてくれないので…
-            return new RegisteredDiagnosisModel[]{diagnosis};
+            return newRd;
 
         } else {
             return null;

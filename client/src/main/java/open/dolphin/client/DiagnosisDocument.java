@@ -781,8 +781,7 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
     @Override
     public void propertyChange(PropertyChangeEvent e) {
 
-        RegisteredDiagnosisModel[] newRds = (RegisteredDiagnosisModel[]) e.getNewValue();
-        RegisteredDiagnosisModel newRd = newRds[0];
+        RegisteredDiagnosisModel newRd = (RegisteredDiagnosisModel) e.getNewValue();
         RegisteredDiagnosisModel oldRd = (RegisteredDiagnosisModel) e.getOldValue();
 
         if (oldRd != null) {

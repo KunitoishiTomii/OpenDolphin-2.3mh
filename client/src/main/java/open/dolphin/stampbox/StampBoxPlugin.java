@@ -746,8 +746,7 @@ public class StampBoxPlugin extends AbstractMainTool {
                 // 編集元があればはstampIdを継承する
                 if (oldRd != null) {
                     newRd.setStampId(oldRd.getStampId());
-                    // 気持ちが悪いのでEditorSetPanelで-1に設定したidを戻す TODO
-                    oldRd.setId(0);
+                    newRd.setId(0);
                 } else {
                     newRd.setStampId(null);     //  新規
                 }
