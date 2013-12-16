@@ -1,6 +1,5 @@
 package open.dolphin.dao;
 
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import open.dolphin.infomodel.*;
@@ -60,27 +59,27 @@ public class SqlOrcaSetDao extends SqlDaoBean {
         
         boolean v4 = true;  //Project.getOrcaVersion().startsWith("4") ? true : false;
         
-        List<List<String>> valuesList = executeStatement(sql);
+        List<String[]> valuesList = executeStatement(sql);
         
-        for (List<String> values : valuesList) {
+        for (String[] values : valuesList) {
 
             debug("got from tbl_inputcd");
 
             OrcaInputCd inputCd = new OrcaInputCd();
 
             if (!v4) {
-                inputCd.setHospId(values.get(0));
-                inputCd.setCdsyu(values.get(1));
-                inputCd.setInputCd(values.get(2));
-                inputCd.setSryKbn(values.get(3));
-                inputCd.setSryCd(values.get(4));
-                inputCd.setDspSeq(Integer.valueOf(values.get(5)));
-                inputCd.setDspName(values.get(6));
-                inputCd.setTermId(values.get(7));
-                inputCd.setOpId(values.get(8));
-                inputCd.setCreYmd(values.get(9));
-                inputCd.setUpYmd(values.get(10));
-                inputCd.setUpHms(values.get(11));
+                inputCd.setHospId(values[0]);
+                inputCd.setCdsyu(values[1]);
+                inputCd.setInputCd(values[2]);
+                inputCd.setSryKbn(values[3]);
+                inputCd.setSryCd(values[4]);
+                inputCd.setDspSeq(Integer.parseInt(values[5]));
+                inputCd.setDspName(values[6]);
+                inputCd.setTermId(values[7]);
+                inputCd.setOpId(values[8]);
+                inputCd.setCreYmd(values[9]);
+                inputCd.setUpYmd(values[10]);
+                inputCd.setUpHms(values[11]);
 
                 String cd = inputCd.getInputCd();
                 if (cd.length() > 6) {
@@ -89,17 +88,17 @@ public class SqlOrcaSetDao extends SqlDaoBean {
                 }
 
             } else {
-                inputCd.setCdsyu(values.get(0));
-                inputCd.setInputCd(values.get(1));
-                inputCd.setSryKbn(values.get(2));
-                inputCd.setSryCd(values.get(3));
-                inputCd.setDspSeq(Integer.valueOf(values.get(4)));
-                inputCd.setDspName(values.get(5));
-                inputCd.setTermId(values.get(6));
-                inputCd.setOpId(values.get(7));
-                inputCd.setCreYmd(values.get(8));
-                inputCd.setUpYmd(values.get(9));
-                inputCd.setUpHms(values.get(10));
+                inputCd.setCdsyu(values[0]);
+                inputCd.setInputCd(values[1]);
+                inputCd.setSryKbn(values[2]);
+                inputCd.setSryCd(values[3]);
+                inputCd.setDspSeq(Integer.parseInt(values[4]));
+                inputCd.setDspName(values[5]);
+                inputCd.setTermId(values[6]);
+                inputCd.setOpId(values[7]);
+                inputCd.setCreYmd(values[8]);
+                inputCd.setUpYmd(values[9]);
+                inputCd.setUpHms(values[10]);
 
                 String cd = inputCd.getInputCd();
                 if (cd.length() > 6) {
@@ -153,19 +152,18 @@ public class SqlOrcaSetDao extends SqlDaoBean {
         List<ModuleModel> retSet = new ArrayList<>();
 
         // setCd を検索する
-        int[] types1 = {Types.INTEGER, Types.CHAR};
-        String[] params1 = {String.valueOf(hospnum), setCd};
-        List<List<String>> valuesList1 = executePreparedStatement(sql1, types1, params1);
+        Object[] params1 = {hospnum, setCd};
+        List<String[]> valuesList1 = executePreparedStatement(sql1, params1);
 
         List<OrcaInputSet> list = new ArrayList<>();
 
-        for (List<String> values1 : valuesList1) {
+        for (String[] values1 : valuesList1) {
 
             debug("got from tbl_inputset");
             OrcaInputSet inputSet = new OrcaInputSet();
-            inputSet.setInputCd(values1.get(0));                // .210 616130532 ...
-            inputSet.setSuryo1(Float.valueOf(values1.get(1)));  // item の個数
-            inputSet.setKaisu(Integer.valueOf(values1.get(2))); // バンドル数
+            inputSet.setInputCd(values1[0]);                // .210 616130532 ...
+            inputSet.setSuryo1(Float.parseFloat(values1[1]));  // item の個数
+            inputSet.setKaisu(Integer.parseInt(values1[2])); // バンドル数
 
             debug("getInputCd = " + inputSet.getInputCd());
             debug("getSuryo1 = " + String.valueOf(inputSet.getSuryo1()));
@@ -197,19 +195,18 @@ public class SqlOrcaSetDao extends SqlDaoBean {
 
             } else {
 
-                int[] types2 = {Types.INTEGER, Types.CHAR};
-                String[] params2 = {String.valueOf(hospnum), inputcd};
-                List<List<String>> valuesList2 = executePreparedStatement(sql2, types2, params2);
+                Object[] params2 = {hospnum, inputcd};
+                List<String[]> valuesList2 = executePreparedStatement(sql2, params2);
 
                 if (!valuesList2.isEmpty()) {
-                    List<String> values2 = valuesList2.get(0);
+                    String[] values2 = valuesList2.get(0);
 
                     debug("got from tbl_tensu");
                     String code = inputcd;
-                    String kbn = values2.get(0);
-                    String name = values2.get(1);
+                    String kbn = values2[0];
+                    String name = values2[1];
                     String number = String.valueOf(inputSet.getSuryo1());
-                    String unit = values2.get(2);
+                    String unit = values2[2];
 
                     debug("code = " + code);
                     debug("kbn = " + kbn);
@@ -249,7 +246,7 @@ public class SqlOrcaSetDao extends SqlDaoBean {
                         item.setUnit(unit);
 
                         if (bundle == null) {
-                            String receiptCode = values2.get(3).equals(ClaimConst.YKZ_KBN_NAIYO)
+                            String receiptCode = values2[3].equals(ClaimConst.YKZ_KBN_NAIYO)
                                     ? ClaimConst.RECEIPT_CODE_NAIYO
                                     : ClaimConst.RECEIPT_CODE_GAIYO;
                             stamp = createStamp(stampName, receiptCode);

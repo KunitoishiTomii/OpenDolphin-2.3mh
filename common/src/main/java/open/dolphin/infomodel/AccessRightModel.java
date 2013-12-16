@@ -1,11 +1,13 @@
 package open.dolphin.infomodel;
 
+import java.io.Serializable;
+
 /**
  * AccessRightModel
  *
  * @author  Kazushi Minagawa
  */
-public class AccessRightModel extends InfoModel {
+public class AccessRightModel implements Serializable {
     
     private String permission;
     private String startDate;

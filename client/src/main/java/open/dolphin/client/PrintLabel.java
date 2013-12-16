@@ -1,17 +1,19 @@
 package open.dolphin.client;
 
+import java.io.BufferedOutputStream;
+import java.io.OutputStream;
 import open.dolphin.common.util.StampRenderingHints;
 import java.io.UnsupportedEncodingException;
 import java.net.Socket;
-import java.nio.ByteBuffer;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import javax.swing.SwingWorker;
 import open.dolphin.infomodel.*;
 import open.dolphin.project.Project;
 import open.dolphin.setting.MiscSettingPanel;
-import open.dolphin.util.MMLDate;
 import open.dolphin.common.util.StringTool;
 
 /**
@@ -42,12 +44,12 @@ public class PrintLabel {
     private final List<ModuleModel> rpStamp = new ArrayList<>();
     private final List<ModuleModel> exStamp = new ArrayList<>();
     private final List<ModuleModel> otherStamp = new ArrayList<>();
-    private final List<ModuleModel> otherStamp2 = new ArrayList<>();
+    //private final List<ModuleModel> otherStamp2 = new ArrayList<>();
     private final List<ModuleModel> injStamp = new ArrayList<>();
     private List<StampHolder> stampHolders = new ArrayList<>();
-    private KartePane kartePane;
 
-    private String date;
+    private String patientName;
+    private Date date;
     
     private final StampRenderingHints hints;
     
@@ -55,70 +57,39 @@ public class PrintLabel {
     public PrintLabel() {
         hints = StampRenderingHints.getInstance();
     }
-
-    public void enter(KartePane kp) {
-        // JISで送っていたが、毎文字にKI/KOを付加していたので、半角全角変更時
-        // 適宜KI/KOを送信するように変更した。
-
-        kartePane = kp;
-
-        collectMedStampHolder();
-        collectModuleModel();
-        buildLineDataArray();
-        sendRawPrintData();
+    
+    public void printLabel(String patientName, KartePane kartePane) {
+        
+        List<StampHolder> al = kartePane.getDocument().getStampHolders();
+        printLabel(patientName, al);
     }
 
-    public void enter2(List<StampHolder> al) {
-        // スタンプホルダのpopupから実行した場合
+    public void printLabel(String patientName, List<StampHolder> al) {
+
         if (al.isEmpty()) {
             return;
         }
-
-        kartePane = al.get(0).getKartePane();
+        
+        this.patientName = patientName + "　様";
         stampHolders = al;
         setDate();
 
         collectModuleModel();
         buildLineDataArray();
-        sendRawPrintData();
-    }
-
-    private void sendRawPrintData() {
-        try {
-            String str = buildPrintString();
-            byte[] rawData = makeRawData(str);
-            sendData(rawData);
-        } catch (UnsupportedEncodingException ex) {
-        }
-    }
-
-    private void collectMedStampHolder() {
-
-        KarteStyledDocument doc = (KarteStyledDocument) kartePane.getTextPane().getDocument();
-        List<StampHolder> list = doc.getStampHolders();
-        for (StampHolder sh : list) {
-            String entity = sh.getStamp().getModuleInfoBean().getEntity();
-            if (IInfoModel.ENTITY_MED_ORDER.equals(entity) 
-                    || IInfoModel.ENTITY_INJECTION_ORDER.equals(entity)) {
-                stampHolders.add(sh);
-            }
-        }
-        setDate();
+        
+        String str = buildPrintString();
+        sendESCPData(str);
     }
 
     private void setDate() {
         // ラベルの日付を、一個目のスタンプからDocInfoを調べて取得する。
-        date = MMLDate.getDate();
         if (!stampHolders.isEmpty()) {
-            Chart chart = stampHolders.get(0).getKartePane().getParent().getContext();
-            KarteEditor editor = chart.getKarteEditor();
-            if (editor.getModel().getDocInfoModel().getParentId() != null) {     // 新規作成でなかったら
-                date = editor.getModel().getDocInfoModel().getFirstConfirmDateTrimTime();
-
-            }
+            date = stampHolders.get(0).getStamp().getStarted();
+        }
+        if (date == null) {
+            date = new Date();
         }
     }
-
 
     private void collectModuleModel() {
         
@@ -144,7 +115,7 @@ public class PrintLabel {
                     injStamp.add(stamp);
                     break;
                 default:
-                    otherStamp2.add(stamp);
+                    //otherStamp2.add(stamp);
                     break;
             }
         }
@@ -152,14 +123,10 @@ public class PrintLabel {
 
     private void buildLineDataArray() {
 
-        String name = kartePane.getParent().getContext().getPatient().getFullName() + "　様";
-        // 印字桁数が限られているので削る
-        if (date != null) {
-            date = date.substring(2, date.length());
-            date = date.replace("-", "");
-        }
         // 一行目は患者名と処方日
-        lineData.add(new LineModel(name, hankakuNumToZenkaku(date), "　"));
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+        String dateStr = hankakuNumToZenkaku(sdf.format(date));
+        lineData.add(new LineModel(patientName, dateStr, "　"));
 
         // 定期処方・臨時処方・その他処方・注射の順で印刷データ作成
         for (ModuleModel mm : rpStamp) {
@@ -174,9 +141,9 @@ public class PrintLabel {
         for (ModuleModel mm : injStamp) {
             addLineFromModule(mm);
         }
-        for (ModuleModel mm : otherStamp2) {
-            addLineFromModule(mm);
-        }
+        //for (ModuleModel mm : otherStamp2) {
+        //    addLineFromModule(mm);
+        //}
     }
 
     private void addLineFromModule(ModuleModel stamp) {
@@ -200,7 +167,7 @@ public class PrintLabel {
                     if ("カプセル".equals(unit)) {
                         unit = "Ｃ";
                     }
-                        // 0085系のコメントはunitがnullなので""に置き換える。
+                    // 0085系のコメントはunitがnullなので""に置き換える。
                     // 手技の場合もclassCodeが"0"なので置き換える
                     if (unit == null || "0".equals(c.getClassCode())) {
                         unit = "";
@@ -274,7 +241,7 @@ public class PrintLabel {
     }
 
     
-    private String buildPrintString() throws UnsupportedEncodingException {
+    private String buildPrintString() {
 
         StringBuilder sb = new StringBuilder();
 
@@ -343,48 +310,76 @@ public class PrintLabel {
         String output = sb.toString();
         return output;
     }
-
-    private byte[] makeRawData(String input) {
-
-        ByteBuffer buf = ByteBuffer.allocate(10240);
-        boolean kanjiMode = false;
-
-        buf.put(escpInitialize);
-        buf.put(escpCmdModeChange);
-        buf.put(escpKOSI);
-
-        char[] charArray = input.toCharArray();
-        for (char c : charArray) {
-            byte[] bytes = convertToJisBytes(c);
-            if (bytes != null) {
-                if (bytes.length > 4) {
-                    byte[] ctrl = {bytes[0], bytes[1], bytes[2]};
-                    if (Arrays.equals(ctrl, KI)) {
-                        if (!kanjiMode) {
-                            buf.put(escpKISO);
-                        }
-                        buf.put(bytes[3]);
-                        buf.put(bytes[4]);
-                        kanjiMode = true;
-                    }
-                } else if (bytes.length > 0){
-                    if (kanjiMode) {
-                        buf.put(escpKOSI);
-                    }
-                    buf.put(bytes[0]);
-                    kanjiMode = false;
-                }
-            }
+    
+    // JISで送っていたが、毎文字にKI/KOを付加していたので、半角全角変更時
+    // 適宜KI/KOを送信するように変更した。
+    private void sendESCPData(final String text) {
+        
+        // esc/pのraw dataをQL-580Nに転送する
+        if (text == null || text.isEmpty()) {
+            return;
         }
 
-        buf.put(escpKOSI);
-        buf.put(escpFF);
+        final String prtAddress = Project.getString(MiscSettingPanel.LBLPRT_ADDRESS, MiscSettingPanel.DEFAULT_LBLPRT_ADDRESS);
+        final int prtPort = Project.getInt(MiscSettingPanel.LBLPRT_PORT, MiscSettingPanel.DEFAULT_LBLPRT_PORT);
 
-        buf.flip();
-        byte[] ret = new byte[buf.limit()];
-        buf.get(ret);
-        return ret;
+        final SwingWorker worker = new SwingWorker() {
+
+            @Override
+            protected Object doInBackground() throws Exception {
+                // 転送
+                try (Socket socket = new Socket(prtAddress, prtPort);
+                        OutputStream os = socket.getOutputStream();
+                        BufferedOutputStream bos = new BufferedOutputStream(os)) {
+
+                    bos.write(escpInitialize);
+                    bos.write(escpCmdModeChange);
+                    bos.write(escpKOSI);
+
+                    boolean kanjiMode = false;
+                    int len = text.length();
+                    
+                    for (int i = 0; i < len; ++i) {
+                        
+                        byte[] bytes = convertToJisBytes(text.charAt(i));
+                        if (bytes == null) {
+                            continue;
+                        }
+
+                        if (bytes.length > 4) {
+                            byte[] ctrl = {bytes[0], bytes[1], bytes[2]};
+                            if (Arrays.equals(ctrl, KI)) {
+                                if (!kanjiMode) {
+                                    bos.write(escpKISO);
+                                }
+                                bos.write(bytes[3]);
+                                bos.write(bytes[4]);
+                                kanjiMode = true;
+                            }
+                        } else if (bytes.length > 0) {
+                            if (kanjiMode) {
+                                bos.write(escpKOSI);
+                            }
+                            bos.write(bytes[0]);
+                            kanjiMode = false;
+                        }
+                    }
+
+                    bos.write(escpKOSI);
+                    bos.write(escpFF);
+                    bos.flush();
+
+                } catch (Exception ex) {
+                    ex.printStackTrace(System.err);
+                }
+
+                return null;
+            }
+        };
+        
+        worker.execute();
     }
+
     private byte[] convertToJisBytes(char c) {
         
         // 全角マイナス等は自分でJISに変換
@@ -418,33 +413,6 @@ public class PrintLabel {
         }
         return bytes;
     }
-
-    private void sendData(final byte[] rawData) {
-        // esc/pのraw dataをQL-580Nに転送する
-        if (rawData == null || rawData.length == 0) {
-            return;
-        }
-
-        final String prtAddress = Project.getString(MiscSettingPanel.LBLPRT_ADDRESS, MiscSettingPanel.DEFAULT_LBLPRT_ADDRESS);
-        final int prtPort = Project.getInt(MiscSettingPanel.LBLPRT_PORT, MiscSettingPanel.DEFAULT_LBLPRT_PORT);
-
-        final SwingWorker worker = new SwingWorker() {
-
-            @Override
-            protected Object doInBackground() throws Exception {
-                // 転送
-                try (Socket socket = new Socket(prtAddress, prtPort)) {
-                    socket.getOutputStream().write(rawData);
-                } catch (Exception ex) {
-                    ex.printStackTrace(System.err);
-                }
-
-                return null;
-            }
-        };
-        worker.execute();
-    }
-
 
     private static class LineModel {
 

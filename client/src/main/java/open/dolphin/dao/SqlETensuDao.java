@@ -77,12 +77,11 @@ public class SqlETensuDao extends SqlDaoBean {
         
         String sql = SELECT_ETENSU_1 + WHERE_ETENSU_RELATED + " limit ? offset ?";
         
-        int[] types = {Types.BIGINT, Types.BIGINT};
-        String[] params = {String.valueOf(limit), String.valueOf(offset)};
+        Object[] params = {limit, offset};
 
-        List<List<String>> valuesList = executePreparedStatement(sql, types, params);
+        List<String[]> valuesList = executePreparedStatement(sql, params);
 
-        for (List<String> values : valuesList) {
+        for (String[] values : valuesList) {
             ETensuModel1 model = createETensuModel1(values);
             ret.add(model);
         }
@@ -107,9 +106,9 @@ public class SqlETensuDao extends SqlDaoBean {
         String sql = sb.toString();
         List<ETensuModel1> list = new ArrayList<>();
         
-        List<List<String>> valuesList = executeStatement(sql);
+        List<String[]> valuesList = executeStatement(sql);
         
-        for (List<String> values : valuesList) {
+        for (String[] values : valuesList) {
             ETensuModel1 model = createETensuModel1(values);
             list.add(model);
         }
@@ -135,9 +134,9 @@ public class SqlETensuDao extends SqlDaoBean {
         String sql = sb.toString();
         List<ETensuModel2> list = new ArrayList<>();
         
-        List<List<String>> valuesList = executeStatement(sql);
+        List<String[]> valuesList = executeStatement(sql);
         
-        for (List<String> values : valuesList) {
+        for (String[] values : valuesList) {
             ETensuModel2 model = createETensuModel2(values);
             list.add(model);
         }
@@ -178,9 +177,9 @@ public class SqlETensuDao extends SqlDaoBean {
         String sql = sb.toString();
         List<ETensuModel3> list = new ArrayList<>();
         
-        List<List<String>> valuesList = executeStatement(sql);
+        List<String[]> valuesList = executeStatement(sql);
         
-        for (List<String> values : valuesList) {
+        for (String[] values : valuesList) {
             ETensuModel3 model = createETensuModel3(values);
             list.add(model);
         }
@@ -205,9 +204,9 @@ public class SqlETensuDao extends SqlDaoBean {
         String sql = sb.toString();
         List<ETensuModel5> list = new ArrayList<>();
         
-        List<List<String>> valuesList = executeStatement(sql);
+        List<String[]> valuesList = executeStatement(sql);
         
-        for (List<String> values : valuesList) {
+        for (String[] values : valuesList) {
             ETensuModel5 model = createETensuModel5(values);
             list.add(model);
         }
@@ -215,104 +214,104 @@ public class SqlETensuDao extends SqlDaoBean {
         return list;
     }
     
-    private ETensuModel1 createETensuModel1(List<String> values) {
+    private ETensuModel1 createETensuModel1(String[] values) {
         int i = 0;
         ETensuModel1 model = new ETensuModel1();
-        model.setSrycd(values.get(i++));
-        model.setYukostymd(values.get(i++));
-        model.setYukoedymd(values.get(i++));
-        model.setH_tani1(Integer.valueOf(values.get(i++)));
-        model.setH_group1(values.get(i++));
-        model.setH_tani2(Integer.valueOf(values.get(i++)));
-        model.setH_group2(values.get(i++));
-        model.setH_tani3(Integer.valueOf(values.get(i++)));
-        model.setH_group3(values.get(i++));
-        model.setR_day(Integer.valueOf(values.get(i++)));
-        model.setR_month(Integer.valueOf(values.get(i++)));
-        model.setR_same(Integer.valueOf(values.get(i++)));
-        model.setR_week(Integer.valueOf(values.get(i++)));
-        model.setN_group(Integer.valueOf(values.get(i++)));
-        model.setC_kaisu(Integer.valueOf(values.get(i++)));
-        model.setChgymd(values.get(i++));
+        model.setSrycd(values[i++]);
+        model.setYukostymd(values[i++]);
+        model.setYukoedymd(values[i++]);
+        model.setH_tani1(Integer.valueOf(values[i++]));
+        model.setH_group1(values[i++]);
+        model.setH_tani2(Integer.valueOf(values[i++]));
+        model.setH_group2(values[i++]);
+        model.setH_tani3(Integer.valueOf(values[i++]));
+        model.setH_group3(values[i++]);
+        model.setR_day(Integer.valueOf(values[i++]));
+        model.setR_month(Integer.valueOf(values[i++]));
+        model.setR_same(Integer.valueOf(values[i++]));
+        model.setR_week(Integer.valueOf(values[i++]));
+        model.setN_group(Integer.valueOf(values[i++]));
+        model.setC_kaisu(Integer.valueOf(values[i++]));
+        model.setChgymd(values[i++]);
         return model;
     }
     
-    private ETensuModel2 createETensuModel2(List<String> values) {
+    private ETensuModel2 createETensuModel2(String[] values) {
         int i = 0;
         ETensuModel2 model = new ETensuModel2();
-        model.setH_group(values.get(i++));
-        model.setSrycd(values.get(i++));
-        model.setYukostymd(values.get(i++));
-        model.setYukoedymd(values.get(i++));
-        model.setChgymd(values.get(i++));
+        model.setH_group(values[i++]);
+        model.setSrycd(values[i++]);
+        model.setYukostymd(values[i++]);
+        model.setYukoedymd(values[i++]);
+        model.setChgymd(values[i++]);
         return model;
     }
 
-    private ETensuModel2 createETensuModel2_OFF(List<String> values) {
+    private ETensuModel2 createETensuModel2_OFF(String[] values) {
         int i = 0;
         ETensuModel2 model = new ETensuModel2();
-        model.setHospnum(values.get(i++));
-        model.setH_group(values.get(i++));
-        model.setSrycd(values.get(i++));
-        model.setYukostymd(values.get(i++));
-        model.setYukoedymd(values.get(i++));
-        model.setTermid(values.get(i++));
-        model.setOpid(values.get(i++));
-        model.setChgymd(values.get(i++));
-        model.setUpymd(values.get(i++));
-        model.setUphms(values.get(i++));
+        model.setHospnum(values[i++]);
+        model.setH_group(values[i++]);
+        model.setSrycd(values[i++]);
+        model.setYukostymd(values[i++]);
+        model.setYukoedymd(values[i++]);
+        model.setTermid(values[i++]);
+        model.setOpid(values[i++]);
+        model.setChgymd(values[i++]);
+        model.setUpymd(values[i++]);
+        model.setUphms(values[i++]);
         return model;
     }
 
-    private ETensuModel2 createETensuModel2_SAMPLE(List<String> values) {
+    private ETensuModel2 createETensuModel2_SAMPLE(String[] values) {
         int i = 0;
         ETensuModel2 model = new ETensuModel2();
-        model.setH_group(values.get(i++));
-        model.setSrycd(values.get(i++));
-        model.setYukostymd(values.get(i++));
-        model.setYukoedymd(values.get(i++));
-        model.setRennum(Integer.valueOf(values.get(i++)));
-        model.setSamplecd(values.get(i++));
-        model.setChgymd(values.get(i++));
+        model.setH_group(values[i++]);
+        model.setSrycd(values[i++]);
+        model.setYukostymd(values[i++]);
+        model.setYukoedymd(values[i++]);
+        model.setRennum(Integer.valueOf(values[i++]));
+        model.setSamplecd(values[i++]);
+        model.setChgymd(values[i++]);
         return model;
     }
     
-    private ETensuModel3 createETensuModel3(List<String> values) {
+    private ETensuModel3 createETensuModel3(String[] values) {
         int i = 0;
         ETensuModel3 model = new ETensuModel3();
-        model.setSrycd1(values.get(i++));
-        model.setSrycd2(values.get(i++));
-        model.setYukostymd(values.get(i++));
-        model.setYukoedymd(values.get(i++));
-        model.setHaihan(Integer.valueOf(values.get(i++)));
-        model.setTokurei(Integer.valueOf(values.get(i++)));
-        model.setChgymd(values.get(i++));
+        model.setSrycd1(values[i++]);
+        model.setSrycd2(values[i++]);
+        model.setYukostymd(values[i++]);
+        model.setYukoedymd(values[i++]);
+        model.setHaihan(Integer.valueOf(values[i++]));
+        model.setTokurei(Integer.valueOf(values[i++]));
+        model.setChgymd(values[i++]);
         return model;
     }
 
-    private ETensuModel4 createETensuModel4(List<String> values) {
+    private ETensuModel4 createETensuModel4(String[] values) {
         int i = 0;
         ETensuModel4 model = new ETensuModel4();
-        model.setN_group(values.get(i++));
-        model.setSrycd(values.get(i++));
-        model.setYukostymd(values.get(i++));
-        model.setYukoedymd(values.get(i++));
-        model.setKasan(Integer.valueOf(values.get(i++)));
-        model.setChgymd(values.get(i++));
+        model.setN_group(values[i++]);
+        model.setSrycd(values[i++]);
+        model.setYukostymd(values[i++]);
+        model.setYukoedymd(values[i++]);
+        model.setKasan(Integer.valueOf(values[i++]));
+        model.setChgymd(values[i++]);
         return model;
     }
     
-    private ETensuModel5 createETensuModel5(List<String> values) {
+    private ETensuModel5 createETensuModel5(String[] values) {
         int i = 0;
         ETensuModel5 model = new ETensuModel5();
-        model.setSrycd(values.get(i++));
-        model.setYukostymd(values.get(i++));
-        model.setYukoedymd(values.get(i++));
-        model.setTanicd(Integer.valueOf(values.get(i++)));
-        model.setTaniname(values.get(i++));
-        model.setKaisu(Integer.valueOf(values.get(i++)));
-        model.setTokurei(Integer.valueOf(values.get(i++)));
-        model.setChgymd(values.get(i++));
+        model.setSrycd(values[i++]);
+        model.setYukostymd(values[i++]);
+        model.setYukoedymd(values[i++]);
+        model.setTanicd(Integer.valueOf(values[i++]));
+        model.setTaniname(values[i++]);
+        model.setKaisu(Integer.valueOf(values[i++]));
+        model.setTokurei(Integer.valueOf(values[i++]));
+        model.setChgymd(values[i++]);
         return model;
     }
 
@@ -330,10 +329,10 @@ public class SqlETensuDao extends SqlDaoBean {
 
         String sql = "select count(*) from " + tableName + " " + condition;
         
-        List<List<String>> valuesList = executeStatement(sql);
+        List<String[]> valuesList = executeStatement(sql);
         if (!valuesList.isEmpty()) {
-            List<String> values = valuesList.get(0);
-            count = Long.valueOf(values.get(0));
+            String[] values = valuesList.get(0);
+            count = Long.valueOf(values[0]);
         }
 
         return count;

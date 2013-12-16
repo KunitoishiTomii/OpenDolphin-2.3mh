@@ -1,6 +1,7 @@
 package open.dolphin.infomodel;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import java.io.Serializable;
 import javax.persistence.*;
 
 /**
@@ -10,7 +11,7 @@ import javax.persistence.*;
  */
 @Entity
 @Table(name="d_nlabo_item")
-public class NLaboItem extends InfoModel {
+public class NLaboItem implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -126,7 +127,7 @@ public class NLaboItem extends InfoModel {
             return false;
         }
         NLaboItem other = (NLaboItem) object;
-        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
+        if ((id == null && other.id != null) || (id != null && !id.equals(other.id))) {
             return false;
         }
         return true;

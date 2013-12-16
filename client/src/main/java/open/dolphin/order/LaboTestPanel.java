@@ -47,12 +47,16 @@ public class LaboTestPanel {
     private boolean isModified = false;
 
     // 点数マスタの静的マップ、一度取得したものは再利用する
-    private static HashMap<Integer, TensuMaster> tensuMasterMap;
+    private static final HashMap<Integer, TensuMaster> tensuMasterMap;
 
     private static final DecimalFormat srycdFrmt = new DecimalFormat("000000000");
     private static final String FROM_EDITOR_STAMP_NAME = "エディタから";
     private static final String DEFAULT_COMBO_ITEM = "-----";
     private static final int SRYCD_GAIRAI_RAPID = 160177770;
+    
+    static {
+        tensuMasterMap = new HashMap<>();
+    }
 
     public LaboTestPanel(BaseEditor editor) {
 
@@ -67,7 +71,7 @@ public class LaboTestPanel {
     }
 
     public List<MasterItem> getMasterItemList() {
-        return new ArrayList<>(masterItemList);
+        return masterItemList;
     }
 
     public void setMasterItemList(List<MasterItem> list) {
@@ -80,12 +84,12 @@ public class LaboTestPanel {
 
     public void enter() {
 
-        if (tensuMasterMap != null) {
-            // すでにTensuMaster取得済みのとき
-            prepareCheckBox();
-        } else {
+        if (tensuMasterMap.isEmpty()) {
             // はじめてのとき
             prepareMasterItemMap();
+        } else {
+            // すでにTensuMaster取得済みのとき
+            prepareCheckBox();
         }
 
         isModified = false;
@@ -310,7 +314,7 @@ public class LaboTestPanel {
         }
 
         // 情報ラベル表示
-        view.getLblMishutoku().setVisible(tensuMasterMap == null);
+        view.getLblMishutoku().setVisible(tensuMasterMap.isEmpty());
 
     }
 
@@ -340,12 +344,12 @@ public class LaboTestPanel {
                 try {
                     List<TensuMaster> tmResult = get();
                     // 取得したTensuMasterをtensuMasterMapに登録する。
-                    tensuMasterMap = new HashMap<>();
                     for (TensuMaster tm : tmResult) {
                         tensuMasterMap.put(Integer.valueOf(tm.getSrycd()), tm);
                     }
                     prepareCheckBox();
                 } catch (InterruptedException | ExecutionException | NumberFormatException ex) {
+                    tensuMasterMap.clear();
                     closePanel();
                 }
             }

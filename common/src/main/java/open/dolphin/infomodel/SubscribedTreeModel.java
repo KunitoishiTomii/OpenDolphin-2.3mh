@@ -1,5 +1,6 @@
 package open.dolphin.infomodel;
 
+import java.io.Serializable;
 import javax.persistence.*;
 
 /**
@@ -10,7 +11,7 @@ import javax.persistence.*;
  */
 @Entity
 @Table(name="d_subscribed_tree")
-public class SubscribedTreeModel extends InfoModel {
+public class SubscribedTreeModel implements Serializable {
     
     @Id @GeneratedValue(strategy=GenerationType.AUTO)
     private long id;

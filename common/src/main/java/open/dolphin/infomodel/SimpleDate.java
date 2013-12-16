@@ -4,6 +4,7 @@
  */
 package open.dolphin.infomodel;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -14,10 +15,8 @@ import java.util.GregorianCalendar;
  * @author Kazushi Minagawa
  *
  */
-public final class SimpleDate extends InfoModel implements Comparable {
-    
-    private static final long serialVersionUID = 2137848922359964710L;
-    
+public final class SimpleDate implements Serializable, Comparable {
+   
     private int year;
     
     private int month;

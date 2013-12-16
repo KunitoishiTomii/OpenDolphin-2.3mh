@@ -1,12 +1,9 @@
 package open.dolphin.server.orca;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -67,102 +64,30 @@ public class OrcaService {
     
     public OrcaSqlModel executeSql(OrcaSqlModel sqlModel) {
 
-        if (sqlModel.isPreparedStatement()) {
-            executePreparedStatement(sqlModel);
-        } else {
-            executeStatement(sqlModel);
-        }
+        executeStatement(sqlModel);
 
         return sqlModel;
     }
     
     private void executeStatement(OrcaSqlModel sqlModel) {
         
-        List<List<String>> valuesList = new ArrayList<>();
+        List<String[]> valuesList = new ArrayList<>();
 
         try (Connection con = getConnection(sqlModel.getUrl());
                 Statement st = con.createStatement();
-                ResultSet rs = st.executeQuery(sqlModel.getSql());){
+                ResultSet rs = st.executeQuery(sqlModel.getSql())) {
 
+            int columnCount = rs.getMetaData().getColumnCount();
+            
             while (rs.next()) {
-                List<String> values = new ArrayList<>();
-                ResultSetMetaData meta = rs.getMetaData();
-                int columnCount = meta.getColumnCount();
-                for (int i = 1; i <= columnCount; ++i) {
-                    int type = meta.getColumnType(i);
-                    switch (type) {
-                        case Types.SMALLINT:
-                        case Types.NUMERIC:
-                        case Types.INTEGER:
-                            values.add(String.valueOf(rs.getInt(i)));
-                            break;
-                        default:
-                            values.add(rs.getString(i));
-                            break;
-                    }
+                final String[] values = new String[columnCount];
+                for (int i = 0; i < columnCount; ++i) {
+                    values[i] = String.valueOf(rs.getObject(i + 1));
                 }
                 valuesList.add(values);
             }
 
-        } catch (SQLException | ClassNotFoundException | NullPointerException ex) {
-            sqlModel.setErrorMessage(ex.getMessage());
-        }
-
-        sqlModel.setValuesList(valuesList);
-    }
-    
-    private void executePreparedStatement(OrcaSqlModel sqlModel) {
-        
-        List<List<String>> valuesList = new ArrayList<>();
-        
-        try (Connection con = getConnection(sqlModel.getUrl());
-                PreparedStatement ps = con.prepareStatement(sqlModel.getSql());) {
-
-            int paramCount = sqlModel.getParamList().size();
-            for (int i = 0; i < paramCount; ++i) {
-                int type = sqlModel.getTypeList().get(i);
-                String param = sqlModel.getParamList().get(i);
-                switch (type) {
-                    case Types.INTEGER:
-                        ps.setInt(i + 1, Integer.valueOf(param));
-                        break;
-                    case Types.BIGINT:
-                        ps.setLong(i + 1, Long.valueOf(param));
-                        break;
-                    case Types.FLOAT:
-                        ps.setFloat(i + 1, Float.valueOf(param));
-                        break;
-                    case Types.CHAR:
-                    default:
-                        ps.setString(i + 1, param);
-                        break;
-                }
-            }
-            
-            try (ResultSet rs = ps.executeQuery()) {
-
-                while (rs.next()) {
-                    List<String> values = new ArrayList<>();
-                    ResultSetMetaData meta = rs.getMetaData();
-                    int columnCount = meta.getColumnCount();
-                    for (int i = 1; i <= columnCount; ++i) {
-                        int type = meta.getColumnType(i);
-                        switch (type) {
-                            case Types.SMALLINT:
-                            case Types.NUMERIC:
-                            case Types.INTEGER:
-                                values.add(String.valueOf(rs.getInt(i)));
-                                break;
-                            default:
-                                values.add(rs.getString(i));
-                                break;
-                        }
-                    }
-                    valuesList.add(values);
-                }
-            }
-
-        } catch (SQLException | ClassNotFoundException | NullPointerException ex) {
+        } catch (Exception ex) {
             sqlModel.setErrorMessage(ex.getMessage());
         }
 

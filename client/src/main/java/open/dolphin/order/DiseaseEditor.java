@@ -1,6 +1,5 @@
 package open.dolphin.order;
 
-import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.SimpleDateFormat;
@@ -16,7 +15,6 @@ import open.dolphin.client.*;
 import open.dolphin.dao.SqlMasterDao;
 import open.dolphin.dao.SqlMiscDao;
 import open.dolphin.infomodel.DiseaseEntry;
-import open.dolphin.infomodel.IInfoModel;
 import open.dolphin.infomodel.RegisteredDiagnosisModel;
 import open.dolphin.infomodel.TensuMaster;
 import open.dolphin.project.Project;
@@ -67,40 +65,17 @@ public final class DiseaseEditor extends AbstractStampEditor {
     private ListTableModel<DiseaseEntry> searchResultModel;
     private ListTableSorter<DiseaseEntry> sorter;
 
-    public DiseaseEditor() {
-        this(true);
+    public DiseaseEditor(String entity) {
+        this(entity, true);
     }
 
-    public DiseaseEditor(boolean mode) {
-        super();
-        initComponents();
-        this.setFromStampEditor(mode);
-        this.setOrderName("傷病名");
-    }
-    
-    @Override
-    protected String[] getColumnNames() {
-        return COLUMN_NAMES;
-    }
-
-    @Override
-    protected String[] getColumnMethods() {
-        return METHOD_NAMES;
+    public DiseaseEditor(String entity, boolean mode) {
+        super(entity, mode);
     }
 
     @Override
     protected int[] getColumnWidth() {
         return COLUMN_WIDTH;
-    }
-
-    @Override
-    protected String[] getSrColumnNames() {
-        return SR_COLUMN_NAMES;
-    }
-
-    @Override
-    protected String[] getSrColumnMethods() {
-        return SR_METHOD_NAMES;
     }
 
     @Override
@@ -131,7 +106,7 @@ public final class DiseaseEditor extends AbstractStampEditor {
      * 傷病名テーブルをスキャンし修飾語つきの傷病にして返す。
      */
     @Override
-    public IInfoModel[] getValue() {
+    public RegisteredDiagnosisModel getNewValue() {
 
         RegisteredDiagnosisModel diagnosis = null;
 
@@ -149,15 +124,18 @@ public final class DiseaseEditor extends AbstractStampEditor {
                 //
                 // 修飾語でない場合は基本病名と見なし、パラメータを設定する
                 //
-//masuda^   病名以外は編集元を引き継ぐ
-                if (getOldValue() != null && getOldValue().length != 0){
-                    RegisteredDiagnosisModel oldRd = ((RegisteredDiagnosisModel[])getOldValue())[0];
-                    diagnosis = duplicateRd(oldRd);
-                } else {
+                
+                // 病名以外は編集元を引き継ぐ
+                Object oldValue = getOldValue();
+                if (oldValue instanceof RegisteredDiagnosisModel) {
+                    RegisteredDiagnosisModel old = (RegisteredDiagnosisModel) oldValue;
+                    diagnosis = duplicateRd(old);
+                }
+                if (diagnosis == null) {
                     diagnosis = new RegisteredDiagnosisModel();
+                    
                 }
                 diagnosis.setByoKanrenKbn(diag.getByoKanrenKbn());
-//masuda$
                 diagnosis.setDiagnosisCodeSystem(diag.getDiagnosisCodeSystem());
 
             } else {
@@ -181,8 +159,8 @@ public final class DiseaseEditor extends AbstractStampEditor {
             // 名前とコードを設定する
             diagnosis.setDiagnosis(name.toString());
             diagnosis.setDiagnosisCode(code.toString());
-
-            return new RegisteredDiagnosisModel[]{diagnosis};
+            
+            return diagnosis;
 
         } else {
             return null;
@@ -190,20 +168,17 @@ public final class DiseaseEditor extends AbstractStampEditor {
     }
     
     @Override
-    public void setValue(IInfoModel[] value) {
+    public void setValue(Object objValue) {
 
 //masuda^
         // 連続して編集される場合があるのでテーブル内容等をクリアする
         clear();
-        if (value == null || value.length == 0) {
+        setOldValue(objValue);
+        if (!(objValue instanceof RegisteredDiagnosisModel)) {
             return;
         }
-        setOldValue(value);
-        RegisteredDiagnosisModel rd = ((RegisteredDiagnosisModel[]) value)[0];
-        // null であればリターンする
-        if (rd == null) {
-            return;
-        }
+        
+        RegisteredDiagnosisModel rd = (RegisteredDiagnosisModel) objValue;
 
         // ここからは既存病名の編集
         // 修飾語を含んでいなければ（病名コードに"."がなければ）そのままセットする
@@ -226,18 +201,7 @@ public final class DiseaseEditor extends AbstractStampEditor {
         }
 
         final SqlMiscDao dao2 = SqlMiscDao.getInstance();
-        final BlockGlass blockGlass = new BlockGlass();
-        // 親がJFrameのときとJDialogのときがある masuda
-        Window parent = SwingUtilities.getWindowAncestor(getView());
-        if (parent instanceof JFrame) {
-            JFrame frame = (JFrame) parent;
-            frame.setGlassPane(blockGlass);
-            blockGlass.setSize(frame.getSize());
-        } else if (parent instanceof JDialog) {
-            JDialog dialog = (JDialog) parent;
-            dialog.setGlassPane(blockGlass);
-            blockGlass.setSize(dialog.getSize());
-        }
+        final BlockGlass blockGlass = getBlockGlass();
 
         SwingWorker worker = new SwingWorker<List<DiseaseEntry>, Void>() {
 
@@ -457,7 +421,7 @@ public final class DiseaseEditor extends AbstractStampEditor {
                         //
                         // 病名が手入力された場合は、コードに 0000999 を設定する
                         //
-                        if (!value.equals("")) {
+                        if (!value.isEmpty()) {
                             if (model != null) {
                                 model.setDiagnosis(value);
                                 model.setDiagnosisCode(HAND_CODE);
@@ -484,7 +448,7 @@ public final class DiseaseEditor extends AbstractStampEditor {
                                 test = test.substring(0, idx);
                                 test = test.trim();
                             }
-                            if (value.equals("")) {
+                            if (value.isEmpty()) {
                                 model.setDiagnosis(test);
                             } else {
                                 StringBuilder sb = new StringBuilder();
@@ -518,6 +482,7 @@ public final class DiseaseEditor extends AbstractStampEditor {
 //masuda$
         setTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         setTable.setRowSelectionAllowed(true);
+
         ListSelectionModel m = setTable.getSelectionModel();
         m.addListSelectionListener(new ListSelectionListener() {
             @Override

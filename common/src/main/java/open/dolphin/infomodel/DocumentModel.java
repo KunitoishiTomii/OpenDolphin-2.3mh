@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.persistence.*;
+import open.dolphin.common.util.BeanUtils;
+import org.hibernate.annotations.BatchSize;
 import org.hibernate.search.annotations.FullTextFilterDef;
 import org.hibernate.search.annotations.FullTextFilterDefs;
 import org.hibernate.search.annotations.Indexed;
@@ -20,7 +22,8 @@ import org.hibernate.search.annotations.IndexedEmbedded;
 @Indexed(index="document")      // hibernate search
 @FullTextFilterDefs({           // hibernate search
     @FullTextFilterDef(name = "karteId", impl = KearteIdFilterFactory.class),
-    @FullTextFilterDef(name = "facilityPk", impl = FacilityPkFilterFactory.class) })
+    @FullTextFilterDef(name = "facilityPk", impl = FacilityPkFilterFactory.class)})
+@BatchSize(size = 10)
 @Entity
 @Table(name = "d_document")
 public class DocumentModel extends KarteEntryBean {
@@ -31,11 +34,13 @@ public class DocumentModel extends KarteEntryBean {
     @JsonManagedReference   // bi-directional references
     @JsonDeserialize(contentAs=ModuleModel.class)
     @IndexedEmbedded        // hibernate search
+    @BatchSize(size = 20)   // Fetch size指定 for performance improvements
     @OneToMany(mappedBy="document", cascade={CascadeType.PERSIST, CascadeType.REMOVE})
     private List<ModuleModel> modules;
     
     @JsonManagedReference   // bi-directional references
     @JsonDeserialize(contentAs=SchemaModel.class)
+    @BatchSize(size = 5)    // Fetch size指定 for performance improvements
     @OneToMany(mappedBy="document", cascade={CascadeType.PERSIST, CascadeType.REMOVE})
     private List<SchemaModel> schema;
 
@@ -44,7 +49,7 @@ public class DocumentModel extends KarteEntryBean {
      */
     public DocumentModel() {
         docInfo = new DocInfoModel();
-        docInfo.setDocType(DOCTYPE_KARTE);
+        docInfo.setDocType(IInfoModel.DOCTYPE_KARTE);
     }
     
     public void toDetuch() {
@@ -255,5 +260,15 @@ public class DocumentModel extends KarteEntryBean {
         }
 
         return ret;
+    }
+    
+    // test
+    public void beanBytesToModel() {
+        if (modules != null && !modules.isEmpty()) {
+            for (ModuleModel mm : modules) {
+                mm.setModel((IModuleModel) BeanUtils.xmlDecode(mm.getBeanBytes()));
+                //mm.setBeanBytes(null);
+            }
+        }
     }
 }

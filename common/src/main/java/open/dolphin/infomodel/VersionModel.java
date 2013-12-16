@@ -18,7 +18,7 @@
  */
 package open.dolphin.infomodel;
 
-import open.dolphin.infomodel.InfoModel;
+import java.io.Serializable;
 
 /**
  * VersionModel
@@ -26,7 +26,7 @@ import open.dolphin.infomodel.InfoModel;
  * @author Kazushi Minagawa
  *
  */
-public class VersionModel extends InfoModel {
+public class VersionModel implements Serializable {
     
     private int number;
     private int revision;

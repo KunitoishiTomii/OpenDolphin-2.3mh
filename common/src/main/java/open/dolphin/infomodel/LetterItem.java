@@ -1,6 +1,7 @@
 package open.dolphin.infomodel;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.io.Serializable;
 import javax.persistence.*;
 
 /**
@@ -10,9 +11,7 @@ import javax.persistence.*;
  */
 @Entity
 @Table(name = "d_letter_item")
-public class LetterItem extends InfoModel {
-
-    private static final long serialVersionUID = 1L;
+public class LetterItem implements Serializable {
 
     @JsonIgnore
     @Id

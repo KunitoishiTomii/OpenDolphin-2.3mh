@@ -651,12 +651,12 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
         
         @Override
         public KarteViewer call() throws Exception {
-            
+
             // DocumentDelegaterから移動
             Collection<ModuleModel> mc = docModel.getModules();
             if (mc != null && !mc.isEmpty()) {
                 for (ModuleModel module : mc) {
-                    module.setModel((InfoModel) BeanUtils.xmlDecode(module.getBeanBytes()));
+                    module.setModel((IModuleModel) BeanUtils.xmlDecode(module.getBeanBytes()));
                 }
             }
 

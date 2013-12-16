@@ -3,6 +3,7 @@ package open.dolphin.infomodel;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import javax.persistence.*;
+import open.dolphin.common.util.BeanUtils;
 import org.apache.lucene.analysis.cjk.CJKAnalyzer;
 import org.hibernate.search.annotations.Analyzer;
 import org.hibernate.search.annotations.Field;
@@ -25,7 +26,7 @@ public class ModuleModel extends KarteEntryBean {
     
     @JsonIgnore
     @Transient
-    private IInfoModel model;
+    private IModuleModel model;
     
     @Field(index=Index.YES)                         // hibernate search
     @FieldBridge(impl = ModuleModelBridge.class)    // hibernate search
@@ -74,7 +75,7 @@ public class ModuleModel extends KarteEntryBean {
      * モジュールの情報モデル（実体のPOJO)を設定する。
      * @param model モデル
      */
-    public void setModel(IInfoModel model) {
+    public void setModel(IModuleModel model) {
         this.model = model;
     }
     
@@ -82,7 +83,7 @@ public class ModuleModel extends KarteEntryBean {
      * モジュールの情報モデル（実体のPOJO)を返す。
      * @return モデル
      */
-    public IInfoModel getModel() {
+    public IModuleModel getModel() {
         return model;
     }
     
@@ -124,28 +125,28 @@ public class ModuleModel extends KarteEntryBean {
         ret.setFirstConfirmed(this.getConfirmed());
         ret.setLinkId(this.getLinkId());
         ret.setLinkRelation(this.getLinkRelation());
-        ret.setModuleInfoBean((ModuleInfoBean)this.getModuleInfoBean().clone());
+        ret.setModuleInfoBean((ModuleInfoBean) this.getModuleInfoBean().clone());
         ret.setRecorded(this.getRecorded());
         ret.setStarted(this.getStarted());
         ret.setStatus(this.getStatus());
 
         byte[] bytes = this.getBeanBytes();
-        if (bytes!=null) {
+        if (bytes != null) {
             byte[] dest = new byte[bytes.length];
             System.arraycopy(bytes, 0, dest, 0, bytes.length);
             ret.setBeanBytes(dest);
         }
 
-        if (model!=null) {
+        if (model != null) {
             if (model instanceof BundleDolphin) {
-                BundleDolphin m = (BundleDolphin)model;
-                ret.setModel((BundleDolphin)m.clone());
+                BundleDolphin m = (BundleDolphin) model;
+                ret.setModel((BundleDolphin) m.clone());
             } else if (model instanceof BundleMed) {
-                BundleMed m = (BundleMed)model;
-                ret.setModel((BundleMed)m.clone());
+                BundleMed m = (BundleMed) model;
+                ret.setModel((BundleMed) m.clone());
             } else if (model instanceof ProgressCourse) {
-                ProgressCourse m = (ProgressCourse)model;
-                ret.setModel((ProgressCourse)m.clone());
+                ProgressCourse m = (ProgressCourse) model;
+                ret.setModel((ProgressCourse) m.clone());
             } else {
                 throw new CloneNotSupportedException();
             }
@@ -157,5 +158,13 @@ public class ModuleModel extends KarteEntryBean {
         //ret.setDocumentModel(this.getDocumentModel());
 
         return ret;
+    }
+    
+    // test
+    public void beanBytesToModel() {
+        if (beanBytes != null) {
+            model = (IModuleModel) BeanUtils.xmlDecode(beanBytes);
+            //beanBytes = null;
+        }
     }
 }

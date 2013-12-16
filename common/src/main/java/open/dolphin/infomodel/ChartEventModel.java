@@ -1,11 +1,13 @@
 package open.dolphin.infomodel;
 
+import java.io.Serializable;
+
 /**
  * Chart event通知用のモデル
  *
  * @author masuda, Masuda Naika
  */
-public class ChartEventModel {
+public class ChartEventModel implements Serializable {
     
     private String issuerUUID;
     private EVENT eventType;

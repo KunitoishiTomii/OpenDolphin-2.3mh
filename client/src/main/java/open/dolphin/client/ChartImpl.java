@@ -51,7 +51,8 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
     // Document Plugin を格納する TabbedPane
     private JTabbedPane tabbedPane;
     // Active になっているDocument Plugin
-    private HashMap<String, ChartDocument> providers;
+    //private HashMap<String, ChartDocument> providers;
+    private HashMap<Integer, ChartDocument> providers;
     // 患者インスペクタ 
     private PatientInspector inspector;
     // Window Menu をサポートする委譲クラス
@@ -611,12 +612,6 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
                     PVTHealthInsuranceModel[] insurances = getHealthInsurances();
                     for (PVTHealthInsuranceModel hm : insurances) {
 //masuda    reflectionはキライ
-/*
-                        ReflectActionListener ra = new ReflectActionListener(mediator,
-                                "applyInsurance",
-                                new Class[]{hm.getClass()},
-                                new Object[]{hm});
-*/
                         JMenuItem mi = new JMenuItem(hm.toString());
                         addActionListener(mi, hm);
                         popup.add(mi);
@@ -647,21 +642,6 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
         tabbedPane = loadDocuments();
 
         // 全体をレイアウトする
-/*
-         * //JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
-         * inspector.getPanel(), tabbedPane); //splitPane.setName("splitPane");
-         *
-         * inspector.getPanel().setPreferredSize(new Dimension(280, 620));
-         * JPanel tmp = new JPanel(new BorderLayout()); tmp.add(myToolPanel,
-         * BorderLayout.NORTH); tmp.add(inspector.getPanel(),
-         * BorderLayout.WEST); tmp.add(tabbedPane, BorderLayout.CENTER);
-         *
-         * JPanel myPanel = new JPanel(); myPanel.setOpaque(true);
-         * myPanel.setLayout(new BorderLayout(5, 7));
-         *
-         * myPanel.add(tmp, BorderLayout.CENTER); myPanel.add((JPanel)
-         * statusPanel, BorderLayout.SOUTH);
-         */
 //masuda^   4th inspectorの下部余白を有効利用、サイズ可変化
         // 全体をレイアウトする
         ChartSplitPanel splitPanel = new ChartSplitPanel();
@@ -779,16 +759,6 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
         getFrame().setVisible(true);
 
 //masuda^   タイマーはEditorFrameに表示する
-/*
-         * // timer 開始 statred = System.currentTimeMillis(); scheduler =
-         * Executors.newSingleThreadScheduledExecutor(); final Runnable beeper =
-         * new Runnable() {
-         *
-         * @Override public void run() { long time = System.currentTimeMillis()
-         * - statred; time = time / 1000L; statusPanel.setTimeInfo(time); } };
-         * beeperHandle = scheduler.scheduleAtFixedRate(beeper, delay, delay,
-         * TimeUnit.SECONDS);
-         */
         //masuda^   タブをダブルクリックすると別ウィンドウを開く。参照以外。
         addMouseListenerToTabbedPane();
 //masuda$
@@ -870,7 +840,7 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
 
                 //tab.addTab(plugin.getTitle(), plugin.getIconInfo(this), plugin.getUI());
                 tab.addTab(plugin.getTitle(), plugin.getUI());
-                providers.put(String.valueOf(index), plugin);
+                providers.put(index, plugin);
 
                 index += 1;
 
@@ -888,7 +858,7 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
             protected Void doInBackground() throws Exception {
                 int num = providers.size();
                 for (int i = 0; i < num; ++i) {
-                    ChartDocument plugin = providers.get(String.valueOf(i));
+                    ChartDocument plugin = providers.get(i);
                     ImageIcon icon = plugin.getIconInfo(ChartImpl.this);
                     tab.setIconAt(i, icon);
                 }
@@ -920,8 +890,7 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
         // 選択されたタブ番号に対応するプラグインをテーブルから検索する
         //
         int index = tabbedPane.getSelectedIndex();
-        String key = String.valueOf(index);
-        ChartDocument plugin = providers.get(key);
+        ChartDocument plugin = providers.get(index);
 
         if (plugin.getContext() == null) {
             //
@@ -970,7 +939,7 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
         Chart.NewKarteOption option;
         KarteViewer base;
 
-        ChartDocument bridgeOrViewer = providers.get("0");
+        ChartDocument bridgeOrViewer = providers.get(0);
 
         if (bridgeOrViewer instanceof DocumentBridgeImpl) {
             // Chart画面のタブパネル
@@ -1403,7 +1372,7 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
             List<ModuleModel> modules = oldModel.getModules();
             if (modules != null) {
                 for (ModuleModel bean : modules) {
-                    IInfoModel model = bean.getModel();
+                    IModuleModel model = bean.getModel();
                     if (model != null && model instanceof BundleMed) {
                         newModel.addModule(ModelUtils.cloneModule(bean));
                     }
@@ -1583,7 +1552,7 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
 //masuda$
         tabbedPane.addTab(title, doc.getUI());
         int index = tabbedPane.getTabCount() - 1;
-        providers.put(String.valueOf(index), doc);
+        providers.put(index, doc);
         tabbedPane.setSelectedIndex(index);
     }
 
@@ -1595,7 +1564,7 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
     public void addChartDocument(ChartDocument doc, String title) {
         tabbedPane.addTab(title, doc.getUI());
         int index = tabbedPane.getTabCount() - 1;
-        providers.put(String.valueOf(index), doc);
+        providers.put(index, doc);
         tabbedPane.setSelectedIndex(index);
     }
 
@@ -1829,11 +1798,11 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
         // リストで選択させる
         List<NameValuePair> documents = new ArrayList<>(3);
         PluginLister<NChartDocument> lister = PluginLister.list(NChartDocument.class);
-        LinkedHashMap<String, String> nproviders = lister.getProviders();
+        Map<String, String> nproviders = lister.getProviders();
         if (nproviders != null) {
-            for (Map.Entry entry : nproviders.entrySet()) {
-                String cmd = (String) entry.getKey();
-                String clsName = (String) entry.getValue();
+            for (Map.Entry<String, String> entry : nproviders.entrySet()) {
+                String cmd = entry.getKey();
+                String clsName = entry.getValue();
                 NameValuePair pair = new NameValuePair(cmd, clsName);
                 documents.add(pair);
                 if (DEBUG) {
@@ -1979,7 +1948,7 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
         try {
             for (UnsavedDocument undoc : dirtyList) {
                 if (undoc.isNeedSave()) {
-                    ChartDocument doc = providers.get(String.valueOf(undoc.getIndex()));
+                    ChartDocument doc = providers.get(undoc.getIndex());
                     if (doc != null && doc.isDirty()) {
                         tabbedPane.setSelectedIndex(undoc.getIndex());
                         doc.save();
@@ -2001,7 +1970,7 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
         List<UnsavedDocument> ret = new ArrayList<>();
         int count = tabbedPane.getTabCount();
         for (int i = 0; i < count; i++) {
-            ChartDocument doc = providers.get(String.valueOf(i));
+            ChartDocument doc = providers.get(i);
             if (doc != null && doc.isDirty()) {
                 ret.add(new UnsavedDocument(i, doc));
             }
@@ -2084,26 +2053,18 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
     @Override
     public void stop() {
 
-//masuda^   タイマーはEditorFrameに表示する
-/*
-         * if (beeperHandle != null) { boolean b = beeperHandle.cancel(true); if
-         * (DEBUG) { ClientContext.getBootLogger().debug("beeperHandle.cancel =
-         * " + b); } } if (scheduler != null) { scheduler.shutdown(); if (DEBUG)
-         * { ClientContext.getBootLogger().debug("scheduler.shutdown"); } }
-         */
+//masuda^
         if (inactiveProvidersMap != null) {
             inactiveProvidersMap.clear();
         }
-//masuda$
+
         if (providers != null) {
-            for (Iterator<String> iter = providers.keySet().iterator(); iter.hasNext();) {
-                ChartDocument doc = providers.get(iter.next());
-                if (doc != null) {
-                    doc.stop();
-                }
+            for (ChartDocument doc : providers.values()) {
+                doc.stop();
             }
             providers.clear();
         }
+//masuda$        
         mediator.dispose();
         inspector.dispose();
         Project.setRectangle(PROP_FRMAE_BOUNDS, getFrame().getBounds());
@@ -2222,8 +2183,7 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
         }
         
         int index = tabbedPane.getSelectedIndex();
-        String key = String.valueOf(index);
-        ChartDocument plugin = providers.get(key);
+        ChartDocument plugin = providers.get(index);
         if (plugin instanceof KarteEditor) {
             return (KarteEditor) plugin;
         }
@@ -2321,7 +2281,7 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
         }
 
         final int index = tabbedPane.getSelectedIndex();
-        final ChartDocument doc = providers.get(String.valueOf(index));
+        final ChartDocument doc = providers.get(index);
 
         // 既に別ウィンドウで開いていたらリターン
         if (inactiveProvidersMap.get(doc) != null) {

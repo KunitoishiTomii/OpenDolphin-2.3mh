@@ -48,7 +48,8 @@ public class StampResource extends AbstractResource {
 
         List<StampModel> result = stampServiceBean.getStamp(list);
         
-        StreamingOutput so = getJsonOutStream(result);
+        TypeReference typeRef = new TypeReference<List<StampModel>>(){};
+        StreamingOutput so = getJsonOutStream(result, typeRef);
         
         return Response.ok(so).build();
     }
@@ -131,7 +132,9 @@ public class StampResource extends AbstractResource {
     public Response getAllStamps(@PathParam("param") Long userId) {
         
         List<StampModel> stamps = stampServiceBean.getAllStamps(userId);
-        StreamingOutput so = getGzipOutStream(stamps);
+        
+        TypeReference typeRef = new TypeReference<List<StampModel>>(){};
+        StreamingOutput so = getGzipOutStream(stamps, typeRef);
         
         return Response.ok(so).build();
     }

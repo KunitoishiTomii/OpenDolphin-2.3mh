@@ -45,7 +45,7 @@ public class NLaboTestImporter extends AbstractMainComponent {
                     "karteName", "karteSex", "sampleDate", "numOfTestItems", "result", "isOpened"};
     private static final Class[] COLUMN_CLASSES = {
         String.class, String.class, String.class, String.class, String.class, 
-        String.class, String.class, String.class, String.class, String.class, String.class};
+        String.class, String.class, String.class, Integer.class, String.class, String.class};
     // 来院テーブルのカラム幅
     private static final int[] COLUMN_WIDTH = {
         50, 50, 80, 100, 50, 100, 50, 80, 50, 50, 20};

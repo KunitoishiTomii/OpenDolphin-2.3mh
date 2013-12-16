@@ -1,7 +1,6 @@
 package open.dolphin.session;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import javax.ejb.Stateless;
@@ -128,9 +127,9 @@ public class StampServiceBean {
      * @param userPk userId(DB key)
      * @return User個人及びサブスクライブしているTreeのリスト
      */
-    public UserStampTreeModel getTrees(long userPK) {
+    public List<IStampTreeModel> getTrees(long userPK) {
 
-        UserStampTreeModel ret = new UserStampTreeModel();
+        List<IStampTreeModel> ret = new ArrayList<>();
         
         // パーソナルツリーを取得する
         List<StampTreeModel> list = 
@@ -145,8 +144,7 @@ public class StampServiceBean {
 
         // 最初の Tree を追加
         StampTreeModel st = list.remove(0);
-        List<StampTreeModel> personalList = Collections.singletonList(st);
-        ret.setStampTreeList(personalList);
+        ret.add(st);
 
         // まだある場合 BUG
         if (list.size() > 0) {
@@ -166,7 +164,6 @@ public class StampServiceBean {
                 .getResultList();
 
         HashMap<Long, String> tmp = new HashMap<>(5, 0.8f);
-        List<PublishedTreeModel> publishedList = new ArrayList<>();
 
         for (SubscribedTreeModel sm : subscribed) {
 
@@ -180,7 +177,7 @@ public class StampServiceBean {
                     PublishedTreeModel published = em.find(PublishedTreeModel.class, sm.getTreeId());
 
                     if (published != null) {
-                        publishedList.add(published);
+                        ret.add(published);
 
                     } else {
                         em.remove(sm);
@@ -195,8 +192,6 @@ public class StampServiceBean {
                 em.remove(sm);
             }
         }
-        
-        ret.setPublishedList(publishedList);
 
         return ret;
     }

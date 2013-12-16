@@ -724,10 +724,10 @@ public final class CareMapDocument extends AbstractChartDocument {
     @Override
     public void save() {
         
-        final ArrayList<AppointmentModel> results = new ArrayList<>();
+        final List<AppointmentModel> results = new ArrayList<>();
         
-        for (Map.Entry entry : cPool.entrySet()) {
-            SimpleCalendarPanel c = (SimpleCalendarPanel) entry.getValue();
+        for (Map.Entry<Integer, SimpleCalendarPanel> entry : cPool.entrySet()) {
+            SimpleCalendarPanel c = entry.getValue();
 
             if (c.getRelativeMonth() >= 0) {
                 

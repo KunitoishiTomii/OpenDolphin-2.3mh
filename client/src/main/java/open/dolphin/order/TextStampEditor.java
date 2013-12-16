@@ -1,4 +1,3 @@
-
 package open.dolphin.order;
 
 import java.awt.BorderLayout;
@@ -29,18 +28,12 @@ public class TextStampEditor extends AbstractStampEditor {
     /**
      * Creates new TextStampEditor
      */
-
-    public TextStampEditor() {
-        initComponents();
-    }
-
     public TextStampEditor(String entity) {
         this(entity, true);
     }
 
     public TextStampEditor(String entity, boolean mode) {
         super(entity, mode);
-        initComponents();
     }
     /**
      * Componentを初期化する。
@@ -78,28 +71,9 @@ public class TextStampEditor extends AbstractStampEditor {
     public JPanel getView() {
         return editorPanel;
     }
-    @Override
-    protected String[] getColumnNames() {
-        return null;
-    }
-
-    @Override
-    protected String[] getColumnMethods() {
-        return null;
-    }
 
     @Override
     protected int[] getColumnWidth() {
-        return null;
-    }
-
-    @Override
-    protected String[] getSrColumnNames() {
-        return null;
-    }
-
-    @Override
-    protected String[] getSrColumnMethods() {
         return null;
     }
 
@@ -168,19 +142,23 @@ public class TextStampEditor extends AbstractStampEditor {
      * @return ModuleModel
      */
     @Override
-    public IInfoModel[] getValue() {
-        ModuleModel model = new ModuleModel();
+    public TextStampModel getNewValue() {
+        
         TextStampModel stamp = new TextStampModel();
-        ModuleInfoBean info = new ModuleInfoBean();
 
-        info.setStampName(titleField.getText().trim());
-        info.setEntity(IInfoModel.ENTITY_TEXT);
-        info.setStampRole(IInfoModel.ROLE_TEXT);
         // Windows では改行コードを変換しないと位置がずれる!!
         stamp.setText(textPane.getText().replace(lineSeparator, "\n"));
-        model.setModel(stamp);
-        model.setModuleInfoBean(info);
-        return new ModuleModel[]{model};
+        
+        // 更新の場合はstampIdを引き継ぐ
+        Object oldValue = getOldValue();
+        if (oldValue instanceof TextStampModel) {
+            TextStampModel old = (TextStampModel) oldValue;
+            stamp.setStampId(old.getStampId());
+        }
+        // スタンプ名を設定する
+        stamp.setStampName(titleField.getText().trim());
+        
+        return stamp;
     }
 
     /**
@@ -188,21 +166,21 @@ public class TextStampEditor extends AbstractStampEditor {
      * @param val ModuleModel
      */
     @Override
-    public void setValue(IInfoModel[] value) {
-        
-        if (value == null || value.length == 0) {
+     public void setValue(Object objValue) {
+
+        // 連続して編集される場合があるのでテーブル内容等をクリアする
+        clear();
+        setOldValue(objValue);
+        if (!(objValue instanceof TextStampModel)) {
             return;
         }
-        setOldValue(value);
         
-        ModuleModel model = ((ModuleModel[])value)[0];
-        if (model != null) {
-            TextStampModel stamp = (TextStampModel) model.getModel();
-            if (stamp != null) {
-                textPane.setText(stamp.getText());
-                titleField.setText(model.getModuleInfoBean().getStampName());
-            }
-        }
+        TextStampModel textStamp = (TextStampModel) objValue;
+        setOldValue(textStamp);
+        
+        textPane.setText(textStamp.getText());
+        titleField.setText(textStamp.getStampName());
+
         textPane.requestFocusInWindow();
     }
 }

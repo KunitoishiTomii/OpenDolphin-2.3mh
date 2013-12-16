@@ -18,32 +18,59 @@
  */
 package open.dolphin.infomodel;
 
-import open.dolphin.infomodel.InfoModel;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.io.Serializable;
+import javax.persistence.Transient;
 
 /**
  * TextStampModel
  * 
  * @author Kazushi Minagawa
- *
+ * @author modified by masuda, Masuda Naika
  */
-public class TextStampModel extends InfoModel {
-	
-    private String text;
+public class TextStampModel implements IStampModel {
 
-    /** Creates a new instance of TextStamp */
+    private String text;
+    
+    /**
+     * Creates a new instance of TextStamp
+     */
     public TextStampModel() {
     }
 
     public String getText() {
-            return text;
+        return text;
     }
 
     public void setText(String val) {
-            text = val;
+        text = val;
+    }
+    
+    // スタンプ箱のエディタで使用
+    @Transient
+    @JsonIgnore
+    private String stampId;
+
+    @Transient
+    @JsonIgnore
+    private String stampName;
+    
+    public void setStampId(String stampId) {
+        this.stampId = stampId;
+    }
+    public String getStampId() {
+        return stampId;
+    }
+    
+    public void setStampName(String stampName) {
+        this.stampName = stampName;
+    }
+    public String getStampName() {
+        return stampName;
     }
 
     @Override
     public String toString() {
-            return getText();
+        return getText();
     }
 }

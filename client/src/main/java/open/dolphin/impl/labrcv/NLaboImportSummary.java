@@ -21,7 +21,7 @@ public class NLaboImportSummary {
 
     private String sampleDate;
 
-    private String numOfTestItems;
+    private int numOfTestItems;
 
     private String status;
 
@@ -176,14 +176,14 @@ public class NLaboImportSummary {
     /**
      * @return the numOfTestItems
      */
-    public String getNumOfTestItems() {
+    public int getNumOfTestItems() {
         return numOfTestItems;
     }
 
     /**
      * @param numOfTestItems the numOfTestItems to set
      */
-    public void setNumOfTestItems(String numOfTestItems) {
+    public void setNumOfTestItems(int numOfTestItems) {
         this.numOfTestItems = numOfTestItems;
     }
 

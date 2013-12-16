@@ -1,5 +1,6 @@
 package open.dolphin.infomodel;
 
+import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.*;
 
@@ -11,7 +12,7 @@ import javax.persistence.*;
  */
 @Entity
 @Table(name = "d_facility")
-public class FacilityModel extends InfoModel {
+public class FacilityModel implements Serializable {
     
     @Id @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;

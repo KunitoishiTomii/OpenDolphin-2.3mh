@@ -553,7 +553,7 @@ public class MasudaServiceBean {
         HashMap<Long, List<Long>> karteIdDocIdMap = new HashMap<>();
         for (ModuleModel mm : modules) {
             // テキスト抽出
-            IInfoModel im = (IInfoModel) BeanUtils.xmlDecode(mm.getBeanBytes());
+            IModuleModel im = (IModuleModel) BeanUtils.xmlDecode(mm.getBeanBytes());
             mm.setModel(im);
             String text;
             if (im instanceof ProgressCourse) {
@@ -626,7 +626,7 @@ public class MasudaServiceBean {
         HashMap<Long, ExamHistoryModel> examMap = new HashMap<>();
 
         for (ModuleModel mm : models) {
-            mm.setModel((InfoModel) BeanUtils.xmlDecode(mm.getBeanBytes()));
+            mm.setModel((IModuleModel) BeanUtils.xmlDecode(mm.getBeanBytes()));
             long docPk = mm.getDocumentModel().getId();
             ExamHistoryModel eh = examMap.get(docPk);
             if (eh == null) {
@@ -656,7 +656,7 @@ public class MasudaServiceBean {
         HashMap<PatientModel, List<ModuleModel>> pmmmMap = new HashMap<>();
         for (ModuleModel mm : mmList){
             // いつもデコード忘れるｗ
-            mm.setModel((InfoModel) BeanUtils.xmlDecode(mm.getBeanBytes()));
+            mm.setModel((IModuleModel) BeanUtils.xmlDecode(mm.getBeanBytes()));
             PatientModel pModel = mm.getKarteBean().getPatient();
             List<ModuleModel> list = pmmmMap.get(pModel);
             if (list == null){
@@ -670,10 +670,9 @@ public class MasudaServiceBean {
         //mmList = null;
         // 患者毎に処方切れかどうか調べる
         List<PatientModel> ret = new ArrayList<>();
-        for (Map.Entry entry : pmmmMap.entrySet()) {
-            PatientModel model = (PatientModel) entry.getKey();
-            
-            List<ModuleModel> list = (List<ModuleModel>) entry.getValue();
+        for (Map.Entry<PatientModel, List<ModuleModel>> entry : pmmmMap.entrySet()) {
+            PatientModel model = entry.getKey();
+            List<ModuleModel> list = entry.getValue();
             // 処方日と処方日数を列挙
             HashMap<Date, Integer> dateNumberMap = new HashMap<>();
             for (ModuleModel mm : list){
@@ -690,9 +689,9 @@ public class MasudaServiceBean {
             Date oldestDate = new Date();
             Date lastDate = ModelUtils.AD1800;
             int totalBundleNumber = 0;
-            for (Map.Entry entry1 : dateNumberMap.entrySet()) {
-                Date date = (Date) entry1.getKey();
-                int bundleNumber = (Integer) entry1.getValue();
+            for (Map.Entry<Date, Integer> entry1 : dateNumberMap.entrySet()) {
+                Date date = entry1.getKey();
+                int bundleNumber = entry1.getValue();
                 if (date.before(oldestDate)) {
                     oldestDate = date;
                 }
@@ -843,7 +842,7 @@ public class MasudaServiceBean {
         // まずはsrycdをリストアップ
         Set<String> srycds = new HashSet<>();
         for (ModuleModel mm : mmList) {
-            mm.setModel((InfoModel) BeanUtils.xmlDecode(mm.getBeanBytes()));
+            mm.setModel((IModuleModel) BeanUtils.xmlDecode(mm.getBeanBytes()));
             ClaimBundle cb = (ClaimBundle) mm.getModel();
             if (cb == null) {
                 continue;
@@ -943,7 +942,7 @@ public class MasudaServiceBean {
         // SanteiHistoryModelに算定日と名前を設定する
         for (SanteiHistoryModel shm : list) {
             ModuleModel mm = shm.getModuleModel();
-            mm.setModel((InfoModel) BeanUtils.xmlDecode(mm.getBeanBytes()));
+            mm.setModel((IModuleModel) BeanUtils.xmlDecode(mm.getBeanBytes()));
             ClaimBundle cb = (ClaimBundle) mm.getModel();
             shm.setItemName(cb.getClaimItem()[shm.getItemIndex()].getName());
             shm.setSanteiDate(mm.getStarted());
@@ -1022,7 +1021,7 @@ public class MasudaServiceBean {
             
             List<RpModel> rpModelList = new ArrayList<>();
             for (ModuleModel mm : mmList) {
-                mm.setModel((InfoModel) BeanUtils.xmlDecode(mm.getBeanBytes()));
+                mm.setModel((IModuleModel) BeanUtils.xmlDecode(mm.getBeanBytes()));
                 BundleMed bm = (BundleMed) mm.getModel();
                 String rpDay = bm.getBundleNumber();
                 String adminSrycd = bm.getAdminCode();

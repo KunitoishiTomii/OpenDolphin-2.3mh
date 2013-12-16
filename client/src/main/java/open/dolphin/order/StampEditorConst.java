@@ -152,4 +152,23 @@ public interface StampEditorConst {
     
     public static final String CLAIM_007 = "Claim007";
     public static final String CLAIM_003 = "Claim003";
+    
+    
+    public static final String RT = "masterSearch.realTime";
+    public static final String PT = "masterSearch.partialMatch";
+
+    public static final String REGEXP_COMMENT_ALL = "^8[1-4]|^008[1-6]"; // コメントコード全て
+    public static final String REGEXP_COMMENT_81  = "^81|^008[156]";     // 名称編集可能
+    public static final String REGEXP_COMMENT_83  = "^83|^0083";         // 固定文字あり、名称編集可
+    public static final String REGEXP_COMMENT_84  = "^84|^0084";         // 数量入力必要
+    public static final String REGEXP_RAD_BUI     = "^002";  // 放射線部位
+    public static final String REGEXP_RAD_ZAIRYO  = "^7";    // 放射線材料（フィルムなど）
+    public static final String REGEXP_RAD_SHUGI   = "^17";   // 放射線手技
+    public static final String REGEXP_LABO        = "^16";   // 検体検査
+    
+    // 診療行為区分定義のテーブルID == Claim007
+    public static final String CLASS_CODE_ID = CLAIM_007;
+    
+    // ClaimItem (項目) の種別を定義しているテーブルID = Claim003
+    public static final String SUBCLASS_CODE_ID = CLAIM_003;
 }

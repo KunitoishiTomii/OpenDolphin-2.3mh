@@ -392,11 +392,13 @@ public class KartePDFMaker extends AbstractPDFMaker {
 
             // SoaPane, Ppaneが収まるセル
             cell = new PdfPCell();
+            
+            XMLInputFactory factory = XMLInputFactory.newInstance();
+            XMLStreamReader reader = null;
 
-            try {
-                XMLInputFactory factory = XMLInputFactory.newInstance();
-                StringReader stream = new StringReader(xml);
-                XMLStreamReader reader = factory.createXMLStreamReader(stream);
+            try (StringReader stream = new StringReader(xml)) {
+                
+                reader = factory.createXMLStreamReader(stream);
 
                 while (reader.hasNext()) {
                     int eventType = reader.next();
@@ -406,7 +408,15 @@ public class KartePDFMaker extends AbstractPDFMaker {
                             break;
                     }
                 }
+
             } catch (XMLStreamException ex) {
+            } finally {
+                try {
+                    if (reader != null) {
+                        reader.close();
+                    }
+                } catch (XMLStreamException ex) {
+                }
             }
             
             return cell;

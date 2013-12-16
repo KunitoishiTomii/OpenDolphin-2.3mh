@@ -21,11 +21,12 @@ package open.dolphin.tr;
 
 import java.awt.datatransfer.*;
 import java.io.IOException;
-import open.dolphin.infomodel.IInfoModel;
+import open.dolphin.infomodel.RegisteredDiagnosisModel;
 
      
 /**
  * Transferable class of the IInfoModel.
+ * (スタンプ箱から病名)
  *
  * @author Kazushi Minagawa, Digital Globe, Inc.
  * @author masuda, Masuda Naika
@@ -33,15 +34,16 @@ import open.dolphin.infomodel.IInfoModel;
 public final class InfoModelTransferable extends DolphinTransferable {
 
     /** Data Flavor of this class */
-    public static DataFlavor infoModelFlavor = new DataFlavor(IInfoModel.class, "Info Model");
+    public static DataFlavor infoModelFlavor = 
+            new DataFlavor(RegisteredDiagnosisModel.class, "RegisteredDiagnosis");
 
     public static final DataFlavor[] flavors = {InfoModelTransferable.infoModelFlavor};
     
     // 複数対応 masuda
-    private final IInfoModel[] infoModels;
+    private final RegisteredDiagnosisModel[] infoModels;
 
     /** Creates new InfoModelTransferable */
-    public InfoModelTransferable(IInfoModel[] infoModels) {
+    public InfoModelTransferable(RegisteredDiagnosisModel[] infoModels) {
         this.infoModels = infoModels;
     }
 

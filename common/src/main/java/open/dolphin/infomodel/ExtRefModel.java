@@ -1,6 +1,7 @@
 package open.dolphin.infomodel;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.persistence.Transient;
@@ -12,7 +13,7 @@ import javax.persistence.Transient;
  * @author modified by masuda, Masuda Naika
  */
 @Embeddable
-public class ExtRefModel extends InfoModel {
+public class ExtRefModel implements Serializable {
     
     @Column(nullable=false)
     private String contentType;

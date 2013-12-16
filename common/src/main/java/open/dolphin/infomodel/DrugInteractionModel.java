@@ -1,18 +1,20 @@
 package open.dolphin.infomodel;
 
+import java.io.Serializable;
+
 /**
  * 薬剤相互作用のモデル
  *
  * @author masuda, Masuda Naika
  */
-public class DrugInteractionModel {
+public class DrugInteractionModel implements Serializable {
 
-    private String srycd1;
-    private String srycd2;
-    private String sskijo;
-    private String syojyoucd;
-    private String brandName1;   // 対応先発品名
-    private String brandName2;
+    private final String srycd1;
+    private final String srycd2;
+    private final String sskijo;
+    private final String syojyoucd;
+    private final String brandName1;   // 対応先発品名
+    private final String brandName2;
 
     public DrugInteractionModel(String srycd1, String srycd2, String sskijo, 
             String syojyoucd, String brandName1, String brandName2){

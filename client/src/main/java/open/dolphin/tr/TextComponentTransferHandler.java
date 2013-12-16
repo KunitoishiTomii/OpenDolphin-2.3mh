@@ -117,7 +117,7 @@ public class TextComponentTransferHandler extends AbstractKarteTransferHandler {
             // pPaneにスタンプを挿入する
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < stamps.length; i++) {
-                IInfoModel model = stamps[i].getModel();
+                IModuleModel model = stamps[i].getModel();
                 if (model instanceof BundleMed) {
                     BundleMed bm = (BundleMed) model;
                     sb.append(bm.getAdminDisplayString2());

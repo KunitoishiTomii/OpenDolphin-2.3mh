@@ -1,5 +1,7 @@
 package open.dolphin.infomodel;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.io.Serializable;
 import javax.persistence.*;
 
 /**
@@ -9,7 +11,7 @@ import javax.persistence.*;
  */
 @Entity
 @Table(name="d_stamp")
-public class StampModel extends InfoModel {
+public class StampModel implements Serializable {
     
     @Id
     private String id;
@@ -24,6 +26,12 @@ public class StampModel extends InfoModel {
     @Column(nullable=false)
     @Lob
     private byte[] stampBytes;
+
+//masuda^
+    @JsonIgnore
+    @Transient
+    private IStampModel model;
+//masuda$
     
 //    @Version
 //    private int version;
@@ -87,6 +95,16 @@ public class StampModel extends InfoModel {
 //    public void setVersion(int version) {
 //        this.version = version;
 //    }
+
+//masuda^
+    public void setModel(IStampModel model) {
+        this.model = model;
+    }
+    
+    public IStampModel getModel() {
+        return model;
+    }
+//masuda$
     
     @Override
     public int hashCode() {

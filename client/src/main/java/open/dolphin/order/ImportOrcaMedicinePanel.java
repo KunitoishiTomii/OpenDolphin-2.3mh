@@ -108,20 +108,18 @@ public class ImportOrcaMedicinePanel {
         // 処方内容テーブルを更新する
         final SqlMiscDao dao = SqlMiscDao.getInstance();
 
-        final SwingWorker worker = new SwingWorker() {
+        final SwingWorker worker = new SwingWorker<List<MasterItem>, Void>() {
 
             @Override
-            protected Object doInBackground() throws Exception {
+            protected List<MasterItem> doInBackground() throws Exception {
                 blockGlass.block();
                 return dao.getMedMasterItemFromOrca(patientId, ymd);
-
             }
 
-            @SuppressWarnings("unchecked")
             @Override
             protected void done() {
                 try {
-                    List<MasterItem> result = (List<MasterItem>) get();
+                    List<MasterItem> result = get();
                     tableModel.setDataProvider(result);
                     tbl_MasterItem.repaint();
                     blockGlass.unblock();
@@ -145,18 +143,17 @@ public class ImportOrcaMedicinePanel {
         // ORCAに記録されている受診日を取得
         final SqlMiscDao dao = SqlMiscDao.getInstance();
         final boolean descFlag = true;
-        final SwingWorker worker = new SwingWorker() {
+        final SwingWorker worker = new SwingWorker<List<String>, Void>() {
 
             @Override
-            protected Object doInBackground() throws Exception {
-                return  dao.getOrcaVisit(patientId, startDate, endDate, descFlag, IInfoModel.ENTITY_MED_ORDER);
+            protected List<String> doInBackground() throws Exception {
+                return dao.getOrcaVisit(patientId, startDate, endDate, descFlag, IInfoModel.ENTITY_MED_ORDER);
             }
 
             @Override
-            @SuppressWarnings("unchecked")
             protected void done() {
                 try {
-                    List<String> result = (List<String>) get();
+                    List<String> result = get();
                     // combo boxに登録
                     cb_YMD.removeAllItems();
                     for (String item : result) {

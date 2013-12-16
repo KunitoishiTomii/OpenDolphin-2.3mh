@@ -37,11 +37,11 @@ public final class RpEditor extends AbstractStampEditor {
     private static final int BUNDLE_COLUMN = 5;
 
     private static final String[] SR_COLUMN_NAMES = 
-    {"種別", "コード", "名 称", "単位", "点数", "薬価基準", "有効期限"};
+    {"種別", "コード", "名 称", "単位", "薬価/点数", "薬価基準", "有効期限"};
     private static final String[] SR_METHOD_NAMES = 
-    {"getSlot", "getSrycd", "getName", "getTaniname", "getTenInteger","getYakkakjncd", "getYukoedymdStr"};
+    {"getSlot", "getSrycd", "getName", "getTaniname", "getTenFloat","getYakkakjncd", "getYukoedymdStr"};
         private static final Class[] SR_CLASSES = 
-    {String.class, String.class, String.class, String.class, Integer.class, String.class, String.class};
+    {String.class, String.class, String.class, String.class, Float.class, String.class, String.class};
     private static final int[] SR_COLUMN_WIDTH = {10, 50, 200, 10, 10, 10, 10};
     private static final int SR_NUM_ROWS = 1;
 
@@ -75,9 +75,6 @@ public final class RpEditor extends AbstractStampEditor {
     private static HashMap<String, List<TensuMaster>> adminCache = new HashMap<>();
 //masuda$
 
-    public RpEditor() {
-        initComponents();
-    }
 
     public RpEditor(String entity) {
         this(entity, true);
@@ -85,32 +82,11 @@ public final class RpEditor extends AbstractStampEditor {
 
     public RpEditor(String entity, boolean mode) {
         super(entity, mode);
-        initComponents();
-    }
-    
-    @Override
-    protected String[] getColumnNames() {
-        return COLUMN_NAMES;
-    }
-
-    @Override
-    protected String[] getColumnMethods() {
-        return METHOD_NAMES;
     }
 
     @Override
     protected int[] getColumnWidth() {
         return COLUMN_WIDTH;
-    }
-
-    @Override
-    protected String[] getSrColumnNames() {
-        return SR_COLUMN_NAMES;
-    }
-
-    @Override
-    protected String[] getSrColumnMethods() {
-        return SR_METHOD_NAMES;
     }
 
     @Override
@@ -145,12 +121,12 @@ public final class RpEditor extends AbstractStampEditor {
 
         // StampInfoを設定する
         ModuleInfoBean moduleInfo = retModel.getModuleInfoBean();
-        moduleInfo.setEntity(getEntity());
+        moduleInfo.setEntity(entity);
         moduleInfo.setStampRole(IInfoModel.ROLE_P);
 
         //　スタンプ名を設定する
         String stampName = view.getStampNameField().getText().trim();
-        if (!stampName.equals("")) {
+        if (!stampName.isEmpty()) {
             moduleInfo.setStampName(stampName);
         } else {
             moduleInfo.setStampName(DEFAULT_STAMP_NAME);
@@ -160,7 +136,7 @@ public final class RpEditor extends AbstractStampEditor {
     }
 
     @Override
-    public IInfoModel[] getValue() {
+    public ModuleModel[] getNewValue() {
 
         List<ModuleModel> retList = new ArrayList<>();
         List<MasterItem> items = tableModel.getDataProvider();
@@ -342,7 +318,16 @@ public final class RpEditor extends AbstractStampEditor {
     }
    
     @Override
-    public void setValue(final IInfoModel[] value) {
+     public void setValue(Object objValue) {
+         
+        // 連続して編集される場合があるのでテーブル内容等をクリアする
+        clear();
+        setOldValue(objValue);
+        if (!(objValue instanceof ModuleModel[])) {
+            return;
+        }
+        
+        final ModuleModel[] value = (ModuleModel[]) objValue;
         
         SwingUtilities.invokeLater(new Runnable() {
 
@@ -360,14 +345,12 @@ public final class RpEditor extends AbstractStampEditor {
                     return;
                 }
 
-                // 最初のスタンプからEntityを保存する
-                setEntity(stamps[0].getModuleInfoBean().getEntity());
                 // 最初のスタンプからスタンプ名を引き継ぐ
                 String stampName = stamps[0].getModuleInfoBean().getStampName();
                 boolean serialized = stamps[0].getModuleInfoBean().isSerialized();
                 if (!serialized && stampName.startsWith(FROM_EDITOR_STAMP_NAME)) {
                     stampName = DEFAULT_STAMP_NAME;
-                } else if (stampName.equals("")) {
+                } else if (stampName.isEmpty()) {
                     stampName = DEFAULT_STAMP_NAME;
                 }
                 view.getStampNameField().setText(stampName);
@@ -589,8 +572,7 @@ public final class RpEditor extends AbstractStampEditor {
 
         // 項目の受け入れ試験
         String test = tm.getSlot();
-
-        if (passPattern==null || (!passPattern.matcher(test).find())) {
+        if (passPattern == null || !passPattern.matcher(test).find()) {
             Toolkit.getDefaultToolkit().beep();
             return;
         }
@@ -599,20 +581,7 @@ public final class RpEditor extends AbstractStampEditor {
         MasterItem item = tensuToMasterItem(tm);
         
 //masuda^   採用薬の通常用量をセットする
-/*
-        // item が用法であった場合、テーブルのアイテムをスキャンし、外用薬があった場合は数量を1にする
-        if (item.getClassCode()==ClaimConst.ADMIN) {
-            List<MasterItem> list = tableModel.getDataProvider();
-            if (list!=null) {
-                for (MasterItem mi : list) {
-                    if (mi.getYkzKbn()!=null && mi.getYkzKbn().equals(ClaimConst.YKZ_KBN_GAIYO)) {
-                        item.setBundleNumber("1");
-                        break;
-                    }
-                }
-            }
-        }
-*/
+
         // 薬剤と用法以外ならスキップする
         if (!tm.getSrycd().matches(ClaimConst.REGEXP_COMMENT_MED)) {
             String inputNum;
@@ -665,7 +634,7 @@ public final class RpEditor extends AbstractStampEditor {
         
         // 医薬品名をスタンプ名の候補にする
         String name = view.getStampNameField().getText().trim();
-        if (name.equals("") || name.equals(DEFAULT_STAMP_NAME)) {
+        if (name.isEmpty() || name.equals(DEFAULT_STAMP_NAME)) {
             view.getStampNameField().setText(item.getName());
         }
 
@@ -688,7 +657,7 @@ public final class RpEditor extends AbstractStampEditor {
         view = new RpView();
 
         // Info Label
-        view.getInfoLabel().setText(this.getInfo());
+        view.getInfoLabel().setText(info);
 
         // セットテーブルを生成する
         tableModel = new ListTableModel<MasterItem>(COLUMN_NAMES, START_NUM_ROWS, METHOD_NAMES, null) {
@@ -739,7 +708,7 @@ public final class RpEditor extends AbstractStampEditor {
                 }
 
                 // null
-                if (value == null || value.equals("")) {
+                if (value == null || value.isEmpty()) {
                     boolean test = 
                             (col == ONEDAY_COLUMN
                             && (mItem.getClassCode() == ClaimConst.SYUGI || mItem.getClassCode() == ClaimConst.OTHER));
@@ -830,7 +799,7 @@ public final class RpEditor extends AbstractStampEditor {
                 JComboBox cb = (JComboBox)ae.getSource();
                 int index = cb.getSelectedIndex();
                 String regExp = ADMIN_CODE_REGEXP[index];
-                if (!regExp.equals("")) {
+                if (!regExp.isEmpty()) {
                     getUsage(regExp);
                 }
             }
@@ -1185,7 +1154,7 @@ public final class RpEditor extends AbstractStampEditor {
             tableModel.addAll(miList);
             // スタンプ名の設定
             String name = view.getStampNameField().getText().trim();
-            if (name.equals("") || name.equals(DEFAULT_STAMP_NAME)) {
+            if (name.isEmpty() || name.equals(DEFAULT_STAMP_NAME)) {
                 // スタンプ名はボタンに応じて定期・臨時にしておく
                 if (view.getRbTeiki().isSelected()) {
                     view.getStampNameField().setText(TEIKI);

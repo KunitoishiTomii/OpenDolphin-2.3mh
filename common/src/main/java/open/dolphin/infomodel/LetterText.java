@@ -1,6 +1,7 @@
 package open.dolphin.infomodel;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.io.Serializable;
 import javax.persistence.*;
 import org.hibernate.annotations.Type;
 
@@ -11,9 +12,7 @@ import org.hibernate.annotations.Type;
  */
 @Entity
 @Table(name = "d_letter_text")
-public class LetterText extends InfoModel {
-
-    private static final long serialVersionUID = 1L;
+public class LetterText implements Serializable {
 
     @JsonIgnore
     @Id

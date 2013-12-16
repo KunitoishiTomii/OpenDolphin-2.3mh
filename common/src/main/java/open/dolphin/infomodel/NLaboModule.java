@@ -2,6 +2,7 @@ package open.dolphin.infomodel;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.*;
@@ -13,9 +14,7 @@ import javax.persistence.*;
  */
 @Entity
 @Table(name = "d_nlabo_module")
-public class NLaboModule extends InfoModel {
-
-    private static final long serialVersionUID = 1L;
+public class NLaboModule implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -80,7 +79,7 @@ public class NLaboModule extends InfoModel {
             return false;
         }
         NLaboModule other = (NLaboModule) object;
-        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
+        if ((id == null && other.id != null) || (id != null && !id.equals(other.id))) {
             return false;
         }
         return true;
@@ -178,7 +177,7 @@ public class NLaboModule extends InfoModel {
     public void addItem(NLaboItem item) {
 
         if (this.items == null) {
-            this.items = new ArrayList<NLaboItem>();
+            this.items = new ArrayList<>();
         }
 
         this.items.add(item);

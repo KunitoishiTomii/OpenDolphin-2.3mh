@@ -11,7 +11,7 @@ import javax.persistence.*;
  */
 @Entity
 @Table(name = "d_diagnosis")
-public class RegisteredDiagnosisModel extends KarteEntryBean {
+public class RegisteredDiagnosisModel extends KarteEntryBean implements IStampModel {
     
     // 疾患名
     @Column(nullable=false)
@@ -83,9 +83,10 @@ public class RegisteredDiagnosisModel extends KarteEntryBean {
     }
     
     // スタンプ箱のエディタで使用
-    @JsonIgnore
     @Transient
+    @JsonIgnore
     private String stampId;
+    
     public void setStampId(String stampId) {
         this.stampId = stampId;
     }

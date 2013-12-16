@@ -163,6 +163,11 @@ public class JsonConverter {
             return obj;
         } catch (IOException ex) {
             processException(ex);
+        } finally {
+            try {
+                is.close();
+            } catch (IOException ex) {
+            }
         }
         return null;
     }
@@ -174,6 +179,11 @@ public class JsonConverter {
             return obj;
         } catch (IOException ex) {
             processException(ex);
+        } finally {
+            try {
+                is.close();
+            } catch (IOException ex) {
+            }
         }
         return null;
     }

@@ -1,10 +1,12 @@
 package open.dolphin.infomodel;
 
+import java.io.Serializable;
+
 /**
  *
  * @author Kazushi Minagawa, Digital Globe, Inc.
  */
-public class TensuMaster {
+public class TensuMaster implements Serializable {
 
     private Integer hospnum;
 
@@ -176,9 +178,9 @@ public class TensuMaster {
         return ten;
     }
     
-    // Integer返しだ！ by ドル沢
-    public Integer getTenInteger() {
-        return Integer.valueOf(ten);
+    // Float返しだ！ by ドル沢
+    public Float getTenFloat() {
+        return Float.valueOf(ten);
     }
 
     /**

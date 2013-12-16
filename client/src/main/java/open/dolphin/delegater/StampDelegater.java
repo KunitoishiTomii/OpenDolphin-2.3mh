@@ -33,7 +33,7 @@ public class StampDelegater extends BusinessDelegater {
     }
 
     private StampDelegater() {
-        stampCache = new HashMap<String, StampModel>();
+        stampCache = new HashMap<>();
     }
     
     /**
@@ -78,20 +78,17 @@ public class StampDelegater extends BusinessDelegater {
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-        UserStampTreeModel ret = (UserStampTreeModel) getConverter()
-                .fromJson(is, UserStampTreeModel.class);
+        TypeReference typeRef = new TypeReference<List<IStampTreeModel>>(){};
+        List<IStampTreeModel> treeList = (List<IStampTreeModel>) 
+                getConverter().fromJson(is, typeRef);
         
         response.close();
 
-        List<IStampTreeModel> treeList = new ArrayList<IStampTreeModel>();
-        List<IStampTreeModel> list = ret.getTreeList();
-
-        for (IStampTreeModel model : list) {
+        for (IStampTreeModel model : treeList) {
             try {
                 String treeXml = new String(model.getTreeBytes(), UTF8);
                 model.setTreeXml(treeXml);
                 model.setTreeBytes(null);
-                treeList.add(model);
             } catch (UnsupportedEncodingException ex) {
                 logger.warn(ex.getMessage());
             }
@@ -108,15 +105,14 @@ public class StampDelegater extends BusinessDelegater {
     public long saveAndPublishTree(StampTreeModel model, byte[] publishBytes) throws Exception {
         
         model.setTreeBytes(model.getTreeXml().getBytes(UTF8));
-
         PublishedTreeModel publishedModel = createPublishedTreeModel(model, publishBytes);
 
-        // interfaceはmarshallingできない
-        UserStampTreeModel treeModel = new UserStampTreeModel();
-        treeModel.setStampTreeList(Collections.singletonList(model));
-        treeModel.setPublishedList(Collections.singletonList(publishedModel));
+        List<IStampTreeModel> treeList = new ArrayList<>();
+        treeList.add(model);
+        treeList.add(publishedModel);
 
-        Entity entity = toJsonEntity(treeModel);
+        TypeReference typeRef = new TypeReference<List<IStampTreeModel>>(){};
+        Entity entity = toJsonEntity(treeList, typeRef);
 
         String path = RES_STAMP_TREE + "published";
 
@@ -154,15 +150,14 @@ public class StampDelegater extends BusinessDelegater {
     public int updatePublishedTree(StampTreeModel model, byte[] publishBytes) throws Exception {
         
         model.setTreeBytes(model.getTreeXml().getBytes(UTF8));
-
         PublishedTreeModel publishedModel = createPublishedTreeModel(model, publishBytes);
 
-        // interfaceはunmarshallingできない
-        UserStampTreeModel treeModel = new UserStampTreeModel();
-        treeModel.setStampTreeList(Collections.singletonList(model));
-        treeModel.setPublishedList(Collections.singletonList(publishedModel));
+        List<IStampTreeModel> treeList = new ArrayList<>();
+        treeList.add(model);
+        treeList.add(publishedModel);
 
-        Entity entity = toJsonEntity(treeModel);
+        TypeReference typeRef = new TypeReference<List<IStampTreeModel>>(){};
+        Entity entity = toJsonEntity(treeList, typeRef);
 
         String path = RES_STAMP_TREE + "published";
 
@@ -249,8 +244,9 @@ public class StampDelegater extends BusinessDelegater {
 
     public List<Long> subscribeTrees(List<SubscribedTreeModel> subscribeList) throws Exception {
         
-        Entity entity = toJsonEntity(subscribeList);
-
+        TypeReference typeRef = new TypeReference<List<SubscribedTreeModel>>(){};
+        Entity entity = toJsonEntity(subscribeList, typeRef);
+        
         String path = RES_STAMP_TREE + "subscribed";
 
         Response response = getWebTarget()
@@ -265,7 +261,7 @@ public class StampDelegater extends BusinessDelegater {
         response.close();
 
         String[] pks = entityStr.split(",");
-        List<Long> ret = new ArrayList<Long>(pks.length);
+        List<Long> ret = new ArrayList<>(pks.length);
         for (String str : pks) {
             ret.add(Long.valueOf(str));
         }
@@ -317,8 +313,8 @@ public class StampDelegater extends BusinessDelegater {
         for (StampModel model : list) {
             stampCache.put(model.getId(), model);
         }
-
-        Entity entity = toJsonEntity(list);
+        TypeReference typeRef = new TypeReference<List<StampModel>>(){};
+        Entity entity = toJsonEntity(list, typeRef);
         String path = RES_STAMP + "list";
 
         Response response = getWebTarget()
@@ -420,7 +416,7 @@ public class StampDelegater extends BusinessDelegater {
     public List<StampModel> getStamps(List<ModuleInfoBean> list) throws Exception {
         
         // キャッシュにあるか調べる
-        List<ModuleInfoBean> infosToGet = new ArrayList<ModuleInfoBean>();
+        List<ModuleInfoBean> infosToGet = new ArrayList<>();
         for (ModuleInfoBean info : list) {
             if (!stampCache.containsKey(info.getStampId())) {
                 infosToGet.add(info);
@@ -461,7 +457,7 @@ public class StampDelegater extends BusinessDelegater {
         }
         
         // キャッシュを参照してStampModel Listを返す
-        List<StampModel> ret = new ArrayList<StampModel>();
+        List<StampModel> ret = new ArrayList<>();
         for (ModuleInfoBean info : list) {
             ret.add(stampCache.get(info.getStampId()));
         }

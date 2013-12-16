@@ -12,7 +12,7 @@ import javax.persistence.*;
  */
 @Entity
 @Table(name="d_published_tree")
-public class PublishedTreeModel extends InfoModel implements IStampTreeModel {
+public class PublishedTreeModel implements IStampTreeModel {
     
     @Id
     private long id;

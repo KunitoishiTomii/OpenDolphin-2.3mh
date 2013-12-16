@@ -1,5 +1,6 @@
 package open.dolphin.infomodel;
 
+import java.io.Serializable;
 import javax.persistence.Embeddable;
 
 /**
@@ -8,7 +9,7 @@ import javax.persistence.Embeddable;
  * @author Kazushi Minagawa, Digital Globe, Inc.
  */
 @Embeddable
-public class DiagnosisOutcomeModel extends InfoModel {
+public class DiagnosisOutcomeModel implements Serializable {
     
     private String outcome;
     private String outcomeDesc;

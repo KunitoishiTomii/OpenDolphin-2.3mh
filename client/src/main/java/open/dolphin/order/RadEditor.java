@@ -32,12 +32,12 @@ public final class RadEditor extends AbstractStampEditor {
 
 //masuda^   yukoedymdを追加
     private static final String[] SR_COLUMN_NAMES = 
-    {"種別", "コード", "名 称", "単位", "点数", "診区", "病診", "入外", "社老", "有効期限"};
+    {"種別", "コード", "名 称", "単位", "点数/薬価", "診区", "病診", "入外", "社老", "有効期限"};
     private static final String[] SR_METHOD_NAMES = 
-    {"getSlot", "getSrycd", "getName", "getTaniname", "getTenInteger",
+    {"getSlot", "getSrycd", "getName", "getTaniname", "getTenFloat",
         "getSrysyukbn", "getHospsrykbn", "getNyugaitekkbn", "getRoutekkbn","getYukoedymdStr"};
     private static final Class[] SR_CLASSES = 
-    {String.class, String.class, String.class, String.class, Integer.class,
+    {String.class, String.class, String.class, String.class, Float.class,
         String.class, String.class, String.class, String.class, String.class};
     private static final int[] SR_COLUMN_WIDTH = {10, 50, 200, 10, 10, 10, 5, 5, 5, 10};
     private static final int SR_NUM_ROWS = 1;
@@ -50,9 +50,6 @@ public final class RadEditor extends AbstractStampEditor {
     private ListTableModel<TensuMaster> searchResultModel;
     private ListTableSorter<TensuMaster> sorter;
 
-    public RadEditor() {
-        initComponents();
-    }
 
     public RadEditor(String entity) {
         this(entity, true);
@@ -60,32 +57,11 @@ public final class RadEditor extends AbstractStampEditor {
 
     public RadEditor(String entity, boolean mode) {
         super(entity, mode);
-        initComponents();
-    }
-    
-    @Override
-    protected String[] getColumnNames() {
-        return COLUMN_NAMES;
-    }
-
-    @Override
-    protected String[] getColumnMethods() {
-        return METHOD_NAMES;
     }
 
     @Override
     protected int[] getColumnWidth() {
         return COLUMN_WIDTH;
-    }
-
-    @Override
-    protected String[] getSrColumnNames() {
-        return SR_COLUMN_NAMES;
-    }
-
-    @Override
-    protected String[] getSrColumnMethods() {
-        return SR_METHOD_NAMES;
     }
 
     @Override
@@ -114,17 +90,17 @@ public final class RadEditor extends AbstractStampEditor {
 
 //masuda
     @Override
-    public IInfoModel[] getValue() {
+    public ModuleModel[] getNewValue() {
 
         // 常に新規のモデルとして返す
         ModuleModel retModel = new ModuleModel();
         ModuleInfoBean moduleInfo = retModel.getModuleInfoBean();
-        moduleInfo.setEntity(getEntity());
+        moduleInfo.setEntity(entity);
         moduleInfo.setStampRole(IInfoModel.ROLE_P);
 
         // スタンプ名を設定する
         String text = view.getStampNameField().getText().trim();
-        if (!text.equals("")) {
+        if (!text.isEmpty()) {
             moduleInfo.setStampName(text);
         } else {
             moduleInfo.setStampName(DEFAULT_STAMP_NAME);
@@ -135,7 +111,7 @@ public final class RadEditor extends AbstractStampEditor {
 
         // Dolphin Appli で使用するオーダ名称を設定する
         // StampHolder で使用される（タブ名に相当）
-        bundle.setOrderName(getOrderName());
+        bundle.setOrderName(orderName);
 
         // セットテーブルのマスターアイテムを取得する
         List<MasterItem> itemList = tableModel.getDataProvider();
@@ -163,7 +139,7 @@ public final class RadEditor extends AbstractStampEditor {
         // 700 画像診断
         bundle.setClassCode(c007);
         // Claim007 固定の値
-        bundle.setClassCodeSystem(getClassCodeId());
+        bundle.setClassCodeSystem(CLASS_CODE_ID);
         // 上記テーブルで定義されている診療行為の名称
         bundle.setClassName(MMLTable.getClaimClassCodeName(c007));
         
@@ -176,20 +152,29 @@ public final class RadEditor extends AbstractStampEditor {
         
          // バンドルメモ復活
         String memo = view.getCommentField().getText();
-        if (!memo.equals("")) {
+        if (!memo.isEmpty()) {
             bundle.setMemo(memo);
         }       
 
-        retModel.setModel((InfoModel) bundle);
+        retModel.setModel(bundle);
 
         return new ModuleModel[]{retModel};
     }
 
     @Override
-     public void setValue(IInfoModel[] value) {
+     public void setValue(Object objValue) {
+         
+        // 連続して編集される場合があるのでテーブル内容等をクリアする
+        clear();
+        setOldValue(objValue);
+        if (!(objValue instanceof ModuleModel[])) {
+            return;
+        }
 
+        ModuleModel[] value = (ModuleModel[]) objValue;
+        
         // 共通の設定
-        BundleDolphin bundle = setInfoModels(value);
+        BundleDolphin bundle = setModuleModels(value);
         if (bundle == null) {
             return;
         }
@@ -258,28 +243,11 @@ public final class RadEditor extends AbstractStampEditor {
     }
 
     @Override
-    protected void search(final String text, boolean hitReturn) {
-
-        boolean pass = ipOk();
-
-        int searchType = getSearchType(text, hitReturn);
-
-        pass = pass && (searchType!=TT_INVALID);
-
-        if (!pass) {
-            return;
-        }
-
-        doSearch(text, searchType);
-    }
-
-    @Override
     protected void addSelectedTensu(TensuMaster tm) {
 
         // 項目の受け入れ試験
         String test = tm.getSlot();
-
-        if (passPattern==null || (!passPattern.matcher(test).find())) {
+        if (passPattern == null || !passPattern.matcher(test).find()) {
             Toolkit.getDefaultToolkit().beep();
             return;
         }
@@ -287,7 +255,7 @@ public final class RadEditor extends AbstractStampEditor {
         // 診療区分の受け入れ試験
         if (test.equals(ClaimConst.SLOT_SYUGI)) {
             String shinku = tm.getSrysyukbn();
-            if (shinkuPattern==null || (!shinkuPattern.matcher(shinku).find())) {
+            if (shinkuPattern == null || !shinkuPattern.matcher(shinku).find()) {
                 Toolkit.getDefaultToolkit().beep();
                 return;
             }
@@ -299,7 +267,7 @@ public final class RadEditor extends AbstractStampEditor {
         // 診療行為をスタンプ名に設定する
         if (item.getClassCode() == ClaimConst.SYUGI) {
             String name = view.getStampNameField().getText().trim();
-            if (name.equals("") || name.equals(DEFAULT_STAMP_NAME)) {
+            if (name.isEmpty() || name.equals(DEFAULT_STAMP_NAME)) {
                 view.getStampNameField().setText(item.getName());
             }
         }
@@ -319,7 +287,7 @@ public final class RadEditor extends AbstractStampEditor {
         view =  new RadView();
 
         // Info Label
-        view.getInfoLabel().setText(this.getInfo());
+        view.getInfoLabel().setText(info);
         
         //------------------------------------------
         // セットテーブルを生成する
@@ -367,7 +335,7 @@ public final class RadEditor extends AbstractStampEditor {
                 int code = mItem.getClassCode();
 
                 // null ok
-                if (value == null || value.equals("")) {
+                if (value == null || value.isEmpty()) {
 
                     boolean test = (code==ClaimConst.SYUGI ||
                                     code==ClaimConst.OTHER ||
@@ -516,5 +484,4 @@ public final class RadEditor extends AbstractStampEditor {
         // SearchTextFieldにフォーカスをあてる
         setFocusOnSearchTextFld();
     }
-
 }

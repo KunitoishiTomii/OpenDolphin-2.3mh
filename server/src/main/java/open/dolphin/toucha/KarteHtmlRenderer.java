@@ -67,7 +67,7 @@ public class KarteHtmlRenderer {
 
         for (ModuleModel bean : modules) {
             
-            bean.setModel((InfoModel) BeanUtils.xmlDecode(bean.getBeanBytes()));
+            bean.setModel((IModuleModel) BeanUtils.xmlDecode(bean.getBeanBytes()));
 
             String role = bean.getModuleInfoBean().getStampRole();
             if (role != null) {
@@ -143,13 +143,12 @@ public class KarteHtmlRenderer {
             writer.writeStartElement(TAG_DIV);
 
             XMLInputFactory factory = XMLInputFactory.newInstance();
-            StringReader stream = null;
             XMLStreamReader reader = null;
-            
-            try {
-                stream = new StringReader(xml);
+
+            try (StringReader stream = new StringReader(xml)) {
+
                 reader = factory.createXMLStreamReader(stream);
-                
+
                 while (reader.hasNext()) {
                     int eventType = reader.next();
                     switch (eventType) {
@@ -158,17 +157,14 @@ public class KarteHtmlRenderer {
                             break;
                     }
                 }
-                
+
             } catch (XMLStreamException ex) {
             } finally {
-                if (reader != null) {
-                    try {
+                try {
+                    if (reader != null) {
                         reader.close();
-                    } catch (XMLStreamException ex) {
                     }
-                }
-                if (stream != null) {
-                    stream.close();
+                } catch (XMLStreamException ex) {
                 }
             }
         }

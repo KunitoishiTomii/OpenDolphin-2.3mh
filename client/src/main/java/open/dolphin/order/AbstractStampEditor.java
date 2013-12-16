@@ -8,7 +8,6 @@ import java.beans.PropertyChangeSupport;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.regex.Pattern;
@@ -37,165 +36,180 @@ import open.dolphin.table.ListTableSorter;
  */
 public abstract class AbstractStampEditor implements StampEditorConst {
     
+    // このエディタのspecs
+    // エンティティ
+    protected String entity;
     // ドルフィンのオーダ履歴用の名前
     protected String orderName;
-
+    // 情報
+    protected String info;
+    // 暗黙classCode
+    protected String implied007;
     // ClaimBundle に設定する 診療行為区分 400,500,600 .. etc
     protected String classCode;
-
-    // 診療行為区分定義のテーブルID == Claim007
-    protected String classCodeId    = CLAIM_007;
-
-    // ClaimItem (項目) の種別を定義しているテーブルID = Claim003
-    protected String subclassCodeId = CLAIM_003;
-
-    // このエディタのエンティティ
-    protected String entity;
-    
-    // このエディタで組合わせが可能な点数マスタ項目の正規表現
+    // エディタで組合わせが可能な点数マスタ項目の正規表現
     protected Pattern passPattern;
-
-    // このエディタの診区正規表現パターン
-    protected String shinkuRegExp;
+    // エディタの診区正規表現パターン
     protected Pattern shinkuPattern;
-
-    // このエディタの情報
-    private String info;
-
-    protected String implied007;
-
+    
+    // GUI
     protected JTextField searchTextField;
-
     protected JTextField countField;
 
+    // StampEditor から起動された時 true,  StampMaker から起動された時は false
+    private boolean fromStampEditor;
+    // 入院フラグ
+    private boolean isAdmission;
+
+    // 編集元
+    private Object oldValue;
+    // チャート
+    private Chart chart;
+    
     // 通知用の束縛サポート
     protected PropertyChangeSupport boundSupport;
-
-    // StampEditor から起動された時 true
-    // StampMaker から起動された時は false
-    private boolean fromStampEditor;
     
-    private boolean isAdmission;
+    public final void addPropertyChangeListener(String prop, PropertyChangeListener listener) {
+        if (boundSupport == null) {
+            boundSupport = new PropertyChangeSupport(this);
+        }
+        boundSupport.addPropertyChangeListener(prop, listener);
+    }
+
+    public final void remopvePropertyChangeListener(String prop, PropertyChangeListener listener) {
+        boundSupport.removePropertyChangeListener(prop, listener);
+    }
+    
     
     // 抽象メソッド
     public abstract JPanel getView();
 
-    protected abstract void search(final String text, boolean hitRet);
-
     protected abstract void initComponents();
-    
+
     protected abstract void checkValidation();
 
-    /**
-     * マスター検索で選択された点数オブジェクトをセットテーブルへ追加する。
-     * @param tm 点数マスタ
-     */
     protected abstract void addSelectedTensu(TensuMaster tm);
-    
-    
-    /**
-     * Entity からマスタ検索に必要な正規表現を生成する。
-     * @param entity エンティティ
-     * @return 正規表現を格納した Hashtable
-     */
-    private HashMap<String, String> getEditorSpec(String entity) {
 
-        HashMap<String, String> ht = new HashMap<>(10, 0.75f);
+    protected abstract int[] getColumnWidth();
+
+    protected abstract int[] getSrColumnWidth();
+
+    protected abstract void setValue(Object objValue);
+
+    protected abstract Object getNewValue();
+    
+    
+    // Constructor
+    public AbstractStampEditor(String entity) {
+        this(entity, true);
+    }
+
+    public AbstractStampEditor(String entity, boolean mode) {
+        setupEditorSpec(entity);
+        setFromStampEditor(mode);
+        AbstractStampEditor.this.initComponents();
+    }
+
+    // entityに応じたEditorSpecを作成する
+    private void setupEditorSpec(String entity) {
         
         if (entity == null) {
-            return ht;  // TODO
+            return;
         }
-
+        
         String passRegExp = null;
+        String shinkuRegExp = null;
+        
+        this.entity = entity;
         
         switch (entity) {
             case IInfoModel.ENTITY_BASE_CHARGE_ORDER:
                 orderName = NAME_BASE_CHARGE;
+                info = INFO_BASE_CHARGE;
                 passRegExp = REG_BASE_CHARGE;
                 shinkuRegExp = SHIN_BASE_CHARGE;
-                info = INFO_BASE_CHARGE;
                 break;
                 
             case IInfoModel.ENTITY_INSTRACTION_CHARGE_ORDER:
                 orderName = NAME_INSTRACTION_CHARGE;
+                info = INFO_INSTRACTION_CHARGE;
                 passRegExp = REG_INSTRACTION_CHARGE;
                 shinkuRegExp = SHIN_INSTRACTION_CHARGE;
-                info = INFO_INSTRACTION_CHARGE;
                 break;
                 
             case IInfoModel.ENTITY_MED_ORDER:
                 orderName = NAME_MED_ORDER;
-                passRegExp = REG_MED_ORDER;                     // 薬剤、用法、材料、その他(保険適用外医薬品）
                 info = INFO_MED_ORDER;
+                passRegExp = REG_MED_ORDER;            // 薬剤、用法、材料、その他(保険適用外医薬品）
                 break;
                 
             case IInfoModel.ENTITY_INJECTION_ORDER:
                 orderName = NAME_INJECTION_ORDER;
-                passRegExp = REG_INJECTION_ORDER;               // 手技、その他、注射薬、材料
-                shinkuRegExp = SHIN_INJECTION_ORDER;
                 info = INFO_INJECTION_ORDER;
+                passRegExp = REG_INJECTION_ORDER;      // 手技、その他、注射薬、材料
+                shinkuRegExp = SHIN_INJECTION_ORDER;
                 break;
                 
             case IInfoModel.ENTITY_TREATMENT:
                 orderName = NAME_TREATMENT;
-                passRegExp = REG_TREATMENT;                     // 手技、その他、薬剤、材料
-                shinkuRegExp = SHIN_TREATMENT;
                 implied007 = IMPLIED_TREATMENT;
                 info = INFO_TREATMENT;
+                passRegExp = REG_TREATMENT;            // 手技、その他、薬剤、材料
+                shinkuRegExp = SHIN_TREATMENT;
                 break;
                 
             case IInfoModel.ENTITY_SURGERY_ORDER:
                 orderName = NAME_SURGERY_ORDER;
-                passRegExp = REG_SURGERY_ORDER;                 // 手技、その他、薬剤、材料
-                shinkuRegExp = SHIN_SURGERY_ORDER;
                 info = INFO_SURGERY_ORDER;
+                passRegExp = REG_SURGERY_ORDER;        // 手技、その他、薬剤、材料
+                shinkuRegExp = SHIN_SURGERY_ORDER;
                 break;
                 
             case IInfoModel.ENTITY_BACTERIA_ORDER:
                 orderName = NAME_BACTERIA_ORDER;
-                passRegExp = REG_BACTERIA_ORDER;                // 手技、その他、薬剤、材料
-                shinkuRegExp = SHIN_BACTERIA_ORDER;
                 implied007 = IMPLIED_BACTERIA_ORDER;
                 info = INFO_BACTERIA_ORDER;
+                passRegExp = REG_BACTERIA_ORDER;       // 手技、その他、薬剤、材料
+                shinkuRegExp = SHIN_BACTERIA_ORDER;
                 break;
                 
             case IInfoModel.ENTITY_PHYSIOLOGY_ORDER:
                 orderName = NAME_PHYSIOLOGY_ORDER;
-                passRegExp = REG_PHYSIOLOGY_ORDER;              // 手技、その他、薬剤、材料
-                shinkuRegExp = SHIN_PHYSIOLOGY_ORDER;
                 implied007 = IMPLIED_PHYSIOLOGY_ORDER;
                 info = INFO_PHYSIOLOGY_ORDER;
+                passRegExp = REG_PHYSIOLOGY_ORDER;     // 手技、その他、薬剤、材料
+                shinkuRegExp = SHIN_PHYSIOLOGY_ORDER;
                 break;
                 
             case IInfoModel.ENTITY_LABO_TEST:
                 orderName = NAME_LABO_TEST;
-                passRegExp = REG_LABO_TEST;                     // 手技、その他、薬剤、材料
-                shinkuRegExp = SHIN_LABO_TEST;
                 implied007 = IMPLIED_LABO_TEST;
                 info = INFO_LABO_TEST;
+                passRegExp = REG_LABO_TEST;            // 手技、その他、薬剤、材料
+                shinkuRegExp = SHIN_LABO_TEST;
                 break;
                 
             case IInfoModel.ENTITY_RADIOLOGY_ORDER:
                 orderName = NAME_RADIOLOGY_ORDER;
-                passRegExp = REG_RADIOLOGY_ORDER;               // 手技、その他、薬剤、材料、部位
-                shinkuRegExp = SHIN_RADIOLOGY_ORDER;
                 implied007 = IMPLIED_RADIOLOGY_ORDER;
                 info = INFO_RADIOLOGY_ORDER;
+                passRegExp = REG_RADIOLOGY_ORDER;      // 手技、その他、薬剤、材料、部位
+                shinkuRegExp = SHIN_RADIOLOGY_ORDER;
                 break;
                 
             case IInfoModel.ENTITY_OTHER_ORDER:
                 orderName = NAME_OTHER_ORDER;
-                passRegExp = REG_OTHER_ORDER;                   // 手技、その他、薬剤、材料
-                shinkuRegExp = SHIN_OTHER_ORDER;
                 implied007 = IMPLIED_OTHER_ORDER;
                 info = INFO_OTHER_ORDER;
+                passRegExp = REG_OTHER_ORDER;          // 手技、その他、薬剤、材料
+                shinkuRegExp = SHIN_OTHER_ORDER;
                 break;
                 
             case IInfoModel.ENTITY_GENERAL_ORDER:
                 orderName = NAME_GENERAL_ORDER;
-                passRegExp = REG_GENERAL_ORDER;                 // 手技、その他、薬剤、材料、用法、部位
-                shinkuRegExp = SHIN_GENERAL_ORDER;
                 info = INFO_GENERAL_ORDER;
+                passRegExp = REG_GENERAL_ORDER;        // 手技、その他、薬剤、材料、用法、部位
+                shinkuRegExp = SHIN_GENERAL_ORDER;
                 break;
                 
             case IInfoModel.ENTITY_DIAGNOSIS:
@@ -204,56 +218,38 @@ public abstract class AbstractStampEditor implements StampEditorConst {
                 break;
         }
 
-        ht.put(KEY_ORDER_NAME, orderName);
-
         if (passRegExp != null) {
-            ht.put(KEY_PASS_REGEXP, passRegExp);
+            passPattern = Pattern.compile(passRegExp);
         }
-
         if (shinkuRegExp != null) {
-            ht.put(KEY_SHIN_REGEXP, shinkuRegExp);
+            shinkuPattern = Pattern.compile(shinkuRegExp);
         }
-
-        if (info != null) {
-            ht.put(KEY_INFO, info);
-        }
-
-        if (implied007 != null) {
-            ht.put(KEY_IMPLIED, implied007);
-        }
-
-        return ht;
     }
-
+    
     private boolean isCode(String text) {
 
-        if (text == null) {
+        if (text == null || text.isEmpty()) {
             return false;
         }
 
-        boolean maybe = true;
-
-        for (int i = 0; i < text.length(); i++) {
+        int len = text.length();
+        for (int i = 0; i < len; i++) {
             char c = text.charAt(i);
-            int type = Character.getType(c);
-            if (type != Character.DECIMAL_DIGIT_NUMBER) {
-                maybe = false;
-                break;
+            if (Character.getType(c) != Character.DECIMAL_DIGIT_NUMBER) {
+                return false;
             }
         }
-        return maybe;
+        return true;
     }
 
     //-----------------------------------------
     // 点数で検索する場合の入力 =  ///11 etc
     //-----------------------------------------
     private boolean isTensuSearch(String text) {
-        
-        boolean maybe = (
-                text != null 
-                && text.length() > 3 
-                && (text.startsWith(TENSU_SEARCH_HALF) || text.startsWith(TENSU_SEARCH_FULL)) );
-        return maybe;
+
+        return text != null && text.length() > 3
+                && (text.startsWith(TENSU_SEARCH_HALF)
+                || text.startsWith(TENSU_SEARCH_FULL));
     }
 
     //---------------------------------------
@@ -261,52 +257,38 @@ public abstract class AbstractStampEditor implements StampEditorConst {
     //---------------------------------------
     protected final boolean isNameEditableComment(String code) {
 
-        if (code == null) {
-            return false;
-        }
-
-        boolean ed = (code.startsWith(EDITABLE_COMMENT_81)
+        return code != null
+                && (code.startsWith(EDITABLE_COMMENT_81)
                 || code.startsWith(EDITABLE_COMMENT_0081)
                 || code.startsWith(EDITABLE_COMMENT_83)
                 || code.startsWith(EDITABLE_COMMENT_0083)
                 || code.startsWith(EDITABLE_COMMENT_85)
                 || code.startsWith(EDITABLE_COMMENT_0085));
-
-        return ed;
     }
 
     //---------------------------------------
     protected final boolean isNumberEditableComment(String code) {
 
-        if (code == null) {
-            return false;
-        }
-
-        boolean ed = (code.startsWith(EDITABLE_COMMENT_84)
+        return code != null
+                && (code.startsWith(EDITABLE_COMMENT_84)
                 || code.startsWith(EDITABLE_COMMENT_0084));
-
-        return ed;
     }
     
     protected final boolean isEditableNumber(String code) {
-        
-        if (code == null) {
-            return false;
-        }
-        
-        boolean ret = code.startsWith(ClaimConst.YAKUZAI_CODE_START)
+
+        return code != null
+                && (code.startsWith(ClaimConst.YAKUZAI_CODE_START)
                 || code.startsWith(ClaimConst.ZAIRYO_CODE_START)
                 || code.startsWith(EDITABLE_COMMENT_84)
                 || code.startsWith(EDITABLE_COMMENT_0084)
                 || code.startsWith(ClaimConst.SYUGI_CODE_START)
-                || code.startsWith(ClaimConst.ZAIRYO_OTHER_START);
-        
-        return ret;
+                || code.startsWith(ClaimConst.ZAIRYO_OTHER_START));
     }
     
     protected final boolean hasFixedName(String code) {
-        return code != null &&
-                code.matches(REGEXP_COMMENT_83);
+        
+        return code != null
+                && code.matches(REGEXP_COMMENT_83);
     }
     
     //-----------------------------------------
@@ -314,37 +296,32 @@ public abstract class AbstractStampEditor implements StampEditorConst {
     //-----------------------------------------
     protected final int getSearchType(String test, boolean hitReturn) {
 
-        if (test == null || test.equals("")) {
+        if (test == null || test.isEmpty()) {
             return TT_INVALID;
         }
 
         // *
-        if (test.equals(ASTERISK_HALF) || test.equals(ASTERISK_FULL)) {
+        if (ASTERISK_HALF.equals(test) || ASTERISK_FULL.equals(test)) {
             return TT_LIST_TECH;
         }
 
         //  ///12
         if (test.startsWith(TENSU_SEARCH_HALF) || test.startsWith(TENSU_SEARCH_FULL)) {
-
-            if (isTensuSearch(test) && hitReturn) {
-                return TT_TENSU_SEARCH;
-            } else {
-                return TT_INVALID;
-            }
+            return isTensuSearch(test) && hitReturn
+                    ? TT_TENSU_SEARCH : TT_INVALID;
         }
 
         // 81,82,83,84,85
-        if ( (test.startsWith(COMMENT_SEARCH_HALF) || test.startsWith(COMMENT_SEARCH_FULL)) && test.length() >1 ) {
-//            if (test.startsWith(COMMENT_85_SEARCH_HALF) || test.startsWith(COMMENT_85_SEARCH_FULL)) {
-//                return TT_85_SEARCH;
-//            } else {
-//                return TT_CODE_SEARCH;
-//            }
+        if (test.length() > 1
+                && (test.startsWith(COMMENT_SEARCH_HALF) 
+                || test.startsWith(COMMENT_SEARCH_FULL))) {
+
             return TT_CODE_SEARCH;
         }
 
         // .140 診療行為区分検索
-        if ((test.startsWith(".") || test.startsWith("．")) && test.length()==4) {
+        if (test.length() == 4
+                && (test.startsWith(".") || test.startsWith("．"))) {
             return TT_SHINKU_SERACH;
         }
 
@@ -370,8 +347,11 @@ public abstract class AbstractStampEditor implements StampEditorConst {
 
     // 注射診区コード
     protected final boolean isInjection(String code) {
-        return code != null &&
-                (code.startsWith("31") || code.startsWith("32") || code.startsWith("33"));
+
+        return code != null
+                && (code.startsWith("31")
+                || code.startsWith("32")
+                || code.startsWith("33"));
     }
 
     public void dispose() {
@@ -503,9 +483,9 @@ public abstract class AbstractStampEditor implements StampEditorConst {
             if (ret.getUnit()!=null) {
                 ret.setNumber(DEFAULT_NUMBER);
             }
-//masuda^   DataKbnを保存
+//masuda    DataKbnを保存
             ret.setDataKbn(tm.getDataKbn());
-//masuda$
+
         } else if (Pattern.compile(ClaimConst.SLOT_MEDICINE).matcher(test).find()) {
 
             // 薬剤
@@ -539,7 +519,7 @@ public abstract class AbstractStampEditor implements StampEditorConst {
             //}
 
             // zero -> null 
-            inputNum = (inputNum==null || inputNum.equals("") || inputNum.equals("0")) ? null : inputNum;
+            inputNum = (inputNum==null || inputNum.isEmpty() || inputNum.equals("0")) ? null : inputNum;
             ret.setNumber(inputNum);
 
 
@@ -548,10 +528,9 @@ public abstract class AbstractStampEditor implements StampEditorConst {
             ret.setClassCode(ClaimConst.ZAIRYO);
             ret.setNumber(DEFAULT_NUMBER);
             
-//masuda^   コメントコードはClaimConst.OTHERにしておく
+//masuda    コメントコードはClaimConst.OTHERにしておく
         } else if(ret.getCode().matches(ClaimConst.REGEXP_COMMENT_MED)){
             ret.setClassCode(ClaimConst.OTHER);
-//masuda$
             
         } else if (test.equals(ClaimConst.SLOT_YOHO)) {
             // 用法
@@ -583,7 +562,7 @@ public abstract class AbstractStampEditor implements StampEditorConst {
 
         test = test.trim();
 
-        return test.equals("") ? null : test;
+        return test.isEmpty() ? null : test;
     }
 
     protected final String getClaim007Code(String code) {
@@ -604,15 +583,7 @@ public abstract class AbstractStampEditor implements StampEditorConst {
                 return code;
         }
     }
-/*
-    protected final String getSuspectedC007(String srycd, String defaultC007) {
-        try {
-            return srycd.substring(1, 4);
-        } catch (Exception ex) {
-            return defaultC007;
-        }
-    }
-*/
+
     /**
      * Returns Claim004 Number Code 21 材料個数 when subclassCode = 1 11
      * 薬剤投与量（１回）when subclassCode = 2
@@ -650,7 +621,7 @@ public abstract class AbstractStampEditor implements StampEditorConst {
 
         // CLAIM(Master) Address が設定されていない場合に警告する
         String address = Project.getString(Project.CLAIM_ADDRESS);
-        if (address == null || address.equals("")) {
+        if (address == null || address.isEmpty()) {
             alertIpAddress();
             return false;
         }
@@ -659,110 +630,10 @@ public abstract class AbstractStampEditor implements StampEditorConst {
     }
 
     
-    public final void addPropertyChangeListener(String prop, PropertyChangeListener listener) {
-        if (boundSupport == null) {
-            boundSupport = new PropertyChangeSupport(this);
-        }
-        boundSupport.addPropertyChangeListener(prop, listener);
-    }
-
-
-    public final void remopvePropertyChangeListener(String prop, PropertyChangeListener listener) {
-        boundSupport.removePropertyChangeListener(prop, listener);
-    }
-
-    /**
-     * @return the orderName
-     */
     public final String getOrderName() {
         return orderName;
     }
-
-    /**
-     * @param orderName the orderName to set
-     */
-    public final void setOrderName(String orderName) {
-        this.orderName = orderName;
-    }
-
-    /**
-     * @return the classCode
-     */
-    public final String getClassCode() {
-        return classCode;
-    }
-
-    /**
-     * @param classCode the classCode to set
-     */
-    public final void setClassCode(String classCode) {
-        this.classCode = classCode;
-    }
-
-    /**
-     * @return the classCodeId
-     */
-    public final String getClassCodeId() {
-        return classCodeId;
-    }
-
-    /**
-     * @param classCodeId the classCodeId to set
-     */
-    public final void setClassCodeId(String classCodeId) {
-        this.classCodeId = classCodeId;
-    }
-
-    /**
-     * @return the subclassCodeId
-     */
-    public final String getSubclassCodeId() {
-        return subclassCodeId;
-    }
-
-    /**
-     * @param subclassCodeId the subclassCodeId to set
-     */
-    public final void setSubclassCodeId(String subclassCodeId) {
-        this.subclassCodeId = subclassCodeId;
-    }
-
-    /**
-     * @return the entity
-     */
-    public final String getEntity() {
-        return entity;
-    }
-
-    /**
-     * @param entity the entity to set
-     */
-    public final void setEntity(String entity) {
-        this.entity = entity;
-    }
-
-    /**
-     * @return the info
-     */
-    public final String getInfo() {
-        return info;
-    }
-
-    /**
-     * @param info the info to set
-     */
-    public final void setInfo(String info) {
-        this.info = info;
-    }
-
-    public final String getImplied007() {
-        return implied007;
-    }
-
-    public final void setImplied007(String default007) {
-        this.implied007 = default007;
-    }
-
+    
     /**
      * @return the fromStampEditor
      */
@@ -777,72 +648,11 @@ public abstract class AbstractStampEditor implements StampEditorConst {
         this.fromStampEditor = fromStampEditor;
     }
 
-    
-    public AbstractStampEditor() {
-    }
-
-    public AbstractStampEditor(String entity) {
-        this(entity, true);
-    }
-
-    public AbstractStampEditor(String entity, boolean mode) {
-
-        HashMap<String, String> ht = getEditorSpec(entity);
-
-        this.setEntity(entity);
-        this.setOrderName(ht.get(KEY_ORDER_NAME));
-
-        if (ht.get(KEY_PASS_REGEXP) != null) {
-            passPattern = Pattern.compile(ht.get(KEY_PASS_REGEXP));
-        }
-
-        if (ht.get(KEY_SHIN_REGEXP) != null) {
-            shinkuRegExp = ht.get(KEY_SHIN_REGEXP);
-            shinkuPattern = Pattern.compile(ht.get(KEY_SHIN_REGEXP));
-        }
-
-        if (ht.get(KEY_INFO) != null) {
-            this.setInfo(ht.get(KEY_INFO));
-        }
-
-        if (ht.get(KEY_IMPLIED) != null) {
-            this.setImplied007(ht.get(KEY_IMPLIED));
-        }
-
-        setFromStampEditor(mode);
-    }
-
-//masuda^    
-    private static final String RT = "masterSearch.realTime";
-    private static final String PT = "masterSearch.partialMatch";
-
-    protected static final String REGEXP_COMMENT_ALL = "^8[1-4]|^008[1-6]"; // コメントコード全て
-    protected static final String REGEXP_COMMENT_81  = "^81|^008[156]";     // 名称編集可能
-    protected static final String REGEXP_COMMENT_83  = "^83|^0083";         // 固定文字あり、名称編集可
-    protected static final String REGEXP_COMMENT_84  = "^84|^0084";         // 数量入力必要
-    protected static final String REGEXP_RAD_BUI     = "^002";  // 放射線部位
-    protected static final String REGEXP_RAD_ZAIRYO  = "^7";    // 放射線材料（フィルムなど）
-    protected static final String REGEXP_RAD_SHUGI   = "^17";   // 放射線手技
-    protected static final String REGEXP_LABO        = "^16";   // 検体検査
-    
-    protected abstract String[] getColumnNames();
-    protected abstract String[] getColumnMethods();
-    protected abstract int[] getColumnWidth();
-    protected abstract String[] getSrColumnNames();
-    protected abstract String[] getSrColumnMethods();
-    protected abstract int[] getSrColumnWidth();
-    
-    public abstract IInfoModel[] getValue();
-    public abstract void setValue(IInfoModel[] stamps);
-
-    private IInfoModel[] oldValue;
-    private Chart chart;
-    
-    protected final void setOldValue(IInfoModel[] oldValue) {
+    protected final void setOldValue(Object oldValue) {
         this.oldValue = oldValue;
     }
     
-    protected final IInfoModel[] getOldValue() {
+    protected final Object getOldValue() {
         return oldValue;
     }
 
@@ -850,7 +660,6 @@ public abstract class AbstractStampEditor implements StampEditorConst {
     public void setContext(Chart chart){
         this.chart = chart;
         setAdmissionFlg();
-        
     }
     
     public final Chart getContext() {
@@ -874,6 +683,25 @@ public abstract class AbstractStampEditor implements StampEditorConst {
         return isAdmission;
     }
     
+    protected BlockGlass getBlockGlass() {
+        
+        // 親がJFrameのときとJDialogのときがある
+        BlockGlass blockGlass = new BlockGlass();
+
+        Window parent = SwingUtilities.getWindowAncestor(getView());
+        if (parent instanceof JFrame) {
+            JFrame frame = (JFrame) parent;
+            frame.setGlassPane(blockGlass);
+            blockGlass.setSize(frame.getSize());
+        } else if (parent instanceof JDialog) {
+            JDialog dialog = (JDialog) parent;
+            dialog.setGlassPane(blockGlass);
+            blockGlass.setSize(dialog.getSize());
+        }
+        
+        return blockGlass;
+    }
+
     // 共通のコンポーネントをまとめて設定する
     protected final void setupOrderComponents() {
       
@@ -893,6 +721,7 @@ public abstract class AbstractStampEditor implements StampEditorConst {
         setTable.setRowSelectionAllowed(true);
         ListSelectionModel m = setTable.getSelectionModel();
         m.addListSelectionListener(new ListSelectionListener() {
+            
             @Override
             public void valueChanged(ListSelectionEvent e) {
                 if (e.getValueIsAdjusting() == false) {
@@ -994,9 +823,8 @@ public abstract class AbstractStampEditor implements StampEditorConst {
             @Override
             public void actionPerformed(ActionEvent e) {
                 search(view.getSearchTextField().getText().trim(), true);
-//masuda^   検索後は全選択状態にする
+//masuda    検索後は全選択状態にする
                 searchTextField.selectAll();
-//masuda$
             }
         });
         searchTextField.addFocusListener(AutoKanjiListener.getInstance());
@@ -1031,7 +859,7 @@ public abstract class AbstractStampEditor implements StampEditorConst {
         view.getOkCntBtn().addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                boundSupport.firePropertyChange(VALUE_PROP, getOldValue(), getValue());
+                fireNewValue();
                 clear();
             }
         });
@@ -1041,7 +869,7 @@ public abstract class AbstractStampEditor implements StampEditorConst {
         view.getOkBtn().addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                boundSupport.firePropertyChange(VALUE_PROP, getOldValue(), getValue());
+                fireNewValue();
                 dispose();
                 boundSupport.firePropertyChange(EDIT_END_PROP, false, true);
             }
@@ -1071,6 +899,10 @@ public abstract class AbstractStampEditor implements StampEditorConst {
             }
         });
     }
+    
+    private void fireNewValue() {
+        boundSupport.firePropertyChange(VALUE_PROP, oldValue, getNewValue());
+    }
 
     protected void clear() {
         
@@ -1081,7 +913,22 @@ public abstract class AbstractStampEditor implements StampEditorConst {
         checkValidation();
     }
     
-    // 検索ルーチンを共通に
+    // 検索ルーチンを共通に。RpEditorとDiseaseEditor, TextStampEditorはOverrideしている
+    protected void  search(final String text, boolean hitReturn) {
+
+        boolean pass = ipOk();
+
+        int searchType = getSearchType(text, hitReturn);
+
+        pass = pass && (searchType != TT_INVALID);
+
+        if (!pass) {
+            return;
+        }
+
+        doSearch(text, searchType);
+    }
+    
     protected final void doSearch(final String text, final int searchType) {
    
         // 件数をゼロにしておく
@@ -1204,12 +1051,9 @@ public abstract class AbstractStampEditor implements StampEditorConst {
     }
     
     // 編集対象スタンプからスタンプ名などを設定する
-    protected BundleDolphin setInfoModels(IInfoModel[] value){
+    protected BundleDolphin setModuleModels(ModuleModel[] value){
 
-        // 連続して編集される場合があるのでテーブル内容等をクリアする
-        clear();        
-        if (value == null || value.length == 0 
-                || !(value instanceof IInfoModel[])) {
+        if (value == null || value.length == 0) {
             return null;
         }
 
@@ -1220,7 +1064,7 @@ public abstract class AbstractStampEditor implements StampEditorConst {
         }
 
         // Entityを保存する
-        setEntity(target.getModuleInfoBean().getEntity());
+        entity = target.getModuleInfoBean().getEntity();
 
         // Stamp 名と表示形式を設定する
         String stampName = target.getModuleInfoBean().getStampName();
@@ -1256,33 +1100,18 @@ public abstract class AbstractStampEditor implements StampEditorConst {
             getSetTableModel().addObject(claimToMasterItem(item));
         }
         
-        // 編集元を保存する
-        setOldValue(value);
-        
         return bundle;
     };
 
     protected void updateMasterItems (final List<MasterItem> list){
 
-        final AbstractOrderView view = (AbstractOrderView) getView();
+        final AbstractOrderView view = getOrderView();
         // ButtonControl
         view.getClearBtn().setEnabled(false);
         view.getOkCntBtn().setEnabled(false);
         view.getOkBtn().setEnabled(false);
 
-        final BlockGlass blockGlass = new BlockGlass();
-        Window parent = SwingUtilities.getWindowAncestor(view);
-        // 親がJFrameのときとJDialogのときがある
-        if (parent instanceof JFrame) {
-            JFrame frame = (JFrame) parent;
-            frame.setGlassPane(blockGlass);
-            blockGlass.setSize(frame.getSize());
-        } else if (parent instanceof JDialog) {
-            JDialog dialog = (JDialog) parent;
-            dialog.setGlassPane(blockGlass);
-            blockGlass.setSize(dialog.getSize());
-        }
-
+        final BlockGlass blockGlass = getBlockGlass();
         final SqlMiscDao dao2 = SqlMiscDao.getInstance();
 
         SwingWorker worker = new SwingWorker<List<TensuMaster>, Void>() {
@@ -1333,6 +1162,7 @@ public abstract class AbstractStampEditor implements StampEditorConst {
     private AbstractOrderView getOrderView() {
         return (AbstractOrderView) getView();
     }
+    
     protected ListTableModel<MasterItem> getSetTableModel() {
         return (ListTableModel<MasterItem>) getOrderView().getSetTable().getModel();
     }

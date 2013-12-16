@@ -83,35 +83,17 @@ public class EditorSetPanel extends JPanel implements PropertyChangeListener, Tr
     private StampTreeNode selectedNode;
     private boolean isImport;
     
-//masuda^   複数スタンプ
-    // エディタで編集された Stamp
-    private IInfoModel[] editorValue;
-//masuda$
-    
     // 上記編集値（束縛属性）をStampBoxへ通知するサポート
     private final PropertyChangeSupport boundSupport = new PropertyChangeSupport(this);
-    
-    
-    /**
-     * 編集したスタンプオブジェクトを返す。
-     * @return 編集したスタンプオブジェクト
-     */
-    public IInfoModel[] getEditorValue() {
-        return editorValue;
-    }
+
     
     /**
      * 編集値をセットする。この属性は束縛プロパティであり、リスナ（StampBoxPlugin）へ通知される。
-     * @param value 編集されたスタンプ
+     * @param newValue 編集されたスタンプ
      */
-    public void setEditorValue(IInfoModel[] value) {
+    public void fireEditorValue(Object newValue) {
         isImport = false;
-        editorValue = value;
-//masuda^   スタンプ新規・置換制御のためoldValueも返す
-        //boundSupport.firePropertyChange(EditorSetPanel.EDITOR_VALUE_PROP, null, editorValue);
-        IInfoModel[] oldValue = curEditor.getOldValue();
-        boundSupport.firePropertyChange(EditorSetPanel.EDITOR_VALUE_PROP, oldValue, editorValue);
-//masuda$
+        boundSupport.firePropertyChange(EDITOR_VALUE_PROP, null, newValue);
     }
     
     public StampTreeNode getSelectedNode() {
@@ -130,7 +112,7 @@ public class EditorSetPanel extends JPanel implements PropertyChangeListener, Tr
      * EditorSet を終了する。
      */
     public void close() {
-        if (curEditor!=null) {
+        if (curEditor != null) {
             curEditor.dispose();
             curEditor.remopvePropertyChangeListener(AbstractStampEditor.EMPTY_DATA_PROP, this);
             curEditor.remopvePropertyChangeListener(AbstractStampEditor.VALIDA_DATA_PROP, this);
@@ -183,7 +165,7 @@ public class EditorSetPanel extends JPanel implements PropertyChangeListener, Tr
         // 要求されたエディタに切り替える
         curEditor = table.get(entity);
 
-        if (curEditor == diagnosis) {
+        if (curEditor == diagnosis || curEditor == diagnosis) {
             curEditor.setValue(null);
             
         } else {
@@ -218,9 +200,7 @@ public class EditorSetPanel extends JPanel implements PropertyChangeListener, Tr
             stampInfo.setStampRole(IInfoModel.ROLE_P);
             stampInfo.setEntity(entity);
             
-//masuda^   複数スタンプ
             curEditor.setValue(new ModuleModel[]{stamp});
-//masuda$
         }
 
         // 最初にclearされるイベントを受けない
@@ -251,21 +231,18 @@ public class EditorSetPanel extends JPanel implements PropertyChangeListener, Tr
             rightNew.setEnabled(valid);
 
             // 上書き保存 valid かつ imported!=null
-            boolean diseaseEditor = "傷病名".equals(curEditor.getOrderName());
-            rightReplace.setEnabled(valid && isImport && !diseaseEditor);
+            rightReplace.setEnabled(valid && isImport);
 
             // 600
             right6001.setEnabled(valid && (right6001.isVisible()));
             right6002.setEnabled(valid && (right6002.isVisible()));
 
         } else if (AbstractStampEditor.EMPTY_DATA_PROP.equals(prop)) {
-//masuda^
             // 空なら取り込みはすべてdisable
             rightNew.setEnabled(false);
             rightReplace.setEnabled(false);
             right6001.setEnabled(false);
             right6002.setEnabled(false);
-//masuda$
         }
     }
     
@@ -278,10 +255,8 @@ public class EditorSetPanel extends JPanel implements PropertyChangeListener, Tr
         StampTree tree = (StampTree) e.getSource();
         String treeEntity = tree.getTreeInfo().getEntity();
 
-//masuda^   テキストスタンプエディタと病名エディタは利用可能にする
-        if (treeEntity.equals(IInfoModel.ENTITY_PATH) ||
-            treeEntity.equals(IInfoModel.ENTITY_ORCA)) {
-//masuda$
+        // テキストスタンプエディタと病名エディタは利用可能にする
+        if (IInfoModel.ENTITY_PATH.equals(treeEntity) || IInfoModel.ENTITY_ORCA.equals(treeEntity)) {
             leftImport.setEnabled(false);
             setSelectedNode(null);
             return;
@@ -328,49 +303,69 @@ public class EditorSetPanel extends JPanel implements PropertyChangeListener, Tr
                         //-----------------------------------------------------------
                         // stampId から StampModel(DBのレコード:EntityBean)をフェッチする
                         //-----------------------------------------------------------
-//masuda^   シングルトン化
-                        //StampDelegater sdl = new StampDelegater();
                         StampDelegater sdl = StampDelegater.getInstance();
-//masuda$
                         StampModel stampModel = sdl.getStamp(stampInfo.getStampId());
+                        
                         return stampModel;
                     }
 
                     @Override
                     protected void done() {
-                        try {
-                            StampModel stampModel = get();
-                            if (stampModel != null && curEditor != null) {
-//masuda^   複数スタンプ
-                                //----------------------------------------------------
-                                // 取得したEntityの binary object をdecodeして Modelを得る
-                                //----------------------------------------------------
-                                IInfoModel model = (IInfoModel) BeanUtils.xmlDecode(stampModel.getStampBytes());
-                                if (model != null) {
-                                    // 病名の場合
-                                    if (model instanceof RegisteredDiagnosisModel) {
-                                        RegisteredDiagnosisModel rd = (RegisteredDiagnosisModel) model;
-                                        curEditor.setValue(new RegisteredDiagnosisModel[]{rd});
-                                    //　それ以外
-                                    } else {
-                                        ModuleModel stampToEdit = new ModuleModel();
-                                        stampToEdit.setModel(model);
-                                        stampToEdit.setModuleInfoBean(stampInfo);
-                                        leftImport.setEnabled(false);
-                                        curEditor.setValue(new ModuleModel[]{stampToEdit});
-                                    }
-                                }
-                                isImport = true;
-                            }
-//masuda$
-                        } catch (InterruptedException ex) {
-                            System.err.println(ex);
 
-                        } catch (ExecutionException ex) {
+                        StampModel stampModel = null;
+                        try {
+                            stampModel = get();
+                        } catch (InterruptedException | ExecutionException ex) {
                             JOptionPane.showMessageDialog(SwingUtilities.getWindowAncestor(cardPanel),
-                                                ex.getMessage(),
-                                                ClientContext.getFrameTitle("Stamp取得"),
-                                                JOptionPane.WARNING_MESSAGE);
+                                    ex.getMessage(), ClientContext.getFrameTitle("Stamp取得"), 
+                                    JOptionPane.WARNING_MESSAGE);
+                        }
+
+                        if (stampModel == null || curEditor == null) {
+                            return;
+                        }
+
+                        //----------------------------------------------------
+                        // 取得したEntityの binary object をdecodeして Modelを得る
+                        //----------------------------------------------------
+                        String entity = stampModel.getEntity();
+                        if (entity == null) {
+                            return;
+                        }
+                        
+                        switch (entity) {
+                            case IInfoModel.ENTITY_DIAGNOSIS:
+                                // 病名の場合
+                                RegisteredDiagnosisModel rd
+                                        = (RegisteredDiagnosisModel) BeanUtils.xmlDecode(stampModel.getStampBytes());
+                                if (rd != null) {
+                                    rd.setStampId(stampInfo.getStampId());
+                                    curEditor.setValue(rd);
+                                    isImport = true;
+                                }
+                                break;
+                            case IInfoModel.ENTITY_TEXT:
+                                // TextStampの場合
+                                TextStampModel textStamp = (TextStampModel) BeanUtils.xmlDecode(stampModel.getStampBytes());
+                                if (textStamp != null) {
+                                    textStamp.setStampId(stampInfo.getStampId());
+                                    textStamp.setStampName(stampInfo.getStampName());
+                                    curEditor.setValue(textStamp);
+                                    isImport = true;
+                                }
+                                break;
+                            default:
+                                //　それ以外
+                                IModuleModel model = (IModuleModel) BeanUtils.xmlDecode(stampModel.getStampBytes());
+                                if (model != null) {
+                                    ModuleModel stampToEdit = new ModuleModel();
+                                    stampToEdit.setModel(model);
+                                    stampToEdit.setModuleInfoBean(stampInfo);
+                                    leftImport.setEnabled(false);
+                                    curEditor.setValue(new ModuleModel[]{stampToEdit});
+                                    isImport = true;
+                                }
+                                break;
                         }
                     }
                 };
@@ -386,18 +381,15 @@ public class EditorSetPanel extends JPanel implements PropertyChangeListener, Tr
 
             @Override
             public void actionPerformed(ActionEvent ae) {
+                
                 // cureditor から値を取得し、自分自身のプロパティに設定する。
                 // 束縛プロパティによりリスナのStampBoxへこの値が通知される。
-//masuda^   複数スタンプ
-                IInfoModel[] values = curEditor.getValue();
-                if (values == null || values.length == 0) {
-                    return;
-                }
-                // 新規の場合はoldValueをクリアする
-                curEditor.setOldValue(null);
-                setEditorValue(values);
-//masuda$
+                
+                // 新規スタンプ
+                Object[] valuePair = new Object[]{null, curEditor.getNewValue()};
+                fireEditorValue(valuePair); 
                 curEditor.setValue(null);
+
             }
         });
 
@@ -408,16 +400,13 @@ public class EditorSetPanel extends JPanel implements PropertyChangeListener, Tr
 
             @Override
             public void actionPerformed(ActionEvent ae) {
+                
                 // cureditor から値を取得し、自分自身のプロパティに設定する。
                 // 束縛プロパティによりリスナへこの値が通知される。
-//masuda^   複数スタンプ
-                IInfoModel[] values = curEditor.getValue();
-                if (values == null || values.length == 0) {
-                    return;
-                }
-                // 置換の場合はstampIdを継承するためoldValueはクリアしない
-                setEditorValue(values);
-//masuda$
+                
+                // 置き換えの場合はoldValueを設定する
+                Object[] valuePair = new Object[]{curEditor.getOldValue(), curEditor.getNewValue()};
+                fireEditorValue(valuePair);
                 curEditor.setValue(null);
             }
         });
@@ -431,34 +420,39 @@ public class EditorSetPanel extends JPanel implements PropertyChangeListener, Tr
             public void actionPerformed(ActionEvent ae) {
                 // cureditor から値を取得し、自分自身のプロパティに設定する。
                 // 束縛プロパティによりリスナへこの値が通知される。
-//masuda^   複数スタンプ
-                IInfoModel[] values = curEditor.getValue();
 
-                for (IInfoModel model : values) {
-                    ModuleModel stamp = (ModuleModel) model;
-                    ModuleInfoBean info = stamp.getModuleInfoBean();
-                    info.setStampId(null); // 新規スタンプ
+                if (curEditor != diagnosis && curEditor != text) {
 
-                    // entity 入れ替え
-                    JButton btn = (JButton) ae.getSource();
-                    String text = btn.getText();
-
-                    if (TITLE_TO_PHYSIO.equals(text)) {
-                        info.setEntity(IInfoModel.ENTITY_PHYSIOLOGY_ORDER);
-
-                    } else if (TITLE_TO_BACTERIA.equals(text)) {
-                        info.setEntity(IInfoModel.ENTITY_BACTERIA_ORDER);
-
-                    } else if (TITLE_TO_LAB.equals(text)) {
-                        info.setEntity(IInfoModel.ENTITY_LABO_TEST);
+                    ModuleModel[] values = (ModuleModel[]) curEditor.getNewValue();
+                    if (values == null || values.length == 0) {
+                        return;
                     }
-                }
+                    
+                    for (ModuleModel stamp : values) {
+                        ModuleInfoBean info = stamp.getModuleInfoBean();
 
-                setEditorValue(values);
-//masuda$
-                rightNew.setEnabled(false);
-                rightReplace.setEnabled(false);
-                curEditor.setValue(null);
+                        // entity 入れ替え
+                        JButton btn = (JButton) ae.getSource();
+                        String text = btn.getText();
+                        if (text != null) {
+                            switch (text) {
+                                case TITLE_TO_PHYSIO:
+                                    info.setEntity(IInfoModel.ENTITY_PHYSIOLOGY_ORDER);
+                                    break;
+                                case TITLE_TO_BACTERIA:
+                                    info.setEntity(IInfoModel.ENTITY_BACTERIA_ORDER);
+                                    break;
+                                case TITLE_TO_LAB:
+                                    info.setEntity(IInfoModel.ENTITY_LABO_TEST);
+                                    break;
+                            }
+                        }
+                    }
+                    
+                    Object[] valuePair = new Object[]{null, curEditor.getNewValue()};
+                    fireEditorValue(valuePair);
+                    curEditor.setValue(null);
+                }
             }
         };
 
@@ -494,7 +488,7 @@ public class EditorSetPanel extends JPanel implements PropertyChangeListener, Tr
         //-----------------------------------
         bacteria = new BaseEditor(IInfoModel.ENTITY_BACTERIA_ORDER, false);
         baseCharge = new BaseEditor(IInfoModel.ENTITY_BASE_CHARGE_ORDER, false);
-        diagnosis = new DiseaseEditor(false);
+        diagnosis = new DiseaseEditor(IInfoModel.ENTITY_DIAGNOSIS, false);
         general = new BaseEditor(IInfoModel.ENTITY_GENERAL_ORDER, false);
         injection = new InjectionEditor(IInfoModel.ENTITY_INJECTION_ORDER, false);
         instraction = new BaseEditor(IInfoModel.ENTITY_INSTRACTION_CHARGE_ORDER, false);
@@ -505,9 +499,8 @@ public class EditorSetPanel extends JPanel implements PropertyChangeListener, Tr
         surgery = new BaseEditor(IInfoModel.ENTITY_SURGERY_ORDER, false);
         test = new BaseEditor(IInfoModel.ENTITY_LABO_TEST, false);
         treatment = new BaseEditor(IInfoModel.ENTITY_TREATMENT, false);
-//masuda^   テキストスタンプエディタ
+        // テキストスタンプエディタ
         text = new TextStampEditor("text", false);
-//masuda$
         
         // Hashテーブルに登録し show(entity) で使用する
         table = new HashMap<>();
@@ -524,9 +517,8 @@ public class EditorSetPanel extends JPanel implements PropertyChangeListener, Tr
         table.put(IInfoModel.ENTITY_SURGERY_ORDER, surgery);
         table.put(IInfoModel.ENTITY_LABO_TEST, test);
         table.put(IInfoModel.ENTITY_TREATMENT, treatment);
-//masuda^   テキストスタンプエディタ
+        // テキストスタンプエディタ
         table.put("text", text);
-//masuda$
 
         //-----------------------------------
         // カードパネルにエディタを追加する
@@ -544,9 +536,8 @@ public class EditorSetPanel extends JPanel implements PropertyChangeListener, Tr
         cardPanel.add(surgery.getView(), IInfoModel.ENTITY_SURGERY_ORDER);
         cardPanel.add(test.getView(), IInfoModel.ENTITY_LABO_TEST);
         cardPanel.add(treatment.getView(), IInfoModel.ENTITY_TREATMENT);
-//masuda^   テキストスタンプエディタ
+        // テキストスタンプエディタ
         cardPanel.add(text.getView(), "text");
-//masuda$
         
         // StampBox との間にある矢印ボタンパネル
         JPanel btnPanel = new JPanel();

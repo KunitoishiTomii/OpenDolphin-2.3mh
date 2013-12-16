@@ -1,6 +1,7 @@
 package open.dolphin.infomodel;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.io.Serializable;
 import javax.persistence.*;
 
 /**
@@ -11,7 +12,7 @@ import javax.persistence.*;
  */
 @Entity
 @Table(name = "d_health_insurance")
-public class HealthInsuranceModel extends InfoModel {
+public class HealthInsuranceModel implements Serializable {
     
     @Id @GeneratedValue(strategy=GenerationType.AUTO)
     private long id;

@@ -19,13 +19,15 @@
  */
 package open.dolphin.infomodel;
 
+import java.io.Serializable;
+
 
 /**
  * ClaimItem 要素クラス。
  *
  * @author Kazushi Minagawa, Digital Globe,Inc. 
  */
-public class ClaimItem extends InfoModel {
+public class ClaimItem implements Serializable {
 
     private static final String DISPOSE_UNIT = "管";
 	

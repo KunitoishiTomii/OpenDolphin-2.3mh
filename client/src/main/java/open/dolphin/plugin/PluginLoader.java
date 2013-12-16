@@ -10,6 +10,7 @@ import java.util.*;
 /**
  *
  * @author Kazushi Minagawa.
+ * @author modified by masuda, Masuda Naika
  */
 public final class PluginLoader<S> implements Iterable<S> {
     
@@ -18,177 +19,54 @@ public final class PluginLoader<S> implements Iterable<S> {
     // ロードするプラグインのインターフェイス
     private final Class<S> plugin;
     
-    // クラスローダ
-    private final ClassLoader loader;
-    
-    // 生成順のキャッシュプロバイダ
-    private final LinkedHashMap<String,S> providers = new LinkedHashMap<>();
-    
-    // 現在の遅延lookp 反復子
-    private LazyIterator lookupIterator;
-    
-    public void reload() {
-        providers.clear();
-        lookupIterator = new LazyIterator(plugin, loader);
-    }
+    // 生成順のプラグインクラス
+    private final List<Class> classList;
     
     /** Creates a new instance of PluginLoader */
-    private PluginLoader(Class<S> plugin, ClassLoader loader) {
+    private PluginLoader(Class<S> plugin) {
         this.plugin = plugin;
-        this.loader = loader;
+        classList = new LinkedList<>();
         reload();
     }
     
-    private static void fail(Class plugin, String msg, Throwable cause) throws PluginConfigurationError {
-	throw new PluginConfigurationError(plugin.getName() + ": " + msg, cause);
+    public static <S> PluginLoader<S> load(Class<S> plugin) {
+        return new PluginLoader<>(plugin);
     }
+    
+    private void reload() {
+        
+        classList.clear();
+        String fullName = PREFIX + plugin.getName();
 
-    private static void fail(Class plugin, String msg) throws PluginConfigurationError {
-	throw new PluginConfigurationError(plugin.getName() + ": " + msg);
-    }
+        ClassLoader loader = getClass().getClassLoader();
+        URL url = loader.getResource(fullName);
 
-    private static void fail(Class plugin, URL u, int line, String msg) throws PluginConfigurationError {
-	fail(plugin, u + ":" + line + ": " + msg);
-    }
-    
-    private int parseLine(Class plugin, URL u, BufferedReader r, int lc, List<String> names) 
-        throws IOException, PluginConfigurationError {
-        
-        String ln = r.readLine();
-        
-	if (ln == null) {
-	    return -1;
-	}
-        
-        int ci = ln.indexOf("#");
-        if (ci >= 0) {
-            ln = ln.substring(0, ci);
-        }
-        
-        ln = ln.trim();
-        int n = ln.length();
-        if (n != 0) {
-            if ((ln.indexOf(' ') >= 0) || (ln.indexOf('\t') >= 0)) {
-                fail(plugin, u, lc, "Illegal configuration-file syntax");
-            }
-            int cp = ln.codePointAt(0);
-            if (!Character.isJavaIdentifierStart(cp)) {
-                fail(plugin, u, lc, "Illegal provider-class name: " + ln);
-            }
-            for (int i = Character.charCount(cp); i < n; i += Character.charCount(cp)) {
-                cp = ln.codePointAt(i);
-                if (!Character.isJavaIdentifierPart(cp) && (cp != '.')) {
-                    fail(plugin, u, lc, "Illegal provider-class name: " + ln);
+        try (InputStream in = url.openStream();
+                BufferedReader r = new BufferedReader(new InputStreamReader(in, "UTF-8"))) {
+            
+            String line;
+            while ((line = r.readLine()) != null) {
+                line = line.trim();
+                if (line.isEmpty()) {
+                    continue;
                 }
-            }
-            if (!providers.containsKey(ln) && !names.contains(ln)) {
-                names.add(ln);
-            }
-        }
-        
-        return lc + 1;
-    }
 
-    private Iterator<String> parse(Class plugin, URL u) throws PluginConfigurationError {
-        
-        InputStream in = null;
-	BufferedReader r = null;
-	ArrayList<String> names = new ArrayList<>();
-        
-        try {
-            in = u.openStream();
-	    r = new BufferedReader(new InputStreamReader(in, "utf-8"));
-            int lc = 1;
-	    while ((lc = parseLine(plugin, u, r, lc, names)) >= 0) {}
-            
-        } catch (IOException x) {
-            fail(plugin, "Error reading configuration file", x);
-        } finally {
-	    try {
-		if (r != null) r.close();
-		if (in != null) in.close();
-	    } catch (IOException y) {
-		fail(plugin, "Error closing configuration file", y);
-	    }
-	}
-        
-        return names.iterator();
-    }
-    
-    
-    private class LazyIterator implements Iterator<S> {
-    
-        Class<S> plugin;
-        ClassLoader loader;
-        Enumeration<URL> configs;
-        Iterator<String> pending;
-        String nextName;
-        
-        private LazyIterator(Class<S> plugin, ClassLoader loader) {
-	    this.plugin = plugin;
-	    this.loader = loader;
-	}
-        
-        @Override
-        public boolean hasNext() {
-            
-            if (nextName != null){
-                return true;
-            }
-            
-            if (configs == null) {
-                try {
-                    String fullName = PREFIX + plugin.getName();
-                    if (loader == null) {
-                        configs = ClassLoader.getSystemResources(fullName);
-                    } else {
-                        configs = loader.getResources(fullName);
-                    }
-                    
-                } catch (IOException x) {
-                    fail(plugin, "Error locating configuration files", x);
+                int pos = line.indexOf("#");
+                if (pos != -1) {
+                    line = line.substring(0, pos);
                 }
-            }
-            
-            while ( (pending == null) || (!pending.hasNext()) ) {
-                if (!configs.hasMoreElements()) {
-                    return false;
-                }
-                pending = parse(plugin, configs.nextElement());
-            }
-            
-            nextName = pending.next();
-            return true;
-        }
-        
-        @Override
-        public S next() {
-            
-            if (!hasNext()) {
-                throw new NoSuchElementException();
-            }
-            
-            String cn = nextName;
-            nextName = null;
-            
-            try {
-                S p = plugin.cast(Class.forName(cn, true, loader).newInstance());
-                providers.put(cn, p);
-		return p;
+                String clsName = line.trim();
                 
-            } catch (ClassNotFoundException x) {
-                fail(plugin, "Provider " + cn + " not found");
-            } catch (InstantiationException | IllegalAccessException x) {
-                fail(plugin, "Provider " + cn + " could not be instantiated: " + x, x);
+                try {
+                    classList.add(Class.forName(clsName));
+                } catch (ClassNotFoundException ex) {
+                    ex.printStackTrace(System.err);
+                }
             }
-            
-            throw new Error();		// This cannot happen
+
+        } catch (IOException ex) {
+            fail(plugin, "Error reading plugin configuration files", ex);
         }
-        
-        @Override
-        public void remove() {
-	    throw new UnsupportedOperationException();
-	}
     }
     
     @Override
@@ -196,24 +74,22 @@ public final class PluginLoader<S> implements Iterable<S> {
         
 	return new Iterator<S>() {
 
-	    Iterator<Map.Entry<String,S>> knownProviders
-		= providers.entrySet().iterator();
+            Iterator<Class> itr = classList.iterator();
 
             @Override
 	    public boolean hasNext() {
-		if (knownProviders.hasNext()) {
-		    return true;
-                }
-		return lookupIterator.hasNext();
+                return itr.hasNext();
 	    }
 
             @Override
-	    public S next() {
-		if (knownProviders.hasNext()) {
-		    return knownProviders.next().getValue();
+            public S next() {
+                try {
+                    return (S) itr.next().newInstance();
+                } catch (InstantiationException | IllegalAccessException ex) {
+                    fail(plugin, "Plugin could not be instantiated", ex);
                 }
-		return lookupIterator.next();
-	    }
+                return null;
+            }
 
             @Override
 	    public void remove() {
@@ -223,21 +99,7 @@ public final class PluginLoader<S> implements Iterable<S> {
 	};
     }
     
-    public LinkedHashMap<String,S> loadAll() {
-        reload();
-        Iterator<S> iter = iterator();
-        while (iter.hasNext()) {
-            iter.next();
-        }
-        return providers;
-    }
-    
-    public static <S> PluginLoader<S> load(Class<S> plugin, ClassLoader loader) {
-	return new PluginLoader<>(plugin, loader);
-    }
-    
-    public static <S> PluginLoader<S> load(Class<S> plugin) {
-	ClassLoader cl = Thread.currentThread().getContextClassLoader();
-	return PluginLoader.load(plugin, cl);
+    private void fail(Class plugin, String msg, Throwable cause) throws PluginConfigurationError {
+	throw new PluginConfigurationError(plugin.getName() + ": " + msg, cause);
     }
 }

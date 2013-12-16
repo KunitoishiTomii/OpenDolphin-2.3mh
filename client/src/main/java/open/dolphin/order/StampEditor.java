@@ -10,7 +10,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
 import open.dolphin.client.Chart;
 import open.dolphin.client.ClientContext;
 import open.dolphin.helper.ComponentMemory;
@@ -53,10 +52,6 @@ public class StampEditor implements PropertyChangeListener {
                     // Rad
                     editor = new InjectionEditor(entity);
                     break;
-                case "text":
-                    // テキストスタンプエディタ
-                    editor = new TextStampEditor(entity);
-                    break;
                 case IInfoModel.ENTITY_INSTRACTION_CHARGE_ORDER:
                     // 指導
                     editor = new InstractionEditor(entity);
@@ -75,14 +70,13 @@ public class StampEditor implements PropertyChangeListener {
         editor.addPropertyChangeListener(AbstractStampEditor.EDIT_END_PROP, StampEditor.this);
         editor.setValue(stamps);
         
-//masuda^   editorにChartを設定する
+        // editorにChartを設定する
         editor.setContext(chart);
-//masuda$
         
         dialog = new JDialog(new JFrame(), true);
-//masuda^    アイコン設定
+        // アイコン設定
         ClientContext.setDolphinIcon(dialog);
-//masuda$
+        
         dialog.setTitle(editor.getOrderName());
         dialog.getContentPane().add(editor.getView(), BorderLayout.CENTER);
         dialog.addWindowListener(new WindowAdapter() {
@@ -100,28 +94,28 @@ public class StampEditor implements PropertyChangeListener {
         });
 
         dialog.pack();
-//masuda^   エディタごとにウィンドウサイズを記憶させる
-        //ComponentMemory cm = new ComponentMemory(dialog, new Point(200, 100), dialog.getPreferredSize(), this);
+        
+        // エディタごとにウィンドウサイズを記憶させる
         ComponentMemory cm = new ComponentMemory(dialog, new Point(200, 100), dialog.getPreferredSize(), editor);
-//masuda$
+
         cm.setToPreferenceBounds();
 
         dialog.setVisible(true);
     }
 
-    public StampEditor(RegisteredDiagnosisModel[] models, PropertyChangeListener listener, Window lock) {
+    public StampEditor(RegisteredDiagnosisModel rd, PropertyChangeListener listener, Window lock) {
         
-        editor = new DiseaseEditor();
+        editor = new DiseaseEditor(IInfoModel.ENTITY_DIAGNOSIS);
         editor.addPropertyChangeListener(AbstractStampEditor.VALUE_PROP, listener);
         editor.addPropertyChangeListener(AbstractStampEditor.EDIT_END_PROP, StampEditor.this);
 
         dialog = new JDialog((Frame) lock, true);
-//masuda^    アイコン設定
+        // アイコン設定
         ClientContext.setDolphinIcon(dialog);
-//masuda$
+
         dialog.setTitle(editor.getOrderName());
         dialog.getContentPane().add(editor.getView(), BorderLayout.CENTER);
-        editor.setValue(models);     // 編集する病名をセット
+        editor.setValue(rd);     // 編集する病名をセット
         dialog.addWindowListener(new WindowAdapter() {
 
             @Override
@@ -137,56 +131,12 @@ public class StampEditor implements PropertyChangeListener {
         });
 
         dialog.pack();
-//masuda^   エディタごとにウィンドウサイズを記憶させる
+        
+        // エディタごとにウィンドウサイズを記憶させる
         ComponentMemory cm = new ComponentMemory(dialog, new Point(200, 100), dialog.getPreferredSize(), editor);
         cm.setToPreferenceBounds();
 
         dialog.setVisible(true);
-    }
-    
-    public StampEditor(String entity, final PropertyChangeListener listener, final Window lock) {
-
-        Runnable r = new Runnable() {
-
-            @Override
-            public void run() {
-
-                editor = new DiseaseEditor();
-                editor.addPropertyChangeListener(AbstractStampEditor.VALUE_PROP, listener);
-                editor.addPropertyChangeListener(AbstractStampEditor.EDIT_END_PROP, StampEditor.this);
-
-                dialog = new JDialog((Frame) lock, true);
-//masuda^    アイコン設定
-                ClientContext.setDolphinIcon(dialog);
-//masuda$
-                dialog.setTitle(editor.getOrderName());
-                dialog.getContentPane().add(editor.getView(), BorderLayout.CENTER);
-                dialog.addWindowListener(new WindowAdapter() {
-
-                    @Override
-                    public void windowOpened(WindowEvent e) {
-                        editor.setFocusOnSearchTextFld();
-                    }
-
-                    @Override
-                    public void windowClosing(WindowEvent e) {
-                        dialog.dispose();
-                        dialog.setVisible(false);
-                    }
-                });
-
-                dialog.pack();
-//masuda^   エディタごとにウィンドウサイズを記憶させる
-                //ComponentMemory cm = new ComponentMemory(dialog, new Point(200,100), dialog.getPreferredSize(), this);
-                ComponentMemory cm = new ComponentMemory(dialog, new Point(200, 100), dialog.getPreferredSize(), editor);
-//masuda$
-                cm.setToPreferenceBounds();
-
-                dialog.setVisible(true);
-            }
-        };
-
-        SwingUtilities.invokeLater(r);
     }
 
     @Override

@@ -741,7 +741,7 @@ public class WindowsMenuFactory extends AbstractMenuFactory {
         newKarte.setAction(actionMap.get("newKarte"));
         setAccelerator(newKarte, KeyEvent.VK_N);
         file.add(newKarte);
-        if (chart != null) {
+        if (fileBar != null) {
             JButton newKarteBtn = createButton();
             newKarteBtn.setAction(actionMap.get("newKarte"));
             newKarteBtn.setText(null);
@@ -756,7 +756,7 @@ public class WindowsMenuFactory extends AbstractMenuFactory {
         newDocument.setName("newDocument");
         newDocument.setAction(actionMap.get("newDocument"));
         file.add(newDocument);
-        if (chart != null) {
+        if (fileBar != null) {
             JButton newDocBtn = createButton();
             newDocBtn.setAction(actionMap.get("newDocument"));
             newDocBtn.setText(null);
@@ -788,7 +788,7 @@ public class WindowsMenuFactory extends AbstractMenuFactory {
         save.setAction(actionMap.get("save"));
         setAccelerator(save, KeyEvent.VK_S);
         file.add(save);
-        if (chart != null) {
+        if (fileBar != null) {
             JButton saveBtn = createButton();
             saveBtn.setAction(actionMap.get("save"));
             saveBtn.setText(null);
@@ -820,7 +820,7 @@ public class WindowsMenuFactory extends AbstractMenuFactory {
         print.setAction(actionMap.get("print"));
         setAccelerator(print, KeyEvent.VK_P);
         file.add(print);
-        if (chart != null) {
+        if (fileBar != null) {
             JButton printBtn = createButton();
             printBtn.setAction(actionMap.get("print"));
             printBtn.setText(null);
@@ -851,7 +851,7 @@ public class WindowsMenuFactory extends AbstractMenuFactory {
         modifyKarte.setAction(actionMap.get("modifyKarte"));
         setAccelerator(modifyKarte, KeyEvent.VK_M);
         edit.add(modifyKarte);
-        if (chart != null) {
+        if (editBar != null) {
             JButton modifyKarteBtn = createButton();
             modifyKarteBtn.setAction(actionMap.get("modifyKarte"));
             modifyKarteBtn.setText(null);
@@ -869,7 +869,7 @@ public class WindowsMenuFactory extends AbstractMenuFactory {
         undo.setAction(actionMap.get("undo"));
         setAccelerator(undo, KeyEvent.VK_Z);
         edit.add(undo);
-        if (chart != null) {
+        if (editBar != null) {
             JButton undoBtn = createButton();
             undoBtn.setAction(actionMap.get("undo"));
             undoBtn.setText(null);
@@ -885,7 +885,7 @@ public class WindowsMenuFactory extends AbstractMenuFactory {
         redo.setAction(actionMap.get("redo"));
         setAccelerator(redo, KeyEvent.VK_Z, true);
         edit.add(redo);
-        if (chart != null) {
+        if (editBar != null) {
             JButton redoBtn = createButton();
             redoBtn.setAction(actionMap.get("redo"));
             redoBtn.setText(null);
@@ -903,7 +903,7 @@ public class WindowsMenuFactory extends AbstractMenuFactory {
         cut.setAction(actionMap.get("cut"));
         setAccelerator(cut, KeyEvent.VK_X);
         edit.add(cut);
-        if (chart != null) {
+        if (editBar != null) {
             JButton cutBtn = createButton();
             cutBtn.setAction(actionMap.get("cut"));
             cutBtn.setText(null);
@@ -919,7 +919,7 @@ public class WindowsMenuFactory extends AbstractMenuFactory {
         copy.setAction(actionMap.get("copy"));
         setAccelerator(copy, KeyEvent.VK_C);
         edit.add(copy);
-        if (chart != null) {
+        if (editBar != null) {
             JButton copyBtn = createButton();
             copyBtn.setAction(actionMap.get("copy"));
             copyBtn.setText(null);
@@ -935,7 +935,7 @@ public class WindowsMenuFactory extends AbstractMenuFactory {
         paste.setAction(actionMap.get("paste"));
         setAccelerator(paste, KeyEvent.VK_V);
         edit.add(paste);
-        if (chart != null) {
+        if (editBar != null) {
             JButton pasteBtn = createButton();
             pasteBtn.setAction(actionMap.get("paste"));
             pasteBtn.setText(null);
@@ -1252,9 +1252,9 @@ public class WindowsMenuFactory extends AbstractMenuFactory {
             
             tool.add(new JSeparator());
 //masuda^
-            for (Map.Entry entry : toolProviders.entrySet()) {
-                String cmd = (String) entry.getKey();
-                final String className = (String) entry.getValue();
+            for (Map.Entry<String, String> entry : toolProviders.entrySet()) {
+                String cmd = entry.getKey();
+                final String className = entry.getValue();
                 JMenuItem mItem = new JMenuItem();
                 AbstractAction a = new AbstractAction() {
                     @Override

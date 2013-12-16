@@ -1,6 +1,7 @@
 package open.dolphin.infomodel;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.persistence.Transient;
@@ -12,7 +13,7 @@ import javax.persistence.Transient;
  * @author modified by masuda, Masuda Naika
  */
 @Embeddable
-public class ModuleInfoBean extends InfoModel implements Comparable {
+public class ModuleInfoBean implements Serializable, Comparable {
     
     /** Module 名: StampTree、 オーダ履歴当に表示する名前 */
     @Column(nullable=false)
@@ -196,7 +197,7 @@ public class ModuleInfoBean extends InfoModel implements Comparable {
     @Override
     public String toString() {
         // 病名でエイリアスがあればそれを返す
-        if (this.entity.equals(ENTITY_DIAGNOSIS)) {
+        if (IInfoModel.ENTITY_DIAGNOSIS.equals(entity)) {
             String alias =  ModelUtils.getDiagnosisAlias(name);
             return alias != null ? alias : name;
         }

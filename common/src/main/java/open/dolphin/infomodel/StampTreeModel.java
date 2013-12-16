@@ -11,7 +11,7 @@ import javax.persistence.*;
  */
 @Entity
 @Table(name="d_stamp_tree")
-public class StampTreeModel extends InfoModel implements IStampTreeModel {
+public class StampTreeModel implements IStampTreeModel {
     
     @Id @GeneratedValue(strategy=GenerationType.AUTO)
     private long id;

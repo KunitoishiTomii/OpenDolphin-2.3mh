@@ -18,6 +18,10 @@
  */
 package open.dolphin.infomodel;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -25,8 +29,13 @@ import java.util.Date;
  * Userのパーソナルツリークラス。
  *
  * @author Kazushi Minagawa, Digital Globe, Inc.
+ * @author modified by masuda, Masuda Naika
  */
-public interface IStampTreeModel {
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
+@JsonSubTypes({
+    @Type(value = StampTreeModel.class),
+    @Type(value = PublishedTreeModel.class)})
+public interface IStampTreeModel extends Serializable {
     
     public long getId();
     

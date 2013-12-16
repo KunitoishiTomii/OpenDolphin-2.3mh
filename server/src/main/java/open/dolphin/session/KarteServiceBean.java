@@ -380,12 +380,15 @@ public class KarteServiceBean {
 */
     
     public List<DocumentModel> getDocuments(List<Long> ids) {
+/*
         boolean mysql = contextHolder.getDatabase().toLowerCase().contains("mysql");
         if (mysql) {
             return getDocumentsMySQL(ids);
         } else {
             return getDocumentsPSQL(ids);
         }
+*/
+        return getDocumentsWithTrick(ids);
     }
 
     // まとめてquery改改
@@ -407,7 +410,7 @@ public class KarteServiceBean {
                 .getResultList();
         
         // DocumentModelのMapを作る
-        HashMap<Long, DocumentModel> dmMap = new HashMap<>();
+        HashMap<Long, DocumentModel> dmMap = new HashMap<>(ids.size());
         for (DocumentModel dm : documentList) {
             // LazyFetchのdetached objectsは一旦バッサリ消す！
             dm.setModules(null);
@@ -437,8 +440,8 @@ public class KarteServiceBean {
         return documentList;
     }
 
-    // まとめてquery改改改 postgresでは遅い
-    public List<DocumentModel> getDocumentsMySQL(List<Long> ids) {
+    // まとめてquery改改改 postgresでは遅い1？
+    public List<DocumentModel> getDocumentsWithTrick(List<Long> ids) {
 
         List<DocumentModel> documentList =
                 em.createQuery("from DocumentModel m where m.id in (:ids)")
@@ -446,10 +449,6 @@ public class KarteServiceBean {
                 .getResultList();
         
         // Lazy fetchのやつらを取得するtrick
-        // http://stackoverflow.com/questions/3421314/jpa-lazy-loading-lazyinitializationexception-when-not-accessing-child-coll
-        // Lazy means that collection items will be loaded when someone will call get(index) 
-        // or other method which needs to operate with fully initialized collection. size() 
-        // doesn't initialize collection.
         for (DocumentModel dm : documentList) {
             // サイズを取得するだけでfetchできる
             dm.getModules().size();
@@ -981,7 +980,7 @@ public class KarteServiceBean {
             if (IInfoModel.MODULE_PROGRESS_COURSE.equals(entity)) {
                 continue;
             }
-            mm.setModel((InfoModel) BeanUtils.xmlDecode(mm.getBeanBytes()));
+            mm.setModel((IModuleModel) BeanUtils.xmlDecode(mm.getBeanBytes()));
             ClaimBundle cb = (ClaimBundle) mm.getModel();
             if (cb == null) {
                 continue;

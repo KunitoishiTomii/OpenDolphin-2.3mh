@@ -18,15 +18,14 @@
  */
 package open.dolphin.infomodel;
 
-import open.dolphin.infomodel.ClaimItem;
-import open.dolphin.infomodel.InfoModel;
+import java.io.Serializable;
 
 /**
  * ORCA の tbl_inputset エンティティクラス。
  *
  * @author Minagawa, Kazushi
  */
-public class OrcaInputSet extends InfoModel {
+public class OrcaInputSet implements Serializable {
     
     private String hospId;
     

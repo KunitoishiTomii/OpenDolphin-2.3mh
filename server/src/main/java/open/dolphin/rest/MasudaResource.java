@@ -35,7 +35,8 @@ public class MasudaResource extends AbstractResource {
         
         List<RoutineMedModel> list = masudaServiceBean.getRoutineMedModels(karteId, firstResult, maxResults);
         
-        StreamingOutput so = getJsonOutStream(list);
+        TypeReference typeRef = new TypeReference<List<RoutineMedModel>>(){};
+        StreamingOutput so = getJsonOutStream(list, typeRef);
         
         return Response.ok(so).build();
     }
@@ -106,7 +107,8 @@ public class MasudaResource extends AbstractResource {
 
         List<DisconItemModel> list = masudaServiceBean.getDisconItems(fid);
 
-        StreamingOutput so = getJsonOutStream(list);
+        TypeReference typeRef = new TypeReference<List<DisconItemModel>>(){};
+        StreamingOutput so = getJsonOutStream(list, typeRef);
         
         return Response.ok(so).build();
     }
@@ -171,7 +173,8 @@ public class MasudaResource extends AbstractResource {
 
         List<UsingDrugModel> list = masudaServiceBean.getUsingDrugModels(fid);
 
-        StreamingOutput so = getJsonOutStream(list);
+        TypeReference typeRef = new TypeReference<List<UsingDrugModel>>(){};
+        StreamingOutput so = getJsonOutStream(list, typeRef);
         
         return Response.ok(so).build();
     }
@@ -243,7 +246,8 @@ public class MasudaResource extends AbstractResource {
 
         List<ModuleModel> list = masudaServiceBean.getModulesEntitySearch(fid, karteId, fromDate, toDate, entities);
         
-        StreamingOutput so = getJsonOutStream(list);
+        TypeReference typeRef = new TypeReference<List<ModuleModel>>(){};
+        StreamingOutput so = getJsonOutStream(list, typeRef);
         
         return Response.ok(so).build();
     }
@@ -273,7 +277,8 @@ public class MasudaResource extends AbstractResource {
 
         List<DocInfoModel> list = masudaServiceBean.getDocumentList(docPkList);
         
-        StreamingOutput so = getJsonOutStream(list);
+        TypeReference typeRef = new TypeReference<List<DocInfoModel>>(){};
+        StreamingOutput so = getJsonOutStream(list, typeRef);
         
         return Response.ok(so).build();
     }
@@ -304,7 +309,8 @@ public class MasudaResource extends AbstractResource {
 
         List<PatientModel> list = masudaServiceBean.getKarteFullTextSearch(fid, karteId, text);
 
-        StreamingOutput so = getJsonOutStream(list);
+        TypeReference typeRef = new TypeReference<List<PatientModel>>(){};
+        StreamingOutput so = getJsonOutStream(list, typeRef);
         
         return Response.ok(so).build();
     }
@@ -340,7 +346,8 @@ public class MasudaResource extends AbstractResource {
         
         List<ExamHistoryModel> list = masudaServiceBean.getExamHistory(fid, karteId, fromDate, toDate);
         
-        StreamingOutput so = getJsonOutStream(list);
+        TypeReference typeRef = new TypeReference<List<ExamHistoryModel>>(){};
+        StreamingOutput so = getJsonOutStream(list, typeRef);
         
         return Response.ok(so).build();
     }
@@ -359,7 +366,8 @@ public class MasudaResource extends AbstractResource {
 
         List<PatientModel> list = masudaServiceBean.getOutOfMedStockPatient(fid, fromDate, toDate, yoyuu);
         
-        StreamingOutput so = getJsonOutStream(list);
+        TypeReference typeRef = new TypeReference<List<PatientModel>>(){};
+        StreamingOutput so = getJsonOutStream(list, typeRef);
         
         return Response.ok(so).build();
     }
@@ -372,7 +380,8 @@ public class MasudaResource extends AbstractResource {
         String fid = getRemoteFacility();
         List<InFacilityLaboItem> list = masudaServiceBean.getInFacilityLaboItemList(fid);
         
-        StreamingOutput so = getJsonOutStream(list);
+        TypeReference typeRef = new TypeReference<List<InFacilityLaboItem>>(){};
+        StreamingOutput so = getJsonOutStream(list, typeRef);
         
         return Response.ok(so).build();
     }
@@ -440,7 +449,8 @@ public class MasudaResource extends AbstractResource {
         
         List<SanteiHistoryModel> list = masudaServiceBean.getSanteiHistory(karteId, fromDate, toDate, srycdList);
         
-        StreamingOutput so = getJsonOutStream(list);
+        TypeReference typeRef = new TypeReference<List<SanteiHistoryModel>>(){};
+        StreamingOutput so = getJsonOutStream(list, typeRef);
         
         return Response.ok(so).build();
     }
@@ -458,7 +468,8 @@ public class MasudaResource extends AbstractResource {
         
         List<List<RpModel>> list = masudaServiceBean.getRpModelList(karteId, fromDate, toDate, lastOnly);
          
-        StreamingOutput so = getJsonOutStream(list);
+        TypeReference typeRef = new TypeReference<List<List<RpModel>>>(){};
+        StreamingOutput so = getJsonOutStream(list, typeRef);
         
         return Response.ok(so).build();
     }
@@ -485,7 +496,8 @@ public class MasudaResource extends AbstractResource {
         
         List<UserPropertyModel> list = masudaServiceBean.getUserProperties(userId);
 
-        StreamingOutput so = getJsonOutStream(list);
+        TypeReference typeRef = new TypeReference<List<UserPropertyModel>>(){};
+        StreamingOutput so = getJsonOutStream(list, typeRef);
         
         return Response.ok(so).build();
     }
@@ -529,7 +541,8 @@ public class MasudaResource extends AbstractResource {
 
         List<PatientModel> list = masudaServiceBean.getTempDocumentPatients(fromDate, userPk);
         
-        StreamingOutput so = getJsonOutStream(list);
+        TypeReference typeRef = new TypeReference<List<PatientModel>>(){};
+        StreamingOutput so = getJsonOutStream(list, typeRef);
         
         return Response.ok(so).build();
     }

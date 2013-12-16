@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -209,28 +211,30 @@ public class RoutineMedImpl extends AbstractChartDocument {
 
                 int[] selectedRows = table.getSelectedRows();
                 for (int selectedRow : selectedRows) {
-
-                    RoutineMedModel oldMed = sorter.getObject(selectedRow);
-                    if (oldMed == null) {
-                        return;
-                    }
-
-                    RoutineMedModel newMed = oldMed.clone();
-                    switch (column) {
-                        case MEMO_COLUMN:
-                            String memo = (String) aValue;
-                            newMed.setMemo(memo);
-                            newMed.setStatus(EDITED);
-                            offerUndoQue(oldMed, newMed);
-                            break;
-                        case BOOKMARK_COLUMN:
-                            boolean b = (aValue == null)
-                                    ? false
-                                    : (Boolean) aValue;
-                            newMed.setBookmark(b);
-                            newMed.setStatus(EDITED);
-                            offerUndoQue(oldMed, newMed);
-                            break;
+                    try {
+                        RoutineMedModel oldMed = sorter.getObject(selectedRow);
+                        if (oldMed == null) {
+                            return;
+                        }
+                        
+                        RoutineMedModel newMed = oldMed.clone();
+                        switch (column) {
+                            case MEMO_COLUMN:
+                                String memo = (String) aValue;
+                                newMed.setMemo(memo);
+                                newMed.setStatus(EDITED);
+                                offerUndoQue(oldMed, newMed);
+                                break;
+                            case BOOKMARK_COLUMN:
+                                boolean b = (aValue == null)
+                                        ? false
+                                        : (Boolean) aValue;
+                                newMed.setBookmark(b);
+                                newMed.setStatus(EDITED);
+                                offerUndoQue(oldMed, newMed);
+                                break;
+                        }
+                    } catch (CloneNotSupportedException ex) {
                     }
                 }
             }
@@ -352,10 +356,13 @@ public class RoutineMedImpl extends AbstractChartDocument {
         
         int[] selectedRows = table.getSelectedRows();
         for (int selectedRow : selectedRows) {
-            RoutineMedModel oldMed = sorter.getObject(selectedRow);
-            RoutineMedModel newMed = oldMed.clone();
-            newMed.setStatus(DELETE);
-            offerUndoQue(oldMed, newMed);
+            try {
+                RoutineMedModel oldMed = sorter.getObject(selectedRow);
+                RoutineMedModel newMed = oldMed.clone();
+                newMed.setStatus(DELETE);
+                offerUndoQue(oldMed, newMed);
+            } catch (CloneNotSupportedException ex) {
+            }
         }
         tableModel.fireTableDataChanged();
     }

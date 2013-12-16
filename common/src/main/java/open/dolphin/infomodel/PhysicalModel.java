@@ -1,6 +1,7 @@
 package open.dolphin.infomodel;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.io.Serializable;
 
 /**
  * PhysicalModel
@@ -8,7 +9,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  * @author Kazushi Minagawa, Digital Globe, Inc.
  * @author modified by masuda, Masuda Naika
  */
-public class PhysicalModel extends InfoModel implements Comparable {
+public class PhysicalModel implements Serializable, Comparable {
     
     private long heightId;
     private long weightId;

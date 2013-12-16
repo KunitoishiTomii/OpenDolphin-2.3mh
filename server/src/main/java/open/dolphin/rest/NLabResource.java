@@ -1,5 +1,6 @@
 package open.dolphin.rest;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import java.util.List;
 import javax.inject.Inject;
 import javax.ws.rs.*;
@@ -41,7 +42,8 @@ public class NLabResource extends AbstractResource {
 
         List<NLaboModule> list = nLabServiceBean.getLaboTest(fidPid, firstResult, maxResult);
         
-        StreamingOutput so = getJsonOutStream(list);
+        TypeReference typeRef = new TypeReference<List<NLaboModule>>(){};
+        StreamingOutput so = getJsonOutStream(list, typeRef);
         
         return Response.ok(so).build();
     }
@@ -57,7 +59,8 @@ public class NLabResource extends AbstractResource {
 
         List<PatientLiteModel> list = nLabServiceBean.getConstrainedPatients(fid, idList);
         
-        StreamingOutput so = getJsonOutStream(list);
+        TypeReference typeRef = new TypeReference<List<PatientLiteModel>>(){};
+        StreamingOutput so = getJsonOutStream(list, typeRef);
         
         return Response.ok(so).build();
     }

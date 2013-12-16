@@ -25,7 +25,7 @@ package open.dolphin.infomodel;
  *
  * @author  Kazushi Minagawa, Digital Globe, Inc.
  */
-public class ClaimBundle extends InfoModel {
+public class ClaimBundle implements IModuleModel, IStampModel {
 	
     String className;           // 診療行為名
     String classCode;           // 診療行為コード

@@ -1,7 +1,6 @@
-
 package open.dolphin.client;
 
-import javax.swing.GroupLayout;
+import java.awt.BorderLayout;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -20,14 +19,8 @@ public class InspectorTablePanel extends JPanel {
         
         table = new JTable();
         scroll = new JScrollPane(table);
-        GroupLayout layout = new GroupLayout(this);
-        setLayout(layout);
-        GroupLayout.ParallelGroup hGroup = layout.createParallelGroup(GroupLayout.Alignment.LEADING);
-        hGroup.addComponent(scroll, GroupLayout.DEFAULT_SIZE, 260, Short.MAX_VALUE);
-        layout.setHorizontalGroup(hGroup);
-        GroupLayout.ParallelGroup vGroup = layout.createParallelGroup(GroupLayout.Alignment.LEADING);
-        vGroup.addComponent(scroll, GroupLayout.DEFAULT_SIZE, 96, Short.MAX_VALUE);
-        layout.setVerticalGroup(vGroup);
+        setLayout(new BorderLayout());
+        add(scroll, BorderLayout.CENTER);
     }
 
     public JTable getTable() {

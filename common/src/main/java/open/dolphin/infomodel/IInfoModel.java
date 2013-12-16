@@ -7,7 +7,7 @@ import java.util.Date;
  *
  * @athor Minagawa, Kazushi
  */
-public interface IInfoModel extends java.io.Serializable, java.lang.Cloneable {
+public interface IInfoModel {
     
 //masuda^
     // Default facility oid

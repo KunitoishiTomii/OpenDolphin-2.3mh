@@ -1,12 +1,14 @@
 package open.dolphin.infomodel;
 
+import java.io.Serializable;
+
 
 /**
  * UserLiteModel
  * 
  * @author Minagawa,Kazushi
  */
-public class UserLiteModel extends InfoModel {
+public class UserLiteModel implements Serializable {
 	
     private String userId;
     private String commonName;

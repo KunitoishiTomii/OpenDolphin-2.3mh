@@ -1,9 +1,11 @@
 package open.dolphin.infomodel;
 
+import java.io.Serializable;
+
 /**
  * @author  Kazushi Minagawa, Digital Globe, Inc.
  */
-public class PVTPublicInsuranceItemModel extends InfoModel {
+public class PVTPublicInsuranceItemModel implements Serializable {
 	
     private String priority;
     private String providerName;

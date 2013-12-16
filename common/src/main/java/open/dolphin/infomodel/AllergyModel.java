@@ -1,11 +1,13 @@
 package open.dolphin.infomodel;
 
+import java.io.Serializable;
+
 /**
  * AllergyModel
  *
  * @author  Kazushi Minagawa, Digital Globe, Inc.
  */
-public class AllergyModel extends InfoModel implements Comparable {
+public class AllergyModel implements Serializable, Comparable {
     
     private long observationId;
     

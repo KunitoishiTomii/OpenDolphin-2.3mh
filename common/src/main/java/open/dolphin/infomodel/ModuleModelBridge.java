@@ -15,16 +15,13 @@ public class ModuleModelBridge implements StringBridge {
     public String objectToString(Object object) {
 
         byte[] beanBytes = (byte[]) object;
-        IInfoModel im = (IInfoModel) BeanUtils.xmlDecode(beanBytes);
-        String text = "";
-
+        IModuleModel im = (IModuleModel) BeanUtils.xmlDecode(beanBytes);
+        
         if (im instanceof ProgressCourse) {
             String xml = ((ProgressCourse) im).getFreeText();
-            text = ModelUtils.extractText(xml);
+            return ModelUtils.extractText(xml);
         } else {
-            text = im.toString();
+            return im.toString();
         }
-
-        return text;
     }
 }

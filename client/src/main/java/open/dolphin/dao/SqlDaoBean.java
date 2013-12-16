@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import javax.swing.JOptionPane;
 import open.dolphin.delegater.OrcaDelegater;
 import open.dolphin.infomodel.DiseaseEntry;
 import open.dolphin.infomodel.OrcaSqlModel;
@@ -72,59 +73,37 @@ public class SqlDaoBean extends DaoBean {
         setPasswd(PASSWD);
     }
 
-    protected DiseaseEntry getDiseaseEntry(List<String> values) {
+    protected DiseaseEntry getDiseaseEntry(String[] values) {
 
         DiseaseEntry de = new DiseaseEntry();
-        de.setCode(values.get(0));        // Code
-        de.setName(values.get(1));        // Name
-        de.setKana(values.get(2));         // Kana
-        de.setIcdTen(values.get(3));      // IcdTen
-        de.setDisUseDate(values.get(4));  // DisUseDate
-        de.setByoKanrenKbn(Integer.valueOf(values.get(5)));
+        de.setCode(values[0]);          // Code
+        de.setName(values[1]);          // Name
+        de.setKana(values[2]);          // Kana
+        de.setIcdTen(values[3]);        // IcdTen
+        de.setDisUseDate(values[4]);    // DisUseDate
+        de.setByoKanrenKbn(Integer.parseInt(values[5]));
         return de;
     }
     
-    protected TensuMaster getTensuMaster(List<String> values) {
+    protected TensuMaster getTensuMaster(String[] values) {
 
         TensuMaster tm = new TensuMaster();
-        tm.setSrycd(values.get(0));
-        tm.setName(values.get(1));
-        tm.setKananame(values.get(2));
-        tm.setTaniname(values.get(3));
-        tm.setTensikibetu(values.get(4));
-        tm.setTen(values.get(5));
-        tm.setNyugaitekkbn(values.get(6));
-        tm.setRoutekkbn(values.get(7));
-        tm.setSrysyukbn(values.get(8));
-        tm.setHospsrykbn(values.get(9));
-        tm.setYkzkbn(values.get(10));
-        tm.setYakkakjncd(values.get(11));
-        tm.setYukostymd(values.get(12));
-        tm.setYukoedymd(values.get(13));
-        tm.setDataKbn(values.get(14));
+        tm.setSrycd(values[0]);
+        tm.setName(values[1]);
+        tm.setKananame(values[2]);
+        tm.setTaniname(values[3]);
+        tm.setTensikibetu(values[4]);
+        tm.setTen(values[5]);
+        tm.setNyugaitekkbn(values[6]);
+        tm.setRoutekkbn(values[7]);
+        tm.setSrysyukbn(values[8]);
+        tm.setHospsrykbn(values[9]);
+        tm.setYkzkbn(values[10]);
+        tm.setYakkakjncd(values[11]);
+        tm.setYukostymd(values[12]);
+        tm.setYukoedymd(values[13]);
+        tm.setDataKbn(values[14]);
         return tm;
-    }
-    
-    private List<String> getColumnValues(ResultSet rs) throws SQLException {
-
-        ResultSetMetaData meta = rs.getMetaData();
-        int columnCount = meta.getColumnCount();
-        List<String> values = new ArrayList<>(columnCount);
-
-        for (int i = 1; i <= columnCount; ++i) {
-            int type = meta.getColumnType(i);
-            switch (type) {
-                case Types.SMALLINT:
-                case Types.NUMERIC:
-                case Types.INTEGER:
-                    values.add(String.valueOf(rs.getInt(i)));
-                    break;
-                default:
-                    values.add(rs.getString(i));
-                    break;
-            }
-        }
-        return values;
     }
     
     private boolean isClient() {
@@ -133,36 +112,41 @@ public class SqlDaoBean extends DaoBean {
         return client;
     }
     
-    protected List<List<String>> executeStatement(String sql) {
+    protected List<String[]> executeStatement(String sql) {
         
         if (isClient()) {
             return executeStatement1(sql);
         }
         return executeStatement2(sql);
     }
-   
-    private List<List<String>> executeStatement1(String sql) {
+    
+    private List<String[]> executeStatement1(String sql) {
 
-        List<List<String>> valuesList = new ArrayList<>();
+        List<String[]> valuesList = new ArrayList<>();
 
-        try (Connection con = getConnection(); 
-                Statement st = con.createStatement(); 
-                ResultSet rs = st.executeQuery(sql);) {
+        try (Connection con = getConnection();
+                Statement st = con.createStatement();
+                ResultSet rs = st.executeQuery(sql)) {
 
+            int columnCount = rs.getMetaData().getColumnCount();
+            
             while (rs.next()) {
-                List<String> values = getColumnValues(rs);
+                final String[] values = new String[columnCount];
+                for (int i = 0; i < columnCount; ++i) {
+                    values[i] = String.valueOf(rs.getObject(i + 1));
+                }
                 valuesList.add(values);
             }
 
-        } catch (Exception e) {
-            e.printStackTrace(System.err);
-            processError(e);
+        } catch (Exception ex) {
+            //ex.printStackTrace(System.err);
+            processError(ex);
         }
 
         return valuesList;
     }
     
-    private List<List<String>> executeStatement2(String sql) {
+    private List<String[]> executeStatement2(String sql) {
         
         OrcaSqlModel sqlModel = new OrcaSqlModel();
         sqlModel.setUrl(getURL());
@@ -184,126 +168,57 @@ public class SqlDaoBean extends DaoBean {
         return Collections.emptyList();
     }
 
-    protected List<List<String>> executePreparedStatement(String sql, int[] types, String[] params) {
-
-        if (isClient()) {
-            return executePreparedStatement1(sql, types, params);
-        }
-        return executePreparedStatement2(sql, types, params);
-    }
-    
-    private List<List<String>> executePreparedStatement1(String sql, int[] types, String[] params) {
-
-        List<List<String>> valuesList = new ArrayList<>();
-
-        try (Connection con = getConnection();
-                PreparedStatement ps = con.prepareStatement(sql);) {
-
-            for (int i = 0; i < types.length; ++i) {
-                int type = types[i];
-                String param = params[i];
-                switch (type) {
-                    case Types.INTEGER:
-                        ps.setInt(i + 1, Integer.valueOf(param));
-                        break;
-                    case Types.BIGINT:
-                        ps.setLong(i + 1, Long.valueOf(param));
-                        break;
-                    case Types.FLOAT:
-                        ps.setFloat(i + 1, Float.valueOf(param));
-                        break;
-                    case Types.CHAR:
-                    default:
-                        ps.setString(i + 1, param);
-                        break;
-                }
-            }
-            
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    List<String> values = getColumnValues(rs);
-                    valuesList.add(values);
-                }
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace(System.err);
-            processError(e);
-        }
-
-        return valuesList;
-    }
-    
-    private List<List<String>> executePreparedStatement2(String sql, int[] types, String[] params) {
+    protected List<String[]> executePreparedStatement(String sql, Object[] params) {
         
-        OrcaSqlModel sqlModel = new OrcaSqlModel();
-        sqlModel.setPreparedStatement(true);
-        sqlModel.setUrl(getURL());
-        sqlModel.setSql(sql);
-        
-        for (int i = 0; i < types.length; ++i) {
-            int type = types[i];
-            switch (type) {
-                case Types.INTEGER:
-                case Types.FLOAT:
-                case Types.BIGINT:
-                    sqlModel.addParameter(type, String.valueOf(params[i]));
-                    break;
-                case Types.CHAR:
-                default:
-                    sqlModel.addParameter(type, params[i]);
-                    break;
-            }
-        }
         try {
-            OrcaSqlModel result = OrcaDelegater.getInstance().executeQuery(sqlModel);
-
-            if (result != null) {
-                String errMsg = result.getErrorMessage();
-                if (errMsg != null) {
-                    processError(new SQLException(result.getErrorMessage()));
-                } else {
-                    return result.getValuesList();
-                }
+            String sql2 = createSql(sql, params);
+            if (isClient()) {
+                return executeStatement1(sql2);
             }
-        } catch (Exception ex) {
+            return executeStatement2(sql2);
+        } catch (SQLException ex) {
         }
         
         return Collections.emptyList();
     }
+    
+    private String createSql(String sql, Object[] params) throws SQLException {
+        
+        int index = 0;
+        StringBuilder sb = new StringBuilder();
+
+        try {
+            int len = sql.length();
+            for (int i = 0; i < len; ++i) {
+                char c = sql.charAt(i);
+                if (c == '?') {
+                    Object param = params[index];
+                    if (param instanceof Number) {
+                        sb.append(String.valueOf(param));
+                    } else {
+                        sb.append('\'').append(String.valueOf(param)).append('\'');
+                    }
+                    index++;
+                } else {
+                    sb.append(c);
+                }
+            }
+        } catch (Exception ex) {
+            throw new SQLException(ex.getMessage());
+        }
+
+        if (index != params.length) {
+            throw new SQLException("Illegal parameter count.");
+        }
+
+        return sb.toString();
+    }
+
     
     protected final int getHospNum() {
         return SyskanriInfo.getInstance().getHospNumFromSysKanriInfo();
     }
     
-    // ひらがなをカタカナに変換
-    protected String hiraganaToKatakana(String input) {
-
-        final String Hiragana = "あいうえおかきくけこさしすせそ" +
-                                "たちつてとなにぬねのはひふへほ" +
-                                "まみむめもやゆよらりるれろわを" +
-                                 "んっゃゅょぁぃぅぇぉゎ" +
-                                "がぎぐげござじずぜぞだぢづでど" +
-                                "ばびぶべぼぱぴぷぺぽ";
-        final String Katakana = "アイウエオカキクケコサシスセソ" +
-                                "タチツテトナニヌネノハヒフヘホ" +
-                                "マミムメモヤユヨラリルレロワヲ" +
-                                "ンッャュョァィゥェォヮ" +
-                                "ガギグゲゴザジズゼゾダヂヅデド" +
-                                "バビブベボパピプペポ";
-
-        StringBuilder output = new StringBuilder();
-        for (int i = 0; i < input.length(); ++i) {
-            int pos = Hiragana.indexOf(input.substring(i, i + 1));
-            if (pos != -1) {
-                output.append(Katakana.substring(pos, pos + 1));
-            } else {
-                output.append(input.substring(i, i + 1));
-            }
-        }
-        return output.toString();
-    }
-
     // srycdのListからカンマ区切りの文字列を作る
     protected String getCodes(Collection<String> srycdList){
 
@@ -328,14 +243,13 @@ public class SqlDaoBean extends DaoBean {
         
         final String sql = "select ptid from tbl_ptnum where hospnum = ? and ptnum = ?";
         
-        int[] types = {Types.INTEGER, Types.CHAR};
-        String[] params = {String.valueOf(hospNum), patientId};
+        Object[] params = {hospNum, patientId};
         
-        List<List<String>> valuesList = executePreparedStatement(sql, types, params);
+        List<String[]> valuesList = executePreparedStatement(sql, params);
         
         if (!valuesList.isEmpty()) {
-            List<String> values = valuesList.get(0);
-            ptid = Long.valueOf(values.get(0));
+            String[] values = valuesList.get(0);
+            ptid = Long.valueOf(values[0]);
         }
 
         return ptid;
@@ -343,10 +257,18 @@ public class SqlDaoBean extends DaoBean {
 
     private Connection getConnection() throws Exception {
         Connection con;
-        if (false) {
-            con = DriverManager.getConnection(getURL(), getUser(), getPasswd());
-        } else {
-            con = getConnectionFromPool();
+        try {
+            if (false) {
+                con = DriverManager.getConnection(getURL(), getUser(), getPasswd());
+            } else {
+                con = getConnectionFromPool();
+            }
+        } catch (Exception ex) {
+            processError(ex);
+            String msg = getErrorMessage();
+            String title = "ORCA接続";
+            JOptionPane.showMessageDialog(null, msg, title, JOptionPane.WARNING_MESSAGE);
+            throw ex;
         }
         return con;
     }
