@@ -1089,7 +1089,7 @@ public abstract class AbstractStampEditor implements StampEditorConst {
         //-----------------------------
         // Bundle の 診療行為区分を保存
         //-----------------------------
-        setClassCode(bundle.getClassCode());
+        classCode = bundle.getClassCode();
         
         // 診療区分をデフォルト設定
         view.setShinkuByShinku(classCode);
