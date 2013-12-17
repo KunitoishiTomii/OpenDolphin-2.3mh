@@ -212,6 +212,12 @@ public class IModuleDecoder {
             case "ykzKbn":
                 claimItem.setYkzKbn(value);
                 break;
+            case "srysyuKbn":
+                claimItem.setSrysyuKbn(value);
+                break;
+            case "dataKbn":
+                claimItem.setDataKbn(value);
+                break;
             default:
                 System.out.println("Unknown field name in ClaimItem : " + fieldName);
                 break;
