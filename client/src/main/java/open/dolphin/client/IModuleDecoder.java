@@ -124,6 +124,9 @@ public class IModuleDecoder {
             case "open.dolphin.infomodel.ProgressCourse":
                 progressCourse = new ProgressCourse();
                 break;
+            default:
+                System.out.println("Unknown class : " + className);
+                break;
         }
     }
 
@@ -167,6 +170,9 @@ public class IModuleDecoder {
             case "orderName":
                 bundle.setOrderName(value);
                 break;
+            default:
+                System.out.println("Unknown field name in BundleDolphin : " + fieldName);
+                break;
         }
     }
 
@@ -205,6 +211,9 @@ public class IModuleDecoder {
                 break;
             case "ykzKbn":
                 claimItem.setYkzKbn(value);
+                break;
+            default:
+                System.out.println("Unknown field name in ClaimItem : " + fieldName);
                 break;
         }
     }
