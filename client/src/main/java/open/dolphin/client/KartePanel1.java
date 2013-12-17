@@ -46,7 +46,7 @@ public final class KartePanel1 extends KartePanel {
     public boolean isSinglePane() {
         return true;
     }
-    
+/*
     // KarteDocumentViewerのBoxLayoutがうまくやってくれるように
     @Override
     public Dimension getPreferredSize() {
@@ -58,4 +58,5 @@ public final class KartePanel1 extends KartePanel {
 
         return new Dimension(w, h);
     }
+*/
 }

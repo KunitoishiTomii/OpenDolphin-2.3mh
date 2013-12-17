@@ -74,7 +74,7 @@ public final class StampHolder extends AbstractComponentHolder {
      * @param stamp
      */
     public void setStamp(ModuleModel stamp) {
-        if (this.stamp!=stamp) {
+        if (this.stamp != stamp) {
             this.stamp = stamp;
         }
         function.setMyText(this);

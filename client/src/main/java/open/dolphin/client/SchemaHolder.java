@@ -30,10 +30,18 @@ public final class SchemaHolder extends AbstractComponentHolder {
         setImageIcon(schema.getIcon());
     }
     
-    private void setImageIcon(ImageIcon icon) {
+    private void setImageIcon(final ImageIcon icon) {
         Dimension d = new Dimension(ICON_SIZE, ICON_SIZE);
-        ImageIcon adjusted = function.getAdjustedImage(icon, d);
-        setIcon(adjusted);
+        final ImageIcon adjusted = function.getAdjustedImage(icon, d);
+        
+        // こっちもinvokeLaterにしてみる
+        SwingUtilities.invokeLater(new Runnable(){
+
+            @Override
+            public void run() {
+                setIcon(adjusted);
+            }
+        });
     }
     
     public SchemaModel getSchema() {
