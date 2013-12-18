@@ -14,6 +14,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import open.dolphin.client.*;
 import open.dolphin.helper.ComponentMemory;
+import open.dolphin.helper.WindowSupport;
 import open.dolphin.infomodel.*;
 import open.dolphin.order.EditorSetPanel;
 import open.dolphin.project.Project;
@@ -36,7 +37,7 @@ public class StampBoxPlugin extends AbstractMainTool {
 
     private ComponentMemory cm;             // スタンプ箱のcomponent memory
     private ComponentMemory cmEditor;       // スタンプエディタのcomponent memory
-    private EditorFrame editorFrame;             // スタンプエディタのJFrame
+    private JFrame editorFrame;             // スタンプエディタのJFrame
     private JFrame frame;                   // StampBox の JFrame
     private JTabbedPane parentBox;          // StampBox
     private AbstractStampBox userBox;       //ユーザ個人用の StampBox
@@ -74,12 +75,6 @@ public class StampBoxPlugin extends AbstractMainTool {
         this.isLocked = isLocked;
     }
 //pns$
-    
-    private static class EditorFrame extends JFrame {
-        private EditorFrame(String title) {
-            super(title);
-        } 
-    }
     
     /**
      * Creates new StampBoxPlugin
@@ -398,11 +393,12 @@ public class StampBoxPlugin extends AbstractMainTool {
         
         // StampBoxPluginのJFrameを生成する
         String title = ClientContext.getFrameTitle(getName());
-        frame = new JFrame(title);
- //masuda^    アイコン設定
-        ClientContext.setDolphinIcon(frame);
+//masuda^
+        WindowSupport ws = WindowSupport.create(title);
+        frame = ws.getFrame();
+        ws.getMenuBar().setVisible(false);
 //masuda$
-        frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+        
         frame.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
@@ -601,11 +597,11 @@ public class StampBoxPlugin extends AbstractMainTool {
 
         if (editorFrame == null) {
             String title = ClientContext.getFrameTitle(getName());
-            editorFrame = new EditorFrame(title);
-//masuda^    アイコン設定
-             ClientContext.setDolphinIcon(editorFrame);
+//masuda^
+            WindowSupport ws = WindowSupport.create(title);
+            editorFrame = ws.getFrame();
+            ws.getMenuBar().setVisible(false);
 //masuda$
-            editorFrame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         }
         editorFrame.setContentPane(content);
         editorFrame.setGlassPane(glass);
