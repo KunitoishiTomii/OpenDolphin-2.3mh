@@ -9,7 +9,6 @@ import javax.swing.SwingUtilities;
 
 import open.dolphin.infomodel.ModuleModel;
 import open.dolphin.order.AbstractStampEditor;
-import open.dolphin.order.StampEditorConst;
 
 /**
  * KartePane に Component　として挿入されるスタンプを保持スルクラス。
