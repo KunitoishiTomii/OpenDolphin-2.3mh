@@ -1227,7 +1227,8 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
     public void openEditor2() {
 
         Window lock = SwingUtilities.getWindowAncestor(this.getUI());
-        StampEditor editor = new StampEditor(null, this, lock);
+        StampEditor editor = new StampEditor();
+        editor.editDiagnosis(null, this, lock);
     }
 
 //masuda^ 既存病名編集
@@ -1236,7 +1237,8 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
         RegisteredDiagnosisModel model = sorter.getObject(selectedRow);
         // 編集するRegisteredDiagnosisModelをeditorに伝える
         Window lock = SwingUtilities.getWindowAncestor(this.getUI());
-        StampEditor stampEditor = new StampEditor(model, this, lock);
+        StampEditor editor = new StampEditor();
+        editor.editDiagnosis(model, this, lock);
     }
 //masuda$
 

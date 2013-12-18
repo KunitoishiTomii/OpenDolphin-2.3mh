@@ -289,9 +289,11 @@ public class StampHolderFunction {
                 for (int i = 0; i < s; ++i) {
                     stamps[i] = stampHolderList.get(i).getStamp();
                 }
-                new StampEditor(stamps, selectedStampHolder, kartePane.getParent().getContext());
+                StampEditor editor = new StampEditor();
+                editor.editStamp(stamps, selectedStampHolder, kartePane.getParent().getContext());
             } else {
-                new StampEditor(new ModuleModel[]{stamp}, selectedStampHolder, kartePane.getParent().getContext());
+                StampEditor editor = new StampEditor();
+                editor.editStamp(new ModuleModel[]{stamp}, selectedStampHolder, kartePane.getParent().getContext());
             }
         }
     }

@@ -623,7 +623,9 @@ public class KartePane implements MouseListener, CaretListener, PropertyChangeLi
         //------------------------------------
         ModuleModel stamp = new ModuleModel();
         stamp.setModuleInfoBean(stampInfo);
-        StampEditor se = new StampEditor(new ModuleModel[]{stamp}, this, parent.getContext());
+        
+        StampEditor editor = new StampEditor();
+        editor.editStamp(new ModuleModel[]{stamp}, this, parent.getContext());
     }
 
     /**

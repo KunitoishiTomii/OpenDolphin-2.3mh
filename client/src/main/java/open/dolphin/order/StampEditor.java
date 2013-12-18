@@ -9,7 +9,6 @@ import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.JDialog;
-import javax.swing.JFrame;
 import open.dolphin.client.Chart;
 import open.dolphin.client.ClientContext;
 import open.dolphin.helper.ComponentMemory;
@@ -29,8 +28,8 @@ public class StampEditor implements PropertyChangeListener {
     private AbstractStampEditor editor;
     private JDialog dialog;
 
-    
-    public StampEditor(ModuleModel[] stamps, final PropertyChangeListener listener, Chart chart) {
+
+    public void editStamp(ModuleModel[] stamps, final PropertyChangeListener listener, Chart chart) {
         
         if (stamps.length == 0) {
             return;
@@ -73,7 +72,7 @@ public class StampEditor implements PropertyChangeListener {
         // editorにChartを設定する
         editor.setContext(chart);
         
-        dialog = new JDialog(new JFrame(), true);
+        dialog = new JDialog(chart.getFrame(), true);
         // アイコン設定
         ClientContext.setDolphinIcon(dialog);
         
@@ -103,7 +102,7 @@ public class StampEditor implements PropertyChangeListener {
         dialog.setVisible(true);
     }
 
-    public StampEditor(RegisteredDiagnosisModel rd, PropertyChangeListener listener, Window lock) {
+    public void editDiagnosis(RegisteredDiagnosisModel rd, PropertyChangeListener listener, Window lock) {
         
         editor = new DiseaseEditor(IInfoModel.ENTITY_DIAGNOSIS);
         editor.addPropertyChangeListener(AbstractStampEditor.VALUE_PROP, listener);
