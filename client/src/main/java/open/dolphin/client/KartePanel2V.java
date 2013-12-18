@@ -1,7 +1,6 @@
 package open.dolphin.client;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JPanel;
