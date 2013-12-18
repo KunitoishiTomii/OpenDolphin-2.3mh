@@ -651,7 +651,7 @@ public class LaboTestBean extends AbstractChartDocument {
                 IntervalMarker marker = new IntervalMarker(low, hi);
                 marker.setPaint(new Color(200, 230, 200));
                 plot.addRangeMarker(marker, Layer.BACKGROUND);
-            } catch (NumberFormatException e) {
+            } catch (NullPointerException | NumberFormatException e) {
             }
         }
 //masuda$

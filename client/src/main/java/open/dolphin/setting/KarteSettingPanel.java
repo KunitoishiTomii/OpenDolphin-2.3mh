@@ -1021,8 +1021,7 @@ public class KarteSettingPanel extends AbstractSettingPanel {
         if (!valStr.isEmpty()) {
             try {
                 model.setAgeNeedMonth(Integer.parseInt(valStr));
-
-            } catch (NumberFormatException e) {
+            } catch (NullPointerException | NumberFormatException e) {
                 e.printStackTrace(System.err);
             }
         }
