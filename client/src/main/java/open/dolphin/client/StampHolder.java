@@ -8,6 +8,8 @@ import java.beans.PropertyChangeEvent;
 import javax.swing.SwingUtilities;
 
 import open.dolphin.infomodel.ModuleModel;
+import open.dolphin.order.AbstractStampEditor;
+import open.dolphin.order.StampEditorConst;
 
 /**
  * KartePane に Component　として挿入されるスタンプを保持スルクラス。
@@ -99,10 +101,24 @@ public final class StampHolder extends AbstractComponentHolder {
      */
     @Override
     public void propertyChange(PropertyChangeEvent e) {
-        function.setSelectedStampHolder(this);
-        ModuleModel[] newStamps = (ModuleModel[]) e.getNewValue();
-        ModuleModel[] oldValue = (ModuleModel[]) e.getOldValue();
-        function.setNewValue(newStamps, oldValue);
+
+        String prop = e.getPropertyName();
+
+        if (AbstractStampEditor.VALUE_PROP.equals(prop)) {
+
+            Object obj = e.getNewValue();
+            if (obj instanceof Object[]) {
+
+                Object[] valuePair = (Object[]) obj;
+                if (valuePair.length < 2) {
+                    return;
+                }
+                function.setSelectedStampHolder(this);
+                ModuleModel[] oldValue = (ModuleModel[]) valuePair[0];
+                ModuleModel[] newStamps = (ModuleModel[]) valuePair[1];
+                function.setNewValue(newStamps, oldValue);
+            }
+        }
     }
     
     /**

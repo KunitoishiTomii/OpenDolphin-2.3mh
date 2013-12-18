@@ -67,20 +67,22 @@ public final class SchemaHolder extends AbstractComponentHolder {
     public void propertyChange(PropertyChangeEvent e) {
 
         function.getLogger().debug("SchemaHolder propertyChange");
-        SchemaModel newSchema = (SchemaModel) e.getNewValue();
-        if (newSchema == null) {
-            return;
-        }
 
-        schema = newSchema;
-        SwingUtilities.invokeLater(new Runnable() {
-
-            @Override
-            public void run() {
-                setImageIcon(schema.getIcon());
+        if (SchemaEditor.VALUE_PROP.equals(e.getPropertyName())) {
+            SchemaModel newSchema = (SchemaModel) e.getNewValue();
+            if (newSchema == null) {
+                return;
             }
-        });
-        kartePane.setDirty(true);
+            schema = newSchema;
+            SwingUtilities.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    setImageIcon(schema.getIcon());
+                }
+            });
+            kartePane.setDirty(true);
+        }
     }
 
     @Override

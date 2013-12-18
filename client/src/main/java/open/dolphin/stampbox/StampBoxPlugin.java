@@ -32,8 +32,8 @@ public class StampBoxPlugin extends AbstractMainTool {
     
     // frameのデフォルトの大きさ及びタイトル
     private static final int IMPORT_TREE_OFFSET     = 1;
-    private static final int DEFAULT_EDITOR_WIDTH   = 700;
-    private static final int DEFAULT_EDITOR_HEIGHT  = 620;
+    private static final int DEFAULT_EDITOR_WIDTH   = 800;
+    private static final int DEFAULT_EDITOR_HEIGHT  = 400;
 
     private ComponentMemory cm;             // スタンプ箱のcomponent memory
     private ComponentMemory cmEditor;       // スタンプエディタのcomponent memory
@@ -742,7 +742,6 @@ public class StampBoxPlugin extends AbstractMainTool {
                 // 編集元があればはstampIdを継承する
                 if (oldRd != null) {
                     newRd.setStampId(oldRd.getStampId());
-                    newRd.setId(0);
                 } else {
                     newRd.setStampId(null);     //  新規
                 }

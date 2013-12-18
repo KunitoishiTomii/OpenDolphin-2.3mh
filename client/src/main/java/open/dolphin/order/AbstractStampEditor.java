@@ -901,7 +901,8 @@ public abstract class AbstractStampEditor implements StampEditorConst {
     }
     
     private void fireNewValue() {
-        boundSupport.firePropertyChange(VALUE_PROP, oldValue, getNewValue());
+        Object[] valuePair = new Object[]{oldValue, getNewValue()};
+        boundSupport.firePropertyChange(VALUE_PROP, null, valuePair);
     }
 
     protected void clear() {
@@ -1046,7 +1047,7 @@ public abstract class AbstractStampEditor implements StampEditorConst {
 
         if (boundSupport != null) {
             boundSupport.firePropertyChange(EMPTY_DATA_PROP, !setIsEmpty, setIsEmpty);
-            boundSupport.firePropertyChange(VALIDA_DATA_PROP, !setIsValid, setIsValid);
+            boundSupport.firePropertyChange(VALID_DATA_PROP, !setIsValid, setIsValid);
         }
     }
     

@@ -115,7 +115,7 @@ public class EditorSetPanel extends JPanel implements PropertyChangeListener, Tr
         if (curEditor != null) {
             curEditor.dispose();
             curEditor.remopvePropertyChangeListener(AbstractStampEditor.EMPTY_DATA_PROP, this);
-            curEditor.remopvePropertyChangeListener(AbstractStampEditor.VALIDA_DATA_PROP, this);
+            curEditor.remopvePropertyChangeListener(AbstractStampEditor.VALID_DATA_PROP, this);
         }
     }
     
@@ -154,7 +154,7 @@ public class EditorSetPanel extends JPanel implements PropertyChangeListener, Tr
         if (curEditor != null) {
             curEditor.dispose(); // setTable, searchResultTable が clear される
             curEditor.remopvePropertyChangeListener(AbstractStampEditor.EMPTY_DATA_PROP, this);
-            curEditor.remopvePropertyChangeListener(AbstractStampEditor.VALIDA_DATA_PROP, this);
+            curEditor.remopvePropertyChangeListener(AbstractStampEditor.VALID_DATA_PROP, this);
         }
 
         // ORCA及びパスタブの場合
@@ -205,7 +205,7 @@ public class EditorSetPanel extends JPanel implements PropertyChangeListener, Tr
 
         // 最初にclearされるイベントを受けない
         curEditor.addPropertyChangeListener(AbstractStampEditor.EMPTY_DATA_PROP, this);
-        curEditor.addPropertyChangeListener(AbstractStampEditor.VALIDA_DATA_PROP, this);
+        curEditor.addPropertyChangeListener(AbstractStampEditor.VALID_DATA_PROP, this);
         
         cardLayout.show(cardPanel, entity);
         
@@ -221,28 +221,27 @@ public class EditorSetPanel extends JPanel implements PropertyChangeListener, Tr
         
         String prop = e.getPropertyName();
         
-        if (AbstractStampEditor.VALIDA_DATA_PROP.equals(prop)) {
+        switch (prop) {
+            case AbstractStampEditor.VALID_DATA_PROP:
+                // 有効か無効かで右矢印ボタンを制御する
+                Boolean i = (Boolean) e.getNewValue();
+                boolean valid = i.booleanValue();
+                // 新規スタンプとして保存
+                rightNew.setEnabled(valid);
+                // 上書き保存 valid かつ imported!=null
+                rightReplace.setEnabled(valid && isImport);
+                // 600
+                right6001.setEnabled(valid && (right6001.isVisible()));
+                right6002.setEnabled(valid && (right6002.isVisible()));
+                break;
 
-            // 有効か無効かで右矢印ボタンを制御する
-            Boolean i = (Boolean) e.getNewValue();
-            boolean valid = i.booleanValue();
-
-            // 新規スタンプとして保存
-            rightNew.setEnabled(valid);
-
-            // 上書き保存 valid かつ imported!=null
-            rightReplace.setEnabled(valid && isImport);
-
-            // 600
-            right6001.setEnabled(valid && (right6001.isVisible()));
-            right6002.setEnabled(valid && (right6002.isVisible()));
-
-        } else if (AbstractStampEditor.EMPTY_DATA_PROP.equals(prop)) {
-            // 空なら取り込みはすべてdisable
-            rightNew.setEnabled(false);
-            rightReplace.setEnabled(false);
-            right6001.setEnabled(false);
-            right6002.setEnabled(false);
+            case AbstractStampEditor.EMPTY_DATA_PROP:
+                // 空なら取り込みはすべてdisable
+                rightNew.setEnabled(false);
+                rightReplace.setEnabled(false);
+                right6001.setEnabled(false);
+                right6002.setEnabled(false);
+                break;
         }
     }
     

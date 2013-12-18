@@ -115,11 +115,8 @@ public final class DiseaseEditor extends AbstractStampEditor {
         if (oldValue instanceof RegisteredDiagnosisModel) {
             RegisteredDiagnosisModel old = (RegisteredDiagnosisModel) oldValue;
             newRd = duplicateRd(old);
-            // idはいったん違うものにしておく。firePropertyChangeするため
-            newRd.setId(-1L);
         } else {
             newRd = new RegisteredDiagnosisModel();
-
         }
         
         StringBuilder name = new StringBuilder();

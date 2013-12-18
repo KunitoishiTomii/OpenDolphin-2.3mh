@@ -181,11 +181,11 @@ public class SchemaEditorImpl implements SchemaEditor {
             }
             model.getExtRefModel().setTitle(text);
             model.getExtRefModel().setMedicalRole((String) canvasView.getRoleCombo().getSelectedItem());
-            boundSupport.firePropertyChange("imageProp", null, model);
+            boundSupport.firePropertyChange(VALUE_PROP, null, model);
 
         // キャンセル
         } else {
-            boundSupport.firePropertyChange("imageProp", model, null);
+            boundSupport.firePropertyChange(VALUE_PROP, model, null);
         }
     }
 

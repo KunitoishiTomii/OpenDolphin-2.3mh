@@ -1086,26 +1086,29 @@ public class KartePane implements MouseListener, CaretListener, PropertyChangeLi
 
         String prop = e.getPropertyName();
 
-        if ("imageProp".equals(prop)) {
-
-            SchemaModel schema = (SchemaModel) e.getNewValue();
-
-            if (schema != null) {
-                // 編集されたシェーマをこのペインに挿入する
-                stampSchema(schema);
-            }
-
-        } else if (AbstractStampEditor.VALUE_PROP.equals(prop)) {
-
-            Object o = e.getNewValue();
-
-            if (o != null) {
-//masuda    複数スタンプ
-                ModuleModel[] stamps = (ModuleModel[]) o;
-                for (ModuleModel stamp : stamps) {
-                    stamp(stamp);
+        switch (prop) {
+            
+            case SchemaEditor.VALUE_PROP:
+                SchemaModel schema = (SchemaModel) e.getNewValue();
+                if (schema != null) {
+                    // 編集されたシェーマをこのペインに挿入する
+                    stampSchema(schema);
                 }
-            }
+                break;
+                
+            case AbstractStampEditor.VALUE_PROP:
+                Object obj = e.getNewValue();
+                if (obj instanceof Object[]) {
+                    Object[] valuePair = (Object[]) e.getNewValue();
+                    if (valuePair.length < 2) {
+                        return;
+                    }
+                    ModuleModel[] stamps = (ModuleModel[]) valuePair[1];
+                    for (ModuleModel stamp : stamps) {
+                        stamp(stamp);
+                    }
+                }
+                break;
         }
     }
 
