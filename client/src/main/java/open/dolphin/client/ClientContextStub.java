@@ -809,7 +809,7 @@ public final class ClientContextStub {
             } else if (values.length == 4) {
                 c = new Color(intValues[0], intValues[1], intValues[2], intValues[3]);
             }
-        } catch (NumberFormatException e) {
+        } catch (NullPointerException | NumberFormatException e) {
         }
         return c;
     }
