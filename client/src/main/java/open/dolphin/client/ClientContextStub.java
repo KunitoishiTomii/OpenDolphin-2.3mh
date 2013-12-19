@@ -648,7 +648,11 @@ public final class ClientContextStub {
 
         //String sytemLafCls = UIManager.getSystemLookAndFeelClassName();
         //Locale locale = Locale.getDefault();
-        String userLaf = Project.getString("lookAndFeel", ILookAndFeelConst.NIMBUS_LAF_CLS);
+        String systemLaf = isMac()
+                ? ILookAndFeelConst.AQUA_LAF_CLS
+                : ILookAndFeelConst.NIMBUS_LAF_CLS;
+        String userLaf = Project.getString("lookAndFeel", systemLaf);
+
         //userLaf = QUAQUA_LAF_CLS;
         boolean isQuaqua = ILookAndFeelConst.QUAQUA_LAF_CLS.equals(userLaf);
         isNimbus = userLaf.contains("nimbus");
