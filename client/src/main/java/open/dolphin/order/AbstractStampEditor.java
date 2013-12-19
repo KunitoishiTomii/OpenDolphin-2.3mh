@@ -332,13 +332,13 @@ public abstract class AbstractStampEditor implements StampEditorConst {
             return TT_CODE_SEARCH;
         }
 
-        // ３文字以上 2013/11/16 katou 検索開始のトリガを入力３文字目に変更（要望反映）
-        if ((!textIsCode) && test.length() >= 3) {
+        // ２文字以上
+        if (!textIsCode && test.length() > 1) {
             return TT_LETTER_SEARCH;
         }
 
-        // １文字でreturn確定 2013/11/16 katou 検索開始のトリガを入力３文字目に変更（要望反映）
-        if ((!textIsCode) && hitReturn) {
+        // １文字でreturn確定
+        if (!textIsCode && hitReturn) {
             return TT_LETTER_SEARCH;
         }
 
@@ -901,7 +901,8 @@ public abstract class AbstractStampEditor implements StampEditorConst {
     }
     
     private void fireNewValue() {
-        boundSupport.firePropertyChange(VALUE_PROP, oldValue, getNewValue());
+        Object[] valuePair = new Object[]{oldValue, getNewValue()};
+        boundSupport.firePropertyChange(VALUE_PROP, null, valuePair);
     }
 
     protected void clear() {
@@ -1046,7 +1047,7 @@ public abstract class AbstractStampEditor implements StampEditorConst {
 
         if (boundSupport != null) {
             boundSupport.firePropertyChange(EMPTY_DATA_PROP, !setIsEmpty, setIsEmpty);
-            boundSupport.firePropertyChange(VALIDA_DATA_PROP, !setIsValid, setIsValid);
+            boundSupport.firePropertyChange(VALID_DATA_PROP, !setIsValid, setIsValid);
         }
     }
     
@@ -1090,9 +1091,6 @@ public abstract class AbstractStampEditor implements StampEditorConst {
         // Bundle の 診療行為区分を保存
         //-----------------------------
         classCode = bundle.getClassCode();
-        
-        // 診療区分をデフォルト設定
-        view.setShinkuByShinku(classCode);
 
         // ClaimItemをMasterItemへ変換してテーブルへ追加する
         ClaimItem[] items = bundle.getClaimItem();

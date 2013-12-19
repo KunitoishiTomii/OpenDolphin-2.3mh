@@ -108,8 +108,17 @@ public final class DiseaseEditor extends AbstractStampEditor {
     @Override
     public RegisteredDiagnosisModel getNewValue() {
 
-        RegisteredDiagnosisModel diagnosis = null;
-
+        RegisteredDiagnosisModel newRd;
+                
+        // 病名以外は編集元を引き継ぐ
+        Object oldValue = getOldValue();
+        if (oldValue instanceof RegisteredDiagnosisModel) {
+            RegisteredDiagnosisModel old = (RegisteredDiagnosisModel) oldValue;
+            newRd = duplicateRd(old);
+        } else {
+            newRd = new RegisteredDiagnosisModel();
+        }
+        
         StringBuilder name = new StringBuilder();
         StringBuilder code = new StringBuilder();
 
@@ -121,23 +130,9 @@ public final class DiseaseEditor extends AbstractStampEditor {
             String diagCode = diag.getDiagnosisCode();
 
             if (!diagCode.startsWith(MODIFIER_CODE)) {
-                //
                 // 修飾語でない場合は基本病名と見なし、パラメータを設定する
-                //
-                
-                // 病名以外は編集元を引き継ぐ
-                Object oldValue = getOldValue();
-                if (oldValue instanceof RegisteredDiagnosisModel) {
-                    RegisteredDiagnosisModel old = (RegisteredDiagnosisModel) oldValue;
-                    diagnosis = duplicateRd(old);
-                }
-                if (diagnosis == null) {
-                    diagnosis = new RegisteredDiagnosisModel();
-                    
-                }
-                diagnosis.setByoKanrenKbn(diag.getByoKanrenKbn());
-                diagnosis.setDiagnosisCodeSystem(diag.getDiagnosisCodeSystem());
-
+                newRd.setByoKanrenKbn(diag.getByoKanrenKbn());
+                newRd.setDiagnosisCodeSystem(diag.getDiagnosisCodeSystem());
             } else {
                 // ZZZ をトリムする ORCA 実装
                 diagCode = diagCode.substring(MODIFIER_CODE.length());
@@ -154,13 +149,13 @@ public final class DiseaseEditor extends AbstractStampEditor {
 
         }
 
-        if (diagnosis != null && name.length() > 0 && code.length() > 0) {
+        if (name.length() > 0 && code.length() > 0) {
 
             // 名前とコードを設定する
-            diagnosis.setDiagnosis(name.toString());
-            diagnosis.setDiagnosisCode(code.toString());
+            newRd.setDiagnosis(name.toString());
+            newRd.setDiagnosisCode(code.toString());
             
-            return diagnosis;
+            return newRd;
 
         } else {
             return null;

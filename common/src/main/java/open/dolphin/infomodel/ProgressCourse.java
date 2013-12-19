@@ -8,7 +8,7 @@ package open.dolphin.infomodel;
  */
 public class ProgressCourse implements IModuleModel {
 
-    String freeText;
+    private String freeText;
 
     public void setFreeText(String freeText) {
         this.freeText = freeText;

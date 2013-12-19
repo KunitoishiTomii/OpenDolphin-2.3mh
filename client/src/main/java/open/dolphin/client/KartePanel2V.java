@@ -1,7 +1,6 @@
 package open.dolphin.client;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JPanel;
@@ -55,7 +54,7 @@ public final class KartePanel2V extends KartePanel {
     public boolean isSinglePane() {
         return false;
     }
-    
+/*
     @Override
     public Dimension getPreferredSize() {
 
@@ -71,4 +70,5 @@ public final class KartePanel2V extends KartePanel {
         h += hsoa + hp;
         return new Dimension(w, h);
     }
+*/
 }

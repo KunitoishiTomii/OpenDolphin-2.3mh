@@ -35,9 +35,11 @@ public abstract class KartePanel extends Panel2 {
     private static final int tsHgap = 0;
     private static final int tsVgap = 3;
     // TextPaneの余白
-    private static final int vMargin = 5;
-    private static final int hMargin = 5;
-    private static final Insets TEXT_PANE_MARGIN = new Insets(vMargin, hMargin, vMargin, hMargin);
+    private static final int topMargin = 5;
+    private static final int bottomMargin = 0;
+    private static final int leftMargin = 5;
+    private static final int rightMargin = 5;
+    private static final Insets TEXT_PANE_MARGIN = new Insets(topMargin, leftMargin, bottomMargin, rightMargin);
 
     //private static final Dimension INITIAL_SIZE = new Dimension(1, 1);
 

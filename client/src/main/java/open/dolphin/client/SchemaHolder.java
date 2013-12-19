@@ -30,10 +30,18 @@ public final class SchemaHolder extends AbstractComponentHolder {
         setImageIcon(schema.getIcon());
     }
     
-    private void setImageIcon(ImageIcon icon) {
+    private void setImageIcon(final ImageIcon icon) {
         Dimension d = new Dimension(ICON_SIZE, ICON_SIZE);
-        ImageIcon adjusted = function.getAdjustedImage(icon, d);
-        setIcon(adjusted);
+        final ImageIcon adjusted = function.getAdjustedImage(icon, d);
+        
+        // こっちもinvokeLaterにしてみる
+        SwingUtilities.invokeLater(new Runnable(){
+
+            @Override
+            public void run() {
+                setIcon(adjusted);
+            }
+        });
     }
     
     public SchemaModel getSchema() {
@@ -59,20 +67,22 @@ public final class SchemaHolder extends AbstractComponentHolder {
     public void propertyChange(PropertyChangeEvent e) {
 
         function.getLogger().debug("SchemaHolder propertyChange");
-        SchemaModel newSchema = (SchemaModel) e.getNewValue();
-        if (newSchema == null) {
-            return;
-        }
 
-        schema = newSchema;
-        SwingUtilities.invokeLater(new Runnable() {
-
-            @Override
-            public void run() {
-                setImageIcon(schema.getIcon());
+        if (SchemaEditor.VALUE_PROP.equals(e.getPropertyName())) {
+            SchemaModel newSchema = (SchemaModel) e.getNewValue();
+            if (newSchema == null) {
+                return;
             }
-        });
-        kartePane.setDirty(true);
+            schema = newSchema;
+            SwingUtilities.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    setImageIcon(schema.getIcon());
+                }
+            });
+            kartePane.setDirty(true);
+        }
     }
 
     @Override

@@ -424,11 +424,7 @@ public class KartePDFMaker extends AbstractPDFMaker {
         
         private void startElement(XMLStreamReader reader) throws XMLStreamException {
             
-            String eName = reader.getName().getLocalPart();
-            
-            if (eName == null) {
-                return;
-            }
+            String eName = reader.getLocalName();
 
             switch (eName) {
                 case PARAGRAPH_NAME:

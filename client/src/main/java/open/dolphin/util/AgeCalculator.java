@@ -120,7 +120,7 @@ public class AgeCalculator {
 
             return new GregorianCalendar(year, month, day);
 
-        } catch (NumberFormatException e) {
+        } catch (NullPointerException | NumberFormatException e) {
             e.printStackTrace(System.err);
         }
         return null;

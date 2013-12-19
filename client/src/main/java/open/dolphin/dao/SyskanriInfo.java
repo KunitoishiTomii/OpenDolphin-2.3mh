@@ -198,11 +198,7 @@ public class SyskanriInfo extends SqlDaoBean {
             // 病床数を取得
             String value = map.get("SYS-1001-BEDSU");
             bedNum = Integer.valueOf(value);
-        } catch (NumberFormatException ex) {
-            success = false;
-        } catch (UnsupportedEncodingException ex) {
-            success = false;
-        } catch (IOException ex) {
+        } catch (NullPointerException | NumberFormatException | IOException ex) {
             success = false;
         }
 

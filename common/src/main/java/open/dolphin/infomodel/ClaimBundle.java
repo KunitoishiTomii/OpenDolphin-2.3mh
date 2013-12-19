@@ -27,17 +27,17 @@ package open.dolphin.infomodel;
  */
 public class ClaimBundle implements IModuleModel, IStampModel {
 	
-    String className;           // 診療行為名
-    String classCode;           // 診療行為コード
-    String classCodeSystem;     // コード体系
-    String admin;               // 用法
-    String adminCode;           // 用法コード
-    String adminCodeSystem;     // 用法コード体系
-    String adminMemo;           // 用法メモ
-    String bundleNumber;        // バンドル数
-    ClaimItem[] claimItem;      // バンドル構成品目
-    String memo;                // メモ
-    private String insurance;           // 保険種別
+    protected String className;           // 診療行為名
+    protected String classCode;           // 診療行為コード
+    protected String classCodeSystem;     // コード体系
+    protected String admin;               // 用法
+    protected String adminCode;           // 用法コード
+    protected String adminCodeSystem;     // 用法コード体系
+    protected String adminMemo;           // 用法メモ
+    protected String bundleNumber;        // バンドル数
+    protected ClaimItem[] claimItem;      // バンドル構成品目
+    protected String memo;                // メモ
+    protected String insurance;           // 保険種別
     
     /** Creates new ClaimBundle*/
     public ClaimBundle() {        

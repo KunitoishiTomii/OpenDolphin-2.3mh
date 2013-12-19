@@ -15,7 +15,7 @@ import open.dolphin.helper.WindowSupport;
 import open.dolphin.infomodel.*;
 import open.dolphin.letter.KartePDFMaker;
 import open.dolphin.project.Project;
-import open.dolphin.common.util.BeanUtils;
+//import open.dolphin.util.LapTimer;
 import open.dolphin.util.MultiTaskExecutor;
 import org.apache.log4j.Logger;
 
@@ -66,7 +66,9 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
     
     private KarteTask karteTask;
     
-
+    //private final LapTimer timer = new LapTimer();
+    
+    
 //pns^ 表示されているカルテの中身を検索する modified by masuda
     private FindAndView findAndView = new FindAndView();
 
@@ -304,6 +306,8 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
             }
         }
 
+        //timer.start("Start show karte viewers");
+        
         if (map.isEmpty()) {
             // 追加されたものがない場合は、表示に飛ぶ
             showKarteViewers();
@@ -333,7 +337,7 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
     }
 
     private void showKarteViewers() {
-
+        
         SwingWorker worker = new SwingWorker<Void, KarteViewer>() {
 
             @Override
@@ -370,6 +374,8 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
                 }
                 // 先頭にスクロール
                 scrollerPanel.scrollRectToVisible(new Rectangle(0, 0, 1, 1));
+                
+                //timer.stop();
             }
         };
         
@@ -656,7 +662,9 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
             Collection<ModuleModel> mc = docModel.getModules();
             if (mc != null && !mc.isEmpty()) {
                 for (ModuleModel module : mc) {
-                    module.setModel((IModuleModel) BeanUtils.xmlDecode(module.getBeanBytes()));
+                    //module.setModel((IModuleModel) BeanUtils.xmlDecode(module.getBeanBytes()));
+                    IModuleDecoder dec = new IModuleDecoder();
+                    module.setModel(dec.decode(module.getBeanBytes()));
                 }
             }
 
@@ -732,9 +740,6 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
         @Override
         protected Integer doInBackground() {
             
-            //LapTimer timer = new LapTimer();
-            //timer.start();
-            
             logger.debug("KarteTask doInBackground");
             
             DocumentDelegater ddl = DocumentDelegater.getInstance();
@@ -787,8 +792,6 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
 
             logger.debug("doInBackground noErr, return result");
             
-            //timer.stop("Database access");
-
             return taskCount;
         }
 

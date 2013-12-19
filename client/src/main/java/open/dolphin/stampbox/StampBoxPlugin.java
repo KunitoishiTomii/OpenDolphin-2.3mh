@@ -14,6 +14,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import open.dolphin.client.*;
 import open.dolphin.helper.ComponentMemory;
+import open.dolphin.helper.WindowSupport;
 import open.dolphin.infomodel.*;
 import open.dolphin.order.EditorSetPanel;
 import open.dolphin.project.Project;
@@ -31,12 +32,12 @@ public class StampBoxPlugin extends AbstractMainTool {
     
     // frameのデフォルトの大きさ及びタイトル
     private static final int IMPORT_TREE_OFFSET     = 1;
-    private static final int DEFAULT_EDITOR_WIDTH   = 700;
-    private static final int DEFAULT_EDITOR_HEIGHT  = 620;
+    private static final int DEFAULT_EDITOR_WIDTH   = 800;
+    private static final int DEFAULT_EDITOR_HEIGHT  = 400;
 
     private ComponentMemory cm;             // スタンプ箱のcomponent memory
     private ComponentMemory cmEditor;       // スタンプエディタのcomponent memory
-    private EditorFrame editorFrame;             // スタンプエディタのJFrame
+    private JFrame editorFrame;             // スタンプエディタのJFrame
     private JFrame frame;                   // StampBox の JFrame
     private JTabbedPane parentBox;          // StampBox
     private AbstractStampBox userBox;       //ユーザ個人用の StampBox
@@ -74,12 +75,6 @@ public class StampBoxPlugin extends AbstractMainTool {
         this.isLocked = isLocked;
     }
 //pns$
-    
-    private static class EditorFrame extends JFrame {
-        private EditorFrame(String title) {
-            super(title);
-        } 
-    }
     
     /**
      * Creates new StampBoxPlugin
@@ -398,11 +393,12 @@ public class StampBoxPlugin extends AbstractMainTool {
         
         // StampBoxPluginのJFrameを生成する
         String title = ClientContext.getFrameTitle(getName());
-        frame = new JFrame(title);
- //masuda^    アイコン設定
-        ClientContext.setDolphinIcon(frame);
+//masuda^
+        WindowSupport ws = WindowSupport.create(title);
+        frame = ws.getFrame();
+        ws.getMenuBar().setVisible(false);
 //masuda$
-        frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+        
         frame.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
@@ -601,11 +597,11 @@ public class StampBoxPlugin extends AbstractMainTool {
 
         if (editorFrame == null) {
             String title = ClientContext.getFrameTitle(getName());
-            editorFrame = new EditorFrame(title);
-//masuda^    アイコン設定
-             ClientContext.setDolphinIcon(editorFrame);
+//masuda^
+            WindowSupport ws = WindowSupport.create(title);
+            editorFrame = ws.getFrame();
+            ws.getMenuBar().setVisible(false);
 //masuda$
-            editorFrame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         }
         editorFrame.setContentPane(content);
         editorFrame.setGlassPane(glass);
@@ -746,8 +742,6 @@ public class StampBoxPlugin extends AbstractMainTool {
                 // 編集元があればはstampIdを継承する
                 if (oldRd != null) {
                     newRd.setStampId(oldRd.getStampId());
-                    // 気持ちが悪いのでEditorSetPanelで-1に設定したidを戻す TODO
-                    oldRd.setId(0);
                 } else {
                     newRd.setStampId(null);     //  新規
                 }

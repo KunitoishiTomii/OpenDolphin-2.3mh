@@ -1,4 +1,3 @@
-
 package open.dolphin.util;
 
 /**
@@ -8,13 +7,16 @@ package open.dolphin.util;
  */
 public class LapTimer {
 
-    private final long sTime;
-    private final StringBuilder sb;
+    private long sTime;
+    private StringBuilder sb;
     
     public LapTimer() {
+    }
+    
+    public void start(String msg) {
         sTime = System.currentTimeMillis();
         sb = new StringBuilder();
-        sb.append("Lap timer started at ").append(sTime).append("\n");
+        sb.append("Lap timer started: ").append(msg).append("\n");
     }
 
     public void lap(String msg) {

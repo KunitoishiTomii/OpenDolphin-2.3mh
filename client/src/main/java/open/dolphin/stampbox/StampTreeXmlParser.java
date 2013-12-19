@@ -137,11 +137,7 @@ public class StampTreeXmlParser {
     
     private void startElement(XMLStreamReader reader) throws XMLStreamException {
 
-        String eName = reader.getName().getLocalPart();
-        
-        if (eName == null) {
-            return;
-        }
+        String eName = reader.getLocalName();
         
         switch (eName) {
             case ELEM_STAMPINFO:
@@ -272,11 +268,7 @@ public class StampTreeXmlParser {
     
     private void endElement(XMLStreamReader reader) throws XMLStreamException {
 
-        String eName = reader.getName().getLocalPart();
-        
-        if (eName == null) {
-            return;
-        }
+        String eName = reader.getLocalName();
         
         switch(eName) {
             case ELEM_STAMPINFO:

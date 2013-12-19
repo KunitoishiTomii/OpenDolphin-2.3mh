@@ -10,7 +10,7 @@ package open.dolphin.order;
 public interface StampEditorConst {
     
     public static final String VALUE_PROP = "value";
-    public static final String VALIDA_DATA_PROP = "validData";
+    public static final String VALID_DATA_PROP = "validData";
     public static final String EMPTY_DATA_PROP = "emptyData";
     public static final String EDIT_END_PROP = "editEnd";
     public static final String CURRENT_SHINKU_PROP = "currentShinkuProp";

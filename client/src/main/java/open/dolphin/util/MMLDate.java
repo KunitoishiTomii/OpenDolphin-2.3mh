@@ -114,7 +114,7 @@ public final class MMLDate extends Object {
             }
             ret[2] = Integer.parseInt(val);
         }
-        catch (NumberFormatException e) {
+        catch (NullPointerException | NumberFormatException e) {
             ret = null;
         }
         

@@ -425,7 +425,6 @@ public class ClaimSettingPanel extends AbstractSettingPanel {
         try {
             int port = Integer.parseInt(val);
             model.setClaimPort(port);
-            
         } catch (NumberFormatException e) {
             model.setClaimPort(5001);
         }

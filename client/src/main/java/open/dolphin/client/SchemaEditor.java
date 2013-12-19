@@ -9,6 +9,8 @@ import open.dolphin.infomodel.SchemaModel;
  */
 public interface SchemaEditor {
     
+    public static final String VALUE_PROP = "imageProp";
+    
     public void setEditable(boolean b);
     
     public void setSchema(SchemaModel model);

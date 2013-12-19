@@ -62,21 +62,21 @@ public class KarteRenderer_2 {
      *
      * @param model レンダリングする DocumentModel
      */
-    public void render(DocumentModel model, KartePane soaPane, KartePane pPane) {
+    public final void render(final DocumentModel model, final KartePane soaPane, final KartePane pPane) {
 
-        List<ModuleModel> modules = model.getModules();
+        final List<ModuleModel> modules = model.getModules();
 
         // SOA と P のモジュールをわける
         // また夫々の Pane の spec を取得する
-        List<ModuleModel> soaModules = new ArrayList<>();
-        List<ModuleModel> pModules = new ArrayList<>();
-        List<SchemaModel> schemas = model.getSchema();
+        final List<ModuleModel> soaModules = new ArrayList<>();
+        final List<ModuleModel> pModules = new ArrayList<>();
+        final List<SchemaModel> schemas = model.getSchema();
         String soaSpec = null;
         String pSpec = null;
 
         for (ModuleModel bean : modules) {
 
-            String role = bean.getModuleInfoBean().getStampRole();
+            final String role = bean.getModuleInfoBean().getStampRole();
             if (role == null) {
                 continue;
             }
@@ -209,11 +209,7 @@ public class KarteRenderer_2 {
 
         private void startElement(XMLStreamReader reader) throws XMLStreamException {
 
-            String eName = reader.getName().getLocalPart();
-            
-            if (eName == null) {
-                return;
-            }
+            String eName = reader.getLocalName();
             
             switch (eName) {
                 case PARAGRAPH_NAME:
@@ -255,11 +251,7 @@ public class KarteRenderer_2 {
 
         private void endElement(XMLStreamReader reader) {
 
-            String eName = reader.getName().getLocalPart();
-            
-            if (eName == null) {
-                return;
-            }
+            String eName = reader.getLocalName();
             
             switch (eName) {
                 case PARAGRAPH_NAME:
@@ -403,7 +395,7 @@ public class KarteRenderer_2 {
                 reader = factory.createXMLStreamReader(stream);
 
                 while (reader.hasNext()) {
-                    int eventType = reader.next();
+                    final int eventType = reader.next();
                     switch (eventType) {
                         case XMLStreamReader.START_ELEMENT:
                             startElement(reader);
@@ -438,18 +430,14 @@ public class KarteRenderer_2 {
 
         private void startElement(XMLStreamReader reader) throws XMLStreamException {
 
-            String eName = reader.getName().getLocalPart();
-            
-            if (eName == null) {
-                return;
-            }
+            final String eName = reader.getLocalName();
             
             switch (eName) {
                 case SECTION_NAME:
                     startSection();
                     break;
                 case PARAGRAPH_NAME:
-                    String alignStr = reader.getAttributeValue(null, ALIGNMENT_NAME);
+                    final String alignStr = reader.getAttributeValue(null, ALIGNMENT_NAME);
                     startParagraph(alignStr);
                     break;
                 case CONTENT_NAME:
@@ -460,7 +448,7 @@ public class KarteRenderer_2 {
                     underline = reader.getAttributeValue(null, UNDERLINE_NAME);
                     break;
                 case TEXT_NAME:
-                    String text = reader.getElementText();
+                    final String text = reader.getElementText();
                     // StampHolder直後に改行を補う
                     if (componentFlg && !text.startsWith(CR)) {
                         insertString(CR, null);
@@ -475,8 +463,8 @@ public class KarteRenderer_2 {
                         insertString(CR, null);
                     }
                     componentFlg = true;
-                    String name = reader.getAttributeValue(null, NAME_NAME);
-                    String number = reader.getAttributeValue(null, COMPONENT_NAME);
+                    final String name = reader.getAttributeValue(null, NAME_NAME);
+                    final String number = reader.getAttributeValue(null, COMPONENT_NAME);
                     startComponent(name, number);
                     break;
                 default:
@@ -490,12 +478,8 @@ public class KarteRenderer_2 {
 
         private void endElement(XMLStreamReader reader) {
 
-            String eName = reader.getName().getLocalPart();
-            
-            if (eName == null) {
-                return;
-            }
-            
+            final String eName = reader.getLocalName();
+
             switch (eName) {
                 case PARAGRAPH_NAME:
                     endParagraph();
@@ -514,9 +498,9 @@ public class KarteRenderer_2 {
             specList.add(new ElementSpec(null, ElementSpec.EndTagType));
         }
 
-        private void startParagraph(String alignStr) {
+        private void startParagraph(final String alignStr) {
 
-            MutableAttributeSet atts = new SimpleAttributeSet();
+            final MutableAttributeSet atts = new SimpleAttributeSet();
             atts.setResolveParent(defaultStyle);
 
             if (alignStr != null) {
@@ -542,11 +526,11 @@ public class KarteRenderer_2 {
             text = XmlUtils.fromXml(text);
 
             // このコンテントに設定する AttributeSet
-            MutableAttributeSet atts = new SimpleAttributeSet();
+            final MutableAttributeSet atts = new SimpleAttributeSet();
 
             // foreground 属性を設定する
             if (foreground != null) {
-                String[] tokens = foreground.split(",");
+                final String[] tokens = foreground.split(",");
                 int r = Integer.parseInt(tokens[0]);
                 int g = Integer.parseInt(tokens[1]);
                 int b = Integer.parseInt(tokens[2]);
@@ -574,38 +558,38 @@ public class KarteRenderer_2 {
             insertString(text, atts);
         }
 
-        private void startComponent(String name, String number) {
+        private void startComponent(final String name, final String number) {
             
             if (name == null) {
                 return;
             }
 
-            int index = Integer.parseInt(number);
+            final int index = Integer.parseInt(number);
             switch (name) {
                 case STAMP_HOLDER: {
                     // StampHolderを作成する
-                    StampHolder sh = new StampHolder(kartePane, modules.get(index));
+                    final StampHolder sh = new StampHolder(kartePane, modules.get(index));
                     sh.setTransferHandler(StampHolderTransferHandler.getInstance());
                     // このスタンプ用のスタイルを生成する
-                    MutableAttributeSet atts = doc.createComponentAttribute(sh);
+                    final MutableAttributeSet atts = doc.createComponentAttribute(sh);
                     insertString(" ", atts);
                     break;
                 }
                 case SCHEMA_HOLDER: {
                     // SchemaHolderを作成する
-                    SchemaHolder sh = new SchemaHolder(kartePane, schemas.get(index));
+                    final SchemaHolder sh = new SchemaHolder(kartePane, schemas.get(index));
                     sh.setTransferHandler(SchemaHolderTransferHandler.getInstance());
                     // このスタンプ用のスタイルを生成する
-                    MutableAttributeSet atts = doc.createComponentAttribute(sh);
+                    final MutableAttributeSet atts = doc.createComponentAttribute(sh);
                     insertString(" ", atts);
                     break;
                 }
             }
         }
 
-        private void insertString(String text, AttributeSet attrs) {
-            char[] chars = text.toCharArray();
-            ElementSpec spec = new ElementSpec(attrs, ElementSpec.ContentType, chars, 0, chars.length);
+        private void insertString(final String text, final AttributeSet attrs) {
+            final char[] chars = text.toCharArray();
+            final ElementSpec spec = new ElementSpec(attrs, ElementSpec.ContentType, chars, 0, chars.length);
             specList.add(spec);
         }
 

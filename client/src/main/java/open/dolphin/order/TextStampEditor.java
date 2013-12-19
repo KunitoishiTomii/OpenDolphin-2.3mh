@@ -96,7 +96,7 @@ public class TextStampEditor extends AbstractStampEditor {
                 // 通知する
                 if (boundSupport != null) {
                     boundSupport.firePropertyChange(EMPTY_DATA_PROP, !setIsEmpty, setIsEmpty);
-                    boundSupport.firePropertyChange(VALIDA_DATA_PROP, !setIsValid, setIsValid);
+                    boundSupport.firePropertyChange(VALID_DATA_PROP, !setIsValid, setIsValid);
                 }
             }
         });

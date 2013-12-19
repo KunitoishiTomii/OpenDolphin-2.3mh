@@ -1,7 +1,6 @@
 package open.dolphin.client;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.awt.GridLayout;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -66,7 +65,7 @@ public final class KartePanel2 extends KartePanel {
     public boolean isSinglePane() {
         return false;
     }
-    
+/*
     // KarteDocumentViewerのBoxLayoutがうまくやってくれるように
     @Override
     public Dimension getPreferredSize() {
@@ -82,5 +81,5 @@ public final class KartePanel2 extends KartePanel {
 
         return new Dimension(w, h);
     }
-    
+*/
 }
