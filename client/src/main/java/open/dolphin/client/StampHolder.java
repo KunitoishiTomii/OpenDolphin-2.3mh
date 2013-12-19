@@ -9,6 +9,7 @@ import javax.swing.SwingUtilities;
 
 import open.dolphin.infomodel.ModuleModel;
 import open.dolphin.order.AbstractStampEditor;
+import open.dolphin.order.OldNewValuePair;
 
 /**
  * KartePane に Component　として挿入されるスタンプを保持スルクラス。
@@ -106,15 +107,12 @@ public final class StampHolder extends AbstractComponentHolder {
         if (AbstractStampEditor.VALUE_PROP.equals(prop)) {
 
             Object obj = e.getNewValue();
-            if (obj instanceof Object[]) {
+            if (obj instanceof OldNewValuePair) {
 
-                Object[] valuePair = (Object[]) obj;
-                if (valuePair.length < 2) {
-                    return;
-                }
+                OldNewValuePair valuePair = (OldNewValuePair) obj;
                 function.setSelectedStampHolder(this);
-                ModuleModel[] oldValue = (ModuleModel[]) valuePair[0];
-                ModuleModel[] newStamps = (ModuleModel[]) valuePair[1];
+                ModuleModel[] oldValue = (ModuleModel[]) valuePair.getOldValue();
+                ModuleModel[] newStamps = (ModuleModel[]) valuePair.getNewValue();
                 function.setNewValue(newStamps, oldValue);
             }
         }

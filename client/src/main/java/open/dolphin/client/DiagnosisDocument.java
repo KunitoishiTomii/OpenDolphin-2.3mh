@@ -32,6 +32,9 @@ import open.dolphin.table.StripeTableCellRenderer;
 import open.dolphin.tr.DiagnosisTransferHandler;
 import open.dolphin.util.AgeCalculator;
 import open.dolphin.common.util.BeanUtils;
+import open.dolphin.order.AbstractStampEditor;
+import open.dolphin.order.OldNewValuePair;
+import open.dolphin.order.StampEditorConst;
 import open.dolphin.util.MMLDate;
 import open.dolphin.util.NonHidePopupMenu;
 import org.apache.log4j.Logger;
@@ -780,9 +783,18 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
      */
     @Override
     public void propertyChange(PropertyChangeEvent e) {
-
-        RegisteredDiagnosisModel newRd = (RegisteredDiagnosisModel) e.getNewValue();
-        RegisteredDiagnosisModel oldRd = (RegisteredDiagnosisModel) e.getOldValue();
+        
+        String prop = e.getPropertyName();
+        if (!AbstractStampEditor.VALUE_PROP.equals(prop)) {
+            return;
+        }
+        Object obj = e.getNewValue();
+        if (!(obj instanceof OldNewValuePair)) {
+            return;
+        }
+        OldNewValuePair valuePair = (OldNewValuePair) e.getNewValue();
+        RegisteredDiagnosisModel newRd = (RegisteredDiagnosisModel) valuePair.getNewValue();
+        RegisteredDiagnosisModel oldRd = (RegisteredDiagnosisModel) valuePair.getOldValue();
 
         if (oldRd != null) {
             // 既存病名の編集の場合、IdはoldRdのものを引き継ぐ

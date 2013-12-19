@@ -38,6 +38,7 @@ import open.dolphin.plugin.PluginLoader;
 import open.dolphin.project.Project;
 import open.dolphin.tr.*;
 import open.dolphin.common.util.BeanUtils;
+import open.dolphin.order.OldNewValuePair;
 import open.dolphin.util.DicomImageEntry;
 import open.dolphin.util.ImageTool;
 import open.dolphin.util.NonHidePopupMenu;
@@ -1100,12 +1101,9 @@ public class KartePane implements MouseListener, CaretListener, PropertyChangeLi
                 
             case AbstractStampEditor.VALUE_PROP:
                 Object obj = e.getNewValue();
-                if (obj instanceof Object[]) {
-                    Object[] valuePair = (Object[]) e.getNewValue();
-                    if (valuePair.length < 2) {
-                        return;
-                    }
-                    ModuleModel[] stamps = (ModuleModel[]) valuePair[1];
+                if (obj instanceof OldNewValuePair) {
+                    OldNewValuePair valuePair = (OldNewValuePair) e.getNewValue();
+                    ModuleModel[] stamps = (ModuleModel[]) valuePair.getNewValue();
                     for (ModuleModel stamp : stamps) {
                         stamp(stamp);
                     }
