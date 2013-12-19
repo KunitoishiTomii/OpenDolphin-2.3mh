@@ -53,6 +53,7 @@ public class StripeTableCellRenderer extends DefaultTableCellRenderer {
 
     // このレンダラでレンダリングするクラスを指定する
     public void setDefaultRenderer() {
+        ((JComponent) table.getDefaultRenderer(Boolean.class)).setOpaque(false);
         table.setDefaultRenderer(Object.class, this);   // 含むBoolean, String
         table.setDefaultRenderer(Integer.class, this);
         table.setDefaultRenderer(Float.class, this);
