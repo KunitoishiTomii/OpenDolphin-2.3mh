@@ -6,6 +6,8 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.Iterator;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
@@ -105,9 +107,7 @@ public class ImageTool {
 
         // Create ImageIcon
         ImageIcon icon = new ImageIcon(bytes);
-        if (icon != null) {
-            model.setImageIcon(adjustImageSize(icon, iconSize));
-        }
+        model.setImageIcon(adjustImageSize(icon, iconSize));
 
         return model;
     }
@@ -279,5 +279,34 @@ public class ImageTool {
         g.drawImage(image, 0, 0, null);
         g.dispose();
         return bf;
-	}
+    }
+    
+    public static ImageIcon getXxxImage(String fName) {
+
+        try (InputStream in = ClientContext.getResourceAsStream("images/xxx.zip");
+                ZipInputStream zis = new ZipInputStream(in)) {
+
+            for (ZipEntry entry = zis.getNextEntry(); entry != null; entry = zis.getNextEntry()) {
+                if (entry.isDirectory()) {
+                    continue;
+                }
+                if (entry.getName().equals(fName)) {
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    while (true) {
+                        int data = zis.read();
+                        if (data == -1) {
+                            break;
+                        }
+                        baos.write(data);
+                    }
+                    baos.flush();
+                    ImageIcon icon = new ImageIcon(baos.toByteArray());
+                    return icon;
+                }
+            }
+        } catch (IOException ex) {
+        }
+
+        return null;
+    }
 }

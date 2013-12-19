@@ -148,4 +148,8 @@ public class LoginPanel extends javax.swing.JPanel {
     public javax.swing.JComboBox getFacilityCmb() {
         return null;
     }
+    
+    public javax.swing.JLabel getJLabel1() {
+        return jLabel1;
+    }
 }

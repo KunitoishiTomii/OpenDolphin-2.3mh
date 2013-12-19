@@ -130,7 +130,6 @@ public class Dolphin implements MainWindow, IChartEventListener {
 
     public void start(boolean pro) {
 
-//masuda^
         // Mac Application Menu
         if (ClientContext.isMac()){
             enableMacApplicationMenu();
@@ -138,7 +137,6 @@ public class Dolphin implements MainWindow, IChartEventListener {
 
         // 排他処理用のUUIDを決める
         clientUUID = UUID.randomUUID().toString();
-//masuda$
 
         //------------------------------
         // ログインダイアログを表示する
@@ -211,9 +209,6 @@ public class Dolphin implements MainWindow, IChartEventListener {
      */
     private void startServices() {
 
-        // RestEasyを初期化
-        //RegisterBuiltin.register(ResteasyProviderFactory.getInstance());
-        
         // プラグインのプロバイダマップを生成する
         setProviders(new HashMap<String, MainService>());
 
@@ -286,10 +281,8 @@ public class Dolphin implements MainWindow, IChartEventListener {
                 long userPk = Project.getUserModel().getId();
 
                 // ユーザーのStampTreeを検索する
-//masuda^   シングルトン化
-                //StampDelegater stampDel = new StampDelegater();
                 StampDelegater stampDel = StampDelegater.getInstance();
-//masuda$
+
                 List<IStampTreeModel> treeList = stampDel.getTrees(userPk);
 
                 // User用のStampTreeが存在しない新規ユーザの場合、そのTreeを生成する
@@ -307,43 +300,42 @@ public class Dolphin implements MainWindow, IChartEventListener {
                 }
 
                 // 新規ユーザでデータベースに個人用のStampTreeが存在しなかった場合
-                if (!hasTree) {
+                if (!hasTree && treeList != null) {
                     ClientContext.getBootLogger().debug("新規ユーザー、スタンプツリーをリソースから構築");
+                    
+                    try (InputStream in = ClientContext.getResourceAsStream("stamptree-seed.xml");
+                            BufferedReader reader = new BufferedReader(new InputStreamReader(in, "UTF-8"))) {
+                        
+                        String line;
+                        StringBuilder sb = new StringBuilder();
+                        while ((line = reader.readLine()) != null) {
+                            sb.append(line);
+                        }
+                        String treeXml = sb.toString();
 
-                    InputStream in = ClientContext.getResourceAsStream("stamptree-seed.xml");
-//masuda^   UTF-8に変更
-                    //BufferedReader reader = new BufferedReader(new InputStreamReader(in, "SHIFT_JIS"));
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(in, "UTF-8"));
-//masuda$
-                    String line;
-                    StringBuilder sb = new StringBuilder();
-                    while( (line = reader.readLine()) != null ) {
-                        sb.append(line);
+                        // Tree情報を設定し保存する
+                        IStampTreeModel tm = new StampTreeModel();       // 注意
+                        tm.setUserModel(Project.getUserModel());
+                        tm.setName(ClientContext.getString("stampTree.personal.box.name"));
+                        tm.setDescription(ClientContext.getString("stampTree.personal.box.tooltip"));
+                        FacilityModel facility = Project.getUserModel().getFacilityModel();
+                        tm.setPartyName(facility.getFacilityName());
+                        String url = facility.getUrl();
+                        if (url != null) {
+                            tm.setUrl(url);
+                        }
+                        tm.setTreeXml(treeXml);
+                        in.close();
+                        reader.close();
+
+                        // 一度登録する
+                        long treePk = stampDel.putTree(tm);
+
+                        tm.setId(treePk);
+
+                        // リストの先頭へ追加する
+                        treeList.add(0, tm);
                     }
-                    String treeXml = sb.toString();
-
-                    // Tree情報を設定し保存する
-                    IStampTreeModel tm = new StampTreeModel();       // 注意
-                    tm.setUserModel(Project.getUserModel());
-                    tm.setName(ClientContext.getString("stampTree.personal.box.name"));
-                    tm.setDescription(ClientContext.getString("stampTree.personal.box.tooltip"));
-                    FacilityModel facility = Project.getUserModel().getFacilityModel();
-                    tm.setPartyName(facility.getFacilityName());
-                    String url = facility.getUrl();
-                    if (url != null) {
-                        tm.setUrl(url);
-                    }
-                    tm.setTreeXml(treeXml);
-                    in.close();
-                    reader.close();
-
-                    // 一度登録する
-                    long treePk = stampDel.putTree(tm);
-
-                    tm.setId(treePk);
-
-                    // リストの先頭へ追加する
-                    treeList.add(0, tm);
                 }
 
                 return treeList;
@@ -457,7 +449,7 @@ public class Dolphin implements MainWindow, IChartEventListener {
         //----------------------------------------
         // タブペインに格納する Plugin をロードする
         //----------------------------------------
-        List<MainComponent> list = new ArrayList<MainComponent>(3);
+        List<MainComponent> list = new ArrayList<>(4);
         PluginLoader<MainComponent> loader = PluginLoader.load(MainComponent.class);
         Iterator<MainComponent> iter = loader.iterator();
 
@@ -467,15 +459,6 @@ public class Dolphin implements MainWindow, IChartEventListener {
             list.add(plugin);
         }
         ClientContext.getBootLogger().debug("main window plugin did load");
-
-//        loader = PluginLoader.load(MainComponent.class, ClientContext.getPluginClassLoader());
-//        iter = loader.iterator();
-//
-//        // mainWindow のタブに、受付リスト、患者検索 ... の純に格納する
-//        while (iter.hasNext()) {
-//            MainComponent plugin = iter.next();
-//            list.add(plugin);
-//        }
 
         // プラグインプロバイダに格納する
         // index=0 のプラグイン（受付リスト）は起動する
@@ -775,11 +758,7 @@ public class Dolphin implements MainWindow, IChartEventListener {
      * CLAIM 送信を開始する。
      */
     private void startSendClaim() {
-//masuda^
-        //if (Project.getBoolean(Project.USE_ORCA_API)) {
-        //    return;
-        //}
-//masuda$
+
         PluginLoader<ClaimMessageListener> loader = PluginLoader.load(ClaimMessageListener.class);
         Iterator<ClaimMessageListener> iter = loader.iterator();
         if (iter.hasNext()) {
@@ -813,27 +792,6 @@ public class Dolphin implements MainWindow, IChartEventListener {
      */
     public void printerSetup() {
 //masuda^
-/*
-        Runnable r = new Runnable() {
-
-            @Override
-            public void run() {
-
-                PrintRequestAttributeSet aset = new HashPrintRequestAttributeSet();
-                PrinterJob pj = PrinterJob.getPrinterJob();
-
-                try {
-                    pageFormat = pj.pageDialog(aset);
-                } catch (Exception e) {
-                    e.printStackTrace(System.err);
-                }
-            }
-        };
-
-        Thread t = new Thread(r);
-        t.setPriority(Thread.NORM_PRIORITY);
-        t.start();
-*/
         SwingWorker worker = new SwingWorker<Void, Void>() {
 
             @Override
@@ -844,7 +802,7 @@ public class Dolphin implements MainWindow, IChartEventListener {
 
                 try {
                     pageFormat = pj.pageDialog(aset);
-                } catch (Exception e) {
+                } catch (HeadlessException e) {
                     e.printStackTrace(System.err);
                 }
                 return null;
@@ -885,14 +843,14 @@ public class Dolphin implements MainWindow, IChartEventListener {
         @Override
         public void propertyChange(PropertyChangeEvent e) {
 
-            if (e.getPropertyName().equals("SETTING_PROP")) {
+            if ("SETTING_PROP".equals(e.getPropertyName())) {
 
                 boolean valid = ((Boolean) e.getNewValue()).booleanValue();
 
                 if (valid) {
 
                     // 設定の変化を調べ、サービスの制御を行う
-                    ArrayList<String> messages = new ArrayList<String>(2);
+                    List<String> messages = new ArrayList<>();
 
                     // PvtServer
                     boolean oldRunning = saveEnv.getProperty(GUIConst.KEY_PVT_SERVER).equals(GUIConst.SERVICE_RUNNING);
@@ -1011,7 +969,7 @@ public class Dolphin implements MainWindow, IChartEventListener {
                     }
 //masuda$
                     
-                    if (messages.size() > 0) {
+                    if (!messages.isEmpty()) {
                         String[] msgArray = messages.toArray(new String[messages.size()]);
                         Object msg = msgArray;
                         Component cmp = null;
@@ -1120,13 +1078,6 @@ public class Dolphin implements MainWindow, IChartEventListener {
         // Stamp 保存
         final IStampTreeModel treeTosave = stampBox.getUsersTreeTosave();
         
-//masuda^   ウチでは化け化けなので・・・
-        //treeTosave.setUserModel(Project.getUserModel());
-        //treeTosave.setName(ClientContext.getString("stampTree.personal.box.name"));
-        //treeTosave.setDescription(ClientContext.getString("stampTree.personal.box.tooltip"));
-        //FacilityModel facility = Project.getUserModel().getFacilityModel();
-        //treeTosave.setPartyName(facility.getFacilityName());
-//masuda$     
         ResourceBundle resource = ClientContext.getBundle(this.getClass());
         String message = resource.getString("exitDolphin.taskTitle");
         String note = resource.getString("exitDolphin.savingNote");
@@ -1355,9 +1306,7 @@ public class Dolphin implements MainWindow, IChartEventListener {
             if (desktop.isSupported(Desktop.Action.BROWSE)) {
                 try {
                     desktop.browse(new URI(url));
-                } catch (IOException ex) {
-                    ClientContext.getBootLogger().warn(ex);
-                } catch (URISyntaxException ex) {
+                } catch (IOException | URISyntaxException ex) {
                     ClientContext.getBootLogger().warn(ex);
                 }
             }

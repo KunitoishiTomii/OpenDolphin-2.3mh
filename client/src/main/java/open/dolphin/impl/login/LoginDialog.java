@@ -5,6 +5,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -15,6 +16,7 @@ import open.dolphin.helper.SimpleWorker;
 import open.dolphin.infomodel.ModelUtils;
 import open.dolphin.infomodel.UserModel;
 import open.dolphin.project.Project;
+import open.dolphin.util.ImageTool;
 
 /**
  * ログインダイアログ　クラス。
@@ -134,11 +136,30 @@ public class LoginDialog extends AbstractLoginDialog {
     protected JPanel createComponents() {
 
         view = new LoginPanel();
+        
+        // イベント処理を行う
+        processEvent();
 
         // イベント接続を行う
         connect();
 
         return view;
+    }
+    
+    private void processEvent() {
+        
+        GregorianCalendar gc = new GregorianCalendar();
+        int month = gc.get(GregorianCalendar.MONTH);
+        int day = gc.get(GregorianCalendar.DATE);
+        ImageIcon icon = null;
+        if (month == 11 && day == 25) {
+            icon = ImageTool.getXxxImage("xxx/tona.png");
+        } else if (month == 3 && day == 1) {
+            icon = ImageTool.getXxxImage("xxx/whale.png");
+        }
+        if (icon != null) {
+            view.getJLabel1().setIcon(icon);
+        }
     }
     
     /**

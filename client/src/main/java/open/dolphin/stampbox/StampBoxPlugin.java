@@ -862,7 +862,7 @@ public class StampBoxPlugin extends AbstractMainTool {
         //
         // User Tree のみを保存する
         //
-        ArrayList<StampTree> list = (ArrayList<StampTree>) userBox.getAllTrees();
+        List<StampTree> list = userBox.getAllTrees();
         if (list == null || list.isEmpty()) {
             // never
             return null;
