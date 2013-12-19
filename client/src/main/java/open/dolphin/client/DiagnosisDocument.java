@@ -34,7 +34,6 @@ import open.dolphin.util.AgeCalculator;
 import open.dolphin.common.util.BeanUtils;
 import open.dolphin.order.AbstractStampEditor;
 import open.dolphin.order.OldNewValuePair;
-import open.dolphin.order.StampEditorConst;
 import open.dolphin.util.MMLDate;
 import open.dolphin.util.NonHidePopupMenu;
 import org.apache.log4j.Logger;
