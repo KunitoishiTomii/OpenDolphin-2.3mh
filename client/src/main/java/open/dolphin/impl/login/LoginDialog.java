@@ -16,7 +16,6 @@ import open.dolphin.helper.SimpleWorker;
 import open.dolphin.infomodel.ModelUtils;
 import open.dolphin.infomodel.UserModel;
 import open.dolphin.project.Project;
-import open.dolphin.util.ImageTool;
 
 /**
  * ログインダイアログ　クラス。
@@ -153,9 +152,9 @@ public class LoginDialog extends AbstractLoginDialog {
         int day = gc.get(GregorianCalendar.DATE);
         ImageIcon icon = null;
         if (month == 11 && day == 25) {
-            icon = ImageTool.getXxxImage("xxx/tona.png");
+            icon = ClientContext.getImageIcon("tona.bin");
         } else if (month == 3 && day == 1) {
-            icon = ImageTool.getXxxImage("xxx/whale.png");
+            icon = ClientContext.getImageIcon("whale.bin");
         }
         if (icon != null) {
             view.getJLabel1().setIcon(icon);
