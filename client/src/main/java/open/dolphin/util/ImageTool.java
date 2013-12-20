@@ -105,9 +105,7 @@ public class ImageTool {
 
         // Create ImageIcon
         ImageIcon icon = new ImageIcon(bytes);
-        if (icon != null) {
-            model.setImageIcon(adjustImageSize(icon, iconSize));
-        }
+        model.setImageIcon(adjustImageSize(icon, iconSize));
 
         return model;
     }
@@ -279,5 +277,6 @@ public class ImageTool {
         g.drawImage(image, 0, 0, null);
         g.dispose();
         return bf;
-	}
+    }
+    
 }

@@ -9,6 +9,7 @@ public interface ILookAndFeelConst {
     // LAF
     public static final String WIN_LAF_CLS = "com.sun.java.swing.plaf.windows.WindowsLookAndFeel";
     public static final String NIMBUS_LAF_CLS = "javax.swing.plaf.nimbus.NimbusLookAndFeel";
+    public static final String AQUA_LAF_CLS = "com.apple.laf.AquaLookAndFeel";
     
     public static final String QUAQUA_LAF_CLS = "ch.randelshofer.quaqua.QuaquaLookAndFeel";
     

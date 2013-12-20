@@ -17,6 +17,7 @@ import open.dolphin.helper.ComponentMemory;
 import open.dolphin.helper.WindowSupport;
 import open.dolphin.infomodel.*;
 import open.dolphin.order.EditorSetPanel;
+import open.dolphin.order.OldNewValuePair;
 import open.dolphin.project.Project;
 import org.apache.log4j.Level;
 
@@ -692,16 +693,18 @@ public class StampBoxPlugin extends AbstractMainTool {
         @Override
         public void propertyChange(PropertyChangeEvent e) {
             
+            String prop = e.getPropertyName();
+            if (!EditorSetPanel.EDITOR_VALUE_PROP.equals(prop)) {
+                return;
+            }
             Object obj = e.getNewValue();
-            if (!(obj instanceof Object[])) {
+            if (!(obj instanceof OldNewValuePair)) {
                 return;
             }
-            Object[] valuePair = (Object[]) obj;
-            if (valuePair.length < 2) {
-                return;
-            }
-            Object oldValue = valuePair[0];
-            Object newValue = valuePair[1];
+            OldNewValuePair valuePair = (OldNewValuePair) obj;
+
+            Object oldValue = valuePair.getOldValue();
+            Object newValue = valuePair.getNewValue();
 
             if (newValue == null) {
                 return;
@@ -859,7 +862,7 @@ public class StampBoxPlugin extends AbstractMainTool {
         //
         // User Tree のみを保存する
         //
-        ArrayList<StampTree> list = (ArrayList<StampTree>) userBox.getAllTrees();
+        List<StampTree> list = userBox.getAllTrees();
         if (list == null || list.isEmpty()) {
             // never
             return null;

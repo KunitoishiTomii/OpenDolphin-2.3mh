@@ -901,7 +901,7 @@ public abstract class AbstractStampEditor implements StampEditorConst {
     }
     
     private void fireNewValue() {
-        Object[] valuePair = new Object[]{oldValue, getNewValue()};
+        OldNewValuePair valuePair = new OldNewValuePair(oldValue, getNewValue());
         boundSupport.firePropertyChange(VALUE_PROP, null, valuePair);
     }
 

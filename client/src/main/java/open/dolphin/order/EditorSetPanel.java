@@ -385,7 +385,7 @@ public class EditorSetPanel extends JPanel implements PropertyChangeListener, Tr
                 // 束縛プロパティによりリスナのStampBoxへこの値が通知される。
                 
                 // 新規スタンプ
-                Object[] valuePair = new Object[]{null, curEditor.getNewValue()};
+                OldNewValuePair valuePair = new OldNewValuePair(null, curEditor.getNewValue());
                 fireEditorValue(valuePair); 
                 curEditor.setValue(null);
 
@@ -404,7 +404,7 @@ public class EditorSetPanel extends JPanel implements PropertyChangeListener, Tr
                 // 束縛プロパティによりリスナへこの値が通知される。
                 
                 // 置き換えの場合はoldValueを設定する
-                Object[] valuePair = new Object[]{curEditor.getOldValue(), curEditor.getNewValue()};
+                OldNewValuePair valuePair = new OldNewValuePair(curEditor.getOldValue(), curEditor.getNewValue());
                 fireEditorValue(valuePair);
                 curEditor.setValue(null);
             }
@@ -448,7 +448,7 @@ public class EditorSetPanel extends JPanel implements PropertyChangeListener, Tr
                         }
                     }
                     
-                    Object[] valuePair = new Object[]{null, curEditor.getNewValue()};
+                    OldNewValuePair valuePair = new OldNewValuePair(null, curEditor.getNewValue());
                     fireEditorValue(valuePair);
                     curEditor.setValue(null);
                 }

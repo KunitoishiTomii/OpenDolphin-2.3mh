@@ -5,6 +5,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -134,11 +135,30 @@ public class LoginDialog extends AbstractLoginDialog {
     protected JPanel createComponents() {
 
         view = new LoginPanel();
+        
+        // イベント処理を行う
+        processEvent();
 
         // イベント接続を行う
         connect();
 
         return view;
+    }
+    
+    private void processEvent() {
+        
+        GregorianCalendar gc = new GregorianCalendar();
+        int month = gc.get(GregorianCalendar.MONTH);
+        int day = gc.get(GregorianCalendar.DATE);
+        ImageIcon icon = null;
+        if (month == 11 && day == 25) {
+            icon = ClientContext.getImageIcon("tona.bin");
+        } else if (month == 3 && day == 1) {
+            icon = ClientContext.getImageIcon("whale.bin");
+        }
+        if (icon != null) {
+            view.getJLabel1().setIcon(icon);
+        }
     }
     
     /**
