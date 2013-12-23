@@ -16,6 +16,7 @@ import javax.swing.event.UndoableEditListener;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
+import open.dolphin.helper.DBTask;
 import open.dolphin.infomodel.*;
 import open.dolphin.project.Project;
 import open.dolphin.setting.MiscSettingPanel;
@@ -612,13 +613,33 @@ public class KarteEditor extends AbstractChartDocument implements IInfoModel,
         // 保存ダイアログを表示し、パラメータを得る
         // 地域連携に参加もしくはMML送信を行う場合は患者及び診療歴のある施設への参照許可
         // パラメータが設定できるようにする
-        SaveParams params = getSaveParams(sendClaim, sendLabtest, sendMml);
+        final SaveParams params = getSaveParams(sendClaim, sendLabtest, sendMml);
 
         // キャンセルの場合はリターンする
         if (params != null) {
-            // 次のステージを実行する
-            KarteDocumentSaver saver = new KarteDocumentSaver(this);
-            saver.saveAndSend(params);
+            // すでに誰かが書き込んでいないかチェック 
+            DBTask Worker = new DBTask<KarteBean, Void>(getContext()) {
+                @Override
+                protected KarteBean doInBackground() {
+                    // サーバから、同一の文書IDでかつSTATUS_FINALの文書がすでに
+                    // ほかユーザによって保存されていないかチェックする
+                    return null;
+                }
+                protected void succeeded(KarteBean oKarteBean) {
+                    if(oKarteBean == null){
+                        // 無条件で保存
+                        // 次のステージを実行する
+                        KarteDocumentSaver saver = new KarteDocumentSaver(KarteEditor.this);
+                        saver.saveAndSend(params);
+                    }
+                    else{
+                    }
+                }
+                protected void failed(Throwable e) {
+                }
+            };
+            
+            Worker.execute();
         }
     }
 
