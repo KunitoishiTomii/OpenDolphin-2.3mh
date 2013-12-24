@@ -16,6 +16,9 @@ import javax.swing.event.UndoableEditListener;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
+import open.dolphin.delegater.DocumentDelegater;
+import open.dolphin.dto.DocumentSearchSpec;
+import org.jboss.logging.Logger;
 import open.dolphin.helper.DBTask;
 import open.dolphin.infomodel.*;
 import open.dolphin.project.Project;
@@ -618,21 +621,40 @@ public class KarteEditor extends AbstractChartDocument implements IInfoModel,
         // キャンセルの場合はリターンする
         if (params != null) {
             // すでに誰かが書き込んでいないかチェック 
-            DBTask Worker = new DBTask<KarteBean, Void>(getContext()) {
+            DBTask Worker = new DBTask<DocInfoModel, Void>(getContext()) {
                 @Override
-                protected KarteBean doInBackground() {
+                protected DocInfoModel doInBackground() {
                     // サーバから、同一の文書IDでかつSTATUS_FINALの文書がすでに
                     // ほかユーザによって保存されていないかチェックする
-                    return null;
+                    DocumentSearchSpec spec = new DocumentSearchSpec();
+                    spec.setKarteId(chart.getKarte().getId());                 // カルテID
+                    spec.setDocType(IInfoModel.DOCTYPE_KARTE);          // 文書タイプ
+                    spec.setIncludeModifid(false);                      // 修正履歴
+                    spec.setCode(DocumentSearchSpec.DOCTYPE_SEARCH);    // 検索タイプ
+                    spec.setAscending(false);
+                    try {
+                        List<DocInfoModel> docList = DocumentDelegater.getInstance().getDocumentList(spec);
+                        Logger.getLogger(this.getClass().getName()).warn("getDocumentList is Executed -- size:"+docList.size());
+                        if (docList.size() != 0){
+                            return docList.get(0);
+                        }
+                        else{
+                            return null;
+                        }
+                    } catch (Exception e){
+                        Logger.getLogger(this.getClass().getName()).warn("Exception: "+e.getLocalizedMessage());
+                        return null;
+                    }
                 }
-                protected void succeeded(KarteBean oKarteBean) {
-                    if(oKarteBean == null){
+                protected void succeeded(DocInfoModel oDocInfo) {
+                    if(oDocInfo == null){
                         // 無条件で保存
                         // 次のステージを実行する
                         KarteDocumentSaver saver = new KarteDocumentSaver(KarteEditor.this);
                         saver.saveAndSend(params);
                     }
                     else{
+                        Logger.getLogger(this.getClass().getName()).warn("Don't saved!!");
                     }
                 }
                 protected void failed(Throwable e) {
