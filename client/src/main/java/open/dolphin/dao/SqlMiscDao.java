@@ -689,6 +689,23 @@ public final class SqlMiscDao extends SqlDaoBean {
         return count;
     }
     
+    public List<String> getRecedenCsv(String ym, int teisyutusaki) {
+        
+        final String sql = "select recedata from tbl_receden "
+                + "where sryym = ? and teisyutusaki = ? and hospnum = ? order by nyugaikbn, ptid, rennum";
+        
+        int hospNum = getHospNum();
+        Object[] params = {ym, teisyutusaki, hospNum};
+        List<String[]> valuesList = executePreparedStatement(sql, params);
+        
+        List<String> list = new ArrayList<>();
+        for (String[] values : valuesList) {
+            list.add(values[0]);
+        }
+        
+        return list;
+    }
+    
 /*
     public List<String[]> getTekiouByomeiCd(String[] codes){
         StringBuilder sb = new StringBuilder();

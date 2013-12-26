@@ -86,11 +86,15 @@ public class ColumnSpecHelper {
     }
     
     public void updateColumnWidth() {
-
+        updateColumnWidth(table);
+    }
+    
+    public void updateColumnWidth(JTable tbl) {
+        
         for (int i = 0; i < columnSpecs.size(); ++i) {
             ColumnSpec cs = columnSpecs.get(i);
             int width = cs.getWidth();
-            TableColumn tc = table.getColumnModel().getColumn(i);
+            TableColumn tc = tbl.getColumnModel().getColumn(i);
             if (width != 0) {
                 tc.setMaxWidth(Integer.MAX_VALUE);
                 tc.setPreferredWidth(width);
@@ -104,7 +108,7 @@ public class ColumnSpecHelper {
                 tc.setResizable(false);
             }
         }
-        table.repaint();
+        tbl.repaint();
     }
     
     public int getColumnPosition(String propName) {
@@ -248,8 +252,12 @@ public class ColumnSpecHelper {
     }
     
     public void saveProperty() {
+        saveProperty(table);
+    }
+    
+    public void saveProperty(JTable tbl) {
         
-        if (columnSpecs == null) {
+        if (columnSpecs == null || tbl == null) {
             return;
         }
 
@@ -262,7 +270,7 @@ public class ColumnSpecHelper {
                 first = false;
             }
             ColumnSpec cs = columnSpecs.get(i);
-            cs.setWidth(table.getColumnModel().getColumn(i).getWidth());
+            cs.setWidth(tbl.getColumnModel().getColumn(i).getWidth());
             sb.append(cs.getName()).append(CAMMA);
             sb.append(cs.getMethod()).append(CAMMA);
             sb.append(cs.getCls()).append(CAMMA);
