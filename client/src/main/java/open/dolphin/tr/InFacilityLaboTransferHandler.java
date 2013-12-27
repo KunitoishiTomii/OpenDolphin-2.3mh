@@ -80,9 +80,9 @@ public class InFacilityLaboTransferHandler extends DolphinTransferHandler {
                 Transferable t = support.getTransferable();
                 InFacilityLaboItem[] dropItems = (InFacilityLaboItem[]) t.getTransferData(inFacilityLaboItem);
                 JTable dropTable = (JTable) support.getComponent();
-                
-                @SuppressWarnings("unchecked")
-                ListTableModel<InFacilityLaboItem> tableModel = (ListTableModel<InFacilityLaboItem>) dropTable.getModel();
+
+                ListTableModel<InFacilityLaboItem> tableModel
+                        = (ListTableModel<InFacilityLaboItem>) dropTable.getModel();
 
                 for (InFacilityLaboItem dropItem : dropItems) {
                     if (toIndex < tableModel.getObjectCount()) {
@@ -92,6 +92,7 @@ public class InFacilityLaboTransferHandler extends DolphinTransferHandler {
                     }
                     toIndex++;
                 }
+                importDataSuccess(dropTable);
                 return true;
             }
         } catch (UnsupportedFlavorException | IOException ioe) {
@@ -105,7 +106,7 @@ public class InFacilityLaboTransferHandler extends DolphinTransferHandler {
     protected void exportDone(JComponent c, Transferable data, int action) {
         
         // export先がOpenDolphin以外なら削除しない
-        if (isExportToOther()) {
+        if (isExportToOther() || !editable) {
             endTransfer();
             return;
         }
@@ -113,9 +114,10 @@ public class InFacilityLaboTransferHandler extends DolphinTransferHandler {
         try {
             if (action == MOVE) {
                 JTable sourceTable = (JTable) c;
-                InFacilityLaboItem[] dropItems = (InFacilityLaboItem[]) data.getTransferData(inFacilityLaboItem);
-                @SuppressWarnings("unchecked")
-                ListTableModel<InFacilityLaboItem> tableModel = (ListTableModel<InFacilityLaboItem>) sourceTable.getModel();
+                InFacilityLaboItem[] dropItems
+                        = (InFacilityLaboItem[]) data.getTransferData(inFacilityLaboItem);
+                ListTableModel<InFacilityLaboItem> tableModel
+                        = (ListTableModel<InFacilityLaboItem>) sourceTable.getModel();
                 for (InFacilityLaboItem item : dropItems) {
                     tableModel.delete(item);
                 }

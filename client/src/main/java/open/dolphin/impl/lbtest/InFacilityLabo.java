@@ -140,6 +140,7 @@ public class InFacilityLabo {
         StripeTableCellRenderer renderer = new StripeTableCellRenderer(templateTable);
         renderer.setDefaultRenderer();
         templateTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        templateTable.getTableHeader().setReorderingAllowed(false);
         // 列幅を設定する
         int len = TEMPLATE_COL_NAME.length;
         TableColumn column;
@@ -159,6 +160,7 @@ public class InFacilityLabo {
         renderer = new StripeTableCellRenderer(setTable);
         renderer.setDefaultRenderer();
         setTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        setTable.getTableHeader().setReorderingAllowed(false);
         // 列幅を設定する
         len = SET_COL_NAME.length;
         for (int i = 0; i < len; i++) {
