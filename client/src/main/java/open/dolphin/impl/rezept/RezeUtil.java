@@ -25,6 +25,7 @@ public class RezeUtil {
     private static final String CAMMA = ",";
     private static final String SRYCD_FRMT = "000000000";
     private static final String DATE_FRMT = "Gyy.MM.dd";
+    private static final String YM_FRMT = "GYY.MM";
     private static final Locale JP_LOCALE = new Locale("ja","JP","JP");
     private static final String[] PREFECTURES = {
         "北海道", "青森", "岩手", "宮城", "秋田", "山形", "福島", "茨城", "栃木", "群馬",
@@ -96,6 +97,10 @@ public class RezeUtil {
     
     public String getDateStr(Date date) {
         SimpleDateFormat frmt = new SimpleDateFormat(DATE_FRMT, JP_LOCALE);
+        return frmt.format(date);
+    }
+    public String getYMStr(Date date) {
+        SimpleDateFormat frmt = new SimpleDateFormat(YM_FRMT, JP_LOCALE);
         return frmt.format(date);
     }
     

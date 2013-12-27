@@ -290,7 +290,7 @@ public class RezeptViewer implements IChartEventListener {
                 blockGlass.unblock();
 
                 if (result != null) {
-                    swhowRezeData(result);
+                    showRezeData(result);
                 } else {
                     JOptionPane.showMessageDialog(view, "指定月のレセ電データがありません。",
                             "レセ点", JOptionPane.WARNING_MESSAGE);
@@ -301,7 +301,7 @@ public class RezeptViewer implements IChartEventListener {
         worker.execute();
     }
 
-    private void swhowRezeData(List<IR_Model> list) {
+    private void showRezeData(List<IR_Model> list) {
 
         String[] columnNames = reTblHelper.getTableModelColumnNames();
         String[] methods = reTblHelper.getTableModelColumnMethods();
@@ -392,6 +392,9 @@ public class RezeptViewer implements IChartEventListener {
     private void reModelToView(RE_Model reModel, int kikanNum) {
         
         // 患者
+        String ym = RezeUtil.getInstance().getYMStr(reModel.getBillDate());
+        view.getBillYmField().setText(ym);
+        view.getPtIdField().setText(reModel.getPatientId());
         view.getPtNameField().setText(reModel.getName());
         view.getPtSexField().setText(reModel.getSex());
         String birthday = RezeUtil.getInstance().getDateStr(reModel.getBirthday());
@@ -415,10 +418,11 @@ public class RezeptViewer implements IChartEventListener {
             view.getInsSymbolField().setText(EMPTY);
             view.getInsNumberField().setText(EMPTY);
         }
-        // 公費　とりあえず３つまで
+        // 公費
         if (reModel.getKOModelList() != null && !reModel.getKOModelList().isEmpty()) {
             List<KO_Model> list = reModel.getKOModelList();
             int cnt = list.size();
+            ten = 0;    // 点計算がよくわからない
             if (cnt > 0) {
                 KO_Model koModel = list.get(0);
                 view.getPubIns1Field().setText(koModel.getInsuranceNum());
@@ -437,6 +441,13 @@ public class RezeptViewer implements IChartEventListener {
                 KO_Model koModel = list.get(2);
                 view.getPubIns3Field().setText(koModel.getInsuranceNum());
                 view.getPubIns3NumField().setText(koModel.getCertificateNum());
+                ten += koModel.getTen();
+                numDays += koModel.getDays();
+            }
+            if (cnt > 3) {
+                KO_Model koModel = list.get(3);
+                view.getPubIns4Field().setText(koModel.getInsuranceNum());
+                view.getPubIns4NumField().setText(koModel.getCertificateNum());
                 ten += koModel.getTen();
                 numDays += koModel.getDays();
             }

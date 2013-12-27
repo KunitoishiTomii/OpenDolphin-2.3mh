@@ -42,10 +42,14 @@ public class RezeptView extends JPanel {
     private JTextField pubIns2NumField;
     private JTextField pubIns3Field;
     private JTextField pubIns3NumField;
+    private JTextField pubIns4Field;
+    private JTextField pubIns4NumField;
     private JTextField insField;
     private JTextField insSymbolField;
     private JTextField insNumberField;
     
+    private JTextField ptIdField;
+    private JTextField billYmField;
     private JTextField ptNameField;
     private JTextField ptBirthdayField;
     private JTextField ptSexField;
@@ -100,64 +104,84 @@ public class RezeptView extends JPanel {
         // pt info
         JPanel p1 = createYBoxPanel();
         JPanel p11 =createXBoxPanel();
-        p11.add(new JLabel("氏名"));
-        ptNameField = createTextField(10);
-        p11.add(ptNameField);
+        p11.add(new JLabel("ID"));
+        ptIdField = createTextField(8);
+        p11.add(ptIdField);
+        p11.add(new JLabel("診療年月"));
+        billYmField = createTextField(6);
+        p11.add(billYmField);
         p1.add(p11);
-        JPanel p12 = createXBoxPanel();
-        p12.add(new JLabel("性別"));
-        ptSexField = createTextField(2);
-        p12.add(ptSexField);
-        p12.add(new JLabel("年齢"));
-        ptAgeField = createTextField(2);
-        p12.add(ptAgeField);
+        JPanel p12 =createXBoxPanel();
+        p12.add(new JLabel("氏名"));
+        ptNameField = createTextField(10);
+        p12.add(ptNameField);
         p1.add(p12);
         JPanel p13 = createXBoxPanel();
-        p13.add(new JLabel("生年月日"));
-        ptBirthdayField = createTextField(10);
-        p13.add(ptBirthdayField);
+        p13.add(new JLabel("性別"));
+        ptSexField = createTextField(2);
+        p13.add(ptSexField);
+        p13.add(new JLabel("年齢"));
+        ptAgeField = createTextField(2);
+        p13.add(ptAgeField);
         p1.add(p13);
+        JPanel p14 = createXBoxPanel();
+        p14.add(new JLabel("生年月日"));
+        ptBirthdayField = createTextField(8);
+        p14.add(ptBirthdayField);
+        p1.add(p14);
         north.add(p1);
         
         // insurance
         JPanel p2 = createYBoxPanel();
         JPanel p21 = createXBoxPanel();
-        p21.add(new JLabel("公費１"));
-        pubIns1Field = createTextField(5);
+        p21.add(new JLabel("公費1"));
+        pubIns1Field = createTextField(8);
         p21.add(pubIns1Field);
         p2.add(p21);
         JPanel p22 = createXBoxPanel();
-        p22.add(new JLabel("公費２"));
-        pubIns2Field = createTextField(5);
+        p22.add(new JLabel("公費2"));
+        pubIns2Field = createTextField(8);
         p22.add(pubIns2Field);
         p2.add(p22);
         JPanel p23 = createXBoxPanel();
-        p23.add(new JLabel("公費３"));
-        pubIns3Field = createTextField(5);
+        p23.add(new JLabel("公費3"));
+        pubIns3Field = createTextField(8);
         p23.add(pubIns3Field);
         p2.add(p23);
+        JPanel p24 = createXBoxPanel();
+        p24.add(new JLabel("公費4"));
+        pubIns4Field = createTextField(8);
+        p24.add(pubIns4Field);
+        p2.add(p24);
         north.add(p2);
         
         JPanel p3 = createYBoxPanel();
         JPanel p31 = createXBoxPanel();
-        p31.add(new JLabel("公受１"));
-        pubIns1NumField = createTextField(5);
+        p31.add(new JLabel("受1"));
+        pubIns1NumField = createTextField(8);
         p31.add(pubIns1NumField);
         p3.add(p31);
         JPanel p32 = createXBoxPanel();
-        p32.add(new JLabel("公受２"));
-        pubIns2NumField = createTextField(5);
+        p32.add(new JLabel("受2"));
+        pubIns2NumField = createTextField(8);
         p32.add(pubIns2NumField);
         p3.add(p32);
         JPanel p33 = createXBoxPanel();
-        p33.add(new JLabel("公受３"));
-        pubIns3NumField = createTextField(5);
+        p33.add(new JLabel("受3"));
+        pubIns3NumField = createTextField(8);
         p33.add(pubIns3NumField);
         p3.add(p33);
+        JPanel p34 = createXBoxPanel();
+        p34.add(new JLabel("受4"));
+        pubIns4NumField = createTextField(8);
+        p34.add(pubIns4NumField);
+        p3.add(p34);
         north.add(p3);
         
         JPanel p4 = createYBoxPanel();
         insTypeField= createTextField(30);
+        // 余白できちゃった TODO
+        p4.add(Box.createVerticalStrut(insTypeField.getPreferredSize().height));
         p4.add(insTypeField);
         JPanel p42 = createXBoxPanel();
         p42.add(new JLabel("保険"));
@@ -289,6 +313,12 @@ public class RezeptView extends JPanel {
     public JTextField getPubIns3NumField() {
         return pubIns3NumField;
     }
+    public JTextField getPubIns4Field() {
+        return pubIns4Field;
+    }
+    public JTextField getPubIns4NumField() {
+        return pubIns4NumField;
+    }
     public JTextField getInsField() {
         return insField;
     }
@@ -330,5 +360,11 @@ public class RezeptView extends JPanel {
     }
     public JTextField getDiagCountField() {
         return diagCountField;
+    }
+    public JTextField getPtIdField() {
+        return ptIdField;
+    }
+    public JTextField getBillYmField() {
+        return billYmField;
     }
 }
