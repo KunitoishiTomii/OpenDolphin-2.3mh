@@ -356,7 +356,7 @@ public class UkeLoader {
         if (comment.isEmpty()) {
             return tmName;
         }
-        if (!tmName.contains(" ")){
+        if (!tmName.contains(" ") && !tmName.contains("　") ){
             StringBuilder sb = new StringBuilder();
             sb.append(tmName).append(" ").append(comment);
             return sb.toString();
