@@ -32,6 +32,7 @@ import open.dolphin.client.IChartEventListener;
 import open.dolphin.helper.ComponentMemory;
 import open.dolphin.helper.SimpleWorker;
 import open.dolphin.helper.WindowSupport;
+import open.dolphin.impl.rezept.filter.CheckResult;
 import open.dolphin.impl.rezept.model.*;
 import open.dolphin.infomodel.ChartEventModel;
 import open.dolphin.infomodel.PatientModel;
@@ -53,7 +54,7 @@ public class RezeptViewer implements IChartEventListener {
     private static final String RE_TBL_SPEC_NAME = "reze.retable.column.spec";
     private static final String[] RE_TBL_COLUMN_NAMES = {"ID", "氏名", "性別", "状態"};
     private static final String[] RE_TBL_PROPERTY_NAMES = {"getPatientId", "getName", "getSex", "isOpened"};
-    private static final Class[] RE_TBL_CLASSES = {String.class, String.class, String.class, Integer.class};
+    private static final Class[] RE_TBL_CLASSES = {String.class, String.class, String.class, Object.class};
     private static final int[] RE_TBL_COLUMN_WIDTH = {20, 40, 10, 5};
     
     private static final String DIAG_TBL_SPEC_NAME = "reze.diagtable.column.spec";
@@ -68,21 +69,32 @@ public class RezeptViewer implements IChartEventListener {
     private static final Class[] ITEM_TBL_CLASSES = {String.class, String.class, Float.class, Float.class, Integer.class};
     private static final int[] ITEM_TBL_COLUMN_WIDTH = {10, 100, 10, 10, 10};
     
+    private static final String INFO_TBL_SPEC_NAME = "reze.infotable.column.spec";
+    private static final String[] INFO_TBL_COLUMN_NAMES = {"区分", "項目", "内容"};
+    private static final String[] INFO_TBL_PROPERTY_NAMES = {"getClassCode", "getDescription", "getNumber", "getTen", "getCount"};
+    private static final Class[] INFO_TBL_CLASSES = {Integer.class, String.class, String.class};
+    private static final int[] INFO_TBL_COLUMN_WIDTH = {10, 100, 200};
+    
     private RezeptView view;
     private BlockGlass blockGlass;
     private ColumnSpecHelper reTblHelper;
     private ColumnSpecHelper diagTblHelper;
     private ColumnSpecHelper itemTblHelper;
+    private ColumnSpecHelper infoTblHelper;
     
     private ListTableModel<SY_Model> diagTableModel;
     private ListTableModel<IRezeItem> itemTableModel;
+    private ListTableModel<CheckResult> infoTableModel;
     
-    private final String clientUUID;
+    private static final String clientUUID;
     private final ChartEventListener cel;
+    
+    static {
+        clientUUID = Dolphin.getInstance().getClientUUID();
+    }
     
     public RezeptViewer() {
         cel = ChartEventListener.getInstance();
-        clientUUID = cel.getClientUUID();
     }
     
     public void enter() {
@@ -121,6 +133,7 @@ public class RezeptViewer implements IChartEventListener {
         // カラム幅を保存する
         diagTblHelper.saveProperty();
         itemTblHelper.saveProperty();
+        infoTblHelper.saveProperty();
         RE_Panel rePanel = getSelectedRePanel();
         if (rePanel != null) {
             JTable reTable = rePanel.getReTable();
@@ -156,6 +169,10 @@ public class RezeptViewer implements IChartEventListener {
                 ITEM_TBL_PROPERTY_NAMES, ITEM_TBL_CLASSES, ITEM_TBL_COLUMN_WIDTH);
         itemTblHelper.loadProperty();
         
+        infoTblHelper = new ColumnSpecHelper(INFO_TBL_SPEC_NAME, INFO_TBL_COLUMN_NAMES, 
+                INFO_TBL_PROPERTY_NAMES, INFO_TBL_CLASSES, INFO_TBL_COLUMN_WIDTH);
+        infoTblHelper.loadProperty();
+        
         // 傷病名テーブル
         JTable diagTable = view.getDiagTable();
         SY_TableRenderer syRen = new SY_TableRenderer();
@@ -183,7 +200,21 @@ public class RezeptViewer implements IChartEventListener {
         itemTableModel = new ListTableModel<>(itemColumnNames, 1, itemMethods, itemCls);
         itemTable.setModel(itemTableModel);
         itemTblHelper.updateColumnWidth();
-
+        
+        // インフォテーブル
+        JTable infoTable = view.getInfoTable();
+        INFO_TableRenderer infoRen = new INFO_TableRenderer();
+        infoRen.setTable(infoTable);
+        infoRen.setDefaultRenderer();
+        // カラム設定、モデル設定
+        infoTblHelper.setTable(infoTable);
+        String[] infoColumnNames = infoTblHelper.getTableModelColumnNames();
+        String[] infoMethods = infoTblHelper.getTableModelColumnMethods();
+        Class[] infoCls = infoTblHelper.getTableModelColumnClasses();
+        infoTableModel = new ListTableModel<>(infoColumnNames, 1, infoMethods, infoCls);
+        infoTable.setModel(infoTableModel);
+        infoTblHelper.updateColumnWidth();
+        
         // connect
         view.getImportBtn().addActionListener(new ActionListener(){
 
@@ -554,7 +585,7 @@ public class RezeptViewer implements IChartEventListener {
         }
     }
     
-    private class RE_TableRenderer extends StripeTableCellRenderer {
+    private static class RE_TableRenderer extends StripeTableCellRenderer {
 
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, 
@@ -590,7 +621,7 @@ public class RezeptViewer implements IChartEventListener {
         }
     }
     
-    private class SY_TableRenderer extends StripeTableCellRenderer {
+    private static class SY_TableRenderer extends StripeTableCellRenderer {
 
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
@@ -598,7 +629,15 @@ public class RezeptViewer implements IChartEventListener {
         }
     }
     
-    private class ITEM_TableRenderer extends StripeTableCellRenderer {
+    private static class ITEM_TableRenderer extends StripeTableCellRenderer {
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+        }
+    }
+    
+    private class INFO_TableRenderer extends StripeTableCellRenderer {
 
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {

@@ -61,7 +61,7 @@ public class RezeptView extends JPanel {
     private JTextField tenField;
     
     private JTextArea commentArea;
-    private JTextArea infoArea;
+    private JTable infoTable;
     
     
     public RezeptView() {
@@ -235,11 +235,11 @@ public class RezeptView extends JPanel {
         
         // south
         JPanel south = createYBoxPanel();
-        infoArea = createTextArea();
-        JScrollPane infoScrl = new JScrollPane(infoArea);
-        infoScrl.setBorder(BorderFactory.createTitledBorder("インフォ"));
-        infoScrl.setPreferredSize(new Dimension(400, 200));
-        south.add(infoScrl);
+        infoTable = new JTable();
+        JScrollPane infoPane = new JScrollPane(infoTable);
+        infoPane.setBorder(BorderFactory.createTitledBorder("インフォ"));
+        infoPane.setPreferredSize(new Dimension(400, 200));
+        south.add(infoPane);
         rightPanel.add(south, BorderLayout.SOUTH);
         
         add(rightPanel);
@@ -342,8 +342,8 @@ public class RezeptView extends JPanel {
     public JTextArea getCommentArea() {
         return commentArea;
     }
-    public JTextArea getInfoArea() {
-        return infoArea;
+    public JTable getInfoTable() {
+        return infoTable;
     }
     public JTextField getNumDayField() {
         return numDayField;

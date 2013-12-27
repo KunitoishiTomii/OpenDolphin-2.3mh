@@ -46,7 +46,7 @@ public class TempKarteCheckDialog extends JDialog implements IChartEventListener
     private final String[] PROPERTY_NAMES 
             = {"patientId", "fullName", "kanaName", "genderDesc", "ageBirthday", "isOpened"};
     private static final Class[] COLUMN_CLASSES = {
-        String.class, String.class, String.class, String.class, String.class, Integer.class};
+        String.class, String.class, String.class, String.class, String.class, Object.class};
     private final int[] COLUMN_WIDTH = {50, 100, 120, 30, 100, 20};
     
     private static final ImageIcon INFO_ICON = ClientContext.getImageIconAlias("icon_info_small");

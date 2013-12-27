@@ -47,7 +47,7 @@ public class PatientSearchImpl extends AbstractMainComponent {
             = {"patientId", "fullName", "kanaName", "genderDesc", "ageBirthday", "pvtDateTrimTime", "getElapsedDay", "isOpened"};
     private static final Class[] COLUMN_CLASSES = {
         String.class, String.class, String.class, String.class, String.class, 
-        String.class, Integer.class, Integer.class};
+        String.class, Integer.class, Object.class};
     private final int[] COLUMN_WIDTH = {50, 100, 120, 30, 100, 80, 20, 20};
     private final int START_NUM_ROWS = 1;
    
