@@ -2,7 +2,6 @@ package open.dolphin.impl.rezept;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -35,7 +34,7 @@ public class RezeptView extends JPanel {
     private JButton prevBtn;
     private JButton nextBtn;
     
-    private JTextField insTypeField;
+    private JTextArea insTypeArea;
     private JTextField pubIns1Field;
     private JTextField pubIns1NumField;
     private JTextField pubIns2Field;
@@ -179,10 +178,8 @@ public class RezeptView extends JPanel {
         north.add(p3);
         
         JPanel p4 = createYBoxPanel();
-        insTypeField= createTextField(30);
-        // 余白できちゃった TODO
-        p4.add(Box.createVerticalStrut(insTypeField.getPreferredSize().height));
-        p4.add(insTypeField);
+        insTypeArea= createTextArea();
+        p4.add(insTypeArea);
         JPanel p42 = createXBoxPanel();
         p42.add(new JLabel("保険"));
         insField = createTextField(20);
@@ -258,11 +255,6 @@ public class RezeptView extends JPanel {
         panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
         return panel;
     }
-    private JPanel createXFlowPanel() {
-        JPanel panel = new JPanel();
-        panel.setLayout(new FlowLayout());
-        return panel;
-    }
     
     private JTextField createTextField(int len) {
         JTextField jf = new JTextField(len);
@@ -274,6 +266,7 @@ public class RezeptView extends JPanel {
         JTextArea ja = new JTextArea();
         ja.setEditable(false);
         ja.setLineWrap(true);
+        ja.setBorder(BorderFactory.createEtchedBorder());
         return ja;
     }
     
@@ -292,8 +285,8 @@ public class RezeptView extends JPanel {
     public JButton getNextBtn() {
         return nextBtn;
     }
-    public JTextField getInsTypeField() {
-        return insTypeField;
+    public JTextArea getInsTypeArea() {
+        return insTypeArea;
     }
     public JTextField getPubIns1Field() {
         return pubIns1Field;

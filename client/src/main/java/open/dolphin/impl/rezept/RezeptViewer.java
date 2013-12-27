@@ -405,7 +405,7 @@ public class RezeptViewer implements IChartEventListener {
         int ten = 0;
         int numDays = 0;
         // 保険
-        view.getInsTypeField().setText(reModel.getRezeType(kikanNum));
+        view.getInsTypeArea().setText(reModel.getRezeType(kikanNum));
         HO_Model hoModel = reModel.getHOModel();
         if (hoModel != null) {
             view.getInsField().setText(hoModel.getInsuranceNum());
