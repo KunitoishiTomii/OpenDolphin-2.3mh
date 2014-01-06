@@ -123,7 +123,7 @@ public class RezeptViewer implements IChartEventListener {
         frame.setGlassPane(blockGlass);
         blockGlass.setSize(frame.getSize());
 
-        ComponentMemory cm = new ComponentMemory(frame, new Point(100, 100), frame.getPreferredSize(), frame);
+        ComponentMemory cm = new ComponentMemory(frame, new Point(100, 100), frame.getPreferredSize(), view);
         cm.setToPreferenceBounds();
         frame.setVisible(true);
     }

@@ -27,7 +27,11 @@ public final class ComponentMemory implements ComponentListener {
         this.defaultLocation = loc;
         this.defaultSise = size;
         if (object != null) {
-            this.name = object.getClass().getName();
+            if (object instanceof String) {
+                this.name = (String) object;
+            } else {
+                this.name = object.getClass().getName();
+            }
         }
         target.setLocation(this.defaultLocation);
         target.setSize(this.defaultSise);

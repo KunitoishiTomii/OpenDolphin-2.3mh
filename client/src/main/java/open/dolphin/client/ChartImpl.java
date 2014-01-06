@@ -2292,7 +2292,8 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
         frame.setContentPane(doc.getUI());
         frame.pack();
         // ウィンドウサイズを記録
-        ComponentMemory cm = new ComponentMemory(frame, new Point(0, 0), frame.getPreferredSize(), frame);
+        String name = this.getClass().getName() + "-2";
+        ComponentMemory cm = new ComponentMemory(frame, new Point(0, 0), frame.getPreferredSize(), name);
         cm.setToPreferenceBounds();
 
         // 別ウィンドウで開いたChartDocumentを記録する
