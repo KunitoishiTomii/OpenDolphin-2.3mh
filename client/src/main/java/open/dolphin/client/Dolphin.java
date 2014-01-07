@@ -34,6 +34,7 @@ import open.dolphin.helper.MenuSupport;
 import open.dolphin.helper.ProgressMonitorWorker;
 import open.dolphin.helper.WindowSupport;
 import open.dolphin.impl.login.LoginDialog;
+import open.dolphin.impl.rezept.RezeptViewer;
 import open.dolphin.impl.server.StandAlonePVTServer;
 import open.dolphin.impl.tempkarte.TempKarteCheckDialog;
 import open.dolphin.infomodel.*;
@@ -1415,7 +1416,8 @@ public class Dolphin implements MainWindow, IChartEventListener {
                 GUIConst.ACTION_BROWS_GITHUB,
                 GUIConst.ACTION_EDIT_DISCONITEM,
                 GUIConst.ACTION_EDIT_USINGDRUG,
-                GUIConst.ACTION_CHECK_TEMP_KARTE
+                GUIConst.ACTION_CHECK_TEMP_KARTE,
+                GUIConst.ACTION_SHOW_REZETEN
 //masuda$
             };
             mediator.enableMenus(enables);
@@ -1636,6 +1638,11 @@ public class Dolphin implements MainWindow, IChartEventListener {
             tempKarte.setVisible(true);
         } catch (Exception ex) {
         }
+    }
+    
+    public void showRezeTen() {
+        RezeptViewer viewer = new RezeptViewer();
+        viewer.enter();
     }
     
     

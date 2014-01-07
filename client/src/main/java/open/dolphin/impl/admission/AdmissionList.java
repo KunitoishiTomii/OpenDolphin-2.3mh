@@ -44,7 +44,7 @@ public class AdmissionList extends AbstractMainComponent {
     // 来院テーブルのクラス名
     private static final Class[] COLUMN_CLASSES = {
         String.class, String.class, String.class, String.class, String.class, 
-        String.class, String.class, String.class, Integer.class};
+        String.class, String.class, String.class, Object.class};
     // 来院テーブルのカラム幅
     private static final int[] COLUMN_WIDTH = {
         30, 40, 100, 20, 40, 80, 50, 80, 20};

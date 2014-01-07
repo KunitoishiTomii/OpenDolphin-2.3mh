@@ -30,7 +30,7 @@ public class IncReader {
         }
     }
     
-    public Map<String, String> getMap(String data) throws UnsupportedEncodingException, IOException {
+    public Map<String, String> getMap(String data) throws IOException {
         
         // 文字列を扱いやすくするために固定長のデータを作る
         char[] charArray = getCharArray(data);
