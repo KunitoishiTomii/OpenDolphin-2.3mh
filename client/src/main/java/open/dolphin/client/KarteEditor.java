@@ -7,6 +7,8 @@ import java.awt.print.PageFormat;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.text.DateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.TooManyListenersException;
@@ -26,6 +28,7 @@ import open.dolphin.setting.MiscSettingPanel;
 import open.dolphin.tr.PTransferHandler;
 import open.dolphin.tr.SOATransferHandler;
 import open.dolphin.util.MMLDate;
+import org.apache.commons.lang.math.NumberUtils;
 
 /**
  * 2号カルテクラス。
@@ -621,31 +624,51 @@ public class KarteEditor extends AbstractChartDocument implements IInfoModel,
         // キャンセルの場合はリターンする
         if (params != null) {
             // すでに誰かが書き込んでいないかチェック 
-            DBTask Worker = new DBTask<DocInfoModel, Void>(getContext()) {
+            DBTask Worker;
+            Worker = new DBTask<DocInfoModel, Void>(getContext()) {
                 @Override
                 protected DocInfoModel doInBackground() {
                     // サーバから、同一の文書IDでかつSTATUS_FINALの文書がすでに
                     // ほかユーザによって保存されていないかチェックする
-                    DocumentSearchSpec spec = new DocumentSearchSpec();
-                    spec.setKarteId(chart.getKarte().getId());                 // カルテID
-                    spec.setDocType(IInfoModel.DOCTYPE_KARTE);          // 文書タイプ
-                    spec.setIncludeModifid(false);                      // 修正履歴
-                    spec.setCode(DocumentSearchSpec.DOCTYPE_SEARCH);    // 検索タイプ
-                    spec.setAscending(false);
-                    try {
-                        List<DocInfoModel> docList = DocumentDelegater.getInstance().getDocumentList(spec);
-                        Logger.getLogger(this.getClass().getName()).warn("getDocumentList is Executed -- size:"+docList.size());
-                        if (docList.size() != 0){
-                            return docList.get(0);
-                        }
-                        else{
+                    boolean bParentExist = false;
+                    
+                    if (KarteEditor.this.getModel().getDocInfoModel().getParentId() != null){
+                        DocumentSearchSpec spec = new DocumentSearchSpec();
+                        Calendar dCal = (Calendar)Calendar.getInstance();
+                        spec.setKarteId(chart.getKarte().getId());                 // カルテID
+                        spec.setDocType(IInfoModel.DOCTYPE_KARTE);          // 文書タイプ
+                        spec.setIncludeModifid(false);                      // 修正履歴
+                        spec.setCode(DocumentSearchSpec.DOCTYPE_SEARCH);    // 検索タイプ
+                        dCal.set(1800, 1, 1);
+                        spec.setFromDate(dCal.getTime());
+                        dCal.set(2099, 12, 13);
+                        spec.setToDate(dCal.getTime());
+                        spec.setAscending(false);
+                        try {
+                            List<DocInfoModel> docList = DocumentDelegater.getInstance().getDocumentList(spec);
+                            Logger.getLogger(this.getClass().getName()).warn("getDocumentList is Executed -- size:"+docList.size());
+                            if (!docList.isEmpty()){
+                                for(DocInfoModel dDoc: docList){
+                                    if (dDoc.getParentId() == KarteEditor.this.getModel().getDocInfoModel().getParentId()){
+                                        return dDoc;
+                                    }
+                                }
+                                return null;
+                            }
+                            else{
+                                return null;
+                            }
+                        } catch (Exception e){
+                            Logger.getLogger(this.getClass().getName()).warn("Exception: "+e.getLocalizedMessage());
                             return null;
                         }
-                    } catch (Exception e){
-                        Logger.getLogger(this.getClass().getName()).warn("Exception: "+e.getLocalizedMessage());
+                    }
+                    else{
+                        Logger.getLogger(this.getClass().getName()).warn("New Karte");
                         return null;
                     }
                 }
+                @Override
                 protected void succeeded(DocInfoModel oDocInfo) {
                     if(oDocInfo == null){
                         // 無条件で保存
@@ -657,6 +680,7 @@ public class KarteEditor extends AbstractChartDocument implements IInfoModel,
                         Logger.getLogger(this.getClass().getName()).warn("Don't saved!!");
                     }
                 }
+                @Override
                 protected void failed(Throwable e) {
                 }
             };
