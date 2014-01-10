@@ -27,6 +27,7 @@ public class RezeptView extends JPanel {
     private static final String ICON_BACK = "icon_arrow_left_small";
     private static final ImageIcon PERV_ICON = ClientContext.getImageIconAlias(ICON_BACK);
     private static final ImageIcon NEXT_ICON = ClientContext.getImageIconAlias(ICON_FORWARD);
+    private static final ImageIcon REFRESH_ICON = ClientContext.getImageIconAlias("icon_refresh_small");
     
     private JTabbedPane tabbedPane;
     private JButton importBtn;
@@ -46,6 +47,7 @@ public class RezeptView extends JPanel {
     private JTextField insField;
     private JTextField insSymbolField;
     private JTextField insNumberField;
+    private JButton refreshBtn;
     
     private JTextField ptIdField;
     private JTextField billYmField;
@@ -88,7 +90,7 @@ public class RezeptView extends JPanel {
         leftPanel.add(Box.createVerticalStrut(5));
         
         leftPanel.setPreferredSize(new Dimension(230, 400));
-        tabbedPane = new JTabbedPane();
+        tabbedPane = new JTabbedPane(JTabbedPane.BOTTOM);
         leftPanel.add(tabbedPane);
         add(leftPanel);
         
@@ -190,6 +192,8 @@ public class RezeptView extends JPanel {
         p43.add(insSymbolField);
         insNumberField = createTextField(12);
         p43.add(insNumberField);
+        refreshBtn = new JButton(REFRESH_ICON);
+        p43.add(refreshBtn);
         p4.add(p43);
         north.add(p4);
         rightPanel.add(north, BorderLayout.NORTH);
@@ -236,6 +240,7 @@ public class RezeptView extends JPanel {
         // south
         JPanel south = createYBoxPanel();
         infoTable = new JTable();
+        infoTable.getTableHeader().setReorderingAllowed(false);
         JScrollPane infoPane = new JScrollPane(infoTable);
         infoPane.setBorder(BorderFactory.createTitledBorder("インフォ"));
         infoPane.setPreferredSize(new Dimension(400, 200));
@@ -259,6 +264,7 @@ public class RezeptView extends JPanel {
     private JTextField createTextField(int len) {
         JTextField jf = new JTextField(len);
         jf.setEditable(false);
+        jf.setFocusable(false);
         return jf;
     }
     
@@ -359,5 +365,8 @@ public class RezeptView extends JPanel {
     }
     public JTextField getBillYmField() {
         return billYmField;
+    }
+    public JButton getRefreshBtn() {
+        return refreshBtn;
     }
 }

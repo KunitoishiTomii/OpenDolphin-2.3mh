@@ -196,8 +196,8 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
         undoAction.setEnabled(false);
         redoAction = getContext().getChartMediator().getAction(GUIConst.ACTION_REDO);
         redoAction.setEnabled(false);
-        undoQue = new LinkedList<>();
-        redoQue = new LinkedList<>();
+        undoQue = new ArrayDeque<>();
+        redoQue = new ArrayDeque<>();
     }
 
 //masuda^   ChartMediatorから引っ越し
@@ -1697,7 +1697,7 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
         RegisteredDiagnosisDequeModel model = new RegisteredDiagnosisDequeModel(oldRd, newRd);
 
         // dequeに登録
-        undoQue.offerLast(model);
+        undoQue.push(model);
         // redoQueはクリア
         redoQue.clear();
         // tableModelに変更を加える
@@ -1729,13 +1729,13 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
     public void undo() {
 
         // undoQueから取ってくる
-        RegisteredDiagnosisDequeModel model = (RegisteredDiagnosisDequeModel) undoQue.pollLast();
+        RegisteredDiagnosisDequeModel model = (RegisteredDiagnosisDequeModel) undoQue.poll();
 
         if (model == null){
             return;
         }
         // redoのためにredoQueに追加する
-        redoQue.offerLast(model);
+        redoQue.push(model);
 
         RegisteredDiagnosisModel oldRd = model.getOldRd();
         RegisteredDiagnosisModel newRd = model.getNewRd();
@@ -1765,13 +1765,13 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
     public void redo() {
 
         // redoQueから取ってくる
-        RegisteredDiagnosisDequeModel model = (RegisteredDiagnosisDequeModel) redoQue.pollLast();
+        RegisteredDiagnosisDequeModel model = (RegisteredDiagnosisDequeModel) redoQue.poll();
 
         if (model == null){
             return;
         }
         // redoのundoのため、undoQueに追加する
-        undoQue.offerLast(model);
+        undoQue.push(model);
 
         RegisteredDiagnosisModel oldRd = model.getOldRd();
         RegisteredDiagnosisModel newRd = model.getNewRd();

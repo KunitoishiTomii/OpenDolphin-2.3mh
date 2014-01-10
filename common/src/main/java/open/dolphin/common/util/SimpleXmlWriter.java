@@ -1,7 +1,7 @@
 package open.dolphin.common.util;
 
+import java.util.ArrayDeque;
 import java.util.Deque;
-import java.util.LinkedList;
 
 /**
  * SimpleXmlWriter ただやってみたかっただけｗ
@@ -24,7 +24,7 @@ public class SimpleXmlWriter {
     
     public SimpleXmlWriter() {
         buffer = new StringBuilder(256);
-        stack = new LinkedList<>();
+        stack = new ArrayDeque<>();
         replaceXmlChar = true;
         replaceZenkaku = false;
     }
@@ -46,7 +46,7 @@ public class SimpleXmlWriter {
         isEmptyElement = false;
         isWithinStartTag = true;
         
-        stack.addFirst(elemName);
+        stack.push(elemName);
         
         return this;
     }
@@ -67,7 +67,7 @@ public class SimpleXmlWriter {
         
         closeOpenedTag();
         
-        buffer.append(addEndTag(stack.removeFirst()));
+        buffer.append(addEndTag(stack.pop()));
         
         return this;
     }

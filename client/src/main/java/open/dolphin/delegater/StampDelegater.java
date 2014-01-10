@@ -528,7 +528,8 @@ public class StampDelegater extends BusinessDelegater {
         }
 
         String path = RES_STAMP + "postRemoveStamps";
-        Entity entity = toJsonEntity(ids);
+        TypeReference typeRef = new TypeReference<List<String>>(){};
+        Entity entity = toJsonEntity(ids, typeRef);
 
         Response response = getWebTarget()
                 .path(path)

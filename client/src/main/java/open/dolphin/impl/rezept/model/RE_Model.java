@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import open.dolphin.impl.rezept.RezeUtil;
+import open.dolphin.impl.rezept.filter.CheckResult;
 import open.dolphin.infomodel.PatientModel;
 
 /**
@@ -12,7 +13,7 @@ import open.dolphin.infomodel.PatientModel;
  * @author masuda, Masuda Naika
  */
 public class RE_Model implements IRezeModel {
-
+    
     public static final String ID = "RE";
     
     private int rezeType;       // レセプト種別
@@ -24,6 +25,8 @@ public class RE_Model implements IRezeModel {
     private String patientId;   // 患者番号
     private int checkFlag;      // チェック
     
+    private String nyugaikbn;   // 1:入院、2:入院外
+    
     private HO_Model hoModel;
     private List<KO_Model> koModelList;
     private KH_Model khModel;
@@ -32,6 +35,8 @@ public class RE_Model implements IRezeModel {
     private List<SJ_Model> sjModelList;
     
     private PatientModel patientModel;
+    
+    private List<CheckResult> checkResults;
     
     public String getRezeType(int num) {
         return RezeUtil.getInstance().getRezeTypeDesc(num, rezeType);
@@ -59,6 +64,12 @@ public class RE_Model implements IRezeModel {
     }
     public int getCheckFlag() {
         return checkFlag;
+    }
+    public String getNyugaikbn() {
+        return nyugaikbn;
+    }
+    public void setNyugaikbn(String nyugaikbn) {
+        this.nyugaikbn = nyugaikbn;
     }
     
     public List<IRezeItem> getItemList() {
@@ -132,5 +143,26 @@ public class RE_Model implements IRezeModel {
         birthday = RezeUtil.getInstance().fromYearMonthDate(tokens[6]);
         admitDate = RezeUtil.getInstance().fromYearMonthDate(tokens[8]);
         patientId = tokens[13].trim();
+    }
+    
+    public void setCheckResults(List<CheckResult> results) {
+        this.checkResults = results;
+    }
+    public List<CheckResult> getCheckResults() {
+        return checkResults;
+    }
+    public void addCheckResult(CheckResult result) {
+        if (result != null) {
+            if (checkResults == null) {
+                checkResults = new ArrayList<>();
+            }
+            checkResults.add(result);
+            checkFlag = Math.max(checkFlag, result.getResult());
+        }
+    }
+    public void addCheckResults(List<CheckResult> results) {
+        for (CheckResult result : results) {
+            addCheckResult(result);
+        }
     }
 }

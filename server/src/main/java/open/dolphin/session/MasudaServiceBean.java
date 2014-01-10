@@ -1241,4 +1241,75 @@ public class MasudaServiceBean {
             pm.setHealthInsurances(null);
         }
     }
+    
+    public List<IndicationModel> getIndicationList(String fid, List<String> srycds) {
+        
+        final String sql = "from IndicationModel i where i.fid = :fid and i.srycd in (:srycds)";
+        
+        List<IndicationModel> list = (List<IndicationModel>)
+                em.createQuery(sql)
+                .setParameter("fid", fid)
+                .setParameter("srycds", srycds)
+                .getResultList();
+        
+        // lazy fetch
+        for (IndicationModel model : list) {
+            model.getIndicationItems().size();
+        }
+        
+        return list;
+    }
+    
+    public IndicationModel getIndicationModel(String fid, String srycd) {
+
+        final String sql = "from IndicationModel i where i.fid = :fid and i.srycd = :srycd";
+
+        try {
+            IndicationModel model = (IndicationModel) em.createQuery(sql)
+                    .setParameter("fid", fid)
+                    .setParameter("srycd", srycd)
+                    .getSingleResult();
+
+            // lazy fetch
+            model.getIndicationItems().size();
+
+            return model;
+        } catch (NoResultException ex) {
+        }
+        return null;
+    }
+    
+    public int addIndicationModels(List<IndicationModel> list) {
+        
+        int cnt = 0;
+        for (IndicationModel model : list) {
+            try {
+                model.setLock(false);
+                em.persist(model);
+                cnt++;
+            } catch (Exception ex) {
+            }
+        }
+        return cnt;
+    }
+    
+    public long updateIndicationModel(IndicationModel model) {
+        try {
+            model.setLock(false);
+            em.merge(model);
+            return model.getId();
+        } catch (Exception ex) {
+        }
+        return -1;
+    }
+    
+    public long removeIndicationModel(long id) {
+        // 分離オブジェクトは remove に渡せないので対象を検索する
+        IndicationModel target = em.find(IndicationModel.class, id);
+        if (target != null && !target.isLock()) {
+            em.remove(target);
+            return target.getId();
+        }
+        return -1;
+    }
 }

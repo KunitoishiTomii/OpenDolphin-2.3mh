@@ -2,9 +2,10 @@ package open.dolphin.stampbox;
 
 import java.io.Reader;
 import java.io.StringReader;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import javax.xml.stream.XMLInputFactory;
@@ -59,7 +60,7 @@ public class StampTreeXmlParser {
     
     private final List<StampTree> treeList;
     
-    private final LinkedList<StampTreeNode> stack;
+    private final Deque<StampTreeNode> stack;
     
     private final Set<String> allStampIds;
     private final List<StampModel> stampListToAdd;
@@ -70,7 +71,7 @@ public class StampTreeXmlParser {
         logger = ClientContext.getBootLogger();
         debug = (logger.getLevel() == Level.DEBUG);
         treeList = new ArrayList<>();
-        stack = new LinkedList<>();
+        stack = new ArrayDeque<>();
         allStampIds = new HashSet<>();
         stampListToAdd = new ArrayList<>();
     }
@@ -242,7 +243,7 @@ public class StampTreeXmlParser {
         getCurrentNode().add(node);
         
         // このノードを first に加える
-        stack.addFirst(node);
+        stack.push(node);
     }
     
     private void startRoot(String name, String entity) {
@@ -263,7 +264,7 @@ public class StampTreeXmlParser {
         rootName = name;
         
         stack.clear();
-        stack.addFirst(rootNode);
+        stack.push(rootNode);
     }
     
     private void endElement(XMLStreamReader reader) throws XMLStreamException {
@@ -290,7 +291,7 @@ public class StampTreeXmlParser {
         if (debug) {
             logger.debug("End node");
         }
-        stack.removeFirst();
+        stack.pop();
     }
     
     private void endRoot() {
@@ -319,7 +320,7 @@ public class StampTreeXmlParser {
             logger.debug("End root " + "count=" + pCount);
         }
         
-        stack.removeFirst();
+        stack.pop();
     }
     
     private void buidEnd() {
@@ -369,7 +370,8 @@ public class StampTreeXmlParser {
      * リストから先頭の StampTreeNode を取り出す。
      */
     private StampTreeNode getCurrentNode() {
-        return stack.getFirst();
+        //return stack.getFirst();
+        return stack.peek();
     }
     
     /**

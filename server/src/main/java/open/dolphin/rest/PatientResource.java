@@ -152,18 +152,21 @@ public class PatientResource extends AbstractResource {
         return Response.ok(pkStr).build();
     }
     
-    @GET
-    @Path("list")
+    @POST
+    @Path("postget")
+    @Consumes(MEDIATYPE_JSON_UTF8)
     @Produces(MEDIATYPE_JSON_UTF8)
-    public Response getPatientList(@QueryParam(IDS) String ids) {
+    public Response getPatientList(String json) {
         
         String fid = getRemoteFacility();
-        List<String> idList = getConverter().toStrList(ids);
+        TypeReference typeRef1 = new TypeReference<List<String>>(){};
+        List<String> idList = (List<String>)
+                getConverter().fromJson(json, typeRef1);
         
         List<PatientModel> patients = patientServiceBean.getPatientList(fid, idList);
         
-        TypeReference typeRef = new TypeReference<List<PatientModel>>(){};
-        StreamingOutput so = getJsonOutStream(patients, typeRef);
+        TypeReference typeRef2 = new TypeReference<List<PatientModel>>(){};
+        StreamingOutput so = getJsonOutStream(patients, typeRef2);
         
         return Response.ok(so).build();
     }

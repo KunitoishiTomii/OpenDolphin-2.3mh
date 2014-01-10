@@ -1,5 +1,6 @@
 package open.dolphin.impl.rezept;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -13,14 +14,20 @@ import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
+import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
+import javax.swing.ProgressMonitor;
+import javax.swing.SwingWorker;
 import javax.swing.WindowConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -29,12 +36,15 @@ import open.dolphin.client.ChartEventListener;
 import open.dolphin.client.ClientContext;
 import open.dolphin.client.Dolphin;
 import open.dolphin.client.IChartEventListener;
+import open.dolphin.dao.SqlMiscDao;
+import open.dolphin.delegater.MasudaDelegater;
 import open.dolphin.helper.ComponentMemory;
 import open.dolphin.helper.SimpleWorker;
 import open.dolphin.helper.WindowSupport;
-import open.dolphin.impl.rezept.filter.CheckResult;
+import open.dolphin.impl.rezept.filter.*;
 import open.dolphin.impl.rezept.model.*;
 import open.dolphin.infomodel.ChartEventModel;
+import open.dolphin.infomodel.IndicationModel;
 import open.dolphin.infomodel.PatientModel;
 import open.dolphin.infomodel.PatientVisitModel;
 import open.dolphin.table.ColumnSpecHelper;
@@ -71,12 +81,21 @@ public class RezeptViewer implements IChartEventListener {
     
     private static final String INFO_TBL_SPEC_NAME = "reze.infotable.column.spec";
     private static final String[] INFO_TBL_COLUMN_NAMES = {"区分", "項目", "内容"};
-    private static final String[] INFO_TBL_PROPERTY_NAMES = {"getClassCode", "getDescription", "getNumber", "getTen", "getCount"};
+    private static final String[] INFO_TBL_PROPERTY_NAMES = {"getResult", "getFilterName", "getMsg"};
     private static final Class[] INFO_TBL_CLASSES = {Integer.class, String.class, String.class};
     private static final int[] INFO_TBL_COLUMN_WIDTH = {10, 100, 200};
     
-    private RezeptView view;
-    private BlockGlass blockGlass;
+    private static final ImageIcon INFO_ICON = ClientContext.getImageIconAlias("icon_info_small");
+    private static final ImageIcon WARN_ICON = ClientContext.getImageIconAlias("icon_warn_small");
+    private static final ImageIcon ERROR_ICON = ClientContext.getImageIconAlias("icon_error_small");
+    
+    private final AbstractCheckFilter[] FILTERS = {new DiagnosisFilter()};
+    
+    private final RezeptView view;
+    private final BlockGlass blockGlass;
+    private final ChartEventListener cel;
+    private final Map<String, IndicationModel> indicationMap;
+    
     private ColumnSpecHelper reTblHelper;
     private ColumnSpecHelper diagTblHelper;
     private ColumnSpecHelper itemTblHelper;
@@ -86,18 +105,24 @@ public class RezeptViewer implements IChartEventListener {
     private ListTableModel<IRezeItem> itemTableModel;
     private ListTableModel<CheckResult> infoTableModel;
     
-    private static final String clientUUID;
-    private final ChartEventListener cel;
+    private int reModelCount;
     
-    static {
-        clientUUID = Dolphin.getInstance().getClientUUID();
-    }
+    private boolean dev;    // 後で削除 TODO
+
+    private Set<String> itemSrycdSet;
     
+
     public RezeptViewer() {
+        indicationMap = new HashMap<>();
+        view = new RezeptView();
+        blockGlass = new BlockGlass();
         cel = ChartEventListener.getInstance();
     }
     
     public void enter() {
+        
+        // ChartEventListenerに登録する
+        cel.addListener(this);
         
         initComponents();
         // do not remove copyright!
@@ -119,7 +144,6 @@ public class RezeptViewer implements IChartEventListener {
         frame.setContentPane(view);
         frame.pack();
         
-        blockGlass = new BlockGlass();
         frame.setGlassPane(blockGlass);
         blockGlass.setSize(frame.getSize());
 
@@ -134,27 +158,48 @@ public class RezeptViewer implements IChartEventListener {
         diagTblHelper.saveProperty();
         itemTblHelper.saveProperty();
         infoTblHelper.saveProperty();
-        RE_Panel rePanel = getSelectedRePanel();
-        if (rePanel != null) {
-            JTable reTable = rePanel.getReTable();
+        JTable reTable = getSelectedReTable();
+        if (reTable != null) {
             reTblHelper.saveProperty(reTable);
         }
         
         // ChartStateListenerから除去する
         cel.removeListener(this);
+        
+        if (itemSrycdSet != null) {
+            itemSrycdSet.clear();
+        }
+        indicationMap.clear();
     }
     
-    private RE_Panel getSelectedRePanel() {
-        RE_Panel rePanel = (RE_Panel) view.getTabbedPane().getSelectedComponent();
-        return rePanel;
+    private JTable getSelectedReTable() {
+        
+        JTabbedPane tabbedPane = (JTabbedPane) view.getTabbedPane().getSelectedComponent();
+        
+        if (tabbedPane != null) {
+            RE_Panel rePanel = (RE_Panel) tabbedPane.getSelectedComponent();
+            return rePanel.getReTable();
+        }
+        
+        return null;
+    }
+    
+    private List<ListTableModel<RE_Model>> getAllReListTableModel() {
+        
+        List<ListTableModel<RE_Model>> list = new ArrayList<>();
+        for (Component comp : view.getTabbedPane().getComponents()) {
+            JTabbedPane tabbedPane = (JTabbedPane) comp;
+            for (Component comp2 : tabbedPane.getComponents()) {
+                RE_Panel rePanel = (RE_Panel) comp2;
+                ListTableSorter<RE_Model> sorter = (ListTableSorter<RE_Model>) rePanel.getReTable().getModel();
+                list.add(sorter.getListTableModel());
+            }
+        }
+
+        return list;
     }
     
     private void initComponents() {
-        
-        // ChartEventListenerに登録する
-        cel.addListener(this);
-        
-        view = new RezeptView();
         
         // ColumnSpecHelperを準備する
         reTblHelper = new ColumnSpecHelper(RE_TBL_SPEC_NAME, RE_TBL_COLUMN_NAMES, 
@@ -188,7 +233,7 @@ public class RezeptViewer implements IChartEventListener {
         diagTblHelper.updateColumnWidth();
         
         // 診療行為テーブル
-        JTable itemTable = view.getItemTable();
+        final JTable itemTable = view.getItemTable();
         ITEM_TableRenderer itemRen = new ITEM_TableRenderer();
         itemRen.setTable(itemTable);
         itemRen.setDefaultRenderer();
@@ -202,7 +247,7 @@ public class RezeptViewer implements IChartEventListener {
         itemTblHelper.updateColumnWidth();
         
         // インフォテーブル
-        JTable infoTable = view.getInfoTable();
+        final JTable infoTable = view.getInfoTable();
         INFO_TableRenderer infoRen = new INFO_TableRenderer();
         infoRen.setTable(infoTable);
         infoRen.setDefaultRenderer();
@@ -220,6 +265,8 @@ public class RezeptViewer implements IChartEventListener {
 
             @Override
             public void actionPerformed(ActionEvent e) {
+                int modifiers = e.getModifiers();
+                dev = (modifiers & ActionEvent.SHIFT_MASK) == ActionEvent.SHIFT_MASK;
                 showImportPopup();
             }
         });
@@ -228,9 +275,8 @@ public class RezeptViewer implements IChartEventListener {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                RE_Panel rePanel = getSelectedRePanel();
-                if (rePanel != null) {
-                    JTable reTable = rePanel.getReTable();
+                JTable reTable = getSelectedReTable();
+                if (reTable != null) {
                     int row = reTable.getSelectedRow();
                     row = Math.max(0, row - 1);
                     reTable.getSelectionModel().setSelectionInterval(row, row);
@@ -245,9 +291,8 @@ public class RezeptViewer implements IChartEventListener {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                RE_Panel rePanel = getSelectedRePanel();
-                if (rePanel != null) {
-                    JTable reTable = rePanel.getReTable();
+                JTable reTable = getSelectedReTable();
+                if (reTable != null) {
                     int row = reTable.getSelectedRow();
                     row = Math.min(reTable.getRowCount() - 1, row + 1);
                     reTable.getSelectionModel().setSelectionInterval(row, row);
@@ -262,12 +307,174 @@ public class RezeptViewer implements IChartEventListener {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                // not yet!
+                checkAllReze();
+            }
+        });
+        
+        view.getRefreshBtn().addActionListener(new ActionListener(){
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                checkSingleReze();
+            }
+        });
+        
+        itemTable.addMouseListener(new MouseAdapter(){
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    int row = itemTable.getSelectedRow();
+                    IRezeItem item = itemTableModel.getObject(row);
+                    if (item != null) {
+                        openIndicationEditor(item);
+                    }
+                }
             }
         });
     }
     
-    // ボタンクリックでポップアップ表示
+    public Map<String, IndicationModel> getIndicationMap() {
+        return indicationMap;
+    }
+    
+    public int getReModelCount() {
+        return reModelCount;
+    }
+    
+    private void checkSingleReze() {
+        JTable reTable = getSelectedReTable();
+        if (reTable == null) {
+            return;
+        }
+        int row = reTable.getSelectedRow();
+        if (row != -1) {
+            ListTableSorter<RE_Model> sorter = (ListTableSorter<RE_Model>) reTable.getModel();
+            RE_Model reModel = sorter.getObject(row);
+            doCheck(reModel);
+            // 再表示する
+            reTable.getSelectionModel().clearSelection();
+            reTable.getSelectionModel().setSelectionInterval(row, row);
+        }
+    }
+    
+    private void checkAllReze() {
+        
+        final JTable reTable = getSelectedReTable();
+        
+        final String noteFrmt = "%d / %d 件";
+        String msg = "レセプトチェック中...";
+        String note = String.format(noteFrmt, 0, reModelCount);
+        final ProgressMonitor monitor = new ProgressMonitor(view, msg, note, 0, reModelCount);
+        monitor.setMillisToDecideToPopup(0);
+        monitor.setProgress(0);
+        
+        SwingWorker worker = new SwingWorker<Void, Integer>() {
+
+            @Override
+            protected Void doInBackground() throws Exception {
+                int cnt = 0;
+                createIndicationMap();
+                List<ListTableModel<RE_Model>> list = getAllReListTableModel();
+                for (ListTableModel<RE_Model> tableModel : list) {
+                    for (RE_Model reModel : tableModel.getDataProvider()) {
+                        doCheck(reModel);
+                        publish(cnt++);
+                    }
+                }
+                return null;
+            }
+
+            @Override
+            protected void process(List<Integer> chunks) {
+                for (Integer cnt : chunks) {
+                    monitor.setProgress(cnt);
+                    monitor.setNote(String.format(noteFrmt, cnt, reModelCount));
+                }
+            }
+
+            @Override
+            protected void done() {
+                monitor.close();
+                if (reTable != null) {
+                    int row = reTable.getSelectedRow();
+                    reTable.getSelectionModel().clearSelection();
+                    if (row == -1) {
+                        reTable.getSelectionModel().setSelectionInterval(0, 0);
+                    } else {
+                        reTable.getSelectionModel().setSelectionInterval(row, row);
+                    }
+                }
+            }
+
+        };
+
+        worker.execute();
+    }
+    
+    private void doCheck(RE_Model reModel) {
+
+        // RE_Modelの算定フラグ類を初期化
+        if (reModel.getCheckResults() != null) {
+            reModel.getCheckResults().clear();
+        }
+        reModel.setCheckFlag(0);
+
+        // check filterでチェックする
+        for (AbstractCheckFilter filter : FILTERS) {
+            filter.setRezeptViewer(this);
+            List<CheckResult> results = filter.doCheck(reModel);
+            reModel.addCheckResults(results);
+        }
+    }
+    
+    private void createIndicationMap() throws Exception {
+        
+        if (!indicationMap.isEmpty()) {
+            return;
+        }
+
+        // まずデータベースからIndicationModelを取得する
+        List<String> srycds = new ArrayList(itemSrycdSet);
+        MasudaDelegater del = MasudaDelegater.getInstance();
+        List<IndicationModel> indications = del.getIndicationList(srycds);
+
+        for (IndicationModel model : indications) {
+            String srycd = model.getSrycd();
+            indicationMap.put(srycd, model);
+            srycds.remove(srycd);
+        }
+        
+        if (srycds.isEmpty()) {
+            return;
+        }
+        
+        // データベースに未登録のものはORCAを参照する
+        SqlMiscDao dao = SqlMiscDao.getInstance();
+        List<IndicationModel> toAddList = new ArrayList<>();
+        for (String srycd : srycds) {
+            IndicationModel model = dao.getTekiouByomei(srycd);
+            toAddList.add(model);
+        }
+        
+        // ORCAから取得したものをデータベースに登録する
+        del.addIndicationModels(toAddList);
+        
+        // 登録したものをデータベースから取得してMapに登録する
+        indications = del.getIndicationList(srycds);
+        for (IndicationModel model : indications) {
+            String srycd = model.getSrycd();
+            indicationMap.put(srycd, model);
+        }
+    }
+    
+    private void openIndicationEditor(IRezeItem item) {
+        IndicationEditor editor = new IndicationEditor(this);
+        List<SY_Model> diagList = new ArrayList<>(diagTableModel.getDataProvider());
+        editor.start(item, diagList);
+    }
+    
+    // ボタンクリックでポップアップ表示、先月と今月を選択可能とする
     private void showImportPopup() {
         
         GregorianCalendar gc = new GregorianCalendar();
@@ -287,7 +494,9 @@ public class RezeptViewer implements IChartEventListener {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String ym = e.getActionCommand();
-                //ym = "201303";  // development
+                if (dev) {
+                    ym = "201303";  // development
+                }
                 loadFromOrca(ym);
             }
         };
@@ -311,6 +520,8 @@ public class RezeptViewer implements IChartEventListener {
                 blockGlass.block();
                 UkeLoader loader = new UkeLoader();
                 List<IR_Model> list = loader.loadFromOrca(ym);
+                itemSrycdSet = loader.getItemSrycdSet();
+                reModelCount = loader.getReModelCount();
                 return list;
             }
 
@@ -332,11 +543,46 @@ public class RezeptViewer implements IChartEventListener {
         worker.execute();
     }
 
+    // レセ電データを表示する
     private void showRezeData(List<IR_Model> list) {
+
+        List<IR_Model> nyuin = new ArrayList<>(3);
+        List<IR_Model> gairai = new ArrayList<>(3);
+        
+        for (IR_Model irModel : list) {
+            if ("1".equals(irModel.getNyugaikbn())) {
+                nyuin.add(irModel);
+            } else {
+                gairai.add(irModel);
+            }
+        }
+        
+        if (!nyuin.isEmpty()) {
+            JTabbedPane tabbedPane = createTabbedPane(nyuin);
+            view.getTabbedPane().add("入院", tabbedPane);
+        }
+        if (!gairai.isEmpty()) {
+            JTabbedPane tabbedPane = createTabbedPane(gairai);
+            view.getTabbedPane().add("入院外", tabbedPane);
+        }
+        
+        // １件目を表示する
+        JTable reTable = getSelectedReTable();
+        if (reTable != null) {
+            reTable.getSelectionModel().clearSelection();
+            reTable.getSelectionModel().setSelectionInterval(0, 0);
+        }
+    }
+    
+
+    // 審査機関別のJTabbedPaneを作成する
+    private JTabbedPane createTabbedPane(List<IR_Model> list) {
 
         String[] columnNames = reTblHelper.getTableModelColumnNames();
         String[] methods = reTblHelper.getTableModelColumnMethods();
         Class[] cls = reTblHelper.getTableModelColumnClasses();
+
+        JTabbedPane tabbedPane = new JTabbedPane();
 
         for (IR_Model irModel : list) {
             RE_Panel panel = new RE_Panel();
@@ -400,19 +646,10 @@ public class RezeptViewer implements IChartEventListener {
             panel.getCountField().setText(String.valueOf(irModel.getGOModel().getTotalCount()));
             NumberFormat frmt = NumberFormat.getNumberInstance();
             panel.getTenField().setText(frmt.format(irModel.getGOModel().getTotalTen()));
-            view.getTabbedPane().add(kikanName, panel);
-
-            // １件目を表示する
-            RE_Panel rePanel = getSelectedRePanel();
-            final JTable reTable = rePanel.getReTable();
-            SwingUtilities.invokeLater(new Runnable() {
-
-                @Override
-                public void run() {
-                    reTable.getSelectionModel().setSelectionInterval(0, 0);
-                }
-            });
+            tabbedPane.add(kikanName, panel);
         }
+
+        return tabbedPane;
     }
 
     private void openKarte(PatientModel pm) {
@@ -517,24 +754,160 @@ public class RezeptViewer implements IChartEventListener {
         } else {
             view.getCommentArea().setText("");
         }
-
+        
+        // Info
+        if (reModel.getCheckResults() != null) {
+            List<CheckResult> results = new ArrayList<>(reModel.getCheckResults());
+            infoTableModel.setDataProvider(results);
+        }
     }
+    
+    // 連ドラ
+    private static class RE_TableRenderer extends StripeTableCellRenderer {
 
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, 
+                boolean isSelected, boolean hasFocus, int row, int col) {
+            
+            super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
+            
+            ListTableSorter<RE_Model> sorter = (ListTableSorter<RE_Model>) table.getModel();
+            RE_Model reModel = sorter.getObject(row);
+            PatientModel pm = reModel.getPatientModel();
+            if (pm == null) {
+                return this;
+            }
+            
+            if (col == 3) {
+                setHorizontalAlignment(CENTER);
+                setBorder(null);
+                if (pm.isOpened()) {
+                    String clientUUID = Dolphin.getInstance().getClientUUID();
+                    if (clientUUID.equals(pm.getOwnerUUID())) {
+                        setIcon(IChartEventListener.OPEN_ICON);
+                    } else {
+                        setIcon(IChartEventListener.NETWORK_ICON);
+                    }
+                } else {
+                    setIcon(null);
+                }
+                setText("");
+            } else {
+                setIcon(null);
+                setText(value == null ? "" : value.toString());
+            }
+            
+            if (!isSelected) {
+                switch (reModel.getCheckFlag()) {
+                    case CheckResult.CHECK_INFO:
+                        setForeground(Color.BLUE);
+                        break;
+                    case CheckResult.CHECK_WARNING:
+                        setForeground(Color.MAGENTA);
+                        break;
+                    case CheckResult.CHECK_ERROR:
+                        setForeground(Color.RED);
+                        break;
+                    default:
+                        setForeground(Color.BLACK);
+                        break;
+                }
+            }
+            
+            return this;
+        }
+    }
+    
+    private static class SY_TableRenderer extends StripeTableCellRenderer {
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, 
+                boolean isSelected, boolean hasFocus, int row, int column) {
+            
+            super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            
+              if (!isSelected) {
+                  
+                ListTableModel<SY_Model> tableModel = (ListTableModel<SY_Model>) table.getModel();
+                SY_Model syModel = tableModel.getObject(row);
+                
+                if (syModel.getHitCount() == 0) {
+                    setForeground(Color.BLUE);
+                } else {
+                    setForeground(Color.BLACK);
+                }
+            }
+            return this;
+        }
+    }
+    
+    private static class ITEM_TableRenderer extends StripeTableCellRenderer {
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, 
+                boolean isSelected, boolean hasFocus, int row, int column) {
+            
+            super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+
+            if (!isSelected) {
+                
+                ListTableModel<IRezeItem> tableModel = (ListTableModel<IRezeItem>) table.getModel();
+                IRezeItem rezeItem = tableModel.getObject(row);
+
+                if (rezeItem.getHitCount() == 0) {
+                    setForeground(Color.RED);
+                } else {
+                    setForeground(Color.BLACK);
+                }
+            }
+
+            return this;
+        }
+    }
+    
+    private class INFO_TableRenderer extends StripeTableCellRenderer {
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, 
+                boolean isSelected, boolean hasFocus, int row, int column) {
+            
+            super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            
+            if (column == 0) {
+                setText("");
+                setHorizontalAlignment(CENTER);
+                int i = (int) value;
+                switch(i) {
+                    case CheckResult.CHECK_INFO:
+                        setIcon(INFO_ICON);
+                        break;
+                    case CheckResult.CHECK_WARNING:
+                        setIcon(WARN_ICON);
+                        break;
+                    case CheckResult.CHECK_ERROR:
+                        setIcon(ERROR_ICON);
+                        break;
+                    default:
+                        setIcon(null);
+                }
+            } else {
+                setIcon(null);
+                setText(value == null ? "" : value.toString());
+            }
+            return this;
+        }
+    }
+    
+    // ChartEventListener
     @Override
     public void onEvent(ChartEventModel evt) throws Exception {
-        
+
         // JTabbedPaneからListTableModelを取得
-        List<ListTableModel<RE_Model>> tableModelList = new ArrayList<>();
-        for (Component comp : view.getTabbedPane().getComponents()) {
-            RE_Panel panel = (RE_Panel) comp;
-            JTable reTable = panel.getReTable();
-            ListTableSorter<RE_Model> sorter = (ListTableSorter<RE_Model>) reTable.getModel();
-            tableModelList.add(sorter.getListTableModel());
-        }
+        List<ListTableModel<RE_Model>> tableModelList = getAllReListTableModel();
 
         // 各tabbed paneに配置されたテーブルを更新　めんどくちゃ
         for (ListTableModel<RE_Model> tableModel : tableModelList) {
-            
+
             List<PatientModel> list = new ArrayList<>();
             for (RE_Model reModel : tableModel.getDataProvider()) {
                 list.add(reModel.getPatientModel());
@@ -582,66 +955,6 @@ public class RezeptViewer implements IChartEventListener {
             if (sRow != -1) {
                 tableModel.fireTableRowsUpdated(sRow, sRow);
             }
-        }
-    }
-    
-    private static class RE_TableRenderer extends StripeTableCellRenderer {
-
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object value, 
-                boolean isSelected, boolean hasFocus, int row, int col) {
-            
-            super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
-            
-            ListTableSorter<RE_Model> sorter = (ListTableSorter<RE_Model>) table.getModel();
-            PatientModel pm = sorter.getObject(row).getPatientModel();
-            if (pm == null) {
-                return this;
-            }
-            
-            if (col == 3) {
-                setHorizontalAlignment(CENTER);
-                setBorder(null);
-                if (pm.isOpened()) {
-                    if (clientUUID.equals(pm.getOwnerUUID())) {
-                        setIcon(OPEN_ICON);
-                    } else {
-                        setIcon(NETWORK_ICON);
-                    }
-                } else {
-                    setIcon(null);
-                }
-                setText("");
-            } else {
-                setIcon(null);
-                setText(value == null ? "" : value.toString());
-            }
-            
-            return this;
-        }
-    }
-    
-    private static class SY_TableRenderer extends StripeTableCellRenderer {
-
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-        }
-    }
-    
-    private static class ITEM_TableRenderer extends StripeTableCellRenderer {
-
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-        }
-    }
-    
-    private class INFO_TableRenderer extends StripeTableCellRenderer {
-
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
         }
     }
 }

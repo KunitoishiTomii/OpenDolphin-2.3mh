@@ -7,6 +7,11 @@ package open.dolphin.impl.rezept.filter;
  */
 public class CheckResult {
     
+    public static final int CHECK_NO_ERROR = 0;
+    public static final int CHECK_INFO = 1;
+    public static final int CHECK_WARNING = 2;
+    public static final int CHECK_ERROR = 3;
+    
     private int result;
     private String filterName;
     private String msg;

@@ -23,6 +23,8 @@ public class SY_Model implements IRezeModel {
     
     private int byoKanrenKbn;
     
+    private int hitCount;
+    
     public String getSrycd() {
         return srycd;
     }
@@ -71,5 +73,13 @@ public class SY_Model implements IRezeModel {
         diagName = tokens[5].trim();
         mainDiag = "01".equals(tokens[6]);
         comment = tokens[7].trim();
+    }
+    
+    public void setHitCount(int hitCount) {
+        this.hitCount = hitCount;
+    }
+
+    public int getHitCount() {
+        return hitCount;
     }
 }

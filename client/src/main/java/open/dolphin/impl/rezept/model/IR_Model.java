@@ -22,9 +22,18 @@ public class IR_Model implements IRezeModel {
     private Date billDate;              // 請求年月
     private String telephone;           // 電話番号
     
+    private String nyugaikbn;      // 1:入院、2:入院外
+    
     private LinkedList<RE_Model> reModelList;
     private GO_Model goModel;
-
+    
+    public String getNyugaikbn() {
+        return nyugaikbn;
+    }
+    public void setNyugaikbn(String nyugaikbn) {
+        this.nyugaikbn = nyugaikbn;
+    }
+    
     public int getShinsaKikanNumber() {
         return shinsaKikanNumber;
     }

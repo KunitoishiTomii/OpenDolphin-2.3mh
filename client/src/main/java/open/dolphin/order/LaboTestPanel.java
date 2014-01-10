@@ -106,6 +106,7 @@ public class LaboTestPanel {
         dialog.pack();
 
         // dialogのタイトル・サイズなどを設定
+        // do not remove copyright!
         String title = ClientContext.getFrameTitle("検査エディタ") + ", Masuda Naika";
         dialog.setTitle(title);
         ComponentMemory cm = new ComponentMemory(dialog, new Point(100, 100), view.getPreferredSize(), LaboTestPanel.this);

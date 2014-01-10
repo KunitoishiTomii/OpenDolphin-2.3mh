@@ -1,9 +1,11 @@
 package open.dolphin.stampbox;
 
+import java.util.ArrayDeque;
 import java.util.Date;
+import java.util.Deque;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -49,7 +51,7 @@ public class StampTreeXmlBuilder {
     private final Logger logger;
     
     private final Map<String, StampModel> allStampMap;
-    private final LinkedList<StampTreeNode> stack;
+    private final Deque<StampTreeNode> stack;
     
     private SimpleXmlWriter writer;
     
@@ -59,7 +61,7 @@ public class StampTreeXmlBuilder {
         this.mode = mode;
         logger = ClientContext.getBootLogger();
         debug = (logger.getLevel() == Level.DEBUG);
-        stack = new LinkedList<>();
+        stack = new ArrayDeque<>();
         allStampMap = new HashMap<>();
     }
     
@@ -132,21 +134,19 @@ public class StampTreeXmlBuilder {
         endStakcedElements();
     }
 
-    private void endElementsIfParentNodeChanged(StampTreeNode node) {
+    private void endElementsIfParentNodeChanged(StampTreeNode stampTreeNode) {
         
         // 親Nodeが変更になる場合はwriteEndElementする
-        if (stack.isEmpty()) {
-            return;
-        }
+        StampTreeNode parent = (StampTreeNode) stampTreeNode.getParent();
         
-        StampTreeNode parent = (StampTreeNode) node.getParent();
-        StampTreeNode current = getCurrentNode();
-        
-        if (current != parent) {
-            int index = stack.indexOf(parent);
-            for (int i = 0; i < index; ++i) {
+        if (stack.contains(parent)) {
+            for (Iterator<StampTreeNode> itr = stack.iterator(); itr.hasNext();) {
+                StampTreeNode node = itr.next();
+                if (node == parent) {
+                    break;
+                }
+                itr.remove();
                 writer.writeEndElement();
-                stack.removeFirst();
             }
         }
     }
@@ -156,10 +156,6 @@ public class StampTreeXmlBuilder {
             writer.writeEndElement();
         }
         stack.clear();
-    }
-    
-    private StampTreeNode getCurrentNode() {
-        return stack.getFirst();
     }
 
     
@@ -174,7 +170,7 @@ public class StampTreeXmlBuilder {
                 .writeAttribute(ATTR_NAME, treeInfo.getName())
                 .writeAttribute(ATTR_ENTITY, treeInfo.getEntity());
         
-        stack.addFirst(node);
+        stack.push(node);
     }
     
     private void buildDirectoryNode(StampTreeNode node) {
@@ -187,7 +183,7 @@ public class StampTreeXmlBuilder {
             writer.writeStartElement(ELEM_NODE)
                     .writeAttribute(ATTR_NAME, node.toString());
             
-            stack.addFirst(node);
+            stack.push(node);
         }
     }
     

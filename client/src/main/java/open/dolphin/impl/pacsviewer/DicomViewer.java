@@ -118,6 +118,7 @@ public class DicomViewer {
             }
         });
         
+        // do not remove copyright!
         String title = ClientContext.getFrameTitle("Dicom Viewer, Masuda Naika");
         frame.setTitle(title);
         frame.setPreferredSize(new Dimension(640, 480));

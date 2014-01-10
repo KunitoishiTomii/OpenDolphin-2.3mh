@@ -547,6 +547,74 @@ public class MasudaResource extends AbstractResource {
         return Response.ok(so).build();
     }
     
+    @POST
+    @Path("indication/postget")
+    @Consumes(MEDIATYPE_JSON_UTF8)
+    @Produces(MEDIATYPE_JSON_UTF8)
+    public Response getIndicationList(String json) {
+        
+        String fid = getRemoteFacility();
+        TypeReference typeRef1 = new TypeReference<List<String>>(){};
+        List<String> srycds = (List<String>)
+                getConverter().fromJson(json, typeRef1);
+        
+        List<IndicationModel> list = masudaServiceBean.getIndicationList(fid, srycds);
+        
+        TypeReference typeRef2 = new TypeReference<List<IndicationModel>>(){};
+        StreamingOutput so = getJsonOutStream(list, typeRef2);
+        
+        return Response.ok(so).build();
+    }
+    
+    @GET
+    @Path("indication/{srycd}")
+    @Produces(MEDIATYPE_JSON_UTF8)
+    public Response getIndicationModel(@PathParam(SRYCD) String srycd) {
+        
+        String fid = getRemoteFacility();
+        IndicationModel model = masudaServiceBean.getIndicationModel(fid, srycd);
+        StreamingOutput so = getJsonOutStream(model);
+        
+        return Response.ok(so).build();
+    }
+    
+    @POST
+    @Path("indication/list")
+    @Produces(MEDIATYPE_TEXT_UTF8)
+    public Response addIndicationModels(String json) {
+        
+        TypeReference typeRef = new TypeReference<List<IndicationModel>>(){};
+        List<IndicationModel> list = (List<IndicationModel>) 
+                getConverter().fromJson(json, typeRef);
+        
+        int cnt = masudaServiceBean.addIndicationModels(list);
+        
+        return Response.ok(String.valueOf(cnt)).build();
+    }
+    
+    @PUT
+    @Path("indication")
+    @Produces(MEDIATYPE_TEXT_UTF8)
+    public Response updateIndicationModel(String json) {
+
+        IndicationModel model = (IndicationModel) 
+                getConverter().fromJson(json, IndicationModel.class);
+        
+        long id = masudaServiceBean.updateIndicationModel(model);
+        
+        return Response.ok(String.valueOf(id)).build();
+    }
+    
+    @DELETE
+    @Path("indication/{param}")
+    public void removeIndicationModel(@PathParam("param") String param) {
+
+        long id = Long.parseLong(param);
+
+        long ret = masudaServiceBean.removeIndicationModel(id);
+
+        debug(String.valueOf(ret));
+    }
     
     @Override
     protected void debug(String msg) {
