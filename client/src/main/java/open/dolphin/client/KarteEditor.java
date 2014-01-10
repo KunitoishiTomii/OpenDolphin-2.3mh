@@ -682,10 +682,10 @@ public class KarteEditor extends AbstractChartDocument implements IInfoModel,
                     && "2.0".compareTo(ver) >= 0;   // うまくない
             params.setDateEditable(newKarte || editTemp);
             // FirstConfirmDateを設定する
-            Date firstConfirmed = model.getDocInfoModel().getFirstConfirmDate();
-            if (firstConfirmed != null) {
-                params.setConfirmed(firstConfirmed);
-            }
+            //Date firstConfirmed = model.getDocInfoModel().getFirstConfirmDate();
+            //if (firstConfirmed != null) {
+            //    params.setConfirmed(firstConfirmed);
+            //}
             // 入院中か
             AdmissionModel admission = model.getDocInfoModel().getAdmissionModel();
             params.setInHospital(admission != null);
