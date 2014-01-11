@@ -26,6 +26,7 @@ public interface IRestConstants {
     public static final String FID_UID = "fidUid";
     public static final String FORCE = "force";
     public static final String LAST_ONLY = "lastOnly";
+    public static final String SRYCD = "srycd";
     public static final String SRYCDS = "srycds";
     public static final String FROM_ID = "fromId";
     public static final String YOYUU = "yoyuu";
@@ -33,7 +34,7 @@ public interface IRestConstants {
     public static final String FROM_DOC_PK = "fromDocPk";
     public static final String INCLUDE_MODIFIED = "includeModified";
     public static final String ACTIVE_ONLY = "activeOnly";
-    
+
     // toucha
     public static final String DIRECTION = "direction";
     public static final String PATIENT_ID = "patientId";

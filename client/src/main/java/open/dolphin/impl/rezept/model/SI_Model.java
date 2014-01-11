@@ -18,6 +18,7 @@ public class SI_Model implements IRezeItem {
     private String dayData;         // 算定日情報
     
     private String description;
+    private int hitCount;
 
     @Override
     public String getClassCode() {
@@ -77,5 +78,14 @@ public class SI_Model implements IRezeItem {
     public void setDescription(String desc) {
         description = desc;
     }
-    
+
+    @Override
+    public void setHitCount(int hitCount) {
+        this.hitCount = hitCount;
+    }
+
+    @Override
+    public int getHitCount() {
+        return hitCount;
+    }
 }

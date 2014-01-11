@@ -13,4 +13,6 @@ public interface IRezeItem extends IRezeModel {
     public Integer getCount();
     public String getDescription();
     public void setDescription(String name);
+    public void setHitCount(int hitCount);
+    public int getHitCount();
 }

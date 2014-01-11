@@ -676,6 +676,101 @@ public class MasudaDelegater extends BusinessDelegater {
         return list;
     }
     
+    // 適応モデル
+    public List<IndicationModel> getIndicationList(List<String> srycds) throws Exception {
+        
+        String path = RES_BASE + "indication/postget";
+        
+        // パラメーターで送るにはsrycd数が多いのでpostでデータを送る
+        TypeReference typeRef1 = new TypeReference<List<String>>(){};
+        Entity entity = toJsonEntity(srycds, typeRef1);
+        
+        Response response = getWebTarget()
+                .path(path)
+                .request(MEDIATYPE_JSON_UTF8)
+                .post(entity);
+        
+        checkHttpStatus(response);
+        InputStream is = response.readEntity(InputStream.class);
+        TypeReference typeRef2 = new TypeReference<List<IndicationModel>>(){};
+        List<IndicationModel> list = (List<IndicationModel>) 
+                getConverter().fromJson(is, typeRef2);
+        
+        response.close();
+
+        return list;
+    }
+    
+    public IndicationModel getIndicationModel(String srycd) throws Exception {
+        
+        String path = RES_BASE + "indication/" + srycd;
+        
+        Response response = getWebTarget()
+                .path(path)
+                .request(MEDIATYPE_JSON_UTF8)
+                .get();
+        
+        checkHttpStatus(response);
+        InputStream is = response.readEntity(InputStream.class);
+        IndicationModel model = (IndicationModel)
+                getConverter().fromJson(is, IndicationModel.class);
+        
+        return model;
+    }
+    
+    public void addIndicationModels(List<IndicationModel> list) throws Exception {
+        
+        String path = RES_BASE + "indication/list";
+        
+        TypeReference typeRef = new TypeReference<List<IndicationModel>>(){};
+        Entity entity = toJsonEntity(list, typeRef);
+
+        Response response = getWebTarget()
+                .path(path)
+                .request(MEDIATYPE_TEXT_UTF8)
+                .post(entity);
+
+        int status = checkHttpStatus(response);
+        String ret = response.readEntity(String.class);
+        debug(status, ret);
+        
+        response.close();
+    }
+    
+    public void updateIndicationModel(IndicationModel model) throws Exception {
+        
+        String path = RES_BASE + "indication";
+  
+        Entity entity = toJsonEntity(model);
+
+        Response response = getWebTarget()
+                .path(path)
+                .request(MEDIATYPE_TEXT_UTF8)
+                .put(entity);
+
+        int status = checkHttpStatus(response);
+        String ret = response.readEntity(String.class);
+        debug(status, ret);
+        
+        response.close();
+    }
+    
+    public void removeIndicationModel(IndicationModel model) throws Exception {
+        
+        String path = RES_BASE + "indication/" + String.valueOf(model.getId());
+
+        Response response = getWebTarget()
+                .path(path)
+                .request()
+                .delete();
+
+        int status = checkHttpStatus(response);
+        debug(status, "delete response");
+        
+        response.close();
+    }
+    
+    
     @Override
     protected void debug(int status, String entity) {
         if (debug || DEBUG) {

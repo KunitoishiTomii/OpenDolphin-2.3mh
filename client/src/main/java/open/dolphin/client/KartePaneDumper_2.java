@@ -1,9 +1,11 @@
 package open.dolphin.client;
 
 import java.awt.Color;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.Enumeration;
-import java.util.LinkedList;
+import java.util.Iterator;
 import java.util.List;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
@@ -36,7 +38,7 @@ public final class KartePaneDumper_2 {
     
     private final List<ModuleModel> moduleList;
     private final List<SchemaModel> schemaList;
-    private final LinkedList<Element> stack;
+    private final Deque<Element> stack;
     private final Logger logger;
     
     private SimpleXmlWriter writer;
@@ -47,7 +49,7 @@ public final class KartePaneDumper_2 {
         logger = ClientContext.getBootLogger();
         moduleList = new ArrayList<>();
         schemaList = new ArrayList<>();
-        stack = new LinkedList<>();
+        stack = new ArrayDeque<>();
     }
     
     /**
@@ -148,7 +150,7 @@ public final class KartePaneDumper_2 {
                     .writeEndElement();
         }
         
-        stack.addFirst(element);
+        stack.push(element);
     }
     
     private void writeAttributes(AttributeSet atts, boolean isContent) {
@@ -212,24 +214,18 @@ public final class KartePaneDumper_2 {
     private void endElementsIfParentElementChanged(Element element) {
 
         // 親Elementが変更になる場合はwriteEndElementする
-        if (stack.isEmpty()) {
-            return;
-        }
-
         Element parent = element.getParentElement();
-        Element current = getCurrentElement();
-
-        if (parent != current) {
-            int index = stack.indexOf(parent);
-            for (int i = 0; i < index; ++i) {
+        
+        if (stack.contains(parent)) {
+            for (Iterator<Element> itr = stack.iterator(); itr.hasNext();) {
+                Element elem = itr.next();
+                if (elem == parent) {
+                    break;
+                }
+                itr.remove();
                 writer.writeEndElement();
-                stack.removeFirst();
             }
         }
-    }
-    
-    private Element getCurrentElement() {
-        return stack.getFirst();
     }
     
     private void endStackedElements() {

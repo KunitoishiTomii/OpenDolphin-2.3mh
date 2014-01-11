@@ -1,13 +1,6 @@
 package open.dolphin.impl.rezept;
 
 import open.dolphin.impl.rezept.model.*;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -31,166 +24,177 @@ public class UkeLoader {
     
     private static final String UNCODED_DIAG_SRYCD = "0000999";
     private static final String MODIFIER_PREFIX = "ZZZ";
-    private static final String ENCODING = "SJIS";
+    //private static final String ENCODING = "SJIS";
+    private Set<String> itemSrycdSet;
+    private int reModelCount;
     
-    private List<IR_Model> irModelList;
-    private IR_Model currentModel;
-    private int totalTen;
-    
-    public List<IR_Model> loadUke(String pathStr) {
-        
-        irModelList = new ArrayList<>();
-        
-        FileSystem fs = FileSystems.getDefault();
-        Path path = fs.getPath(pathStr);
-        try (BufferedReader br = Files.newBufferedReader(path, Charset.forName(ENCODING))) {
-            for (String line = br.readLine(); line != null; line = br.readLine()) {
-                parseLine(line);
-            }
-        } catch (IOException ex) {
-            ex.printStackTrace(System.err);
-        }
-
-        irModelList.add(currentModel);
-        
-        // patient id順にソート
-        sortByPatientId(irModelList);
-        
-        // 傷病名・点数マスタを参照して名称をセットする
-        processSYModel();
-        processIRezeItem();
-        
-        // PatientModelをセットする
-        try {
-            setPatientModel();
-        } catch (Exception ex) {
-        }
-
-        return irModelList;
+    public Set<String> getItemSrycdSet() {
+        return itemSrycdSet;
     }
     
+    public int getReModelCount() {
+        return reModelCount;
+    }
+
     public List<IR_Model> loadFromOrca(String ym) {
-        
-        irModelList = new ArrayList<>();
-        
-        // 1:社保, 2:国保, 3:後期高齢者
-        int[] teisyutusakiArray = {1, 2, 6};
-        for (int teisyutusaki : teisyutusakiArray) {
-            
-            totalTen = 0;
-            currentModel = new IR_Model();
-            currentModel.setShinsaKikan(teisyutusaki);
-            currentModel.setTenTable(1);     // 医科
 
-            // tbl_recedenを参照する
-            SqlMiscDao dao = SqlMiscDao.getInstance();
-            List<String> list = dao.getRecedenCsv(ym, teisyutusaki);
-            if (list.isEmpty()) {
-                return null;
-            }
+        List<IR_Model> irModelList = new ArrayList<>();
 
-            for (String line : list) {
-                parseLine(line);
+        // 1:社保, 2:国保, 6:後期高齢者
+        final int[] teisyutusakiArray = {1, 2, 6};
+        final String[] nyugaikbnArray = {"1", "2"};
+
+        for (String nyugaikbn : nyugaikbnArray) {
+            for (int teisyutusaki : teisyutusakiArray) {
+
+                // tbl_recedenを参照する
+                SqlMiscDao dao = SqlMiscDao.getInstance();
+                List<String> list = dao.getRecedenCsv(ym, nyugaikbn, teisyutusaki);
+
+                if (!list.isEmpty()) {
+                    // tbl_recedenにIRは記録されていないので作成する
+                    IR_Model irModel = new IR_Model();
+                    irModel.setShinsaKikan(teisyutusaki);
+                    irModel.setTenTable(1);     // 医科
+                    
+                    LineParser parser = new LineParser();
+                    parser.setCurrentModel(irModel);
+                    
+                    for (String line : list) {
+                        parser.parseLine(line);
+                    }
+                    
+                    // tbl_recedenにGOは記録されていないので作成する
+                    GO_Model goModel = new GO_Model();
+                    goModel.setTotalTen(parser.getTotalTen());
+                    goModel.setTotalCount(irModel.getReModelList().size());
+                    irModel.setGOModel(goModel);
+
+                    irModelList.add(irModel);
+                    
+                    reModelCount += parser.getReModelCount();
+                }
             }
-            
-            // tbl_recedenにGOは記録されていないので作成する
-            GO_Model goModel = new GO_Model();
-            goModel.setTotalTen(totalTen);
-            goModel.setTotalCount(currentModel.getReModelList().size());
-            currentModel.setGOModel(goModel);
-            
-            irModelList.add(currentModel);
         }
-        
+        if (irModelList.isEmpty()) {
+            return null;
+        }
+
         // patient id順にソート
         sortByPatientId(irModelList);
-        
+
         // 傷病名・点数マスタを参照して名称をセットする
-        processSYModel();
-        processIRezeItem();
-        
+        processSYModel(irModelList);
+        processIRezeItem(irModelList);
+
         // PatientModelをセットする
         try {
-            setPatientModel();
+            setPatientModel(irModelList);
         } catch (Exception ex) {
         }
-        
+
         return irModelList;
     }
-    
-    private void parseLine(String line) {
-        
-        String id = line.substring(0, 2);
-        
-        switch (id) {
-            case "IR":
-                currentModel = new IR_Model();
-                currentModel.parseLine(line);
-                totalTen = 0;
-            case "RE":
-                RE_Model reModel = new RE_Model();
-                reModel.parseLine(line);
-                currentModel.addReModel(reModel);
-                break;
-            case "HO":
-                HO_Model hoModel = new HO_Model();
-                hoModel.parseLine(line);
-                currentModel.getCurrentREModel().setHOModel(hoModel);
-                totalTen += hoModel.getTen();
-                break;
-            case "KO":
-                KO_Model koModel = new KO_Model();
-                koModel.parseLine(line);
-                currentModel.getCurrentREModel().addKOModel(koModel);
-                totalTen += koModel.getTen();
-                break;
-            case "KH":
-                KH_Model khModel = new KH_Model();
-                khModel.parseLine(line);
-                currentModel.getCurrentREModel().setKHModel(khModel);
-                break;
-            case "SY":
-                SY_Model syModel = new SY_Model();
-                syModel.parseLine(line);
-                currentModel.getCurrentREModel().addSYModel(syModel);
-                break;
-            case "SI":
-                SI_Model siModel = new SI_Model();
-                siModel.parseLine(line);
-                currentModel.getCurrentREModel().addItem(siModel);
-                break;
-            case "IY":    
-                IY_Model iyModel = new IY_Model();
-                iyModel.parseLine(line);
-                currentModel.getCurrentREModel().addItem(iyModel);
-                break;
-            case "TO":
-                TO_Model toModel = new TO_Model();
-                toModel.parseLine(line);
-                currentModel.getCurrentREModel().addItem(toModel);
-                break;
-            case "CO":
-                CO_Model coModel = new CO_Model();
-                coModel.parseLine(line);
-                currentModel.getCurrentREModel().addItem(coModel);
-                break;
-            case "SJ":
-                SJ_Model sjModel = new SJ_Model();
-                sjModel.parseLine(line);
-                currentModel.getCurrentREModel().addSJModel(sjModel);
-                break;
-            case "GO":
-                GO_Model goModel = new GO_Model();
-                goModel.parseLine(line);
-                currentModel.setGOModel(goModel);
-                break;
-            default:
-                break;
+
+    private static class LineParser {
+
+        private int totalTen;
+        private boolean hasHO;
+        private IR_Model currentModel;
+        private int reModelCount;
+
+        private void setCurrentModel(IR_Model irModel) {
+            currentModel = irModel;
+        }
+        private IR_Model getCurrentModel() {
+            return currentModel;
+        }
+        private int getTotalTen() {
+            return totalTen;
+        }
+        private int getReModelCount() {
+            return reModelCount;
+        }
+
+        private void parseLine(String line) {
+
+            String id = line.substring(0, 2);
+
+            switch (id) {
+                case "IR":
+                    currentModel = new IR_Model();
+                    currentModel.parseLine(line);
+                    totalTen = 0;
+                case "RE":
+                    RE_Model reModel = new RE_Model();
+                    reModel.parseLine(line);
+                    currentModel.addReModel(reModel);
+                    hasHO = false;
+                    reModelCount++;
+                    break;
+                case "HO":
+                    HO_Model hoModel = new HO_Model();
+                    hoModel.parseLine(line);
+                    currentModel.getCurrentREModel().setHOModel(hoModel);
+                    totalTen += hoModel.getTen();
+                    hasHO = true;
+                    break;
+                case "KO":
+                    KO_Model koModel = new KO_Model();
+                    koModel.parseLine(line);
+                    currentModel.getCurrentREModel().addKOModel(koModel);
+                    if (!hasHO) {   //  TODO
+                        totalTen += koModel.getTen();
+                    }
+                    break;
+                case "KH":
+                    KH_Model khModel = new KH_Model();
+                    khModel.parseLine(line);
+                    currentModel.getCurrentREModel().setKHModel(khModel);
+                    break;
+                case "SY":
+                    SY_Model syModel = new SY_Model();
+                    syModel.parseLine(line);
+                    currentModel.getCurrentREModel().addSYModel(syModel);
+                    break;
+                case "SI":
+                    SI_Model siModel = new SI_Model();
+                    siModel.parseLine(line);
+                    currentModel.getCurrentREModel().addItem(siModel);
+                    break;
+                case "IY":
+                    IY_Model iyModel = new IY_Model();
+                    iyModel.parseLine(line);
+                    currentModel.getCurrentREModel().addItem(iyModel);
+                    break;
+                case "TO":
+                    TO_Model toModel = new TO_Model();
+                    toModel.parseLine(line);
+                    currentModel.getCurrentREModel().addItem(toModel);
+                    break;
+                case "CO":
+                    CO_Model coModel = new CO_Model();
+                    coModel.parseLine(line);
+                    currentModel.getCurrentREModel().addItem(coModel);
+                    break;
+                case "SJ":
+                    SJ_Model sjModel = new SJ_Model();
+                    sjModel.parseLine(line);
+                    currentModel.getCurrentREModel().addSJModel(sjModel);
+                    break;
+                case "GO":
+                    GO_Model goModel = new GO_Model();
+                    goModel.parseLine(line);
+                    currentModel.setGOModel(goModel);
+                    break;
+                default:
+                    break;
+            }
         }
     }
     
     // チャート状態同期のためにPatientModelを設定する
-    private void setPatientModel() throws Exception {
+    private void setPatientModel(List<IR_Model> irModelList) throws Exception {
         
         Set<String> idSet = new HashSet<>();
         for (IR_Model irModel : irModelList) {
@@ -218,15 +222,15 @@ public class UkeLoader {
         pmMap.clear();
     }
     
-    private void sortByPatientId(List<IR_Model> list) {
-        for (IR_Model irModel : list) {
+    private void sortByPatientId(List<IR_Model> irModelList) {
+        for (IR_Model irModel : irModelList) {
             List<RE_Model> reModels = irModel.getReModelList();
             Collections.sort(reModels, new RE_ModelComparator());
         }
     }
     
     // マスターを参照して項目名を設定する
-    private void processSYModel() {
+    private void processSYModel(List<IR_Model> irModelList) {
         
         SqlMiscDao dao = SqlMiscDao.getInstance();
         
@@ -261,6 +265,8 @@ public class UkeLoader {
         for (DiseaseEntry de : list) {
             map.put(de.getCode(), de);
         }
+        list.clear();
+        srycds.clear();
         
         // 傷病名を構築する
         for (IR_Model irModel : irModelList) {
@@ -287,6 +293,9 @@ public class UkeLoader {
                             DiseaseEntry dem = map.get("ZZZ" + str);
                             sb.append(dem.getName());
                         }
+                        if (pre) {
+                            sb.append(de.getName());
+                        }
                         syModel.setDiagName(sb.toString());
                     } else {
                         syModel.setDiagName(de.getName());
@@ -295,34 +304,32 @@ public class UkeLoader {
                 }
             }
         }
-        list.clear();
-        srycds.clear();
-        map.clear();
     }
 
     // マスターを参照して項目名を設定する
-    private void processIRezeItem() {
+    private void processIRezeItem(List<IR_Model> irModelList) {
 
         // 診療行為・薬剤など
         SqlMiscDao dao = SqlMiscDao.getInstance();
-        Set<String> srycds = new HashSet<>();
+        itemSrycdSet = new HashSet<>();
 
         // 診療行為コードを列挙しORCAから取得
         for (IR_Model irModel : irModelList) {
             for (RE_Model reModel : irModel.getReModelList()) {
                 for (IRezeItem item : reModel.getItemList()) {
                     String srycd = String.valueOf(item.getSrycd());
-                    srycds.add(srycd);
+                    itemSrycdSet.add(srycd);
                 }
             }
         }
         
         // いったんHashMapに登録する
-        List<TensuMaster> tmList = dao.getTensuMasterList(srycds);
+        List<TensuMaster> tmList = dao.getTensuMasterList(itemSrycdSet);
         Map<String, TensuMaster> map = new HashMap<>();
         for (TensuMaster tm : tmList) {
             map.put(tm.getSrycd(), tm);
         }
+        tmList.clear();
 
         // 診療行為名をセットする
         for (IR_Model irModel : irModelList) {
@@ -341,10 +348,6 @@ public class UkeLoader {
                 }
             }
         }
-        
-        tmList.clear();
-        srycds.clear();
-        map.clear();
     }
     
     // コメントコード内容を再構築

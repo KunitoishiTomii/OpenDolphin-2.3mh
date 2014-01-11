@@ -6,6 +6,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import open.dolphin.infomodel.*;
 import open.dolphin.order.MasterItem;
+import open.dolphin.project.Project;
 import open.dolphin.util.MMLDate;
 
 /**
@@ -689,13 +690,14 @@ public final class SqlMiscDao extends SqlDaoBean {
         return count;
     }
     
-    public List<String> getRecedenCsv(String ym, int teisyutusaki) {
+    public List<String> getRecedenCsv(String ym, String nyugaikbn, int teisyutusaki) {
         
         final String sql = "select recedata from tbl_receden "
-                + "where sryym = ? and teisyutusaki = ? and hospnum = ? order by nyugaikbn, ptid, rennum";
+                + "where sryym = ? and nyugaikbn = ? and teisyutusaki = ? and hospnum = ? "
+                + "order by nyugaikbn, ptid, rennum";
         
         int hospNum = getHospNum();
-        Object[] params = {ym, teisyutusaki, hospNum};
+        Object[] params = {ym, nyugaikbn, teisyutusaki, hospNum};
         List<String[]> valuesList = executePreparedStatement(sql, params);
         
         List<String> list = new ArrayList<>();
@@ -706,47 +708,63 @@ public final class SqlMiscDao extends SqlDaoBean {
         return list;
     }
     
-/*
-    public List<String[]> getTekiouByomeiCd(String[] codes){
-        StringBuilder sb = new StringBuilder();
-        Connection con = null;
-        Statement st = null;
-        String sql = null;
-        boolean first = true;
-
-        // sql文を作成
-        sb.append("select srycd, khnbyomeicd, byomei from tbl_tekioubyomei where ");
-        sb.append("srycd in (");
-        for (String code : codes){
-            if (!first){
-                sb.append(",");
-            } else {
-                first = false;
-            }
-            sb.append(addSingleQuote(code));
+    public IndicationModel getTekiouByomei(String srycd) {
+        
+        final String sql1 = "select byomei from tbl_tekioubyomei "
+                + "where srycd = ? order by rennum";
+        // chkkbn 1:医薬品と病名 2:診療行為と病名 6:投与禁忌医薬品と病名
+        final String sql2 = "select byomei from tbl_chksnd "
+                + "where srycd = ? and (chkkbn = '1' or chkkbn = '2') order by rennum";
+        final String sql3 = "select srycd, byomei from tbl_chksnd "
+                + "where srycd = ? and chkkbn = '6' order by rennum";
+        // tbl_chk005
+        final String sql4 = "select byomei from tbl_chk005 "
+                + "where srycd = ? order by rennum";
+        
+        IndicationModel model = new IndicationModel();
+        model.setSrycd(srycd);
+        model.setOutPatient(true);
+        model.setAdmission(true);
+        model.setFacilityId(Project.getFacilityId());
+        
+        List<IndicationItem> items = new ArrayList<>();
+        Object[] params = {srycd};
+        
+        List<String[]> valuesList1 = executePreparedStatement(sql1, params);
+        for (String[] values : valuesList1) {
+            IndicationItem item = new IndicationItem();
+            item.setKeyword(values[0].trim());
+            item.setIndicationModel(model);
+            items.add(item);
         }
-        sb.append(")");
-
-        sql = sb.toString();
-        List<String[]> ret = new ArrayList();
-
-        try {
-            con = getConnection();
-            st = con.createStatement();
-            ResultSet rs = st.executeQuery(sql);
-            while(rs.next()){
-                ret.add(new String[]{rs.getString(1), rs.getString(2), rs.getString(3)});
-            }
-            closeStatement(st);
-            closeConnection(con);
-        } catch (Exception e) {
-            processError(e);
-            closeStatement(st);
-            closeConnection(con);
+        /*
+        List<String[]> valuesList2 = executePreparedStatement(sql2, params);
+        for (String[] values : valuesList2) {
+            IndicationItem item = new IndicationItem();
+            item.setKeyword(values[0].trim());
+            item.setIndicationModel(model);
+            items.add(item);
+        }
+        
+        List<String[]> valuesList3 = executePreparedStatement(sql3, params);
+        for (String[] values : valuesList3) {
+            IndicationItem item = new IndicationItem();
+            item.setKeyword(values[0].trim());
+            item.setNotCondition(true);
+            item.setIndicationModel(model);
+            items.add(item);
+        }
+        */
+        List<String[]> valuesList4 = executePreparedStatement(sql4, params);
+        for (String[] values : valuesList4) {
+            IndicationItem item = new IndicationItem();
+            item.setKeyword(values[0].trim());
+            item.setIndicationModel(model);
+            items.add(item);
         }
 
-        return ret;
+        model.setIndicationItems(items);
+        
+        return model;
     }
-*/
-
 }
