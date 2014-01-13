@@ -323,22 +323,22 @@ public class UkeLoader {
             return tmName;
         }
         
-        // 順に空白をコメントで置換する
+        // 逆順に空白をコメントで置換する
         StringBuilder sb = new StringBuilder();
-        int index = 0;
-        int nameLen = tmName.length();
-        int commentLen = comment.length();
+        int index = comment.length() - 1;
 
-        for (int i = 0; i < nameLen && index < commentLen; ++i) {
+        for (int i = tmName.length() - 1; i >= 0; --i) {
             char c = tmName.charAt(i);
-            if (c == '　') {
-                sb.append(comment.charAt(index++));
+            if (c == '　' && index >= 0) {
+                sb.append(comment.charAt(index--));
             } else {
                 sb.append(c);
             }
         }
-
-        return sb.toString();
+        
+        String ret = sb.reverse().toString();
+        //System.out.println(ret);
+        return ret;
     }
     
     // patient id順のcomparator
