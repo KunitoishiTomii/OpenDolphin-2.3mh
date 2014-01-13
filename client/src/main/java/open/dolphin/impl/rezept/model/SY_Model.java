@@ -24,6 +24,7 @@ public class SY_Model implements IRezeModel {
     private int byoKanrenKbn;
     
     private int hitCount;
+    private boolean pass;
     
     public String getSrycd() {
         return srycd;
@@ -81,5 +82,16 @@ public class SY_Model implements IRezeModel {
 
     public int getHitCount() {
         return hitCount;
+    }
+    
+    public void incrementHitCount() {
+        hitCount++;
+    }
+    
+    public void setPass(boolean pass) {
+        this.pass = pass;
+    }
+    public boolean isPass() {
+        return pass;
     }
 }

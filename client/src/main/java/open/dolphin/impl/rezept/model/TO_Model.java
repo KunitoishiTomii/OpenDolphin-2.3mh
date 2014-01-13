@@ -1,5 +1,7 @@
 package open.dolphin.impl.rezept.model;
 
+import java.util.ArrayList;
+import java.util.List;
 import open.dolphin.impl.rezept.RezeUtil;
 
 /**
@@ -21,10 +23,12 @@ public class TO_Model implements IRezeItem {
     public Float unitPrice;         // 単価
     public String name;             // 特定機材名称
     public String size;             // 商品名及び規格又はサイズ
-    public String dayData;          // 算定日情報
+    public List<DayNumberPair> dayData; // 算定日情報
     
     private String description;
+    
     private int hitCount;
+    private boolean pass;
 
     @Override
     public String getClassCode() {
@@ -58,7 +62,7 @@ public class TO_Model implements IRezeItem {
     public String getSize() {
         return size;
     }
-    public String getDayData() {
+    public List<DayNumberPair> getDayData() {
         return dayData;
     }
     
@@ -75,18 +79,14 @@ public class TO_Model implements IRezeItem {
         name = tokens[9].trim();
         size = tokens[10].trim();
 
+        dayData = new ArrayList<>();
         int len = tokens.length;
-        boolean first = true;
-        StringBuilder sb = new StringBuilder();
         for (int i = daysStart; i < len; ++i) {
-            if (!tokens[i].isEmpty()) {
-                if (!first) {
-                    sb.append(",");
-                } else {
-                    first = false;
-                }
+            String token = tokens[i];
+            if (!token.isEmpty() && !CR.equals(token)) {
                 int day = i - daysStart + 1;
-                sb.append(day).append("(").append(tokens[i]).append(")");
+                int num = Integer.parseInt(tokens[i]);
+                dayData.add(new DayNumberPair(day, num));
             }
         }
     }
@@ -109,5 +109,19 @@ public class TO_Model implements IRezeItem {
     @Override
     public int getHitCount() {
         return hitCount;
+    }
+
+    @Override
+    public void incrementHitCount() {
+        hitCount++;
+    }
+    
+    @Override
+    public void setPass(boolean pass) {
+        this.pass = pass;
+    }
+    @Override
+    public boolean isPass() {
+        return pass;
     }
 }

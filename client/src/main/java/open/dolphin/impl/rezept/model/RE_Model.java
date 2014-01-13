@@ -2,10 +2,10 @@ package open.dolphin.impl.rezept.model;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 import open.dolphin.impl.rezept.RezeUtil;
 import open.dolphin.impl.rezept.filter.CheckResult;
-import open.dolphin.infomodel.PatientModel;
 
 /**
  * レセプト共通レコード
@@ -26,6 +26,7 @@ public class RE_Model implements IRezeModel {
     private int checkFlag;      // チェック
     
     private String nyugaikbn;   // 1:入院、2:入院外
+    private int laboCount;      // 検体検査項目数
     
     private HO_Model hoModel;
     private List<KO_Model> koModelList;
@@ -33,8 +34,6 @@ public class RE_Model implements IRezeModel {
     private List<SY_Model> syModelList;
     private List<IRezeItem> itemList;
     private List<SJ_Model> sjModelList;
-    
-    private PatientModel patientModel;
     
     private List<CheckResult> checkResults;
     
@@ -70,6 +69,22 @@ public class RE_Model implements IRezeModel {
     }
     public void setNyugaikbn(String nyugaikbn) {
         this.nyugaikbn = nyugaikbn;
+    }
+    public void setLaboCount(int laboCount) {
+        this.laboCount = laboCount;
+    }
+    public void incrementLaboCount() {
+        laboCount++;
+    }
+    public int getLaboCount() {
+        return laboCount;
+    }
+    public int getAge() {
+        GregorianCalendar gc = new GregorianCalendar();
+        int year = gc.get(GregorianCalendar.YEAR);
+        gc.setTime(birthday);
+        int birthYear = gc.get(GregorianCalendar.YEAR);
+        return year - birthYear;
     }
     
     public List<IRezeItem> getItemList() {
@@ -120,18 +135,6 @@ public class RE_Model implements IRezeModel {
         }
         syModelList.add(model);
     }
-    public void setPatientModel(PatientModel pm) {
-        patientModel = pm;
-    }
-    public PatientModel getPatientModel() {
-        return patientModel;
-    }
-    public boolean isOpened() {
-        if (patientModel != null) {
-            return patientModel.isOpened();
-        }
-        return false;
-    }
     
     @Override
     public void parseLine(String csv) {
@@ -164,5 +167,26 @@ public class RE_Model implements IRezeModel {
         for (CheckResult result : results) {
             addCheckResult(result);
         }
+    }
+    
+    public void initCheckResult() {
+        
+        if (checkResults!= null) {
+            checkResults.clear();
+        }
+        if (syModelList != null) {
+            for (SY_Model syModel : syModelList) {
+                syModel.setHitCount(0);
+                syModel.setPass(true);
+            }
+        }
+        if (itemList != null) {
+            for (IRezeItem item : itemList) {
+                item.setHitCount(0);
+                item.setPass(true);
+            }
+        }
+        checkFlag = 0;
+        
     }
 }

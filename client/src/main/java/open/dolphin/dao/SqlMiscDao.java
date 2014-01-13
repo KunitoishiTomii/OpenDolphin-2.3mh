@@ -702,7 +702,9 @@ public final class SqlMiscDao extends SqlDaoBean {
         
         List<String> list = new ArrayList<>();
         for (String[] values : valuesList) {
-            list.add(values[0]);
+            String line = values[0];
+            line = line.replace("\r", "\n");
+            list.add(line);
         }
         
         return list;

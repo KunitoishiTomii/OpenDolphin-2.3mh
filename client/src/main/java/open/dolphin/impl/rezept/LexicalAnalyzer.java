@@ -193,31 +193,4 @@ public class LexicalAnalyzer {
             throw new Exception(ERR_INVALID_PARENTHESIS_PAIR);
         }
     }
-    
-    // 傷病名にキーワードが含まれるかチェックする
-    public static boolean check(String str, String data) throws Exception {
-        
-        Deque<Boolean> stack = new ArrayDeque();
-        List<String> tokens = toPostFixNotation(data);
-
-        for (String token : tokens) {
-            switch(token) {
-                case AND_OPERATOR:
-                    boolean b1 = stack.pop() & stack.pop(); // &&はダメ
-                    stack.push(b1);
-                    break;
-                case OR_OPERATOR:
-                    boolean b2 = stack.pop() | stack.pop(); // ||はダメ
-                    stack.push(b2);
-                    break;
-                default:
-                    stack.push(str.contains(token));
-                    break;
-            }
-        }
-        
-        boolean pass = stack.pop();
-        
-        return pass;
-    }
 }
