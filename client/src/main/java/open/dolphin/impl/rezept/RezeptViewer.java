@@ -381,6 +381,7 @@ public class RezeptViewer {
             protected void process(List<Integer> chunks) {
                 Integer cnt = chunks.get(chunks.size() - 1);
                 monitor.setNote(String.format(noteFrmt, cnt, reModelCount));
+                monitor.setProgress(cnt);
             }
 
             @Override
