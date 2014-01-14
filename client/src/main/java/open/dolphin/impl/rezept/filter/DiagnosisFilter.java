@@ -169,6 +169,9 @@ public class DiagnosisFilter extends AbstractCheckFilter {
         }
 
         boolean pass = stack.pop();
+        if (!stack.isEmpty()) {
+            System.out.println("DiagnosisFilter lexicalAnalyze: stack is not empty");
+        }
 
         return pass;
     }

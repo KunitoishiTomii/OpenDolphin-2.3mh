@@ -168,7 +168,7 @@ public class  PatientDelegater extends BusinessDelegater {
         
         String path = BASE_RESOURCE + "list";
         String ids = getConverter().fromList(patientIdList);
-        
+
         Response response = getWebTarget()
                 .path(path)
                 .queryParam("ids", ids)
