@@ -13,7 +13,6 @@ import java.awt.event.WindowEvent;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
@@ -67,7 +66,7 @@ public class RezeptViewer {
     
     private static final String DIAG_TBL_SPEC_NAME = "reze.diagtable.column.spec";
     private static final String[] DIAG_TBL_COLUMN_NAMES = {"傷病名", "開始日", "転帰", "特定疾患"};
-    private static final String[] DIAG_TBL_PROPERTY_NAMES = {"getDiagName", "getStartDate", "getOutcomeStr", "getByoKanrenKbnStr"};
+    private static final String[] DIAG_TBL_PROPERTY_NAMES = {"getDiagName", "getStartDateStr", "getOutcomeStr", "getByoKanrenKbnStr"};
     private static final Class[] DIAG_TBL_CLASSES = {String.class, String.class, String.class, String.class};
     private static final int[] DIAG_TBL_COLUMN_WIDTH = {100, 20, 10, 20};
     
@@ -87,7 +86,7 @@ public class RezeptViewer {
     private static final ImageIcon WARN_ICON = ClientContext.getImageIconAlias("icon_warn_small");
     private static final ImageIcon ERROR_ICON = ClientContext.getImageIconAlias("icon_error_small");
     
-    private final Class[] FILTER_CLASSES= {DiagnosisFilter.class};
+    private final Class[] FILTER_CLASSES= {BasicFilter.class, DiagnosisFilter.class};
     
     private final RezeptView view;
     private final BlockGlass blockGlass;
@@ -846,7 +845,7 @@ public class RezeptViewer {
         }
     }
     
-    private class INFO_TableRenderer extends StripeTableCellRenderer {
+    private static class INFO_TableRenderer extends StripeTableCellRenderer {
 
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, 

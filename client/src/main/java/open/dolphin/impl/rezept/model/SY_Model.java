@@ -29,8 +29,11 @@ public class SY_Model implements IRezeModel {
     public String getSrycd() {
         return srycd;
     }
-    public String getStartDate() {
+    public String getStartDateStr() {
         return RezeUtil.getInstance().getDateStr(startDate);
+    }
+    public Date getStartDate() {
+        return startDate;
     }
     public String getOutcome() {
         return outcome;

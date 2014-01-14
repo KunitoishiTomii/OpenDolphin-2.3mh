@@ -24,7 +24,6 @@ public class DiagnosisFilter extends AbstractCheckFilter {
     private static final String OR_OPERATOR = "|";
 
     private static final String FILTER_NAME = "適応病名";
-    private static final int MAX_DIAG_COUNT = 10;
 
     @Override
     public String getFilterName() {
@@ -53,12 +52,6 @@ public class DiagnosisFilter extends AbstractCheckFilter {
             }
         }
 
-        // 病名数チェック
-        CheckResult result = checkDiagCount(diagList.size());
-        if (result != null) {
-            results.add(result);
-        }
-
         return results;
     }
 
@@ -72,7 +65,9 @@ public class DiagnosisFilter extends AbstractCheckFilter {
         if (indication == null) {
             rezeItem.setPass(false);
             String msg = String.format("%sの適応症データがありません", rezeItem.getDescription());
-            return Collections.singletonList(createCheckResult(msg, CheckResult.CHECK_ERROR));
+            CheckResult result = createCheckResult(msg, CheckResult.CHECK_ERROR);
+            result.setSrycd(rezeItem.getSrycd());
+            return Collections.singletonList(result);
         }
 
         // 審査対象でないならばスキップ
@@ -110,7 +105,9 @@ public class DiagnosisFilter extends AbstractCheckFilter {
         if (rezeItem.getHitCount() == 0) {
             rezeItem.setPass(false);
             String msg = String.format("%sに対応する病名がありません", description);
-            results.add(createCheckResult(msg, CheckResult.CHECK_ERROR));
+            CheckResult result = createCheckResult(msg, CheckResult.CHECK_ERROR);
+            result.setSrycd(rezeItem.getSrycd());
+            results.add(result);
         }
 
         // not条件
@@ -122,7 +119,9 @@ public class DiagnosisFilter extends AbstractCheckFilter {
                     // ドボンの場合
                     rezeItem.setPass(false);
                     String msg = String.format("%sの禁止句「%s」が病名に存在します", description, keyword);
-                    results.add(createCheckResult(msg, CheckResult.CHECK_ERROR));
+                    CheckResult result = createCheckResult(msg, CheckResult.CHECK_ERROR);
+                    result.setSrycd(rezeItem.getSrycd());
+                    results.add(result);
                 }
             } catch (Exception ex) {
             }
@@ -179,16 +178,6 @@ public class DiagnosisFilter extends AbstractCheckFilter {
         if (syModel.getHitCount() == 0) {
             String msg = String.format("%sは余剰病名かもしれません", syModel.getDiagName());
             CheckResult result = createCheckResult(msg, CheckResult.CHECK_INFO);
-            return result;
-        }
-        return null;
-    }
-
-    // 病名数チェック
-    private CheckResult checkDiagCount(int count) {
-        if (count > MAX_DIAG_COUNT) {
-            String msg = String.format("病名数が%dを超えています", MAX_DIAG_COUNT);
-            CheckResult result = createCheckResult(msg, CheckResult.CHECK_WARNING);
             return result;
         }
         return null;
