@@ -16,6 +16,7 @@ import open.dolphin.infomodel.*;
 import open.dolphin.project.Project;
 import open.dolphin.common.util.BeanUtils;
 import open.dolphin.common.util.JsonConverter;
+import open.dolphin.delegater.PatientDelegater;
 import open.dolphin.util.NamedThreadFactory;
 
 /**
@@ -383,5 +384,14 @@ public class ChartEventListener {
         // 来院日
         pvt.setPvtDate(ModelUtils.getDateTimeAsString(new Date()));
         return pvt;
+    }
+    
+    public PatientVisitModel createFakePvt(String patientId) {
+        try {
+            PatientModel pm = PatientDelegater.getInstance().getPatientById(patientId);
+            return createFakePvt(pm);
+        } catch (Exception ex) {
+        }
+        return null;
     }
 }

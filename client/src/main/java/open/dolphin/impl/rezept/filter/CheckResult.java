@@ -14,6 +14,7 @@ public class CheckResult {
     
     private int result;
     private String filterName;
+    private String srycd;
     private String msg;
     
     public void setResult(int result) {
@@ -21,6 +22,12 @@ public class CheckResult {
     }
     public int getResult() {
         return result;
+    }
+    public void setSrycd(String srycd) {
+        this.srycd = srycd;
+    }
+    public String getSrycd() {
+        return srycd;
     }
     public void setFilterName(String filterName) {
         this.filterName = filterName;

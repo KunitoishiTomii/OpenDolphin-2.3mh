@@ -14,7 +14,9 @@ public class CO_Model implements IRezeItem {
     private String comment;         // 文字データ
     
     private String description;
+    
     private int hitCount;
+    private boolean pass;
 
     @Override
     public String getClassCode() {
@@ -70,5 +72,19 @@ public class CO_Model implements IRezeItem {
     @Override
     public int getHitCount() {
         return hitCount;
+    }
+
+    @Override
+    public void incrementHitCount() {
+        hitCount++;
+    }
+    
+    @Override
+    public void setPass(boolean pass) {
+        this.pass = pass;
+    }
+    @Override
+    public boolean isPass() {
+        return pass;
     }
 }

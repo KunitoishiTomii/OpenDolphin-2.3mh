@@ -1,6 +1,9 @@
 package open.dolphin.impl.rezept.filter;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 import open.dolphin.impl.rezept.LexicalAnalyzer;
@@ -16,30 +19,31 @@ import open.dolphin.infomodel.IndicationModel;
  * @author masuda, Masuda Naika
  */
 public class DiagnosisFilter extends AbstractCheckFilter {
-    
+
+    private static final String AND_OPERATOR = "&";
+    private static final String OR_OPERATOR = "|";
+
     private static final String FILTER_NAME = "適応病名";
-    private static final int MAX_DIAG_COUNT = 10;
-    
+
+    @Override
+    public String getFilterName() {
+        return FILTER_NAME;
+    }
+
     @Override
     public List<CheckResult> doCheck(RE_Model reModel) {
-        
+
         boolean isAdmission = "1".equals(reModel.getNyugaikbn());
         List<CheckResult> results = new ArrayList<>();
 
-        // hitCountをクリアする
         List<SY_Model> diagList = reModel.getSYModelList();
-        for (SY_Model syModel : diagList) {
-            syModel.setHitCount(0);
-        }
-        
+
         // 薬剤・診療行為と病名対応チェック
         for (IRezeItem item : reModel.getItemList()) {
-            CheckResult result = checkDiag(diagList, item, isAdmission);
-            if (result != null) {
-                results.add(result);
-            }
+            List<CheckResult> list = checkDiag(diagList, item, isAdmission);
+            results.addAll(list);
         }
-        
+
         // 余剰病名チェック
         for (SY_Model syModel : diagList) {
             CheckResult result = checkSurplusDiag(syModel);
@@ -47,96 +51,133 @@ public class DiagnosisFilter extends AbstractCheckFilter {
                 results.add(result);
             }
         }
-        
-        // 病名数チェック
-        CheckResult result = checkDiagCount(diagList.size());
-        if (result != null) {
-            results.add(result);
-        }
-        
+
         return results;
     }
 
     // 病名と適応症マスタでチェック
-    private CheckResult checkDiag(List<SY_Model> diagList, IRezeItem rezeItem, boolean isAdmission) {
-        
-        CheckResult result = new CheckResult();
-        result.setFilterName(FILTER_NAME);
-        result.setResult(CheckResult.CHECK_ERROR);
-        
+    private List<CheckResult> checkDiag(List<SY_Model> diagList, IRezeItem rezeItem, boolean isAdmission) {
+
         Map<String, IndicationModel> indicationMap = viewer.getIndicationMap();
         IndicationModel indication = indicationMap.get(rezeItem.getSrycd());
 
+        // 適応症データがない場合はエラー
         if (indication == null) {
+            rezeItem.setPass(false);
             String msg = String.format("%sの適応症データがありません", rezeItem.getDescription());
-            result.setMsg(msg);
-            return result;
+            CheckResult result = createCheckResult(msg, CheckResult.CHECK_ERROR);
+            result.setSrycd(rezeItem.getSrycd());
+            return Collections.singletonList(result);
         }
+
+        // 審査対象でないならばスキップ
         if (!(indication.isAdmission() && isAdmission || indication.isOutPatient() && !isAdmission)) {
-            rezeItem.setHitCount(1);
-            return null;
+            rezeItem.setPass(true);
+            return Collections.emptyList();
         }
-        
-        boolean checkOk = false;
-        
-        for (SY_Model syModel : diagList) {
-            int hitCount = 0;
-            String diagName = syModel.getDiagName();
-            
-            for (IndicationItem item : indication.getIndicationItems()) {
-                try {
-                    boolean b = LexicalAnalyzer.check(diagName, item.getKeyword());
-                    if (b) {
-                        hitCount++;
-                        rezeItem.setHitCount(hitCount);
-                    }
-                    if (item.isNotCondition() && b) {
-                        // ドボンの場合
-                        String msg = String.format("%sに%sは禁止です", diagName, rezeItem.getDescription());
-                        result.setMsg(msg);
-                        rezeItem.setHitCount(0);
-                        return result;
-                    } else {
-                        // どれかhitすればOK
-                        checkOk |= b;
-                    }
-                } catch (Exception ex) {
-                }
+
+        // or条件とnot条件を分離する
+        List<IndicationItem> orItems = new ArrayList();
+        List<IndicationItem> notItems = new ArrayList();
+        for (IndicationItem item : indication.getIndicationItems()) {
+            if (item.isNotCondition()) {
+                notItems.add(item);
+            } else {
+                orItems.add(item);
             }
-            int oldSyHitCount = syModel.getHitCount();
-            syModel.setHitCount(oldSyHitCount + hitCount);
         }
-        
-        if (checkOk) {
-            return null;
-        } else {
-            String msg = String.format("%sに対応する病名がありません", rezeItem.getDescription());
-            result.setMsg(msg);
+
+        List<CheckResult> results = new ArrayList<>();
+        String description = rezeItem.getDescription();
+
+        // or条件
+        for (IndicationItem item : orItems) {
+            try {
+                String keyword = item.getKeyword();
+                boolean b = checkIndicatedDiag(diagList, keyword, false);
+                if (b) {
+                    rezeItem.incrementHitCount();
+                }
+            } catch (Exception ex) {
+            }
         }
-        
-        return result;
+        // 病名ヒットしなかったrezeItemは不合格
+        if (rezeItem.getHitCount() == 0) {
+            rezeItem.setPass(false);
+            String msg = String.format("%sに対応する病名がありません", description);
+            CheckResult result = createCheckResult(msg, CheckResult.CHECK_ERROR);
+            result.setSrycd(rezeItem.getSrycd());
+            results.add(result);
+        }
+
+        // not条件
+        for (IndicationItem item : notItems) {
+            try {
+                String keyword = item.getKeyword();
+                boolean b = checkIndicatedDiag(diagList, keyword, true);
+                if (!b) {
+                    // ドボンの場合
+                    rezeItem.setPass(false);
+                    String msg = String.format("%sの禁止句「%s」が病名に存在します", description, keyword);
+                    CheckResult result = createCheckResult(msg, CheckResult.CHECK_ERROR);
+                    result.setSrycd(rezeItem.getSrycd());
+                    results.add(result);
+                }
+            } catch (Exception ex) {
+            }
+        }
+
+        return results;
     }
-    
+
+    // 傷病名リストにキーワードが含まれるかチェックする
+    public boolean checkIndicatedDiag(List<SY_Model> diagList,
+            String keyword, boolean notCondition) throws Exception {
+
+        Deque<Boolean> stack = new ArrayDeque();
+        List<String> tokens = LexicalAnalyzer.toPostFixNotation(keyword);
+
+        for (String token : tokens) {
+            switch (token) {
+                case AND_OPERATOR:
+                    boolean b1 = stack.pop() & stack.pop(); // &&はダメ
+                    stack.push(b1);
+                    break;
+                case OR_OPERATOR:
+                    boolean b2 = stack.pop() | stack.pop(); // ||はダメ
+                    stack.push(b2);
+                    break;
+                default:
+                    boolean hit = false;
+                    for (SY_Model syModel : diagList) {
+                        boolean b3 = syModel.getDiagName().contains(token);
+                        hit |= b3;
+                        if (notCondition) {
+                            if (b3) {
+                                // ドボン
+                                syModel.setPass(false);
+                            }
+                        } else {
+                            if (b3) {
+                                syModel.incrementHitCount();
+                            }
+                        }
+                    }
+                    stack.push(hit);
+                    break;
+            }
+        }
+
+        boolean pass = stack.pop();
+
+        return pass;
+    }
+
     // 余剰病名チェック
     private CheckResult checkSurplusDiag(SY_Model syModel) {
         if (syModel.getHitCount() == 0) {
-            CheckResult result = new CheckResult();
-            result.setFilterName(FILTER_NAME);
-            result.setResult(CheckResult.CHECK_INFO);
             String msg = String.format("%sは余剰病名かもしれません", syModel.getDiagName());
-            result.setMsg(msg);
-            return result;
-        }
-        return null;
-    }
-    
-    // 病名数チェック
-    private CheckResult checkDiagCount(int count) {
-        if (count > MAX_DIAG_COUNT) {
-            CheckResult result = new CheckResult();
-            result.setFilterName(FILTER_NAME);
-            result.setResult(CheckResult.CHECK_WARNING);
-            result.setMsg(String.format("病名数が%dを超えています", MAX_DIAG_COUNT));
+            CheckResult result = createCheckResult(msg, CheckResult.CHECK_INFO);
             return result;
         }
         return null;

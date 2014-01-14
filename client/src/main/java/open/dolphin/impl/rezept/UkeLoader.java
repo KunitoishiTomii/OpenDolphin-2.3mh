@@ -10,9 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import open.dolphin.dao.SqlMiscDao;
-import open.dolphin.delegater.PatientDelegater;
 import open.dolphin.infomodel.DiseaseEntry;
-import open.dolphin.infomodel.PatientModel;
 import open.dolphin.infomodel.TensuMaster;
 
 /**
@@ -62,7 +60,7 @@ public class UkeLoader {
                     
                     for (String line : list) {
                         parser.parseLine(line);
-                    }
+                     }
                     
                     // tbl_recedenにGOは記録されていないので作成する
                     GO_Model goModel = new GO_Model();
@@ -86,12 +84,6 @@ public class UkeLoader {
         // 傷病名・点数マスタを参照して名称をセットする
         processSYModel(irModelList);
         processIRezeItem(irModelList);
-
-        // PatientModelをセットする
-        try {
-            setPatientModel(irModelList);
-        } catch (Exception ex) {
-        }
 
         return irModelList;
     }
@@ -191,35 +183,6 @@ public class UkeLoader {
                     break;
             }
         }
-    }
-    
-    // チャート状態同期のためにPatientModelを設定する
-    private void setPatientModel(List<IR_Model> irModelList) throws Exception {
-        
-        Set<String> idSet = new HashSet<>();
-        for (IR_Model irModel : irModelList) {
-            for (RE_Model reModel : irModel.getReModelList()) {
-                String patientId = reModel.getPatientId();
-                idSet.add(patientId);
-            }
-        }
-
-        List<PatientModel> pmList = PatientDelegater.getInstance().getPatientList(idSet);
-        HashMap<String, PatientModel> pmMap = new HashMap<>();
-        for (PatientModel pm : pmList) {
-            pmMap.put(pm.getPatientId(), pm);
-        }
-        
-        for (IR_Model irModel : irModelList) {
-            for (RE_Model reModel : irModel.getReModelList()) {
-                PatientModel pm = pmMap.get(reModel.getPatientId());
-                if (pm != null) {
-                    reModel.setPatientModel(pm);
-                }
-            }
-        }
-        idSet.clear();
-        pmMap.clear();
     }
     
     private void sortByPatientId(List<IR_Model> irModelList) {
@@ -359,54 +322,23 @@ public class UkeLoader {
         if (comment.isEmpty()) {
             return tmName;
         }
-        if (!tmName.contains(" ") && !tmName.contains("　") ){
-            StringBuilder sb = new StringBuilder();
-            sb.append(tmName).append(" ").append(comment);
-            return sb.toString();
-        }
         
-        // 数値が入る空欄をカウントする。
+        // 逆順に空白をコメントで置換する
         StringBuilder sb = new StringBuilder();
-        int nameLen = tmName.length();
-        int count = 0;
-        boolean isSpc = false;
-        for (int i = 0; i < nameLen; ++i) {
+        int index = comment.length() - 1;
+
+        for (int i = tmName.length() - 1; i >= 0; --i) {
             char c = tmName.charAt(i);
-            if (c == ' ' || c == '　') {
-                if (!isSpc) {
-                    sb.append(' ');
-                    count++;
-                    isSpc = true;
-                }
+            if (c == '　' && index >= 0) {
+                sb.append(comment.charAt(index--));
             } else {
                 sb.append(c);
-                isSpc = false;
-            }
-        }
-        String data = sb.toString();
-        nameLen = data.length();
-        
-        // コメントデータをカウント数で分割する、むりやり実装ｗ
-        List<String> strList = new ArrayList<>();
-        int commentLen = comment.length();
-        int tokenLength = commentLen / count;
-        for (int i = 0; i < commentLen; i += tokenLength) {
-            strList.add(comment.substring(i, i + tokenLength));
-        }
-
-        // 空欄をコメントデータで置換する
-        sb = new StringBuilder();
-        int cnt = 0;
-        for (int i = 0; i < nameLen; ++i) {
-            char c = data.charAt(i);
-            sb.append(c);
-            if (c == ' ') {
-                sb.append(strList.get(cnt));
-                cnt++;
             }
         }
         
-        return sb.toString();
+        String ret = sb.reverse().toString();
+        //System.out.println(ret);
+        return ret;
     }
     
     // patient id順のcomparator

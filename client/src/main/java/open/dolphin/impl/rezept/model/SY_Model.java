@@ -24,12 +24,16 @@ public class SY_Model implements IRezeModel {
     private int byoKanrenKbn;
     
     private int hitCount;
+    private boolean pass;
     
     public String getSrycd() {
         return srycd;
     }
-    public String getStartDate() {
+    public String getStartDateStr() {
         return RezeUtil.getInstance().getDateStr(startDate);
+    }
+    public Date getStartDate() {
+        return startDate;
     }
     public String getOutcome() {
         return outcome;
@@ -81,5 +85,16 @@ public class SY_Model implements IRezeModel {
 
     public int getHitCount() {
         return hitCount;
+    }
+    
+    public void incrementHitCount() {
+        hitCount++;
+    }
+    
+    public void setPass(boolean pass) {
+        this.pass = pass;
+    }
+    public boolean isPass() {
+        return pass;
     }
 }

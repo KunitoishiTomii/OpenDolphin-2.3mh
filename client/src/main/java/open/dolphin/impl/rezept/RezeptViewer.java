@@ -35,7 +35,6 @@ import open.dolphin.client.BlockGlass;
 import open.dolphin.client.ChartEventListener;
 import open.dolphin.client.ClientContext;
 import open.dolphin.client.Dolphin;
-import open.dolphin.client.IChartEventListener;
 import open.dolphin.dao.SqlMiscDao;
 import open.dolphin.delegater.MasudaDelegater;
 import open.dolphin.helper.ComponentMemory;
@@ -43,9 +42,7 @@ import open.dolphin.helper.SimpleWorker;
 import open.dolphin.helper.WindowSupport;
 import open.dolphin.impl.rezept.filter.*;
 import open.dolphin.impl.rezept.model.*;
-import open.dolphin.infomodel.ChartEventModel;
 import open.dolphin.infomodel.IndicationModel;
-import open.dolphin.infomodel.PatientModel;
 import open.dolphin.infomodel.PatientVisitModel;
 import open.dolphin.table.ColumnSpecHelper;
 import open.dolphin.table.ListTableModel;
@@ -57,19 +54,19 @@ import open.dolphin.table.StripeTableCellRenderer;
  * 
  * @author masuda, Masuda Naika
  */
-public class RezeptViewer implements IChartEventListener {
+public class RezeptViewer {
     
     private static final String EMPTY = "";
     
     private static final String RE_TBL_SPEC_NAME = "reze.retable.column.spec";
-    private static final String[] RE_TBL_COLUMN_NAMES = {"ID", "氏名", "性別", "状態"};
-    private static final String[] RE_TBL_PROPERTY_NAMES = {"getPatientId", "getName", "getSex", "isOpened"};
-    private static final Class[] RE_TBL_CLASSES = {String.class, String.class, String.class, Object.class};
-    private static final int[] RE_TBL_COLUMN_WIDTH = {20, 40, 10, 5};
+    private static final String[] RE_TBL_COLUMN_NAMES = {"ID", "氏名", "性別", "年齢"};
+    private static final String[] RE_TBL_PROPERTY_NAMES = {"getPatientId", "getName", "getSex", "getAge"};
+    private static final Class[] RE_TBL_CLASSES = {String.class, String.class, String.class, Integer.class};
+    private static final int[] RE_TBL_COLUMN_WIDTH = {20, 40, 10, 5, 10};
     
     private static final String DIAG_TBL_SPEC_NAME = "reze.diagtable.column.spec";
     private static final String[] DIAG_TBL_COLUMN_NAMES = {"傷病名", "開始日", "転帰", "特定疾患"};
-    private static final String[] DIAG_TBL_PROPERTY_NAMES = {"getDiagName", "getStartDate", "getOutcomeStr", "getByoKanrenKbnStr"};
+    private static final String[] DIAG_TBL_PROPERTY_NAMES = {"getDiagName", "getStartDateStr", "getOutcomeStr", "getByoKanrenKbnStr"};
     private static final Class[] DIAG_TBL_CLASSES = {String.class, String.class, String.class, String.class};
     private static final int[] DIAG_TBL_COLUMN_WIDTH = {100, 20, 10, 20};
     
@@ -89,11 +86,10 @@ public class RezeptViewer implements IChartEventListener {
     private static final ImageIcon WARN_ICON = ClientContext.getImageIconAlias("icon_warn_small");
     private static final ImageIcon ERROR_ICON = ClientContext.getImageIconAlias("icon_error_small");
     
-    private final AbstractCheckFilter[] FILTERS = {new DiagnosisFilter()};
+    private final Class[] FILTER_CLASSES= {BasicFilter.class, DiagnosisFilter.class};
     
     private final RezeptView view;
     private final BlockGlass blockGlass;
-    private final ChartEventListener cel;
     private final Map<String, IndicationModel> indicationMap;
     
     private ColumnSpecHelper reTblHelper;
@@ -116,14 +112,10 @@ public class RezeptViewer implements IChartEventListener {
         indicationMap = new HashMap<>();
         view = new RezeptView();
         blockGlass = new BlockGlass();
-        cel = ChartEventListener.getInstance();
     }
     
     public void enter() {
-        
-        // ChartEventListenerに登録する
-        cel.addListener(this);
-        
+
         initComponents();
         // do not remove copyright!
         String title = ClientContext.getFrameTitle("レセ点") + ", Masuda Naika";
@@ -162,9 +154,6 @@ public class RezeptViewer implements IChartEventListener {
         if (reTable != null) {
             reTblHelper.saveProperty(reTable);
         }
-        
-        // ChartStateListenerから除去する
-        cel.removeListener(this);
         
         if (itemSrycdSet != null) {
             itemSrycdSet.clear();
@@ -361,6 +350,9 @@ public class RezeptViewer implements IChartEventListener {
     private void checkAllReze() {
         
         final JTable reTable = getSelectedReTable();
+
+        blockGlass.setText("処理中です...");
+        blockGlass.block();
         
         final String noteFrmt = "%d / %d 件";
         String msg = "レセプトチェック中...";
@@ -387,10 +379,8 @@ public class RezeptViewer implements IChartEventListener {
 
             @Override
             protected void process(List<Integer> chunks) {
-                for (Integer cnt : chunks) {
-                    monitor.setProgress(cnt);
-                    monitor.setNote(String.format(noteFrmt, cnt, reModelCount));
-                }
+                Integer cnt = chunks.get(chunks.size() - 1);
+                monitor.setNote(String.format(noteFrmt, cnt, reModelCount));
             }
 
             @Override
@@ -405,6 +395,8 @@ public class RezeptViewer implements IChartEventListener {
                         reTable.getSelectionModel().setSelectionInterval(row, row);
                     }
                 }
+                blockGlass.setText("");
+                blockGlass.unblock();
             }
 
         };
@@ -415,16 +407,17 @@ public class RezeptViewer implements IChartEventListener {
     private void doCheck(RE_Model reModel) {
 
         // RE_Modelの算定フラグ類を初期化
-        if (reModel.getCheckResults() != null) {
-            reModel.getCheckResults().clear();
-        }
-        reModel.setCheckFlag(0);
+        reModel.initCheckResult();
 
         // check filterでチェックする
-        for (AbstractCheckFilter filter : FILTERS) {
-            filter.setRezeptViewer(this);
-            List<CheckResult> results = filter.doCheck(reModel);
-            reModel.addCheckResults(results);
+        for (Class clazz : FILTER_CLASSES) {
+            try {
+                AbstractCheckFilter filter = (AbstractCheckFilter) clazz.newInstance();
+                filter.setRezeptViewer(this);
+                List<CheckResult> results = filter.doCheck(reModel);
+                reModel.addCheckResults(results);
+            } catch (Exception ex) {
+            }
         }
     }
     
@@ -511,13 +504,13 @@ public class RezeptViewer implements IChartEventListener {
     private void loadFromOrca(final String ym) {
 
         view.getTabbedPane().removeAll();
+        blockGlass.setText("処理中です...");
+        blockGlass.block();
         
         SimpleWorker worker = new SimpleWorker<List<IR_Model>, Void>(){
 
             @Override
             protected List<IR_Model> doInBackground() throws Exception {
-                blockGlass.setText("処理中です...");
-                blockGlass.block();
                 UkeLoader loader = new UkeLoader();
                 List<IR_Model> list = loader.loadFromOrca(ym);
                 itemSrycdSet = loader.getItemSrycdSet();
@@ -617,8 +610,8 @@ public class RezeptViewer implements IChartEventListener {
                 public void mouseClicked(MouseEvent e) {
                     int row = table.getSelectedRow();
                     if (e.getClickCount() == 2 && row != -1) {
-                        PatientModel pm = tableModel.getObject(row).getPatientModel();
-                        openKarte(pm);
+                        String patientId = tableModel.getObject(row).getPatientId();
+                        openKarte(patientId);
                     }
                 }
             });
@@ -652,9 +645,11 @@ public class RezeptViewer implements IChartEventListener {
         return tabbedPane;
     }
 
-    private void openKarte(PatientModel pm) {
-        PatientVisitModel pvt = ChartEventListener.getInstance().createFakePvt(pm);
-        Dolphin.getInstance().openKarte(pvt);
+    private void openKarte(String patientId) {
+        PatientVisitModel pvt = ChartEventListener.getInstance().createFakePvt(patientId);
+        if (pvt != null) {
+            Dolphin.getInstance().openKarte(pvt);
+        }
     }
     
     private void reModelToView(RE_Model reModel, int kikanNum) {
@@ -759,6 +754,8 @@ public class RezeptViewer implements IChartEventListener {
         if (reModel.getCheckResults() != null) {
             List<CheckResult> results = new ArrayList<>(reModel.getCheckResults());
             infoTableModel.setDataProvider(results);
+        } else {
+            infoTableModel.setDataProvider(null);
         }
     }
     
@@ -773,29 +770,6 @@ public class RezeptViewer implements IChartEventListener {
             
             ListTableSorter<RE_Model> sorter = (ListTableSorter<RE_Model>) table.getModel();
             RE_Model reModel = sorter.getObject(row);
-            PatientModel pm = reModel.getPatientModel();
-            if (pm == null) {
-                return this;
-            }
-            
-            if (col == 3) {
-                setHorizontalAlignment(CENTER);
-                setBorder(null);
-                if (pm.isOpened()) {
-                    String clientUUID = Dolphin.getInstance().getClientUUID();
-                    if (clientUUID.equals(pm.getOwnerUUID())) {
-                        setIcon(IChartEventListener.OPEN_ICON);
-                    } else {
-                        setIcon(IChartEventListener.NETWORK_ICON);
-                    }
-                } else {
-                    setIcon(null);
-                }
-                setText("");
-            } else {
-                setIcon(null);
-                setText(value == null ? "" : value.toString());
-            }
             
             if (!isSelected) {
                 switch (reModel.getCheckFlag()) {
@@ -826,17 +800,23 @@ public class RezeptViewer implements IChartEventListener {
             
             super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             
-              if (!isSelected) {
-                  
+            if (!isSelected) {
+
                 ListTableModel<SY_Model> tableModel = (ListTableModel<SY_Model>) table.getModel();
                 SY_Model syModel = tableModel.getObject(row);
-                
-                if (syModel.getHitCount() == 0) {
+
+                if (!syModel.isPass()) {
+                    // ドボン
+                    setForeground(Color.RED);
+                } else if (syModel.getHitCount() == 0) {
+                    // 余剰病名
                     setForeground(Color.BLUE);
+
                 } else {
                     setForeground(Color.BLACK);
                 }
             }
+            
             return this;
         }
     }
@@ -854,10 +834,10 @@ public class RezeptViewer implements IChartEventListener {
                 ListTableModel<IRezeItem> tableModel = (ListTableModel<IRezeItem>) table.getModel();
                 IRezeItem rezeItem = tableModel.getObject(row);
 
-                if (rezeItem.getHitCount() == 0) {
-                    setForeground(Color.RED);
-                } else {
+                if (rezeItem.isPass()) {
                     setForeground(Color.BLACK);
+                } else {
+                    setForeground(Color.RED);
                 }
             }
 
@@ -865,7 +845,7 @@ public class RezeptViewer implements IChartEventListener {
         }
     }
     
-    private class INFO_TableRenderer extends StripeTableCellRenderer {
+    private static class INFO_TableRenderer extends StripeTableCellRenderer {
 
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, 
@@ -895,66 +875,6 @@ public class RezeptViewer implements IChartEventListener {
                 setText(value == null ? "" : value.toString());
             }
             return this;
-        }
-    }
-    
-    // ChartEventListener
-    @Override
-    public void onEvent(ChartEventModel evt) throws Exception {
-
-        // JTabbedPaneからListTableModelを取得
-        List<ListTableModel<RE_Model>> tableModelList = getAllReListTableModel();
-
-        // 各tabbed paneに配置されたテーブルを更新　めんどくちゃ
-        for (ListTableModel<RE_Model> tableModel : tableModelList) {
-
-            List<PatientModel> list = new ArrayList<>();
-            for (RE_Model reModel : tableModel.getDataProvider()) {
-                list.add(reModel.getPatientModel());
-            }
-            int sRow = -1;
-            long ptPk = evt.getPtPk();
-
-            ChartEventModel.EVENT eventType = evt.getEventType();
-
-            switch (eventType) {
-                case PVT_STATE:
-                    for (int row = 0; row < list.size(); ++row) {
-                        PatientModel pm = list.get(row);
-                        if (ptPk == pm.getId()) {
-                            sRow = row;
-                            pm.setOwnerUUID(evt.getOwnerUUID());
-                            break;
-                        }
-                    }
-                    break;
-                case PM_MERGE:
-                    for (int row = 0; row < list.size(); ++row) {
-                        PatientModel pm = list.get(row);
-                        if (ptPk == pm.getId()) {
-                            sRow = row;
-                            list.set(row, evt.getPatientModel());
-                            break;
-                        }
-                    }
-                    break;
-                case PVT_MERGE:
-                    for (int row = 0; row < list.size(); ++row) {
-                        PatientModel pm = list.get(row);
-                        if (ptPk == pm.getId()) {
-                            sRow = row;
-                            list.set(row, evt.getPatientVisitModel().getPatientModel());
-                            break;
-                        }
-                    }
-                    break;
-                default:
-                    break;
-            }
-
-            if (sRow != -1) {
-                tableModel.fireTableRowsUpdated(sRow, sRow);
-            }
         }
     }
 }

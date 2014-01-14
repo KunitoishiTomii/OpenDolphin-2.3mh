@@ -2,9 +2,7 @@ package open.dolphin.delegater;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Response;
@@ -73,7 +71,7 @@ public class  PatientDelegater extends BusinessDelegater {
      */
     public PatientModel getPatientById(String pid) throws Exception {
         
-        String path = ID_RESOURCE;
+        String path = ID_RESOURCE + pid;
 
         Response response = getWebTarget()
                 .path(path)
@@ -168,27 +166,20 @@ public class  PatientDelegater extends BusinessDelegater {
     // patientIDリストからPatienteModelのリストを取得する
     public List<PatientModel> getPatientList(Collection patientIdList) throws Exception {
         
-        if (patientIdList.isEmpty()) {
-            return Collections.emptyList();
-        }
+        String path = BASE_RESOURCE + "list";
+        String ids = getConverter().fromList(patientIdList);
         
-        String path = BASE_RESOURCE + "postget";
-        List<String> idList = new ArrayList<>(patientIdList);
-        
-        // パラメーターで送るには数が多いのでpostでデータを送る
-        TypeReference typeRef1 = new TypeReference<List<String>>(){};
-        Entity entity = toJsonEntity(idList, typeRef1);
-
         Response response = getWebTarget()
                 .path(path)
+                .queryParam("ids", ids)
                 .request(MEDIATYPE_JSON_UTF8)
-                .post(entity);
+                .get();
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-        TypeReference typeRef2 = new TypeReference<List<PatientModel>>(){};
+        TypeReference typeRef = new TypeReference<List<PatientModel>>(){};
         List<PatientModel> list = (List<PatientModel>)
-                getConverter().fromJson(is, typeRef2);
+                getConverter().fromJson(is, typeRef);
         
         response.close();
 

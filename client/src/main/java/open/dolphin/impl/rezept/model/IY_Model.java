@@ -1,5 +1,8 @@
 package open.dolphin.impl.rezept.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * 医薬品レコード
  * 
@@ -15,10 +18,12 @@ public class IY_Model implements IRezeItem {
     private Float number;           // 使用量
     private Float ten;              // 点数
     private int count;              // 回数
-    private String dayData;         // 算定日情報
+    private List<DayNumberPair> dayData;    // 算定日情報
         
     private String description;
+    
     private int hitCount;
+    private boolean pass;
     
     @Override
     public String getClassCode() {
@@ -40,7 +45,7 @@ public class IY_Model implements IRezeItem {
     public Integer getCount() {
         return count;
     }
-    public String getDayData() {
+    public List<DayNumberPair> getDayData() {
         return dayData;
     }
     
@@ -53,18 +58,14 @@ public class IY_Model implements IRezeItem {
         ten = tokens[5].isEmpty() ? null : Float.parseFloat(tokens[5]);
         count = Integer.parseInt(tokens[6]);
         
+        dayData = new ArrayList<>();
         int len = tokens.length;
-        boolean first = true;
-        StringBuilder sb = new StringBuilder();
         for (int i = daysStart; i < len; ++i) {
-            if (!tokens[i].isEmpty()) {
-                if (!first) {
-                    sb.append(",");
-                } else {
-                    first = false;
-                }
+            String token = tokens[i];
+            if (!token.isEmpty() && !CR.equals(token)) {
                 int day = i - daysStart + 1;
-                sb.append(day).append("(").append(tokens[i]).append(")");
+                int num = Integer.parseInt(tokens[i]);
+                dayData.add(new DayNumberPair(day, num));
             }
         }
     }
@@ -87,5 +88,19 @@ public class IY_Model implements IRezeItem {
     @Override
     public int getHitCount() {
         return hitCount;
+    }
+
+    @Override
+    public void incrementHitCount() {
+        hitCount++;
+    }
+    
+    @Override
+    public void setPass(boolean pass) {
+        this.pass = pass;
+    }
+    @Override
+    public boolean isPass() {
+        return pass;
     }
 }
