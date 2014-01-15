@@ -59,10 +59,10 @@ public class RezeptViewer {
     private static final String EMPTY = "";
     
     private static final String RE_TBL_SPEC_NAME = "reze.retable.column.spec";
-    private static final String[] RE_TBL_COLUMN_NAMES = {"ID", "氏名", "性別", "年齢"};
-    private static final String[] RE_TBL_PROPERTY_NAMES = {"getPatientId", "getName", "getSex", "getAge"};
-    private static final Class[] RE_TBL_CLASSES = {String.class, String.class, String.class, Integer.class};
-    private static final int[] RE_TBL_COLUMN_WIDTH = {20, 40, 10, 5, 10};
+    private static final String[] RE_TBL_COLUMN_NAMES = {"", "ID", "氏名", "性別", "年齢"};
+    private static final String[] RE_TBL_PROPERTY_NAMES = {"getCheckFlag", "getPatientId", "getName", "getSex", "getAge"};
+    private static final Class[] RE_TBL_CLASSES = {Integer.class, String.class, String.class, String.class, Integer.class};
+    private static final int[] RE_TBL_COLUMN_WIDTH = {5, 20, 40, 10, 5, 10};
     
     private static final String DIAG_TBL_SPEC_NAME = "reze.diagtable.column.spec";
     private static final String[] DIAG_TBL_COLUMN_NAMES = {"傷病名", "開始日", "転帰", "特定疾患"};
@@ -771,6 +771,27 @@ public class RezeptViewer {
             
             ListTableSorter<RE_Model> sorter = (ListTableSorter<RE_Model>) table.getModel();
             RE_Model reModel = sorter.getObject(row);
+            
+            if (col == 0) {
+                setText("");
+                setHorizontalAlignment(CENTER);
+                switch(reModel.getCheckFlag()) {
+                    case CheckResult.CHECK_INFO:
+                        setIcon(INFO_ICON);
+                        break;
+                    case CheckResult.CHECK_WARNING:
+                        setIcon(WARN_ICON);
+                        break;
+                    case CheckResult.CHECK_ERROR:
+                        setIcon(ERROR_ICON);
+                        break;
+                    default:
+                        setIcon(null);
+                }
+            } else {
+                setIcon(null);
+                setText(value == null ? "" : value.toString());
+            }
             
             if (!isSelected) {
                 switch (reModel.getCheckFlag()) {

@@ -59,8 +59,12 @@ public class UkeLoader {
                     parser.setCurrentModel(irModel);
                     
                     for (String line : list) {
-                        parser.parseLine(line);
-                     }
+                        try {
+                            parser.parseLine(line);
+                        } catch (Exception ex) {
+                            ex.printStackTrace(System.err);
+                        }
+                    }
                     
                     // tbl_recedenにGOは記録されていないので作成する
                     GO_Model goModel = new GO_Model();
