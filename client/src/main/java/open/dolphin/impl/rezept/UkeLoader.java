@@ -279,13 +279,26 @@ public class UkeLoader {
         // 診療行為・薬剤など
         SqlMiscDao dao = SqlMiscDao.getInstance();
         itemSrycdSet = new HashSet<>();
+        Set<String> diagSrycds = new HashSet<>();
 
         // 診療行為コードを列挙しORCAから取得
         for (IR_Model irModel : irModelList) {
             for (RE_Model reModel : irModel.getReModelList()) {
                 for (IRezeItem item : reModel.getItemList()) {
+                    // レセ電は、ほんま、クソ仕様だわ
                     String srycd = String.valueOf(item.getSrycd());
-                    itemSrycdSet.add(srycd);
+                    if ("890000001".equals(srycd)) {
+                        CO_Model coModel = (CO_Model) item;
+                        // modifierは４ケタ数字の連続
+                        String modifier = coModel.getComment();
+                        for (int i = 0; i < modifier.length(); i += 4) {
+                            String str = modifier.substring(i, i + 4);
+                            // ORCAではZZZxxxxと記録されている
+                            diagSrycds.add(MODIFIER_PREFIX + str);
+                        }
+                    } else {
+                        itemSrycdSet.add(srycd);
+                    }
                 }
             }
         }
@@ -297,7 +310,16 @@ public class UkeLoader {
             map.put(tm.getSrycd(), tm);
         }
         tmList.clear();
-
+        
+        // 部位コードを取得
+        List<DiseaseEntry> list = dao.getDiseaseEntries(diagSrycds);
+        Map<String, DiseaseEntry> deMap = new HashMap<>();
+        for (DiseaseEntry de : list) {
+            deMap.put(de.getCode(), de);
+        }
+        list.clear();
+        diagSrycds.clear();
+        
         // 診療行為名をセットする
         for (IR_Model irModel : irModelList) {
             for (RE_Model reModel : irModel.getReModelList()) {
@@ -307,24 +329,48 @@ public class UkeLoader {
                     // コメントコード
                     if (item instanceof CO_Model) {
                         CO_Model coModel = (CO_Model) item;
-                        String desc = reconstructComment(tm.getName(), coModel.getComment());
-                        coModel.setDescription(desc);
+                        reconstructComment(tm, coModel, deMap);
                     } else {
                         item.setDescription(tm.getName());
                     }
                 }
             }
         }
+        
+        deMap.clear();
     }
     
     // コメントコード内容を再構築
-    private String reconstructComment(String tmName, String comment) {
+    private void reconstructComment(TensuMaster tm, CO_Model coModel, Map<String, DiseaseEntry> deMap) {
+
+        String srycd = coModel.getSrycd();
+
+        if (srycd.startsWith("81")) {
+            coModel.setDescription(coModel.getComment());
+        } else if (srycd.startsWith("82")) {
+            coModel.setDescription(tm.getName());
+        } else if (srycd.startsWith("83")) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(tm.getName());
+            sb.append(coModel.getComment());
+            coModel.setDescription(sb.toString());
+        } else if (srycd.startsWith("84")) {
+            reconstruct84Comment(tm, coModel);
+        } else if (srycd.startsWith("89")) {
+            reconstruct89Comment(coModel, deMap);
+        }
+    }
+    
+    private void reconstruct84Comment(TensuMaster tm, CO_Model coModel) {
+        
+        String tmName = tm.getName();
+        String comment = coModel.getComment();
         
         if (tmName.isEmpty()) {
-            return comment;
+            coModel.setDescription(comment);
         }
         if (comment.isEmpty()) {
-            return tmName;
+            coModel.setDescription(tmName);
         }
         
         // 逆順に空白をコメントで置換する
@@ -339,10 +385,21 @@ public class UkeLoader {
                 sb.append(c);
             }
         }
-        
-        String ret = sb.reverse().toString();
-        //System.out.println(ret);
-        return ret;
+        String str = sb.reverse().toString();
+        coModel.setDescription(str);
+    }
+    
+    
+    private void reconstruct89Comment(CO_Model coModel, Map<String, DiseaseEntry> deMap) {
+
+        String modifier = coModel.getComment();
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < modifier.length(); i += 4) {
+            String str = modifier.substring(i, i + 4);
+            DiseaseEntry dem = deMap.get("ZZZ" + str);
+            sb.append(dem.getName());
+        }
+        coModel.setDescription(sb.toString());
     }
     
     // patient id順のcomparator
