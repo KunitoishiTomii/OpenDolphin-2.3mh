@@ -259,6 +259,7 @@ public class IndicationEditor {
                 checkValidation();
             }
         });
+        checkValidation();
     }
     
     // 傷病名をキーワードフィールドにコピーする
@@ -343,6 +344,11 @@ public class IndicationEditor {
         
         JTextField tf = view.getKeywordFld();
         String data = tf.getText().trim();
+        if (data.isEmpty()) {
+            tf.setForeground(Color.BLACK);
+            view.getAddButton().setEnabled(false);
+            return;
+        }
         try {
             LexicalAnalyzer.getTokens(data);
             tf.setForeground(Color.BLACK);
