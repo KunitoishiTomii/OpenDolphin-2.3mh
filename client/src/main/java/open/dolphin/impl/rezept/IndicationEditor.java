@@ -389,6 +389,7 @@ public class IndicationEditor {
         
         view.getAdmissionChk().setSelected(indication.isAdmission());
         view.getOutPatientChk().setSelected(indication.isOutPatient());
+        view.getInclusiveChk().setSelected(indication.isInclusive());
         
         diagTableModel.setDataProvider(diagList);
         indicationTableModel.setDataProvider(indication.getIndicationItems());
@@ -399,6 +400,7 @@ public class IndicationEditor {
         
         indication.setAdmission(view.getAdmissionChk().isSelected());
         indication.setOutPatient(view.getOutPatientChk().isSelected());
+        indication.setInclusive(view.getInclusiveChk().isSelected());
         indication.setIndicationItems(indicationTableModel.getDataProvider());
         indication.setLock(false);
     }

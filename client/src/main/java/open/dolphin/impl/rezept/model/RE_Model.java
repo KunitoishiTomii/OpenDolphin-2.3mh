@@ -26,7 +26,6 @@ public class RE_Model implements IRezeModel {
     private int checkFlag;      // チェック
     
     private String nyugaikbn;   // 1:入院、2:入院外
-    private int laboCount;      // 検体検査項目数
     
     private HO_Model hoModel;
     private List<KO_Model> koModelList;
@@ -70,15 +69,7 @@ public class RE_Model implements IRezeModel {
     public void setNyugaikbn(String nyugaikbn) {
         this.nyugaikbn = nyugaikbn;
     }
-    public void setLaboCount(int laboCount) {
-        this.laboCount = laboCount;
-    }
-    public void incrementLaboCount() {
-        laboCount++;
-    }
-    public int getLaboCount() {
-        return laboCount;
-    }
+
     public int getAge() {
         GregorianCalendar gc = new GregorianCalendar();
         int year = gc.get(GregorianCalendar.YEAR);

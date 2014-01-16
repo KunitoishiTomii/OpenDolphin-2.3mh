@@ -1,9 +1,11 @@
 package open.dolphin.impl.rezept;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -33,6 +35,7 @@ public class IndicationView extends JPanel {
     private JButton clearBtn;
     private JButton addBtn;
     private JButton closeBtn;
+    private JCheckBox inclusiveChk;
     private JCheckBox admissionChk;
     private JCheckBox outPatientChk;
     
@@ -73,12 +76,22 @@ public class IndicationView extends JPanel {
         scrl1.setBorder(BorderFactory.createTitledBorder("傷病名"));
         left.add(scrl1);
         JPanel shinsa = new JPanel();
-        shinsa.setLayout(new BoxLayout(shinsa, BoxLayout.X_AXIS));
-        shinsa.add(new JLabel("審査："));
+        shinsa.setLayout(new BoxLayout(shinsa, BoxLayout.Y_AXIS));
+        JPanel shinsa1 = new JPanel();
+        shinsa1.setAlignmentX(Component.LEFT_ALIGNMENT);
+        shinsa1.setLayout(new BoxLayout(shinsa1, BoxLayout.X_AXIS));
+        shinsa1.add(new JLabel("審査："));
         admissionChk = new JCheckBox("入院");
-        shinsa.add(admissionChk);
+        shinsa1.add(admissionChk);
         outPatientChk = new JCheckBox("入院外");
-        shinsa.add(outPatientChk);
+        shinsa1.add(outPatientChk);
+        shinsa.add(shinsa1);
+        JPanel shinsa2 = new JPanel();
+        shinsa2.setAlignmentX(Component.LEFT_ALIGNMENT);
+        shinsa2.setLayout(new BoxLayout(shinsa2, BoxLayout.X_AXIS));
+        inclusiveChk = new JCheckBox("検査包括10項目以上は対象外");
+        shinsa2.add(inclusiveChk);
+        shinsa.add(shinsa2);
         left.add(shinsa);
         
         JPanel right = new JPanel();
@@ -163,5 +176,8 @@ public class IndicationView extends JPanel {
     }
     public JCheckBox getOutPatientChk() {
         return outPatientChk;
+    }
+    public JCheckBox getInclusiveChk() {
+        return inclusiveChk;
     }
 }

@@ -9,6 +9,7 @@ import java.util.Map;
 import open.dolphin.impl.rezept.LexicalAnalyzer;
 import open.dolphin.impl.rezept.model.IRezeItem;
 import open.dolphin.impl.rezept.model.RE_Model;
+import open.dolphin.impl.rezept.model.SI_Model;
 import open.dolphin.impl.rezept.model.SY_Model;
 import open.dolphin.infomodel.IndicationItem;
 import open.dolphin.infomodel.IndicationModel;
@@ -74,6 +75,14 @@ public class DiagnosisFilter extends AbstractCheckFilter {
         if (!(indication.isAdmission() && isAdmission || indication.isOutPatient() && !isAdmission)) {
             rezeItem.setPass(true);
             return Collections.emptyList();
+        }
+        
+        // 検査１０項目包括審査対象外ならばスキップ
+        if (rezeItem instanceof SI_Model) {
+            SI_Model siModel = (SI_Model) rezeItem;
+            if (siModel.isInclusive() && indication.isInclusive()) {
+                return Collections.emptyList();
+            }
         }
 
         // or条件とnot条件を分離する

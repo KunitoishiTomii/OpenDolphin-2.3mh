@@ -349,6 +349,11 @@ public class RezeptViewer {
     
     private void checkAllReze() {
         
+        final List<ListTableModel<RE_Model>> list = getAllReListTableModel();
+        if (list.isEmpty()) {
+            return;
+        }
+        
         final JTable reTable = getSelectedReTable();
 
         blockGlass.setText("処理中です...");
@@ -367,7 +372,6 @@ public class RezeptViewer {
             protected Void doInBackground() throws Exception {
                 int cnt = 0;
                 createIndicationMap();
-                List<ListTableModel<RE_Model>> list = getAllReListTableModel();
                 for (ListTableModel<RE_Model> tableModel : list) {
                     for (RE_Model reModel : tableModel.getDataProvider()) {
                         doCheck(reModel);
@@ -611,7 +615,7 @@ public class RezeptViewer {
                 public void mouseClicked(MouseEvent e) {
                     int row = table.getSelectedRow();
                     if (e.getClickCount() == 2 && row != -1) {
-                        String patientId = tableModel.getObject(row).getPatientId();
+                        String patientId = sorter.getObject(row).getPatientId();
                         openKarte(patientId);
                     }
                 }

@@ -24,6 +24,8 @@ public class SI_Model implements IRezeItem {
     
     private int hitCount;
     private boolean pass;
+    
+    private boolean inclusive;  // 検査包括１０項目以上
 
     @Override
     public String getClassCode() {
@@ -47,6 +49,13 @@ public class SI_Model implements IRezeItem {
     }
     public List<DayNumberPair> getDayData() {
         return dayData;
+    }
+    
+    public void setInclusive(boolean inclusive) {
+        this.inclusive = inclusive;
+    }
+    public boolean isInclusive() {
+        return inclusive;
     }
     
     @Override
