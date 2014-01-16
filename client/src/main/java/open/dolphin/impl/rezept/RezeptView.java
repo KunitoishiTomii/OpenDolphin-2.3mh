@@ -79,7 +79,9 @@ public class RezeptView extends JPanel {
         
         JPanel btnPanel = createXBoxPanel();
         importBtn = new JButton("取込");
+        importBtn.setToolTipText("ORCAからレセ電データを読み込みます");
         checkBtn = new JButton("点検");
+        checkBtn.setToolTipText("レセプト点検します");
         btnPanel.add(importBtn);
         btnPanel.add(checkBtn);
         prevBtn = new JButton(PERV_ICON);
@@ -193,6 +195,7 @@ public class RezeptView extends JPanel {
         insNumberField = createTextField(12);
         p43.add(insNumberField);
         refreshBtn = new JButton(REFRESH_ICON);
+        refreshBtn.setToolTipText("レセを再評価します");
         p43.add(refreshBtn);
         p4.add(p43);
         north.add(p4);

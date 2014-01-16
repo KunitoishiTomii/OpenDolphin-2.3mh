@@ -51,7 +51,7 @@ public class IndicationEditor {
     private static final int[] DIAG_TBL_COLUMN_WIDTH = {100, 20};
     
     private static final String INDICATION_TBL_SPEC_NAME = "indication.indicationtable.column.spec";
-    private static final String[] INDICATION_TBL_COLUMN_NAMES = {"無効", "NOT", "キーワード"};
+    private static final String[] INDICATION_TBL_COLUMN_NAMES = {"無効", "禁忌", "キーワード"};
     private static final String[] INDICATION_TBL_PROPERTY_NAMES = {"isDisabled", "isNotCondition", "getKeyword"};
     private static final Class[] INDICATION_TBL_CLASSES = {Boolean.class, Boolean.class, String.class};
     private static final int[] INDICATION_TBL_COLUMN_WIDTH = {10, 10, 100};
@@ -87,7 +87,7 @@ public class IndicationEditor {
         modelToView();
         
         if (!editable) {
-            String msg = String.format("%sは現在編集できません", rezeItem.getDescription());
+            String msg = String.format("%sは現在編集できません（他端末で編集中かも？）", rezeItem.getDescription());
             String title = "適応病名エディタ";
                     
             JOptionPane.showMessageDialog(null, msg, title, JOptionPane.WARNING_MESSAGE);

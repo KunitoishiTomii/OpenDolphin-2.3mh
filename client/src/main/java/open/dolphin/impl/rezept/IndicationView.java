@@ -5,7 +5,6 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import javax.swing.BorderFactory;
-import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -58,10 +57,13 @@ public class IndicationView extends JPanel {
         nameFld.setEditable(false);
         north.add(nameFld);
         orcaBtn = new JButton("ORCA");
+        orcaBtn.setToolTipText("ORCAの適応病名を取り込みます");
         north.add(orcaBtn);
         pmdaBtn = new JButton("PMDA");
+        pmdaBtn.setToolTipText("医療用医薬品の添付文書情報検索サイトを開きます");
         north.add(pmdaBtn);
         copyBtn = new JButton("COPY");
+        copyBtn.setToolTipText("名称をクリップボードにコピーします");
         north.add(copyBtn);
         add(north, BorderLayout.NORTH);
         
@@ -104,7 +106,8 @@ public class IndicationView extends JPanel {
         right.add(scrl2);
         JPanel kwPanel = new JPanel();
         kwPanel.setLayout(new BoxLayout(kwPanel, BoxLayout.X_AXIS));
-        notCheck = new JCheckBox("NOT");
+        notCheck = new JCheckBox("禁忌");
+        notCheck.setToolTipText("診療行為の禁忌病名を登録する場合にチェックします");
         kwPanel.add(notCheck);
         keywordFld = new JTextField(20);
         int height = keywordFld.getPreferredSize().height;
