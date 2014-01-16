@@ -50,11 +50,9 @@ public class IndicationView extends JPanel {
         north.setLayout(new BoxLayout(north, BoxLayout.X_AXIS));
         north.add(new JLabel("コード"));
         srycdFld = createTextField(10);
-        srycdFld.setEditable(false);
         north.add(srycdFld);
         north.add(new JLabel("名称"));
         nameFld = createTextField(20);
-        nameFld.setEditable(false);
         north.add(nameFld);
         orcaBtn = new JButton("ORCA");
         orcaBtn.setToolTipText("ORCAの適応病名を取り込みます");
