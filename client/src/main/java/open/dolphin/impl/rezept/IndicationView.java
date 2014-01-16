@@ -71,6 +71,7 @@ public class IndicationView extends JPanel {
         left.setLayout(new BoxLayout(left, BoxLayout.Y_AXIS));
         center.add(left);
         diagTable = new JTable();
+        diagTable.setToolTipText("ダブルクリックでテキストフィールドにコピーされます");
         diagTable.getTableHeader().setReorderingAllowed(false);
         JScrollPane scrl1 = new JScrollPane(diagTable);
         scrl1.setBorder(BorderFactory.createTitledBorder("傷病名"));

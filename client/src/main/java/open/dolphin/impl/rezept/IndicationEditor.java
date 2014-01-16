@@ -335,7 +335,16 @@ public class IndicationEditor {
         item.setKeyword(keyword);
         item.setNotCondition(view.getNotCheck().isSelected());
         
-        indicationTableModel.addObject(item);
+        boolean found = false;
+        for (IndicationItem exist : indicationTableModel.getDataProvider()) {
+            if (isSameIndicationItem(exist, item)) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            indicationTableModel.addObject(item);
+        }
         
         clearKeyword();
     }
