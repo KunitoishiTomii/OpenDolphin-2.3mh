@@ -70,7 +70,7 @@ public class TO_Model implements IRezeItem {
     public void parseLine(String csv) {
         String[] tokens = csv.split(CAMMA);
         classCode = tokens[1].trim();
-        srycd = tokens[2].trim();
+        srycd = tokens[3].trim();
         number = tokens[4].isEmpty() ? 1 : Float.parseFloat(tokens[4]);
         ten = tokens[5].isEmpty() ? null : Float.parseFloat(tokens[5]);
         count = Integer.parseInt(tokens[6]);
