@@ -37,6 +37,8 @@ public class IndicationModel implements Serializable {
     
     private Boolean admission;  // 入院で有効
     
+    private Boolean inclusive;  // 10項目以上なら審査対象外
+    
     @JsonManagedReference   // bi-directional references
     @JsonDeserialize(contentAs = IndicationItem.class)
     @BatchSize(size = 20)
@@ -65,6 +67,9 @@ public class IndicationModel implements Serializable {
     public void setAdmission(boolean admission) {
         this.admission = admission;
     }
+    public void setInclusive(boolean inclusive) {
+        this.inclusive = inclusive;
+    }
     public void setIndicationItems(List<IndicationItem> items) {
         this.items = items;
     }
@@ -82,10 +87,13 @@ public class IndicationModel implements Serializable {
         return srycd;
     }
     public Boolean isOutPatient() {
-        return outPatient;
+        return outPatient == null ? false : outPatient;
     }
     public Boolean isAdmission() {
-        return admission;
+        return admission == null ? false : admission;
+    }
+    public Boolean isInclusive() {
+        return inclusive == null ? false : inclusive;
     }
     public List<IndicationItem> getIndicationItems() {
         return items;

@@ -245,20 +245,23 @@ public class PatientServiceBean {
      * @param patientId 施設内患者ID
      * @return 該当するPatientModel
      */
-    public PatientModel getPatientById(String fid,String pid) {
+    public PatientModel getPatientById(String fid, String pid) {
 
         // 患者レコードは FacilityId と patientId で複合キーになっている
-        PatientModel bean = (PatientModel)
-                em.createQuery(QUERY_PATIENT_BY_FID_PID)
-                .setParameter(FID, fid)
-                .setParameter(PID, pid)
-                .getSingleResult();
+        try {
+            PatientModel bean = (PatientModel) em.createQuery(QUERY_PATIENT_BY_FID_PID)
+                    .setParameter(FID, fid)
+                    .setParameter(PID, pid)
+                    .getSingleResult();
+            
+            // Lazy Fetch の 基本属性を検索する
+            // 患者の健康保険を取得する
+            setHealthInsurances(bean);
+            return bean;
 
-        // Lazy Fetch の 基本属性を検索する
-        // 患者の健康保険を取得する
-        setHealthInsurances(bean);
-
-        return bean;
+        } catch (NoResultException ex) {
+            return null;
+        }
     }
 
     /**

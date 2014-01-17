@@ -24,7 +24,7 @@ public class IndicationItem implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
     
-    private Boolean disableFlg; // 無効か有効か
+    private Boolean disableFlg;   // 無効か有効か
     private Boolean notCondition; // not条件かどうか
     
     private String keyword;
@@ -33,9 +33,6 @@ public class IndicationItem implements Serializable {
     @ManyToOne
     @JoinColumn(name="indication_id", nullable=false)
     private IndicationModel indication;
-    
-    @Transient
-    private boolean validFlg;
     
     public IndicationItem() {
         disableFlg = false;
@@ -54,9 +51,6 @@ public class IndicationItem implements Serializable {
     public void setKeyword(String keyword) {
         this.keyword = keyword;
     }
-    public void setValid(boolean validFlg) {
-        this.validFlg = validFlg;
-    }
     public void setIndicationModel(IndicationModel indication) {
         this.indication = indication;
     }
@@ -72,9 +66,6 @@ public class IndicationItem implements Serializable {
     }
     public String getKeyword() {
         return keyword;
-    }
-    public boolean isValid() {
-        return validFlg;
     }
     public IndicationModel getIndicationModel() {
         return indication;

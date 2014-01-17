@@ -690,9 +690,9 @@ public final class SqlMiscDao extends SqlDaoBean {
         return count;
     }
     
-    public List<String> getRecedenCsv(String ym, String nyugaikbn, int teisyutusaki) {
+    public List<String[]> getRecedenCsv(String ym, String nyugaikbn, int teisyutusaki) {
         
-        final String sql = "select recedata from tbl_receden "
+        final String sql = "select recedata, totalten from tbl_receden "
                 + "where sryym = ? and nyugaikbn = ? and teisyutusaki = ? and hospnum = ? "
                 + "order by nyugaikbn, ptid, rennum";
         
@@ -700,14 +700,12 @@ public final class SqlMiscDao extends SqlDaoBean {
         Object[] params = {ym, nyugaikbn, teisyutusaki, hospNum};
         List<String[]> valuesList = executePreparedStatement(sql, params);
         
-        List<String> list = new ArrayList<>();
         for (String[] values : valuesList) {
-            String line = values[0];
-            line = line.replace("\r", "\n");
-            list.add(line);
+            values[0] = values[0].replace("\r", "\n");  // trimしてはいけない
+            values[1] = values[1].trim();
         }
         
-        return list;
+        return valuesList;
     }
     
     public IndicationModel getTekiouByomei(String srycd) {
@@ -727,6 +725,7 @@ public final class SqlMiscDao extends SqlDaoBean {
         model.setSrycd(srycd);
         model.setOutPatient(true);
         model.setAdmission(true);
+        model.setInclusive(false);
         model.setFacilityId(Project.getFacilityId());
         
         List<IndicationItem> items = new ArrayList<>();

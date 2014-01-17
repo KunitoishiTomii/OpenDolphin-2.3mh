@@ -389,7 +389,9 @@ public class ChartEventListener {
     public PatientVisitModel createFakePvt(String patientId) {
         try {
             PatientModel pm = PatientDelegater.getInstance().getPatientById(patientId);
-            return createFakePvt(pm);
+            if (pm != null) {
+                return createFakePvt(pm);
+            }
         } catch (Exception ex) {
         }
         return null;

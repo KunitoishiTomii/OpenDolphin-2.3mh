@@ -1,6 +1,7 @@
 package open.dolphin.impl.rezept;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import javax.swing.BorderFactory;
@@ -33,6 +34,7 @@ public class IndicationView extends JPanel {
     private JButton clearBtn;
     private JButton addBtn;
     private JButton closeBtn;
+    private JCheckBox inclusiveChk;
     private JCheckBox admissionChk;
     private JCheckBox outPatientChk;
     
@@ -48,17 +50,18 @@ public class IndicationView extends JPanel {
         north.setLayout(new BoxLayout(north, BoxLayout.X_AXIS));
         north.add(new JLabel("コード"));
         srycdFld = createTextField(10);
-        srycdFld.setEditable(false);
         north.add(srycdFld);
         north.add(new JLabel("名称"));
         nameFld = createTextField(20);
-        nameFld.setEditable(false);
         north.add(nameFld);
         orcaBtn = new JButton("ORCA");
+        orcaBtn.setToolTipText("ORCAの適応病名を取り込みます");
         north.add(orcaBtn);
         pmdaBtn = new JButton("PMDA");
+        pmdaBtn.setToolTipText("医療用医薬品の添付文書情報検索サイトを開きます");
         north.add(pmdaBtn);
         copyBtn = new JButton("COPY");
+        copyBtn.setToolTipText("名称をクリップボードにコピーします");
         north.add(copyBtn);
         add(north, BorderLayout.NORTH);
         
@@ -68,17 +71,28 @@ public class IndicationView extends JPanel {
         left.setLayout(new BoxLayout(left, BoxLayout.Y_AXIS));
         center.add(left);
         diagTable = new JTable();
+        diagTable.setToolTipText("ダブルクリックでテキストフィールドにコピーされます");
         diagTable.getTableHeader().setReorderingAllowed(false);
         JScrollPane scrl1 = new JScrollPane(diagTable);
         scrl1.setBorder(BorderFactory.createTitledBorder("傷病名"));
         left.add(scrl1);
         JPanel shinsa = new JPanel();
-        shinsa.setLayout(new BoxLayout(shinsa, BoxLayout.X_AXIS));
-        shinsa.add(new JLabel("審査："));
+        shinsa.setLayout(new BoxLayout(shinsa, BoxLayout.Y_AXIS));
+        JPanel shinsa1 = new JPanel();
+        shinsa1.setAlignmentX(Component.LEFT_ALIGNMENT);
+        shinsa1.setLayout(new BoxLayout(shinsa1, BoxLayout.X_AXIS));
+        shinsa1.add(new JLabel("審査："));
         admissionChk = new JCheckBox("入院");
-        shinsa.add(admissionChk);
+        shinsa1.add(admissionChk);
         outPatientChk = new JCheckBox("入院外");
-        shinsa.add(outPatientChk);
+        shinsa1.add(outPatientChk);
+        shinsa.add(shinsa1);
+        JPanel shinsa2 = new JPanel();
+        shinsa2.setAlignmentX(Component.LEFT_ALIGNMENT);
+        shinsa2.setLayout(new BoxLayout(shinsa2, BoxLayout.X_AXIS));
+        inclusiveChk = new JCheckBox("検査包括10項目以上は対象外");
+        shinsa2.add(inclusiveChk);
+        shinsa.add(shinsa2);
         left.add(shinsa);
         
         JPanel right = new JPanel();
@@ -91,7 +105,8 @@ public class IndicationView extends JPanel {
         right.add(scrl2);
         JPanel kwPanel = new JPanel();
         kwPanel.setLayout(new BoxLayout(kwPanel, BoxLayout.X_AXIS));
-        notCheck = new JCheckBox("NOT");
+        notCheck = new JCheckBox("禁忌");
+        notCheck.setToolTipText("診療行為の禁忌病名を登録する場合にチェックします");
         kwPanel.add(notCheck);
         keywordFld = new JTextField(20);
         int height = keywordFld.getPreferredSize().height;
@@ -163,5 +178,8 @@ public class IndicationView extends JPanel {
     }
     public JCheckBox getOutPatientChk() {
         return outPatientChk;
+    }
+    public JCheckBox getInclusiveChk() {
+        return inclusiveChk;
     }
 }

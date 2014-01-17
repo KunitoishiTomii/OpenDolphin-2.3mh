@@ -47,7 +47,7 @@ public class UkeLoader {
 
                 // tbl_recedenを参照する
                 SqlMiscDao dao = SqlMiscDao.getInstance();
-                List<String> list = dao.getRecedenCsv(ym, nyugaikbn, teisyutusaki);
+                List<String[]> list = dao.getRecedenCsv(ym, nyugaikbn, teisyutusaki);
 
                 if (!list.isEmpty()) {
                     // tbl_recedenにIRは記録されていないので作成する
@@ -56,11 +56,17 @@ public class UkeLoader {
                     irModel.setTenTable(1);     // 医科
                     
                     LineParser parser = new LineParser();
-                    parser.setCurrentModel(irModel);
+                    parser.setIrModel(irModel);
                     
-                    for (String line : list) {
-                        parser.parseLine(line);
-                     }
+                    for (String[] data : list) {
+                        try {
+                            parser.parseLine(data);
+                        } catch (Exception ex) {
+                            System.out.println(data[0]);
+                            ex.printStackTrace(System.err);
+                        }
+                    }
+                    parser.complete();
                     
                     // tbl_recedenにGOは記録されていないので作成する
                     GO_Model goModel = new GO_Model();
@@ -91,15 +97,17 @@ public class UkeLoader {
     private static class LineParser {
 
         private int totalTen;
-        private boolean hasHO;
-        private IR_Model currentModel;
+        private IR_Model irModel;
         private int reModelCount;
-
-        private void setCurrentModel(IR_Model irModel) {
-            currentModel = irModel;
+        
+        private final List<SI_Model> siModels;
+        
+        private LineParser() {
+            siModels = new ArrayList<>();
         }
-        private IR_Model getCurrentModel() {
-            return currentModel;
+
+        private void setIrModel(IR_Model irModel) {
+            this.irModel = irModel;
         }
         private int getTotalTen() {
             return totalTen;
@@ -107,77 +115,93 @@ public class UkeLoader {
         private int getReModelCount() {
             return reModelCount;
         }
+        
+        private void complete() {
+            setLaboInclusive();
+        }
+        private void setLaboInclusive() {
+            if (siModels.size() >= 10) {
+                for (SI_Model siModel : siModels) {
+                    if (siModel.getSrycd().startsWith("16")) {
+                        siModel.setInclusive(true);
+                    }
+                }
+            }
+            siModels.clear();
+        }
 
-        private void parseLine(String line) {
+        private void parseLine(String[] data) {
 
+            String line = data[0];
+            
             String id = line.substring(0, 2);
+            if (!("SI".equals(id))) {
+                setLaboInclusive();
+            }
 
             switch (id) {
                 case "IR":
-                    currentModel = new IR_Model();
-                    currentModel.parseLine(line);
+                    irModel = new IR_Model();
+                    irModel.parseLine(line);
                     totalTen = 0;
                 case "RE":
                     RE_Model reModel = new RE_Model();
                     reModel.parseLine(line);
-                    currentModel.addReModel(reModel);
-                    hasHO = false;
+                    irModel.addReModel(reModel);
+                    //hasHO = false;
                     reModelCount++;
+                    totalTen += Integer.parseInt(data[1]);
                     break;
                 case "HO":
                     HO_Model hoModel = new HO_Model();
                     hoModel.parseLine(line);
-                    currentModel.getCurrentREModel().setHOModel(hoModel);
-                    totalTen += hoModel.getTen();
-                    hasHO = true;
+                    irModel.getCurrentREModel().setHOModel(hoModel);
                     break;
                 case "KO":
                     KO_Model koModel = new KO_Model();
                     koModel.parseLine(line);
-                    currentModel.getCurrentREModel().addKOModel(koModel);
-                    if (!hasHO) {   //  TODO
-                        totalTen += koModel.getTen();
-                    }
+                    irModel.getCurrentREModel().addKOModel(koModel);
                     break;
                 case "KH":
                     KH_Model khModel = new KH_Model();
                     khModel.parseLine(line);
-                    currentModel.getCurrentREModel().setKHModel(khModel);
+                    irModel.getCurrentREModel().setKHModel(khModel);
                     break;
                 case "SY":
                     SY_Model syModel = new SY_Model();
                     syModel.parseLine(line);
-                    currentModel.getCurrentREModel().addSYModel(syModel);
+                    irModel.getCurrentREModel().addSYModel(syModel);
                     break;
                 case "SI":
                     SI_Model siModel = new SI_Model();
                     siModel.parseLine(line);
-                    currentModel.getCurrentREModel().addItem(siModel);
+                    irModel.getCurrentREModel().addItem(siModel);
+                    siModels.add(siModel);
                     break;
                 case "IY":
                     IY_Model iyModel = new IY_Model();
                     iyModel.parseLine(line);
-                    currentModel.getCurrentREModel().addItem(iyModel);
+                    irModel.getCurrentREModel().addItem(iyModel);
                     break;
                 case "TO":
                     TO_Model toModel = new TO_Model();
                     toModel.parseLine(line);
-                    currentModel.getCurrentREModel().addItem(toModel);
+                    irModel.getCurrentREModel().addItem(toModel);
                     break;
                 case "CO":
                     CO_Model coModel = new CO_Model();
                     coModel.parseLine(line);
-                    currentModel.getCurrentREModel().addItem(coModel);
+                    irModel.getCurrentREModel().addItem(coModel);
                     break;
                 case "SJ":
                     SJ_Model sjModel = new SJ_Model();
                     sjModel.parseLine(line);
-                    currentModel.getCurrentREModel().addSJModel(sjModel);
+                    irModel.getCurrentREModel().addSJModel(sjModel);
                     break;
                 case "GO":
                     GO_Model goModel = new GO_Model();
                     goModel.parseLine(line);
-                    currentModel.setGOModel(goModel);
+                    irModel.setGOModel(goModel);
                     break;
                 default:
                     break;
@@ -275,13 +299,26 @@ public class UkeLoader {
         // 診療行為・薬剤など
         SqlMiscDao dao = SqlMiscDao.getInstance();
         itemSrycdSet = new HashSet<>();
+        Set<String> diagSrycds = new HashSet<>();
 
         // 診療行為コードを列挙しORCAから取得
         for (IR_Model irModel : irModelList) {
             for (RE_Model reModel : irModel.getReModelList()) {
                 for (IRezeItem item : reModel.getItemList()) {
+                    // レセ電は、ほんま、クソ仕様だわ
                     String srycd = String.valueOf(item.getSrycd());
-                    itemSrycdSet.add(srycd);
+                    if ("890000001".equals(srycd)) {
+                        CO_Model coModel = (CO_Model) item;
+                        // modifierは４ケタ数字の連続
+                        String modifier = coModel.getComment();
+                        for (int i = 0; i < modifier.length(); i += 4) {
+                            String str = modifier.substring(i, i + 4);
+                            // ORCAではZZZxxxxと記録されている
+                            diagSrycds.add(MODIFIER_PREFIX + str);
+                        }
+                    } else {
+                        itemSrycdSet.add(srycd);
+                    }
                 }
             }
         }
@@ -293,7 +330,16 @@ public class UkeLoader {
             map.put(tm.getSrycd(), tm);
         }
         tmList.clear();
-
+        
+        // 部位コードを取得
+        List<DiseaseEntry> list = dao.getDiseaseEntries(diagSrycds);
+        Map<String, DiseaseEntry> deMap = new HashMap<>();
+        for (DiseaseEntry de : list) {
+            deMap.put(de.getCode(), de);
+        }
+        list.clear();
+        diagSrycds.clear();
+        
         // 診療行為名をセットする
         for (IR_Model irModel : irModelList) {
             for (RE_Model reModel : irModel.getReModelList()) {
@@ -303,24 +349,48 @@ public class UkeLoader {
                     // コメントコード
                     if (item instanceof CO_Model) {
                         CO_Model coModel = (CO_Model) item;
-                        String desc = reconstructComment(tm.getName(), coModel.getComment());
-                        coModel.setDescription(desc);
+                        reconstructComment(tm, coModel, deMap);
                     } else {
                         item.setDescription(tm.getName());
                     }
                 }
             }
         }
+        
+        deMap.clear();
     }
     
     // コメントコード内容を再構築
-    private String reconstructComment(String tmName, String comment) {
+    private void reconstructComment(TensuMaster tm, CO_Model coModel, Map<String, DiseaseEntry> deMap) {
+
+        String srycd = coModel.getSrycd();
+
+        if (srycd.startsWith("81")) {
+            coModel.setDescription(coModel.getComment());
+        } else if (srycd.startsWith("82")) {
+            coModel.setDescription(tm.getName());
+        } else if (srycd.startsWith("83")) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(tm.getName());
+            sb.append(coModel.getComment());
+            coModel.setDescription(sb.toString());
+        } else if (srycd.startsWith("84")) {
+            reconstruct84Comment(tm, coModel);
+        } else if (srycd.startsWith("89")) {
+            reconstruct89Comment(coModel, deMap);
+        }
+    }
+    
+    private void reconstruct84Comment(TensuMaster tm, CO_Model coModel) {
+        
+        String tmName = tm.getName();
+        String comment = coModel.getComment();
         
         if (tmName.isEmpty()) {
-            return comment;
+            coModel.setDescription(comment);
         }
         if (comment.isEmpty()) {
-            return tmName;
+            coModel.setDescription(tmName);
         }
         
         // 逆順に空白をコメントで置換する
@@ -335,10 +405,21 @@ public class UkeLoader {
                 sb.append(c);
             }
         }
-        
-        String ret = sb.reverse().toString();
-        //System.out.println(ret);
-        return ret;
+        String str = sb.reverse().toString();
+        coModel.setDescription(str);
+    }
+    
+    
+    private void reconstruct89Comment(CO_Model coModel, Map<String, DiseaseEntry> deMap) {
+
+        String modifier = coModel.getComment();
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < modifier.length(); i += 4) {
+            String str = modifier.substring(i, i + 4);
+            DiseaseEntry dem = deMap.get("ZZZ" + str);
+            sb.append(dem.getName());
+        }
+        coModel.setDescription(sb.toString());
     }
     
     // patient id順のcomparator
