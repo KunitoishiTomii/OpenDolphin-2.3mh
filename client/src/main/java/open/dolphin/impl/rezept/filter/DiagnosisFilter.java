@@ -84,11 +84,24 @@ public class DiagnosisFilter extends AbstractCheckFilter {
                 return Collections.emptyList();
             }
         }
+        
+        // 810000001の場合はdescriptionが合致するものを対象とする
+        // XPなどの部位以外で810000001コメントがあるとうっとうしいが、病名漏れよりはよかろう
+        List<IndicationItem> indicationItems = new ArrayList<>();
+        if ("810000001".equals(rezeItem.getSrycd())) {
+            for (IndicationItem item : indication.getIndicationItems()) {
+                if (rezeItem.getDescription().equals(item.getDescription())) {
+                    indicationItems.add(item);
+                }
+            }
+        } else {
+            indicationItems.addAll(indication.getIndicationItems());
+        }
 
         // or条件とnot条件を分離する
         List<IndicationItem> orItems = new ArrayList();
         List<IndicationItem> notItems = new ArrayList();
-        for (IndicationItem item : indication.getIndicationItems()) {
+        for (IndicationItem item : indicationItems) {
             if (item.isNotCondition()) {
                 notItems.add(item);
             } else {
