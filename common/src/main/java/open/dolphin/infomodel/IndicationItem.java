@@ -9,7 +9,6 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 
 /**
  * 適応症モデル子さん
@@ -28,6 +27,8 @@ public class IndicationItem implements Serializable {
     private Boolean notCondition; // not条件かどうか
     
     private String keyword;
+    
+    private String description;     // 810000001のコメント内容
     
     @JsonBackReference // bi-directional references
     @ManyToOne
@@ -54,6 +55,9 @@ public class IndicationItem implements Serializable {
     public void setIndicationModel(IndicationModel indication) {
         this.indication = indication;
     }
+    public void setDescription(String description) {
+        this.description = description;
+    }
     
     public long getId() {
         return id;
@@ -69,5 +73,8 @@ public class IndicationItem implements Serializable {
     }
     public IndicationModel getIndicationModel() {
         return indication;
+    }
+    public String getDescription() {
+        return description;
     }
 }

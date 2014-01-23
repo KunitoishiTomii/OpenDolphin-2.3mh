@@ -727,8 +727,8 @@ public final class SqlMiscDao extends SqlDaoBean {
         model.setAdmission(true);
         model.setInclusive(false);
         model.setFacilityId(Project.getFacilityId());
+        model.setIndicationItems(new ArrayList<IndicationItem>());
         
-        List<IndicationItem> items = new ArrayList<>();
         Object[] params = {srycd};
         
         List<String[]> valuesList1 = executePreparedStatement(sql1, params);
@@ -736,15 +736,15 @@ public final class SqlMiscDao extends SqlDaoBean {
             IndicationItem item = new IndicationItem();
             item.setKeyword(values[0].trim());
             item.setIndicationModel(model);
-            items.add(item);
+            addNewIndication(model, item);
         }
-        /*
+        
         List<String[]> valuesList2 = executePreparedStatement(sql2, params);
         for (String[] values : valuesList2) {
             IndicationItem item = new IndicationItem();
             item.setKeyword(values[0].trim());
             item.setIndicationModel(model);
-            items.add(item);
+            addNewIndication(model, item);
         }
         
         List<String[]> valuesList3 = executePreparedStatement(sql3, params);
@@ -753,19 +753,47 @@ public final class SqlMiscDao extends SqlDaoBean {
             item.setKeyword(values[0].trim());
             item.setNotCondition(true);
             item.setIndicationModel(model);
-            items.add(item);
+            addNewIndication(model, item);
         }
-        */
+
         List<String[]> valuesList4 = executePreparedStatement(sql4, params);
         for (String[] values : valuesList4) {
             IndicationItem item = new IndicationItem();
             item.setKeyword(values[0].trim());
             item.setIndicationModel(model);
-            items.add(item);
+            addNewIndication(model, item);
         }
-
-        model.setIndicationItems(items);
         
         return model;
+    }
+    
+    private void addNewIndication(IndicationModel model, IndicationItem newItem) {
+        
+        boolean found = false;
+        for (IndicationItem item : model.getIndicationItems()) {
+            if (isSameIndicationItem(item, newItem)) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            model.getIndicationItems().add(newItem);
+        }
+    }
+    
+    private boolean isSameIndicationItem(IndicationItem item1, IndicationItem item2) {
+        
+        boolean same = true;
+        
+        if (item1 == null || item2 == null) {
+            return false;
+        }
+        if (item1.getKeyword() == null) {
+            return false;
+        }
+        same &= item1.getKeyword().equals(item2.getKeyword());
+        same &= item1.isNotCondition() == item2.isNotCondition();
+        
+        return same;
     }
 }

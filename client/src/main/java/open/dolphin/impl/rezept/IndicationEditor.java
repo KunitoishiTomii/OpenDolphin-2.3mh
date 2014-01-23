@@ -15,6 +15,7 @@ import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
@@ -72,10 +73,15 @@ public class IndicationEditor {
     
     private boolean editable;
     
+    private final List<IndicationItem> nonEdit;
+    
+    private boolean edit81Comment;
+    
     
     public IndicationEditor(RezeptViewer rezeptViewer) {
         view = new IndicationView();
         this.rezeptViewer = rezeptViewer;
+        nonEdit = new ArrayList<>();
     }
     
     public void start(IRezeItem rezeItem, List<SY_Model> diagList) {
@@ -334,6 +340,9 @@ public class IndicationEditor {
         item.setIndicationModel(indication);
         item.setKeyword(keyword);
         item.setNotCondition(view.getNotCheck().isSelected());
+        if (edit81Comment) {
+            item.setDescription(rezeItem.getDescription());
+        }
         
         boolean found = false;
         for (IndicationItem exist : indicationTableModel.getDataProvider()) {
@@ -401,8 +410,25 @@ public class IndicationEditor {
         view.getInclusiveChk().setSelected(indication.isInclusive());
         
         diagTableModel.setDataProvider(diagList);
-        indicationTableModel.setDataProvider(indication.getIndicationItems());
 
+        // 810000001の場合はコメント内容に合致したIndicationItemのみをセットする
+        edit81Comment = "810000001".equals(indication.getSrycd());
+        if (edit81Comment) {
+            String description = rezeItem.getDescription();
+            List<IndicationItem> toEdit = new ArrayList<>();
+            for (IndicationItem item : indication.getIndicationItems()) {
+                String desc = item.getDescription();
+                if (desc == null || description.equals(desc)) {
+                    item.setDescription(description);
+                    toEdit.add(item);
+                } else {
+                    nonEdit.add(item);
+                }
+            }
+            indicationTableModel.setDataProvider(toEdit);
+        } else {
+            indicationTableModel.setDataProvider(indication.getIndicationItems());
+        }
     }
     
     private void viewToModel() {
@@ -410,7 +436,14 @@ public class IndicationEditor {
         indication.setAdmission(view.getAdmissionChk().isSelected());
         indication.setOutPatient(view.getOutPatientChk().isSelected());
         indication.setInclusive(view.getInclusiveChk().isSelected());
-        indication.setIndicationItems(indicationTableModel.getDataProvider());
+        if (edit81Comment) {
+            List<IndicationItem> list = new ArrayList<>();
+            list.addAll(nonEdit);
+            list.addAll(indicationTableModel.getDataProvider());
+            indication.setIndicationItems(list);
+        } else {
+            indication.setIndicationItems(indicationTableModel.getDataProvider());
+        }
         indication.setLock(false);
     }
     
