@@ -521,7 +521,7 @@ public class CheckSantei implements ICheckSanteiConst {
                 case srycd_HoumonShinsatsu_hidouitsu:
                 case srycd_HoumonShinsatsu_douitsu_hitokutei:
                 case srycd_HoumonShinsatsu_douitsu_tokutei:
-                case srycd_Oushin:
+                //case srycd_Oushin:
                     tmpZaitakuHoumonCount += count;
                     break;
                 default:
