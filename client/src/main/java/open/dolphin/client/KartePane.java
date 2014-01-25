@@ -1258,4 +1258,15 @@ public class KartePane implements MouseListener, CaretListener, PropertyChangeLi
     public boolean hasSelection() {
         return hasSelection;
     }
+    
+    public void setCaretPositionLast() {
+        SwingUtilities.invokeLater(new Runnable(){
+
+            @Override
+            public void run() {
+                int len = textPane.getDocument().getLength();
+                textPane.setCaretPosition(len);
+            }
+        });
+    }
 }
