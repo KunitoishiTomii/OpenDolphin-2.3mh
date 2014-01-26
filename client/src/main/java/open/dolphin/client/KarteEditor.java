@@ -499,6 +499,10 @@ public class KarteEditor extends AbstractChartDocument implements IInfoModel,
         // 内容を表示する
         if (model.getModules() != null) {
             KarteRenderer_2.getInstance().render(model, soaPane, pPane);
+            soaPane.setCaretPositionLast();
+            if (pPane != null) {
+                pPane.setCaretPositionLast();
+            }
         } else {
             // 新規の場合ここでKarteStyledDocumentを設定する。
             // off screen renderingのため
