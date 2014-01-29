@@ -510,7 +510,7 @@ public class ClaimMessageBuilder {
             if (category != null && !category.isEmpty()) {
                 addContent(new Element("categories", mmlRd)
                         .addContent(new Element("category", mmlRd)
-                                .setAttribute(TABLE_ID, rd.getCategoryCodeSys())
+                                .setAttribute(TABLE_ID, rd.getCategoryCodeSys(), mmlRd)
                                 .addContent(category)
                         )
                 );
