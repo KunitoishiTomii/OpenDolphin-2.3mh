@@ -159,6 +159,9 @@ public class RezeptViewer {
             itemSrycdSet.clear();
         }
         indicationMap.clear();
+        
+        // JSplitPane幅を記録する
+        view.saveDimension();
     }
     
     private JTable getSelectedReTable() {
@@ -673,7 +676,7 @@ public class RezeptViewer {
         int ten = 0;
         int numDays = 0;
         // 保険
-        view.getInsTypeArea().setText(reModel.getRezeType(kikanNum));
+        view.getInsTypeField().setText(reModel.getRezeType(kikanNum));
         HO_Model hoModel = reModel.getHOModel();
         if (hoModel != null) {
             view.getInsField().setText(hoModel.getInsuranceNum());
