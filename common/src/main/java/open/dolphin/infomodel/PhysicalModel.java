@@ -2,6 +2,8 @@ package open.dolphin.infomodel;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
 
 /**
  * PhysicalModel
@@ -97,6 +99,7 @@ public class PhysicalModel implements Serializable, Comparable {
     /**
      * @return Returns the bmi.
      */
+/*
     public String calcBmi() {
         if (height != null && weight != null) {
             float fw = new Float(weight).floatValue();
@@ -111,6 +114,20 @@ public class PhysicalModel implements Serializable, Comparable {
             return bmiS;
         }
         return null;
+    }
+*/
+    public String calcBmi() {
+
+        try {
+            float fw = Float.parseFloat(weight);
+            float fh = Float.parseFloat(height);
+            BigDecimal bi = new BigDecimal(fw * 10000 / fh / fh);
+            float bmif = bi.setScale(1, BigDecimal.ROUND_HALF_UP).floatValue();
+            DecimalFormat frmt = new DecimalFormat("##.0");
+            return frmt.format(bmif);
+        } catch (NumberFormatException | NullPointerException ex) {
+            return null;
+        }
     }
     
     public String getStandardWeight() {

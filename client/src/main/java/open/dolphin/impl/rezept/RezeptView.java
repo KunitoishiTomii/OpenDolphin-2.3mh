@@ -10,11 +10,13 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import open.dolphin.client.ClientContext;
+import open.dolphin.project.Project;
 
 /**
  * RezeptView
@@ -29,13 +31,14 @@ public class RezeptView extends JPanel {
     private static final ImageIcon NEXT_ICON = ClientContext.getImageIconAlias(ICON_FORWARD);
     private static final ImageIcon REFRESH_ICON = ClientContext.getImageIconAlias("icon_refresh_small");
     
+    private JSplitPane splitPane;
     private JTabbedPane tabbedPane;
     private JButton importBtn;
     private JButton checkBtn;
     private JButton prevBtn;
     private JButton nextBtn;
     
-    private JTextArea insTypeArea;
+    private JTextField insTypeField;
     private JTextField pubIns1Field;
     private JTextField pubIns1NumField;
     private JTextField pubIns2Field;
@@ -56,6 +59,7 @@ public class RezeptView extends JPanel {
     private JTextField ptSexField;
     private JTextField ptAgeField;
     
+    private JSplitPane centerSplit;
     private JTable diagTable;
     private JTextField diagCountField;
     private JTable itemTable;
@@ -65,6 +69,12 @@ public class RezeptView extends JPanel {
     private JTextArea commentArea;
     private JTable infoTable;
     
+    private static final int PT_PANEL_WIDTH = 230;
+    private static final int DIAG_PANEL_WIDTH = 400;
+    private static final String PROP_PT_PANEL_WIDTH = "rezeptViewPtPanelWidth";
+    private static final String PROP_DIAG_PANEL_WIDTH = "rezeptViewDiagPanelWidth";
+    private static final int DIVIDER_SIZE = 2;
+    
     
     public RezeptView() {
         initComponents();
@@ -72,10 +82,17 @@ public class RezeptView extends JPanel {
 
     private void initComponents() {
         
-        setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
+        setLayout(new BorderLayout());
+        
+        int ptPanelWidth = Project.getInt(PROP_PT_PANEL_WIDTH, PT_PANEL_WIDTH);
+        splitPane = new JSplitPane();
+        splitPane.setDividerSize(DIVIDER_SIZE);
+        splitPane.setDividerLocation(ptPanelWidth);
+        add(splitPane, BorderLayout.CENTER);
         
         // left panel
         JPanel leftPanel = createYBoxPanel();
+        splitPane.setLeftComponent(leftPanel);
         
         JPanel btnPanel = createXBoxPanel();
         importBtn = new JButton("取込");
@@ -91,14 +108,13 @@ public class RezeptView extends JPanel {
         leftPanel.add(btnPanel);
         leftPanel.add(Box.createVerticalStrut(5));
         
-        leftPanel.setPreferredSize(new Dimension(230, 400));
         tabbedPane = new JTabbedPane(JTabbedPane.BOTTOM);
         leftPanel.add(tabbedPane);
-        add(leftPanel);
         
         // rightPanel
         JPanel rightPanel = new JPanel();
         rightPanel.setLayout(new BorderLayout());
+        splitPane.setRightComponent(rightPanel);
 
         // north
         JPanel north = createXBoxPanel();
@@ -182,8 +198,11 @@ public class RezeptView extends JPanel {
         north.add(p3);
         
         JPanel p4 = createYBoxPanel();
-        insTypeArea= createTextArea();
-        p4.add(insTypeArea);
+        JTextField facilityFld = createTextField(20);
+        facilityFld.setText(Project.getUserModel().getFacilityModel().getFacilityName());
+        p4.add(facilityFld);
+        insTypeField= createTextField(20);
+        p4.add(insTypeField);
         JPanel p42 = createXBoxPanel();
         p42.add(new JLabel("保険"));
         insField = createTextField(20);
@@ -202,8 +221,12 @@ public class RezeptView extends JPanel {
         rightPanel.add(north, BorderLayout.NORTH);
         
         // center
-        final int maxWidth = 320;
-        JPanel center = createXBoxPanel();
+        centerSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+        centerSplit.setDividerSize(DIVIDER_SIZE);
+        int diagPanelWidth = Project.getInt(PROP_DIAG_PANEL_WIDTH, DIAG_PANEL_WIDTH);
+        centerSplit.setDividerLocation(diagPanelWidth);
+        rightPanel.add(centerSplit, BorderLayout.CENTER);
+
         JPanel centerLeft = createYBoxPanel();
         diagTable = new JTable();
         diagTable.getTableHeader().setReorderingAllowed(false);
@@ -214,7 +237,7 @@ public class RezeptView extends JPanel {
         JScrollPane commentScrl = new JScrollPane(commentArea);
         commentScrl.setBorder(BorderFactory.createTitledBorder("コメント"));
         centerLeft.add(commentScrl);
-        commentScrl.setPreferredSize(new Dimension(maxWidth, 200));
+        commentScrl.setPreferredSize(new Dimension(DIAG_PANEL_WIDTH, 200));
         JPanel countPanel = createXBoxPanel();
         countPanel.add(new JLabel("病名数"));
         diagCountField = new JTextField(3);
@@ -228,18 +251,14 @@ public class RezeptView extends JPanel {
         int height = countPanel.getPreferredSize().height;
         countPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, height));
         centerLeft.add(countPanel);
-        Dimension d = new Dimension(maxWidth, Integer.MAX_VALUE);
-        centerLeft.setPreferredSize(d);
-        centerLeft.setMaximumSize(d);
-        center.add(centerLeft);
+        centerSplit.setLeftComponent(centerLeft);
         
         itemTable = new JTable();
         itemTable.getTableHeader().setReorderingAllowed(false);
         JScrollPane itemScrl = new JScrollPane(itemTable);
         itemScrl.setBorder(BorderFactory.createTitledBorder("診療行為"));
-        center.add(itemScrl);
-        rightPanel.add(center, BorderLayout.CENTER);
-        
+        centerSplit.setRightComponent(itemScrl);
+
         // south
         JPanel south = createYBoxPanel();
         infoTable = new JTable();
@@ -249,8 +268,6 @@ public class RezeptView extends JPanel {
         infoPane.setPreferredSize(new Dimension(400, 200));
         south.add(infoPane);
         rightPanel.add(south, BorderLayout.SOUTH);
-        
-        add(rightPanel);
     }
 
     private JPanel createYBoxPanel() {
@@ -279,6 +296,13 @@ public class RezeptView extends JPanel {
         return ja;
     }
     
+    public void saveDimension() {
+        int ptPanelWidth = splitPane.getDividerLocation();
+        Project.setInt(PROP_PT_PANEL_WIDTH, ptPanelWidth);
+        int diagPanelWidth = centerSplit.getDividerLocation();
+        Project.setInt(PROP_DIAG_PANEL_WIDTH, diagPanelWidth);
+    }
+    
     public JTabbedPane getTabbedPane() {
         return tabbedPane;
     }
@@ -294,8 +318,8 @@ public class RezeptView extends JPanel {
     public JButton getNextBtn() {
         return nextBtn;
     }
-    public JTextArea getInsTypeArea() {
-        return insTypeArea;
+    public JTextField getInsTypeField() {
+        return insTypeField;
     }
     public JTextField getPubIns1Field() {
         return pubIns1Field;
