@@ -584,7 +584,8 @@ class Hl7OBX {
         snStudyResult   = "5.0";
         stStudyResult   = "5.0";
         rpStudyResult   = "5.0"; //?????
-        cweStudyResult  = "5.0";
+        // cweStudyResult  = "5.0";
+        cweStudyResult  = "5.1"; // 「検出せず」を出せるかも？
         //
         unit            = "6.1";
         inspectionMate  = null;
@@ -906,7 +907,9 @@ class Hl7 {
                     // "IS"も無視 (User-defined tableらしい (http://www.hl7.jp/docs/seminar/SeminarNo9Kawamata.pdf))
                     // "特定健診"という文字列が入っていたためにそれ以降のデータが読み取れないケースがあったため、読み飛ばすようにしてみる
                     // 評価結果待ち
-                    if ("CWE".equals(hl7OBX.rType) || "IS".equals(hl7OBX.rType)) {
+                    // 2014.1.31 CWEは読み取るように修正
+                    //if ("CWE".equals(hl7OBX.rType) || "IS".equals(hl7OBX.rType)) {
+                    if ("IS".equals(hl7OBX.rType)) {
                         continue;
                     }
 //masuda$
@@ -1057,9 +1060,10 @@ class Hl7 {
                             if (subCompositeNo != -1) {
                                 subFieldStr = getHL7FactorString(subFieldStr, subCompositeNo, m_scSep);
                             }
-                            else if(subFieldStr.equals("<=")){
+                            else if(subFieldStr.equals("<=") || subFieldStr.equals("<") ){
 								// 橋本医院オリジナル
                                 /* FALCOのHL7形式の場合、 <= ^ 数値 というフォーマットになっている */
+                                /* 20140131 "<^数値" のパターンもあることが判明 */
                                 subFieldStr += getHL7FactorString(item, 1, m_cSep);
                             }
                             else{
