@@ -502,7 +502,6 @@ public final class SqlMiscDao extends SqlDaoBean {
 
         final String ADMIN_MARK = "[用法] ";
 
-        List<MasterItem> miList = new ArrayList<>();
         List<String[]> dataList = new ArrayList<>();      // {srycd, suryo}
 
         String sryYM = visitYMD.substring(0, 6);
@@ -519,41 +518,35 @@ public final class SqlMiscDao extends SqlDaoBean {
         sb.append("act.srycd4,act.srysuryo4,act.srykaisu4,inputnum4,");
         sb.append("act.srycd5,act.srysuryo5,act.srykaisu5,inputnum5,");
         sb.append("main.").append(dayColumn);
-        sb.append(" from tbl_sryact act");
-        sb.append(" join tbl_sryacct_main main on act.zainum=main.zainum and act.ptid=main.ptid");
-
-        sb.append(" where ");
-        // ↓では院外処方がダメ
-        //sb.append(" main.srykbn~'2[123]' and main.ykzten<>0");
-        sb.append(" act.srysyukbn~'2[1239].'");
-        sb.append(" and main.ptid=");
-        sb.append(String.valueOf(getOrcaPtID(patientId)));
-        sb.append(" and main.sryym=");
-        sb.append(addSingleQuote(sryYM));
-        sb.append(" and main.");
-        sb.append(dayColumn);
-        sb.append("<>0 order by act.rennum, act.zainum");
+        sb.append(" from tbl_sryact act, tbl_sryacct_main main");
+        sb.append(" where act.zainum=main.zainum and act.ptid=main.ptid");
+        sb.append(" and act.srysyukbn~'2[1239]'");
+        sb.append(" and main.ptid=").append(String.valueOf(getOrcaPtID(patientId)));
+        sb.append(" and main.sryym=").append(addSingleQuote(sryYM));
+        sb.append(" and main.").append(dayColumn).append("<>0");
+        sb.append(" order by act.zainum, act.rennum");
         String sql = sb.toString();
         
         List<String[]> valuesList = executeStatement(sql);
-        
+        DecimalFormat frmt = new DecimalFormat("0.###");
+
         for (String[] values : valuesList) {
             
             int dayColumnValue = Integer.valueOf(values[20]);
             
-            for (int i = 0; i < 4; ++i) {
+            for (int i = 0; i < 20; i += 4) {
+
                 // 外用薬ならsrykaisu=1、内服ならsrykaisu = 0
                 // 「２つ目の数量（分画数）がある場合それを表す」の意味は理解できなかったｗ
-
-                String srycd = values[i * 4].trim();
-                // 数量はfloatにしないと、0.5錠とかNGになる
-                float srysuryo = Float.parseFloat(values[i * 4 + 1]);
-                int srykaisu = Integer.parseInt(values[i * 4 + 2]);
-                int inputnum = Integer.parseInt(values[i * 4 + 3]);
+                String srycd = values[i].trim();
                 // srycdが空白なら剤の終了
                 if (srycd.isEmpty()) {
                     break;
                 }
+                // 数量はfloatにしないと、0.5錠とかNGになる
+                float srysuryo = Float.parseFloat(values[i + 1]);
+                int srykaisu = Integer.parseInt(values[i + 2]);
+                int inputnum = Integer.parseInt(values[i + 3]);
 
                 if (srycd.startsWith("001")) {
                     // srycdが001から始まっていたら用法コード
@@ -561,17 +554,13 @@ public final class SqlMiscDao extends SqlDaoBean {
                     // 同日に同じ処方があると、その処方の日数は合計になる。
                     // tbl_sryacct_subを参照すれば分離できるが、めんどくさいｗ
                     srysuryo = (srykaisu == 0) ? dayColumnValue : srykaisu;
-                    DecimalFormat frmt = new DecimalFormat("0.###");
-                    String value = frmt.format(srysuryo);
-                    dataList.add(new String[]{srycd, value});
+                    dataList.add(new String[]{srycd, frmt.format(srysuryo)});
                 } else if (inputnum != 0) {
                     // おそらくコメント
-                    dataList.add(new String[]{srycd, ""});
+                    dataList.add(new String[]{srycd, null});
                 } else {
                     // 普通の薬
-                    DecimalFormat frmt = new DecimalFormat("0.###");
-                    String value = frmt.format(srysuryo);
-                    dataList.add(new String[]{srycd, value});
+                    dataList.add(new String[]{srycd, frmt.format(srysuryo)});
                 }
             }
         }
@@ -588,53 +577,58 @@ public final class SqlMiscDao extends SqlDaoBean {
             srycdList.add(dataList.get(i)[0]);
         }
         // ORCAに問い合わせ
-        List<TensuMaster> result = getTensuMasterList(srycdList);
+        List<TensuMaster> tmList = getTensuMasterList(srycdList);
         // HashMapに登録
         HashMap<Integer, TensuMaster> tensuMasterMap = new HashMap<>();
-        for (TensuMaster tm : result) {
+        for (TensuMaster tm : tmList) {
             tensuMasterMap.put(Integer.valueOf(tm.getSrycd()), tm);
         }
+        
         // MasterItemを作成する
+        List<MasterItem> miList = new ArrayList<>();
         for (int i = 0; i < dataList.size(); ++i) {
+            
             String srycd = dataList.get(i)[0];
             String value = dataList.get(i)[1];
-
-            if (!srycd.startsWith("001")) {
-                // 薬剤コード
-                TensuMaster tm = tensuMasterMap.get(Integer.valueOf(srycd));
-                if (tm == null) {
-                    continue;
-                }
-                // MedicineのTensuMasterを作成
-                MasterItem mItem = new MasterItem();
+            
+            TensuMaster tm = tensuMasterMap.get(Integer.valueOf(srycd));
+            if (tm == null) {
+                continue;
+            }
+                
+            MasterItem mItem = new MasterItem();
+            mItem.setCode(tm.getSrycd());
+            mItem.setDataKbn(tm.getDataKbn());
+            miList.add(mItem);
+            
+            if (value == null) {
+                // コメントコードのTensuMasterを作成、内容はめんどくさいので無視
+                mItem.setClassCode(ClaimConst.OTHER);
+                mItem.setUnit(tm.getTaniname());
+                mItem.setName(tm.getName());
+                mItem.setYkzKbn(tm.getYkzkbn());
+            } else if (!srycd.startsWith("001")) {
+                // 薬剤コードのTensuMasterを作成
                 mItem.setClassCode(ClaimConst.YAKUZAI);
-                mItem.setCode(tm.getSrycd());
                 mItem.setUnit(tm.getTaniname());
                 mItem.setName(tm.getName());
                 mItem.setNumber(value);
                 mItem.setYkzKbn(tm.getYkzkbn());
-                mItem.setDataKbn(tm.getDataKbn());
-                miList.add(mItem);
-
             } else {
-                // 用法コード
-                TensuMaster tm = tensuMasterMap.get(Integer.valueOf(srycd));
-                if (tm == null) {
-                    continue;
-                }
-                // AdminのTensuMasterを作成
-                MasterItem mItem = new MasterItem();
+                // 用法コードのTensuMasterを作成
                 mItem.setClassCode(ClaimConst.ADMIN);
-                mItem.setCode(tm.getSrycd());
                 mItem.setName(ADMIN_MARK + tm.getName());
                 mItem.setDummy("X");
                 mItem.setBundleNumber(value);
-                mItem.setDataKbn(tm.getDataKbn());
-                miList.add(mItem);
             }
         }
+        
+        tensuMasterMap.clear();
+        
         return miList;
     }
+    
+    
 
 
     // 期間内の受診日を取得する。返り値は"YYYYMMDD"形式の文字列リスト
