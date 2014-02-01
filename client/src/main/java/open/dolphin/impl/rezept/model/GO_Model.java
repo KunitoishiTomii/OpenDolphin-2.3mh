@@ -29,7 +29,7 @@ public class GO_Model implements IRezeModel {
 
     @Override
     public void parseLine(String csv) {
-       String[] tokens = csv.split(CAMMA);
+       String[] tokens = TokenSplitter.split(csv);
        totalCount = Integer.parseInt(tokens[1]);
        totalTen = Integer.parseInt(tokens[2]);
     }

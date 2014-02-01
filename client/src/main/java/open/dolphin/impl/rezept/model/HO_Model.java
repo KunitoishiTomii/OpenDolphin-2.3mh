@@ -33,7 +33,7 @@ public class HO_Model implements IRezeModel {
     
     @Override
     public void parseLine(String csv) {
-        String[] tokens = csv.split(CAMMA);
+        String[] tokens = TokenSplitter.split(csv);
         insuranceNum = tokens[1].trim();
         insuranceSymbol = tokens[2].trim();
         certificateNum = tokens[3].trim();

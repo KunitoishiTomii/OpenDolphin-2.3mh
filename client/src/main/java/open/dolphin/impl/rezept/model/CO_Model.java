@@ -48,7 +48,7 @@ public class CO_Model implements IRezeItem {
     
     @Override
     public void parseLine(String csv) {
-        String[] tokens = csv.split(CAMMA);
+        String[] tokens = TokenSplitter.split(csv);
         classCode = tokens[1].trim();
         srycd = tokens[3].trim();
         comment = tokens[4].trim();

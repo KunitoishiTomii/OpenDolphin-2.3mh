@@ -68,7 +68,7 @@ public class TO_Model implements IRezeItem {
     
     @Override
     public void parseLine(String csv) {
-        String[] tokens = csv.split(CAMMA);
+        String[] tokens = TokenSplitter.split(csv);
         classCode = tokens[1].trim();
         srycd = tokens[3].trim();
         number = tokens[4].isEmpty() ? 1 : Float.parseFloat(tokens[4]);

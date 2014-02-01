@@ -69,7 +69,7 @@ public class SY_Model implements IRezeModel {
     
     @Override
     public void parseLine(String csv) {
-        String[] tokens = csv.split(CAMMA);
+        String[] tokens = TokenSplitter.split(csv);
         srycd = tokens[1].trim();
         startDate = RezeUtil.getInstance().fromYearMonthDate(tokens[2]);
         outcome = tokens[3].trim();

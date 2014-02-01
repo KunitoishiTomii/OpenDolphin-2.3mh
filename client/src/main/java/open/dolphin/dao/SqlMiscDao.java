@@ -48,10 +48,10 @@ public final class SqlMiscDao extends SqlDaoBean {
         
         int hospNum = getHospNum();
         StringBuilder sb = new StringBuilder();
-        sb.append("select srycd, houksnkbn from tbl_tensu ");
-        sb.append("where yukoedymd = '99999999' ");
-        sb.append("and srycd in (").append(getCodes(srycdsToGet)).append(") ");
-        sb.append("and hospnum = ").append(String.valueOf(hospNum));
+        sb.append("select srycd, houksnkbn from tbl_tensu");
+        sb.append(" where yukoedymd = '99999999'");
+        sb.append(" and srycd in (").append(getCodes(srycdsToGet)).append(")");
+        sb.append(" and hospnum = ").append(String.valueOf(hospNum));
         
         final String sql = sb.toString();
         
@@ -328,15 +328,11 @@ public final class SqlMiscDao extends SqlDaoBean {
         int hospNum = getHospNum();
 
         StringBuilder sb = new StringBuilder();
-        sb.append("select gaikanrikbn from tbl_tensu ");
-        sb.append("where yukoedymd = '99999999' and ");
-        sb.append("gaikanrikbn = 1 and ");      //１：外来管理加算が算定できない診療行為
-        sb.append("hospnum = ");
-        sb.append(String.valueOf(hospNum));
-        sb.append(" and ");
-        sb.append("srycd in (");
-        sb.append(getCodes(srycdList));
-        sb.append(")");
+        sb.append("select gaikanrikbn from tbl_tensu");
+        sb.append(" where yukoedymd = '99999999'");
+        sb.append(" and gaikanrikbn = 1");      //１：外来管理加算が算定できない診療行為
+        sb.append(" and hospnum = ").append(String.valueOf(hospNum));
+        sb.append(" and srycd in (").append(getCodes(srycdList)).append(")");
 
         String sql = sb.toString();
 
@@ -356,15 +352,11 @@ public final class SqlMiscDao extends SqlDaoBean {
         int hospNum = getHospNum();
 
         StringBuilder sb = new StringBuilder();
-        sb.append("select houksnkbn from tbl_tensu ");
-        sb.append("where yukoedymd = '99999999' and ");
-        sb.append("houksnkbn = 5 and ");      //５：腫瘍マーカー
-        sb.append("hospnum = ");
-        sb.append(String.valueOf(hospNum));
-        sb.append(" and ");
-        sb.append("srycd in (");
-        sb.append(getCodes(srycdList));
-        sb.append(")");
+        sb.append("select houksnkbn from tbl_tensu");
+        sb.append(" where yukoedymd = '99999999'");
+        sb.append(" and houksnkbn = 5");                //５：腫瘍マーカー
+        sb.append(" and hospnum = ").append(String.valueOf(hospNum));
+        sb.append(" and srycd in (").append(getCodes(srycdList)).append(")");
 
         String sql = sb.toString();
         
@@ -434,12 +426,8 @@ public final class SqlMiscDao extends SqlDaoBean {
         
         StringBuilder sb = new StringBuilder();
         sb.append(SELECT_TBL_TENSU);
-        sb.append("where hospnum = ");
-        sb.append(String.valueOf(hospNum));
-        sb.append(" and ");
-        sb.append("srycd in (");
-        sb.append(getCodes(srycdList));
-        sb.append(")");
+        sb.append("where hospnum = ").append(String.valueOf(hospNum));
+        sb.append(" and srycd in (").append(getCodes(srycdList)).append(")");
         String sql = sb.toString();
 
         HashMap<Integer, TensuMaster> tmMap = new HashMap<>();
@@ -475,9 +463,7 @@ public final class SqlMiscDao extends SqlDaoBean {
         
         StringBuilder sb = new StringBuilder();
         sb.append(selectSql);
-        sb.append("where byomeicd in (");
-        sb.append(getCodes(srycdList));
-        sb.append(")");
+        sb.append("where byomeicd in (").append(getCodes(srycdList)).append(")");
         String sql = sb.toString();
 
         List<DiseaseEntry> collection = new ArrayList<>();
@@ -627,9 +613,6 @@ public final class SqlMiscDao extends SqlDaoBean {
         
         return miList;
     }
-    
-    
-
 
     // 期間内の受診日を取得する。返り値は"YYYYMMDD"形式の文字列リスト
     public List<String> getOrcaVisit(String patientId, String startDate, String endDate, boolean desc, String search) {
@@ -643,14 +626,10 @@ public final class SqlMiscDao extends SqlDaoBean {
             sb.append(",zainum");
             sb.append(String.valueOf(i));
         }
-        sb.append(" from tbl_jyurrk where ");
-        sb.append("to_date(sryymd,'YYYYMMDD') ");
-        sb.append("between to_date('");
-        sb.append(startDate);
-        sb.append("','YYYYMMDD') and to_date('");
-        sb.append(endDate);
-        sb.append("','YYYYMMDD') and ptid=");
-        sb.append(String.valueOf(ptid));
+        sb.append(" from tbl_jyurrk where to_date(sryymd,'YYYYMMDD')");
+        sb.append(" between to_date(").append(addSingleQuote(startDate)).append(",'YYYYMMDD')");
+        sb.append(" and to_date(").append(addSingleQuote(endDate)).append(",'YYYYMMDD')");
+        sb.append(" and ptid=").append(String.valueOf(ptid));
         if ("medOrder".equals(search)){
             sb.append(" and (srykbn2 = '01' or srykbn3 = '01' or srykbn4 = '01')");
         }
@@ -686,16 +665,16 @@ public final class SqlMiscDao extends SqlDaoBean {
     
     public List<String[]> getRecedenCsv(String ym, String nyugaikbn, int teisyutusaki) {
         
-        final String sql = "select recedata, totalten from tbl_receden "
-                + "where sryym = ? and nyugaikbn = ? and teisyutusaki = ? and hospnum = ? "
-                + "order by nyugaikbn, ptid, rennum";
+        final String sql = "select recedata, totalten from tbl_receden"
+                + " where sryym = ? and nyugaikbn = ? and teisyutusaki = ? and hospnum = ?"
+                + " order by nyugaikbn, ptid, rennum";
         
         int hospNum = getHospNum();
         Object[] params = {ym, nyugaikbn, teisyutusaki, hospNum};
         List<String[]> valuesList = executePreparedStatement(sql, params);
         
         for (String[] values : valuesList) {
-            values[0] = values[0].replace("\r", "\n");  // trimしてはいけない
+            values[0] = values[0].trim();
             values[1] = values[1].trim();
         }
         
@@ -704,16 +683,16 @@ public final class SqlMiscDao extends SqlDaoBean {
     
     public IndicationModel getTekiouByomei(String srycd) {
         
-        final String sql1 = "select byomei from tbl_tekioubyomei "
-                + "where srycd = ? order by rennum";
+        final String sql1 = "select byomei from tbl_tekioubyomei"
+                + " where srycd = ? order by rennum";
         // chkkbn 1:医薬品と病名 2:診療行為と病名 6:投与禁忌医薬品と病名
-        final String sql2 = "select byomei from tbl_chksnd "
-                + "where srycd = ? and (chkkbn = '1' or chkkbn = '2') order by rennum";
-        final String sql3 = "select srycd, byomei from tbl_chksnd "
-                + "where srycd = ? and chkkbn = '6' order by rennum";
+        final String sql2 = "select byomei from tbl_chksnd"
+                + " where srycd = ? and (chkkbn = '1' or chkkbn = '2') order by rennum";
+        final String sql3 = "select srycd, byomei from tbl_chksnd"
+                + " where srycd = ? and chkkbn = '6' order by rennum";
         // tbl_chk005
-        final String sql4 = "select byomei from tbl_chk005 "
-                + "where srycd = ? order by rennum";
+        final String sql4 = "select byomei from tbl_chk005"
+                + " where srycd = ? order by rennum";
         
         IndicationModel model = new IndicationModel();
         model.setSrycd(srycd);

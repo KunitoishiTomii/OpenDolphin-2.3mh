@@ -129,7 +129,7 @@ public class RE_Model implements IRezeModel {
     
     @Override
     public void parseLine(String csv) {
-        String[] tokens = csv.split(CAMMA);
+        String[] tokens = TokenSplitter.split(csv);
         rezeType = Integer.parseInt(tokens[2]);
         billDate = RezeUtil.getInstance().fromYearMonth(tokens[3]);
         name = tokens[4].trim();

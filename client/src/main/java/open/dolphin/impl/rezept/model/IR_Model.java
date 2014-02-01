@@ -95,7 +95,7 @@ public class IR_Model implements IRezeModel {
 
     @Override
     public void parseLine(String csv) {
-        String[] tokens = csv.split(CAMMA);
+        String[] tokens = TokenSplitter.split(csv);
         shinsaKikanNumber = Integer.parseInt(tokens[1]);
         prefectureCode = Integer.parseInt(tokens[2]);
         tenTable = Integer.parseInt(tokens[3]);
