@@ -438,7 +438,10 @@ public class RezeptViewer {
                 srycds.add(srycd);
             }
         }
-
+        if (srycds.isEmpty()) {
+            return;
+        }
+        
         MasudaDelegater del = MasudaDelegater.getInstance();
         List<IndicationModel> indications = del.getIndicationList(srycds);
 
