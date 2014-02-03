@@ -1355,6 +1355,8 @@ public class MasudaServiceBean {
                 model.setPatientIdList(new ArrayList<>(entry.getValue()));
                 ret.add(model);
             }
+            map.clear();
+            
             return ret;
             
         } catch (java.text.ParseException ex) {
