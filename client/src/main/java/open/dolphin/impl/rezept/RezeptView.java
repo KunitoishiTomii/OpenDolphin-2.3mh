@@ -7,6 +7,7 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -37,6 +38,7 @@ public class RezeptView extends JPanel {
     private JButton checkBtn;
     private JButton prevBtn;
     private JButton nextBtn;
+    private JComboBox drCombo;
     
     private JTextField insTypeField;
     private JTextField pubIns1Field;
@@ -106,6 +108,11 @@ public class RezeptView extends JPanel {
         btnPanel.add(prevBtn);
         btnPanel.add(nextBtn);
         leftPanel.add(btnPanel);
+        JPanel filterPanel = createXBoxPanel();
+        filterPanel.add(new JLabel("担当医："));
+        drCombo = new JComboBox();
+        filterPanel.add(drCombo);
+        leftPanel.add(filterPanel);
         leftPanel.add(Box.createVerticalStrut(5));
         
         tabbedPane = new JTabbedPane(JTabbedPane.BOTTOM);
@@ -395,5 +402,8 @@ public class RezeptView extends JPanel {
     }
     public JButton getRefreshBtn() {
         return refreshBtn;
+    }
+    public JComboBox getDrCombo() {
+        return drCombo;
     }
 }

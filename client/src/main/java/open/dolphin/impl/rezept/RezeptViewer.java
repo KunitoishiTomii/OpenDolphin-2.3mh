@@ -6,6 +6,8 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
@@ -15,10 +17,12 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.ImageIcon;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
@@ -42,6 +46,7 @@ import open.dolphin.helper.SimpleWorker;
 import open.dolphin.helper.WindowSupport;
 import open.dolphin.impl.rezept.filter.*;
 import open.dolphin.impl.rezept.model.*;
+import open.dolphin.infomodel.DrPatientIdModel;
 import open.dolphin.infomodel.IndicationModel;
 import open.dolphin.infomodel.PatientVisitModel;
 import open.dolphin.table.ColumnSpecHelper;
@@ -100,6 +105,8 @@ public class RezeptViewer {
     private ListTableModel<SY_Model> diagTableModel;
     private ListTableModel<IRezeItem> itemTableModel;
     private ListTableModel<CheckResult> infoTableModel;
+    private List<IR_Model> irList;
+    private List<DrPatientIdModel> drPatientIdList;
     
     private int reModelCount;
     
@@ -324,6 +331,20 @@ public class RezeptViewer {
                 }
             }
         });
+        
+        JComboBox combo = view.getDrCombo();
+        combo.addItemListener(new ItemListener(){
+
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                Object o = e.getItem();
+                if (o instanceof DrPatientIdModel) {
+                    showRezeData((DrPatientIdModel) o);
+                } else {
+                    showRezeData(null);
+                }
+            }
+        });
     }
     
     public Map<String, IndicationModel> getIndicationMap() {
@@ -521,7 +542,6 @@ public class RezeptViewer {
     // ORCAからレセ電データを取得し、表示する
     private void loadFromOrca(final String ym) {
 
-        view.getTabbedPane().removeAll();
         blockGlass.setText("処理中です...");
         blockGlass.block();
         
@@ -529,21 +549,35 @@ public class RezeptViewer {
 
             @Override
             protected List<IR_Model> doInBackground() throws Exception {
+ 
                 UkeLoader loader = new UkeLoader();
                 List<IR_Model> list = loader.loadFromOrca(ym);
                 itemSrycdSet = loader.getItemSrycdSet();
                 reModelCount = loader.getReModelCount();
+                // 医師ごとの担当患者を取得する
+                drPatientIdList = MasudaDelegater.getInstance().getDrPatientIdList(ym);
                 return list;
             }
 
             @Override
             protected void succeeded(List<IR_Model> result) {
                 
+                irList = result;
                 blockGlass.setText("");
                 blockGlass.unblock();
+                
+                JComboBox combo = view.getDrCombo();
+                combo.removeAllItems();
 
                 if (result != null) {
-                    showRezeData(result);
+                    // 担当医コンボを設定する
+                    combo.addItem("全て");
+                    if (drPatientIdList != null) {
+                        for (DrPatientIdModel model : drPatientIdList) {
+                            combo.addItem(model);
+                        }
+                    }
+                    //showRezeData(null);
                 } else {
                     JOptionPane.showMessageDialog(view, "指定月のレセ電データがありません。",
                             "レセ点", JOptionPane.WARNING_MESSAGE);
@@ -555,12 +589,14 @@ public class RezeptViewer {
     }
 
     // レセ電データを表示する
-    private void showRezeData(List<IR_Model> list) {
-
+    private void showRezeData(DrPatientIdModel model) {
+        
+        view.getTabbedPane().removeAll();
+        
         List<IR_Model> nyuin = new ArrayList<>(3);
         List<IR_Model> gairai = new ArrayList<>(3);
         
-        for (IR_Model irModel : list) {
+        for (IR_Model irModel : irList) {
             if ("1".equals(irModel.getNyugaikbn())) {
                 nyuin.add(irModel);
             } else {
@@ -569,11 +605,11 @@ public class RezeptViewer {
         }
         
         if (!nyuin.isEmpty()) {
-            JTabbedPane tabbedPane = createTabbedPane(nyuin);
+            JTabbedPane tabbedPane = createTabbedPane(nyuin, model);
             view.getTabbedPane().add("入院", tabbedPane);
         }
         if (!gairai.isEmpty()) {
-            JTabbedPane tabbedPane = createTabbedPane(gairai);
+            JTabbedPane tabbedPane = createTabbedPane(gairai, model);
             view.getTabbedPane().add("入院外", tabbedPane);
         }
         
@@ -585,9 +621,24 @@ public class RezeptViewer {
         }
     }
     
+    // 担当患者か否かでフィルタリングする
+    private void filterReModel(List<RE_Model> reList, DrPatientIdModel model) {
+        
+        if (model == null) {
+            return;
+        }
+        
+        List<String> ptIdList = model.getPatientIdList();
+        for (Iterator<RE_Model> itr = reList.iterator(); itr.hasNext();) {
+            RE_Model reModel = itr.next();
+            if (!ptIdList.contains(reModel.getPatientId())) {
+                itr.remove();
+            }
+        }
+    }
 
     // 審査機関別のJTabbedPaneを作成する
-    private JTabbedPane createTabbedPane(List<IR_Model> list) {
+    private JTabbedPane createTabbedPane(List<IR_Model> list, DrPatientIdModel model) {
 
         String[] columnNames = reTblHelper.getTableModelColumnNames();
         String[] methods = reTblHelper.getTableModelColumnMethods();
@@ -600,6 +651,7 @@ public class RezeptViewer {
             final JTable table = panel.getReTable();
             final ListTableModel<RE_Model> tableModel = new ListTableModel<>(columnNames, 1, methods, cls);
             List<RE_Model> reList = new ArrayList<>(irModel.getReModelList());
+            filterReModel(reList, model);
             tableModel.setDataProvider(reList);
             final ListTableSorter<RE_Model> sorter = new ListTableSorter<>(tableModel);
             table.setModel(sorter);

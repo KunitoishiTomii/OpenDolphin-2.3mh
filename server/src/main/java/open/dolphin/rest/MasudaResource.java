@@ -616,6 +616,19 @@ public class MasudaResource extends AbstractResource {
         debug(String.valueOf(ret));
     }
     
+    @GET
+    @Path("drPatientId/{ym}")
+    @Produces(MEDIATYPE_JSON_UTF8)
+    public Response getDrPatientIdModelList(@PathParam("ym") String ym) {
+        
+        List<DrPatientIdModel> list = masudaServiceBean.getDrPatientIdModelList(ym);
+        
+        TypeReference typeRef = new TypeReference<List<DrPatientIdModel>>(){};
+        StreamingOutput so = getJsonOutStream(list, typeRef);
+        
+        return Response.ok(so).build();
+    }
+    
     @Override
     protected void debug(String msg) {
         if (debug || DEBUG) {

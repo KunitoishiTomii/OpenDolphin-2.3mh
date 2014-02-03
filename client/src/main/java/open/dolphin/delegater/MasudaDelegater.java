@@ -770,6 +770,26 @@ public class MasudaDelegater extends BusinessDelegater {
         response.close();
     }
     
+    public List<DrPatientIdModel> getDrPatientIdList(String ym) throws Exception {
+        
+        String path = RES_BASE + "drPatientId/" + ym;
+        
+        Response response = getWebTarget()
+                .path(path)
+                .request(MEDIATYPE_JSON_UTF8)
+                .get();
+        
+        checkHttpStatus(response);
+        InputStream is = response.readEntity(InputStream.class);
+        TypeReference typeRef = new TypeReference<List<DrPatientIdModel>>(){};
+        List<DrPatientIdModel> list = (List<DrPatientIdModel>) 
+                getConverter().fromJson(is, typeRef);
+        
+        response.close();
+
+        return list;
+    }
+    
     
     @Override
     protected void debug(int status, String entity) {
