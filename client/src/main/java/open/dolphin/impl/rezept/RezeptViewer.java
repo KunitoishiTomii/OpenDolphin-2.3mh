@@ -431,12 +431,14 @@ public class RezeptViewer {
     
     private void createIndicationMap() throws Exception {
         
-        if (!indicationMap.isEmpty()) {
-            return;
+        // まずデータベースからIndicationModelを取得する
+        List<String> srycds = new ArrayList<>();
+        for (String srycd : itemSrycdSet) {
+            if (!indicationMap.containsKey(srycd)) {
+                srycds.add(srycd);
+            }
         }
 
-        // まずデータベースからIndicationModelを取得する
-        List<String> srycds = new ArrayList(itemSrycdSet);
         MasudaDelegater del = MasudaDelegater.getInstance();
         List<IndicationModel> indications = del.getIndicationList(srycds);
 
