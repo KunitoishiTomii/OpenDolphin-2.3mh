@@ -615,9 +615,11 @@ public class RezeptViewer {
         
         // １件目を表示する
         JTable reTable = getSelectedReTable();
-        if (reTable != null) {
+        if (reTable != null && reTable.getRowCount() > 0) {
             reTable.getSelectionModel().clearSelection();
             reTable.getSelectionModel().setSelectionInterval(0, 0);
+        } else {
+            clearReModelView();
         }
     }
     
@@ -668,10 +670,10 @@ public class RezeptViewer {
                 public void valueChanged(ListSelectionEvent e) {
                     int row = table.getSelectedRow();
                     if (e.getValueIsAdjusting() == false && row != -1) {
-                        RE_Model reModel = sorter.getObject(row);
-                        reModelToView(reModel, kikanNum);
+                            RE_Model reModel = sorter.getObject(row);
+                            reModelToView(reModel, kikanNum);
+                        }
                     }
-                }
             });
 
             table.addMouseListener(new MouseAdapter() {
@@ -722,7 +724,37 @@ public class RezeptViewer {
         }
     }
     
+    private void clearReModelView() {
+        
+        view.getBillYmField().setText(EMPTY);
+        view.getPtIdField().setText(EMPTY);
+        view.getPtNameField().setText(EMPTY);
+        view.getPtSexField().setText(EMPTY);
+        view.getPtBirthdayField().setText(EMPTY);
+        view.getPtAgeField().setText(EMPTY);
+        view.getInsTypeField().setText(EMPTY);
+        view.getInsField().setText(EMPTY);
+        view.getInsSymbolField().setText(EMPTY);
+        view.getInsNumberField().setText(EMPTY);
+        view.getPubIns1Field().setText(EMPTY);
+        view.getPubIns1NumField().setText(EMPTY);
+        view.getPubIns2Field().setText(EMPTY);
+        view.getPubIns2NumField().setText(EMPTY);
+        view.getPubIns3Field().setText(EMPTY);
+        view.getPubIns3NumField().setText(EMPTY);
+        view.getTenField().setText(EMPTY);
+        view.getNumDayField().setText(EMPTY);
+        view.getDiagCountField().setText(EMPTY);
+        view.getCommentArea().setText(EMPTY);
+
+        diagTableModel.setDataProvider(null);
+        itemTableModel.setDataProvider(null);
+        infoTableModel.setDataProvider(null);
+    }
+    
     private void reModelToView(RE_Model reModel, int kikanNum) {
+        
+        clearReModelView();
         
         // 患者
         String ym = RezeUtil.getInstance().getYMStr(reModel.getBillDate());
@@ -746,10 +778,6 @@ public class RezeptViewer {
             view.getInsNumberField().setText(hoModel.getCertificateNum());
             ten += hoModel.getTen();
             numDays += hoModel.getDays();
-        } else {
-            view.getInsField().setText(EMPTY);
-            view.getInsSymbolField().setText(EMPTY);
-            view.getInsNumberField().setText(EMPTY);
         }
         // 公費
         if (reModel.getKOModelList() != null && !reModel.getKOModelList().isEmpty()) {
@@ -784,13 +812,6 @@ public class RezeptViewer {
                 ten += koModel.getTen();
                 numDays += koModel.getDays();
             }
-        } else {
-            view.getPubIns1Field().setText(EMPTY);
-            view.getPubIns1NumField().setText(EMPTY);
-            view.getPubIns2Field().setText(EMPTY);
-            view.getPubIns2NumField().setText(EMPTY);
-            view.getPubIns3Field().setText(EMPTY);
-            view.getPubIns3NumField().setText(EMPTY);
         }
         
         // 点数、診療日数
@@ -816,16 +837,12 @@ public class RezeptViewer {
                 sb.append(sjModel.getData()).append("\n");
             }
             view.getCommentArea().setText(sb.toString());
-        } else {
-            view.getCommentArea().setText("");
         }
         
         // Info
         if (reModel.getCheckResults() != null) {
             List<CheckResult> results = new ArrayList<>(reModel.getCheckResults());
             infoTableModel.setDataProvider(results);
-        } else {
-            infoTableModel.setDataProvider(null);
         }
     }
     
