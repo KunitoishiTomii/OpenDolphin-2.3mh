@@ -33,7 +33,7 @@ public class KO_Model implements IRezeModel {
 
     @Override
     public void parseLine(String csv) {
-        String[] tokens = csv.split(CAMMA);
+        String[] tokens = TokenSplitter.split(csv);
         insuranceNum = tokens[1].trim();
         certificateNum = tokens[2].trim();
         kyufuKbn = tokens[3].trim();

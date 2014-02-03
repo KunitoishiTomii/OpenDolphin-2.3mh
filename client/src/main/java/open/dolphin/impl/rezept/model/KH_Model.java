@@ -17,7 +17,7 @@ public class KH_Model implements IRezeModel {
 
     @Override
     public void parseLine(String csv) {
-        String[] tokens = csv.split(CAMMA);
+        String[] tokens = TokenSplitter.split(csv);
         info = tokens[1].trim();
     }
 }

@@ -475,18 +475,22 @@ public class RezeptViewer {
         editor.start(item, diagList);
     }
     
-    // ボタンクリックでポップアップ表示、先月と今月を選択可能とする
+    // ボタンクリックでポップアップ表示、今月と先月と先々月を選択可能とする
     private void showImportPopup() {
         
         GregorianCalendar gc = new GregorianCalendar();
         SimpleDateFormat frmt = new SimpleDateFormat("yyyyMM");
-        String ymd2 = frmt.format(gc.getTime());
+        String ymd0 = frmt.format(gc.getTime());
         gc.add(GregorianCalendar.MONTH, -1);
         String ymd1 = frmt.format(gc.getTime());
+        gc.add(GregorianCalendar.MONTH, -1);
+        String ymd2 = frmt.format(gc.getTime());
 
         JPopupMenu pMenu = new JPopupMenu();
+        JMenuItem item0 = new JMenuItem(ymd0);
         JMenuItem item1 = new JMenuItem(ymd1);
         JMenuItem item2 = new JMenuItem(ymd2);
+        pMenu.add(item0);
         pMenu.add(item1);
         pMenu.add(item2);
 
@@ -502,6 +506,7 @@ public class RezeptViewer {
             }
         };
         
+        item0.addActionListener(listener);
         item1.addActionListener(listener);
         item2.addActionListener(listener);
 

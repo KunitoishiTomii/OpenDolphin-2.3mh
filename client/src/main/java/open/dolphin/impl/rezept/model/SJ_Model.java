@@ -21,7 +21,7 @@ public class SJ_Model implements IRezeModel {
 
     @Override
     public void parseLine(String csv) {
-        String[] tokens = csv.split(CAMMA);
+        String[] tokens = TokenSplitter.split(csv);
         kbn = tokens[1].trim();
         data = tokens[2].trim();
     }
