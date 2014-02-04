@@ -146,6 +146,7 @@ public class UkeLoader {
                     totalTen = 0;
                 case "RE":
                     RE_Model reModel = new RE_Model();
+                    reModel.setIrModel(irModel);
                     reModel.parseLine(line);
                     irModel.addReModel(reModel);
                     //hasHO = false;

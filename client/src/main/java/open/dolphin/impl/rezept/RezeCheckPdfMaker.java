@@ -211,7 +211,8 @@ public class RezeCheckPdfMaker {
             sb.append(reModel.getName()).append("  ");
             sb.append(reModel.getAge()).append("歳  ");
             sb.append(reModel.getPatientId()).append("  ");
-            sb.append(RezeUtil.getInstance().getYMStr(reModel.getBillDate()));
+            sb.append(RezeUtil.getInstance().getYMStr(reModel.getBillDate())).append("  ");
+            sb.append(reModel.getIrModel().getShinsaKikanStr());
             PdfPCell cell1 = new PdfPCell(new Paragraph(sb.toString(), bodyFont));
             cell1.setColspan(2);
             table.addCell(cell1);
