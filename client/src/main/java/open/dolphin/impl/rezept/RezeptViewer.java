@@ -592,6 +592,10 @@ public class RezeptViewer {
     private void showRezeData(DrPatientIdModel model) {
         
         view.getTabbedPane().removeAll();
+        if (irList == null || irList.isEmpty()) {
+            clearReModelView();
+            return;
+        }
         
         List<IR_Model> nyuin = new ArrayList<>(3);
         List<IR_Model> gairai = new ArrayList<>(3);
