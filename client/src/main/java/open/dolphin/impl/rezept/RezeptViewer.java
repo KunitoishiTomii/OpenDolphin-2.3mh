@@ -345,6 +345,40 @@ public class RezeptViewer {
                 }
             }
         });
+        
+        view.getPrintBtn().addActionListener(new ActionListener(){
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                makePdf();
+            }
+        });
+        view.getPrintBtn().setEnabled(false);
+    }
+    
+    private void makePdf() {
+        
+        final List<ListTableModel<RE_Model>> list = getAllReListTableModel();
+        if (list.isEmpty()) {
+            return;
+        }
+        
+        List<RE_Model> reModelList = new ArrayList<>();
+        for (ListTableModel<RE_Model> tableModel : list) {
+            for (RE_Model reModel : tableModel.getDataProvider()) {
+                if (reModel.getCheckFlag() > CheckResult.CHECK_INFO) {
+                    reModelList.add(reModel);
+                }
+            }
+        }
+        
+        RezeCheckPdfMaker pdfMaker = new RezeCheckPdfMaker();
+        pdfMaker.setParent(view);
+        pdfMaker.setReModelList(reModelList);
+        JComboBox combo = view.getDrCombo();
+        String drName = combo.getSelectedItem().toString();
+        pdfMaker.setDrName(drName);
+        pdfMaker.create();
     }
     
     public Map<String, IndicationModel> getIndicationMap() {
@@ -424,6 +458,7 @@ public class RezeptViewer {
                         reTable.getSelectionModel().setSelectionInterval(row, row);
                     }
                 }
+                view.getPrintBtn().setEnabled(true);
                 blockGlass.setText("");
                 blockGlass.unblock();
             }
@@ -544,6 +579,7 @@ public class RezeptViewer {
 
         blockGlass.setText("処理中です...");
         blockGlass.block();
+        view.getPrintBtn().setEnabled(false);
         
         SimpleWorker worker = new SimpleWorker<List<IR_Model>, Void>(){
 
@@ -577,6 +613,7 @@ public class RezeptViewer {
                             combo.addItem(model);
                         }
                     }
+                    view.getPrintBtn().setEnabled(true);
                     //showRezeData(null);
                 } else {
                     JOptionPane.showMessageDialog(view, "指定月のレセ電データがありません。",

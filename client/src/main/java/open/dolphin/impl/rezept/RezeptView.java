@@ -39,6 +39,7 @@ public class RezeptView extends JPanel {
     private JButton prevBtn;
     private JButton nextBtn;
     private JComboBox drCombo;
+    private JButton printBtn;
     
     private JTextField insTypeField;
     private JTextField pubIns1Field;
@@ -112,6 +113,8 @@ public class RezeptView extends JPanel {
         filterPanel.add(new JLabel("担当医："));
         drCombo = new JComboBox();
         filterPanel.add(drCombo);
+        printBtn = new JButton("印刷");
+        filterPanel.add(printBtn);
         leftPanel.add(filterPanel);
         leftPanel.add(Box.createVerticalStrut(5));
         
@@ -405,5 +408,8 @@ public class RezeptView extends JPanel {
     }
     public JComboBox getDrCombo() {
         return drCombo;
+    }
+    public JButton getPrintBtn() {
+        return printBtn;
     }
 }
