@@ -9,9 +9,9 @@ public class KO_Model implements IRezeModel {
     
     public static final String ID = "KO";
     
-    private String insuranceNum;
-    private String certificateNum;
-    private String kyufuKbn;
+    private String insuranceNum;        // 負担者番号
+    private String certificateNum;      // 受給者番号
+    private String kyufuKbn;            // 任意給付区分
     private int days;
     private int ten;
     

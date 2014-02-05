@@ -34,10 +34,8 @@ public class BasicFilter extends AbstractCheckFilter {
         List<CheckResult> results = new ArrayList<>();
         
         // 保険チェック
-        CheckResult result = checkInsurance(reModel);
-        if (result != null) {
-            results.add(result);
-        }
+        List<CheckResult> results1 = checkInsurance(reModel);
+        results.addAll(results1);
         
         // 病名数チェック、病名重複チェック
         List<CheckResult> list = checkDiag(reModel);
@@ -151,17 +149,31 @@ public class BasicFilter extends AbstractCheckFilter {
     }
     
     // 保険チェック
-    private CheckResult checkInsurance(RE_Model reModel) {
+    private List<CheckResult> checkInsurance(RE_Model reModel) {
+
+        List<CheckResult> ret = new ArrayList<>();
 
         // 無保険？
         HO_Model hoModel = reModel.getHOModel();
         List<KO_Model> koList = reModel.getKOModelList();
-        if (hoModel == null && koList.isEmpty()) {
+        boolean hasKO = koList != null && !koList.isEmpty();
+        if (hoModel == null && !hasKO) {
             String msg = "保険も公費もありません";
             CheckResult result = createCheckResult(msg, CheckResult.CHECK_ERROR);
-            return result;
+            ret.add(result);
+        }
+        // 受給者番号チェック
+        if (hasKO) {
+            for (KO_Model koModel : koList) {
+                String certNum = koModel.getCertificateNum();
+                if (certNum == null || certNum.isEmpty()) {
+                    String msg = String.format("公費(%s)の受給者番号がありません", koModel.getInsuranceNum());
+                    CheckResult result = createCheckResult(msg, CheckResult.CHECK_ERROR);
+                    ret.add(result);
+                }
+            }
         }
 
-        return null;
+        return ret;
     }
 }

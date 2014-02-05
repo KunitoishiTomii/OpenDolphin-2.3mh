@@ -31,7 +31,8 @@ import open.dolphin.impl.rezept.model.SJ_Model;
 import open.dolphin.impl.rezept.model.SY_Model;
 
 /**
- *
+ * レセ点、印刷
+ * 
  * @author masuda, Masuda Naika
  */
 public class RezeCheckPdfMaker {
