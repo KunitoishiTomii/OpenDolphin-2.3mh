@@ -256,8 +256,13 @@ public class RezeCheckPdfMaker {
         int widths[] = {10, 5, 3, 5};
         table.setWidths(widths);
         table.setSplitLate(false);
+        
+        List<SY_Model> syList = reModel.getSYModelList();
+        if (syList == null) {
+            return table;
+        }
 
-        for (SY_Model syModel : reModel.getSYModelList()) {
+        for (SY_Model syModel : syList) {
             table.addCell(createTableCell(syModel.getDiagName()));
             table.addCell(createTableCell(syModel.getStartDateStr()));
             table.addCell(createTableCell(syModel.getOutcomeStr()));
@@ -279,8 +284,13 @@ public class RezeCheckPdfMaker {
         int widths[] = {1, 3, 15};
         table.setWidths(widths);
         table.setSplitLate(false);
+        
+        List<CheckResult> results = reModel.getCheckResults();
+        if (results == null) {
+            return table;
+        }
 
-        for (CheckResult result : reModel.getCheckResults()) {
+        for (CheckResult result : results) {
             int status = result.getResult();
             switch (status) {
                 case CheckResult.CHECK_INFO:

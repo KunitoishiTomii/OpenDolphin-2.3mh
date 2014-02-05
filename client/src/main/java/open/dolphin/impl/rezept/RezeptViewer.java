@@ -350,13 +350,53 @@ public class RezeptViewer {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                makePdf();
+                print();
             }
         });
         view.getPrintBtn().setEnabled(false);
     }
     
-    private void makePdf() {
+    private void print() {
+        
+        final String[] commands = {"エラー", "警告", "INFO", "全部"};
+        JPopupMenu pMenu = new JPopupMenu();
+        JMenuItem item0 = new JMenuItem(commands[0]);
+        JMenuItem item1 = new JMenuItem(commands[1]);
+        JMenuItem item2 = new JMenuItem(commands[2]);
+        JMenuItem item3 = new JMenuItem(commands[3]);
+        pMenu.add(item0);
+        pMenu.add(item1);
+        pMenu.add(item2);
+        pMenu.add(item3);
+
+        ActionListener listener = new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+                String cmd = e.getActionCommand();
+                if (commands[0].equals(cmd)) {
+                    makePdf(CheckResult.CHECK_ERROR);
+                } else if (commands[1].equals(cmd)) {
+                    makePdf(CheckResult.CHECK_WARNING);
+                } else if (commands[2].equals(cmd)) {
+                    makePdf(CheckResult.CHECK_INFO);
+                } else if (commands[3].equals(cmd)) {
+                    makePdf(CheckResult.CHECK_NO_ERROR);
+                }
+            }
+        };
+        
+        item0.addActionListener(listener);
+        item1.addActionListener(listener);
+        item2.addActionListener(listener);
+        item3.addActionListener(listener);
+
+        pMenu.show(view.getPrintBtn(), 0, 0);
+    }
+    
+    
+    private void makePdf(final int level) {
         
         final List<ListTableModel<RE_Model>> list = getAllReListTableModel();
         if (list.isEmpty()) {
@@ -366,7 +406,7 @@ public class RezeptViewer {
         List<RE_Model> reModelList = new ArrayList<>();
         for (ListTableModel<RE_Model> tableModel : list) {
             for (RE_Model reModel : tableModel.getDataProvider()) {
-                if (reModel.getCheckFlag() > CheckResult.CHECK_INFO) {
+                if (reModel.getCheckFlag() >= level) {
                     reModelList.add(reModel);
                 }
             }
