@@ -12,7 +12,6 @@ import javax.swing.event.ListSelectionListener;
 import open.dolphin.delegater.MasudaDelegater;
 import open.dolphin.infomodel.DocInfoModel;
 import open.dolphin.infomodel.ExamHistoryModel;
-import open.dolphin.infomodel.IInfoModel;
 import open.dolphin.table.ColumnSpecHelper;
 import open.dolphin.table.ListTableModel;
 import open.dolphin.table.StripeTableCellRenderer;
@@ -32,15 +31,14 @@ public class ExamHistory {
     private final ChartImpl context;
     private final PatientInspector patientInspector;
     
-    private static final long MILLISEC_IN_MONTH = 1000 * 60 * 60 * 24 * 30L;
     public static final String ExamHistoryTitle = "検査";
     
     // カラム仕様ヘルパー
     private static final String COLUMN_SPEC_NAME = "examHistoryTable.column.spec";
-    private static final String[] COLUMN_NAMES = {"検査日", "内容"};
-    private static final String[] PROPERTY_NAMES = {"getMmlExamDate", "getExamTitle"};
-    private static final Class[] COLUMN_CLASSES = {String.class, String.class};
-    private static final int[] COLUMN_WIDTH = {115, 180};
+    private static final String[] COLUMN_NAMES = {"検査日", "経過", "内容"};
+    private static final String[] PROPERTY_NAMES = {"getMmlExamDate", "getPastMonth", "getExamTitle"};
+    private static final Class[] COLUMN_CLASSES = {String.class, Integer.class, String.class};
+    private static final int[] COLUMN_WIDTH = {115, 30, 180};
     private ColumnSpecHelper columnHelper;
 
     public ExamHistory(PatientInspector pi) {
@@ -251,29 +249,22 @@ public class ExamHistory {
                     } else {
                         Collections.sort(list, Collections.reverseOrder(new ExamHistoryComparator()));
                     }
-                    Date lastExamDate = IInfoModel.AD1800;
-                    if (!list.isEmpty()) {
-                        lastExamDate = asc 
-                                ? list.get(list.size() - 1).getExamDate()
-                                : list.get(0).getExamDate();
-                    }
 
-                    //int index = patientInspector.getTabbedPane().indexOfTab(ExamHistoryTitle);
                     JTabbedPane tabbedPane = patientInspector.getTabbedPane();
                     int index = tabbedPane.indexOfComponent(view);
 
                     // 最終検査から３か月経過していたらタブの文字を赤にする
-                    Date now = new Date();
-                    GregorianCalendar gc = new GregorianCalendar();
-                    gc.setTime(now);
-                    gc.add(GregorianCalendar.MONTH, -3);
-                    if (lastExamDate.before(gc.getTime())) {
+                    int pastMonth = -1;
+                    if (!list.isEmpty()) {
+                        pastMonth = asc
+                                ? list.get(list.size() -1).getPastMonth()
+                                : list.get(0).getPastMonth();
+                    }
+                    if (pastMonth >= 3 || pastMonth == -1) {
                         tabbedPane.setForegroundAt(index, Color.RED);
-                        long t = now.getTime() - lastExamDate.getTime();
-                        int monthPast = (int) (t / MILLISEC_IN_MONTH);
-                        String pastStr = monthPast > 12 ? ">１年" : String.valueOf(monthPast) + "ヶ月";
+                        String pastStr = pastMonth > 12 ? ">１年" : String.valueOf(pastMonth) + "ヶ月";
                         tabbedPane.setTitleAt(index, String.valueOf(pastStr));
-                    } else {
+                    }else {
                         tabbedPane.setForegroundAt(index, Color.BLACK);
                         tabbedPane.setTitleAt(index, ExamHistoryTitle);
                     }
