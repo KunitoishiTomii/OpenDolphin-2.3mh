@@ -122,6 +122,8 @@ public interface StampEditorConst {
     public static final String EDITABLE_COMMENT_0084 = "0084";
     public static final String EDITABLE_COMMENT_85   = "85";
     public static final String EDITABLE_COMMENT_0085 = "0085";  //"008500000";
+    public static final String EDITABLE_COMMENT_86   = "86";
+    public static final String EDITABLE_COMMENT_0086 = "0086";
 
     // 検索特殊記号文字
     public static final String ASTERISK_HALF = "*";
