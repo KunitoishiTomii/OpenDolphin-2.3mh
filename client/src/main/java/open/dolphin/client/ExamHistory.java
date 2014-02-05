@@ -260,11 +260,14 @@ public class ExamHistory {
                                 ? list.get(list.size() -1).getPastMonth()
                                 : list.get(0).getPastMonth();
                     }
-                    if (pastMonth >= 3 || pastMonth == -1) {
+                    if (pastMonth > 12 || pastMonth == -1) {
                         tabbedPane.setForegroundAt(index, Color.RED);
-                        String pastStr = pastMonth > 12 ? ">１年" : String.valueOf(pastMonth) + "ヶ月";
-                        tabbedPane.setTitleAt(index, String.valueOf(pastStr));
-                    }else {
+                        tabbedPane.setTitleAt(index, ">１年");
+                    } else if (pastMonth >= 3) {
+                        tabbedPane.setForegroundAt(index, Color.RED);
+                        String pastStr = String.valueOf(pastMonth) + "ヶ月";
+                        tabbedPane.setTitleAt(index, pastStr);
+                    } else {
                         tabbedPane.setForegroundAt(index, Color.BLACK);
                         tabbedPane.setTitleAt(index, ExamHistoryTitle);
                     }
