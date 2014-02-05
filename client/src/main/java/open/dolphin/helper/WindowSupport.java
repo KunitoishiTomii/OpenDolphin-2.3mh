@@ -27,7 +27,7 @@ public class WindowSupport implements MenuListener {
     
     private static final String WINDOW_MWNU_NAME = "ウインドウ";
     private static final ImageIcon icon = 
-            ClientContext.getClientContextStub().getImageIcon("dolphinIcon.png");
+            ClientContext.getClientContextStub().getImageIcon("OpenDolphin-m.png");
     
     // WindowSupportのリスト　フォーカス処理にも使用
     private static final List<WindowSupport> allWindows;
