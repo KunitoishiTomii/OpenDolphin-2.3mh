@@ -54,6 +54,7 @@ public class RezeptView extends JPanel {
     private JTextField insSymbolField;
     private JTextField insNumberField;
     private JButton refreshBtn;
+    private JTextField facilityField;
     
     private JTextField ptIdField;
     private JTextField billYmField;
@@ -208,9 +209,8 @@ public class RezeptView extends JPanel {
         north.add(p3);
         
         JPanel p4 = createYBoxPanel();
-        JTextField facilityFld = createTextField(20);
-        facilityFld.setText(Project.getUserModel().getFacilityModel().getFacilityName());
-        p4.add(facilityFld);
+        facilityField = createTextField(20);
+        p4.add(facilityField);
         insTypeField= createTextField(20);
         p4.add(insTypeField);
         JPanel p42 = createXBoxPanel();
@@ -411,5 +411,8 @@ public class RezeptView extends JPanel {
     }
     public JButton getPrintBtn() {
         return printBtn;
+    }
+    public JTextField getFacilityField() {
+        return facilityField;
     }
 }

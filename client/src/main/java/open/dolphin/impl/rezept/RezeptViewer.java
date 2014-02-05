@@ -49,6 +49,7 @@ import open.dolphin.impl.rezept.model.*;
 import open.dolphin.infomodel.DrPatientIdModel;
 import open.dolphin.infomodel.IndicationModel;
 import open.dolphin.infomodel.PatientVisitModel;
+import open.dolphin.project.Project;
 import open.dolphin.table.ColumnSpecHelper;
 import open.dolphin.table.ListTableModel;
 import open.dolphin.table.ListTableSorter;
@@ -109,6 +110,7 @@ public class RezeptViewer {
     private List<DrPatientIdModel> drPatientIdList;
     
     private int reModelCount;
+    private String facilityName;
     
     private boolean dev;    // 後で削除 TODO
 
@@ -124,6 +126,8 @@ public class RezeptViewer {
     public void enter() {
 
         initComponents();
+        facilityName = Project.getUserModel().getFacilityModel().getFacilityName();
+        
         // do not remove copyright!
         String title = ClientContext.getFrameTitle("レセ点") + ", Masuda Naika";
         WindowSupport ws = WindowSupport.create(title);
@@ -827,6 +831,7 @@ public class RezeptViewer {
         view.getNumDayField().setText(EMPTY);
         view.getDiagCountField().setText(EMPTY);
         view.getCommentArea().setText(EMPTY);
+        view.getFacilityField().setText(EMPTY);
 
         diagTableModel.setDataProvider(null);
         itemTableModel.setDataProvider(null);
@@ -836,6 +841,7 @@ public class RezeptViewer {
     private void reModelToView(RE_Model reModel, int kikanNum) {
         
         clearReModelView();
+        view.getFacilityField().setText(facilityName);
         
         // 患者
         String ym = RezeUtil.getInstance().getYMStr(reModel.getBillDate());
