@@ -36,6 +36,15 @@ public class RE_Model implements IRezeModel {
     
     private List<CheckResult> checkResults;
     
+    private IR_Model irModel;
+    
+    public IR_Model getIrModel() {
+        return irModel;
+    }
+    public void setIrModel(IR_Model irModel) {
+        this.irModel = irModel;
+    }
+    
     public String getRezeType(int num) {
         return RezeUtil.getInstance().getRezeTypeDesc(num, rezeType);
     }

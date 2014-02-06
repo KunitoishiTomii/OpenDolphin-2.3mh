@@ -236,7 +236,7 @@ public class ClientContext {
     
 //masuda^
     public static void setDolphinIcon(Window window) {
-        ImageIcon icon = stub.getImageIcon("dolphinIcon.png");
+        ImageIcon icon = stub.getImageIcon("OpenDolphin-m.png");
         window.setIconImage(icon.getImage());
     }
     

@@ -6,6 +6,8 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
@@ -15,10 +17,12 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.ImageIcon;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
@@ -42,8 +46,10 @@ import open.dolphin.helper.SimpleWorker;
 import open.dolphin.helper.WindowSupport;
 import open.dolphin.impl.rezept.filter.*;
 import open.dolphin.impl.rezept.model.*;
+import open.dolphin.infomodel.DrPatientIdModel;
 import open.dolphin.infomodel.IndicationModel;
 import open.dolphin.infomodel.PatientVisitModel;
+import open.dolphin.project.Project;
 import open.dolphin.table.ColumnSpecHelper;
 import open.dolphin.table.ListTableModel;
 import open.dolphin.table.ListTableSorter;
@@ -100,8 +106,11 @@ public class RezeptViewer {
     private ListTableModel<SY_Model> diagTableModel;
     private ListTableModel<IRezeItem> itemTableModel;
     private ListTableModel<CheckResult> infoTableModel;
+    private List<IR_Model> irList;
+    private List<DrPatientIdModel> drPatientIdList;
     
     private int reModelCount;
+    private String facilityName;
     
     private boolean dev;    // 後で削除 TODO
 
@@ -117,6 +126,8 @@ public class RezeptViewer {
     public void enter() {
 
         initComponents();
+        facilityName = Project.getUserModel().getFacilityModel().getFacilityName();
+        
         // do not remove copyright!
         String title = ClientContext.getFrameTitle("レセ点") + ", Masuda Naika";
         WindowSupport ws = WindowSupport.create(title);
@@ -324,6 +335,94 @@ public class RezeptViewer {
                 }
             }
         });
+        
+        JComboBox combo = view.getDrCombo();
+        combo.addItemListener(new ItemListener(){
+
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                Object o = e.getItem();
+                if (o instanceof DrPatientIdModel) {
+                    showRezeData((DrPatientIdModel) o);
+                } else {
+                    showRezeData(null);
+                }
+            }
+        });
+        
+        view.getPrintBtn().addActionListener(new ActionListener(){
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                print();
+            }
+        });
+        view.getPrintBtn().setEnabled(false);
+    }
+    
+    private void print() {
+        
+        final String[] commands = {"エラー", "警告", "INFO", "全部"};
+        JPopupMenu pMenu = new JPopupMenu();
+        JMenuItem item0 = new JMenuItem(commands[0]);
+        JMenuItem item1 = new JMenuItem(commands[1]);
+        JMenuItem item2 = new JMenuItem(commands[2]);
+        JMenuItem item3 = new JMenuItem(commands[3]);
+        pMenu.add(item0);
+        pMenu.add(item1);
+        pMenu.add(item2);
+        pMenu.add(item3);
+
+        ActionListener listener = new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+                String cmd = e.getActionCommand();
+                if (commands[0].equals(cmd)) {
+                    makePdf(CheckResult.CHECK_ERROR);
+                } else if (commands[1].equals(cmd)) {
+                    makePdf(CheckResult.CHECK_WARNING);
+                } else if (commands[2].equals(cmd)) {
+                    makePdf(CheckResult.CHECK_INFO);
+                } else if (commands[3].equals(cmd)) {
+                    makePdf(CheckResult.CHECK_NO_ERROR);
+                }
+            }
+        };
+        
+        item0.addActionListener(listener);
+        item1.addActionListener(listener);
+        item2.addActionListener(listener);
+        item3.addActionListener(listener);
+
+        pMenu.show(view.getPrintBtn(), 0, 0);
+    }
+    
+    
+    private void makePdf(final int level) {
+        
+        final List<ListTableModel<RE_Model>> list = getAllReListTableModel();
+        if (list.isEmpty()) {
+            return;
+        }
+        
+        List<RE_Model> reModelList = new ArrayList<>();
+        for (ListTableModel<RE_Model> tableModel : list) {
+            for (RE_Model reModel : tableModel.getDataProvider()) {
+                if (reModel.getCheckFlag() >= level) {
+                    reModelList.add(reModel);
+                }
+            }
+        }
+        
+        RezeCheckPdfMaker pdfMaker = new RezeCheckPdfMaker();
+        pdfMaker.setParent(view);
+        pdfMaker.setReModelList(reModelList);
+        JComboBox combo = view.getDrCombo();
+        String drName = combo.getSelectedItem().toString();
+        pdfMaker.setDrName(drName);
+        pdfMaker.create();
     }
     
     public Map<String, IndicationModel> getIndicationMap() {
@@ -403,6 +502,7 @@ public class RezeptViewer {
                         reTable.getSelectionModel().setSelectionInterval(row, row);
                     }
                 }
+                view.getPrintBtn().setEnabled(true);
                 blockGlass.setText("");
                 blockGlass.unblock();
             }
@@ -431,12 +531,17 @@ public class RezeptViewer {
     
     private void createIndicationMap() throws Exception {
         
-        if (!indicationMap.isEmpty()) {
+        // まずデータベースからIndicationModelを取得する
+        List<String> srycds = new ArrayList<>();
+        for (String srycd : itemSrycdSet) {
+            if (!indicationMap.containsKey(srycd)) {
+                srycds.add(srycd);
+            }
+        }
+        if (srycds.isEmpty()) {
             return;
         }
-
-        // まずデータベースからIndicationModelを取得する
-        List<String> srycds = new ArrayList(itemSrycdSet);
+        
         MasudaDelegater del = MasudaDelegater.getInstance();
         List<IndicationModel> indications = del.getIndicationList(srycds);
 
@@ -516,29 +621,44 @@ public class RezeptViewer {
     // ORCAからレセ電データを取得し、表示する
     private void loadFromOrca(final String ym) {
 
-        view.getTabbedPane().removeAll();
         blockGlass.setText("処理中です...");
         blockGlass.block();
+        view.getPrintBtn().setEnabled(false);
         
         SimpleWorker worker = new SimpleWorker<List<IR_Model>, Void>(){
 
             @Override
             protected List<IR_Model> doInBackground() throws Exception {
+ 
                 UkeLoader loader = new UkeLoader();
                 List<IR_Model> list = loader.loadFromOrca(ym);
                 itemSrycdSet = loader.getItemSrycdSet();
                 reModelCount = loader.getReModelCount();
+                // 医師ごとの担当患者を取得する
+                drPatientIdList = MasudaDelegater.getInstance().getDrPatientIdList(ym);
                 return list;
             }
 
             @Override
             protected void succeeded(List<IR_Model> result) {
                 
+                irList = result;
                 blockGlass.setText("");
                 blockGlass.unblock();
+                
+                JComboBox combo = view.getDrCombo();
+                combo.removeAllItems();
 
                 if (result != null) {
-                    showRezeData(result);
+                    // 担当医コンボを設定する
+                    combo.addItem("全て");
+                    if (drPatientIdList != null) {
+                        for (DrPatientIdModel model : drPatientIdList) {
+                            combo.addItem(model);
+                        }
+                    }
+                    view.getPrintBtn().setEnabled(true);
+                    //showRezeData(null);
                 } else {
                     JOptionPane.showMessageDialog(view, "指定月のレセ電データがありません。",
                             "レセ点", JOptionPane.WARNING_MESSAGE);
@@ -550,12 +670,18 @@ public class RezeptViewer {
     }
 
     // レセ電データを表示する
-    private void showRezeData(List<IR_Model> list) {
-
+    private void showRezeData(DrPatientIdModel model) {
+        
+        view.getTabbedPane().removeAll();
+        if (irList == null || irList.isEmpty()) {
+            clearReModelView();
+            return;
+        }
+        
         List<IR_Model> nyuin = new ArrayList<>(3);
         List<IR_Model> gairai = new ArrayList<>(3);
         
-        for (IR_Model irModel : list) {
+        for (IR_Model irModel : irList) {
             if ("1".equals(irModel.getNyugaikbn())) {
                 nyuin.add(irModel);
             } else {
@@ -564,25 +690,42 @@ public class RezeptViewer {
         }
         
         if (!nyuin.isEmpty()) {
-            JTabbedPane tabbedPane = createTabbedPane(nyuin);
+            JTabbedPane tabbedPane = createTabbedPane(nyuin, model);
             view.getTabbedPane().add("入院", tabbedPane);
         }
         if (!gairai.isEmpty()) {
-            JTabbedPane tabbedPane = createTabbedPane(gairai);
+            JTabbedPane tabbedPane = createTabbedPane(gairai, model);
             view.getTabbedPane().add("入院外", tabbedPane);
         }
         
         // １件目を表示する
         JTable reTable = getSelectedReTable();
-        if (reTable != null) {
+        if (reTable != null && reTable.getRowCount() > 0) {
             reTable.getSelectionModel().clearSelection();
             reTable.getSelectionModel().setSelectionInterval(0, 0);
+        } else {
+            clearReModelView();
         }
     }
     
+    // 担当患者か否かでフィルタリングする
+    private void filterReModel(List<RE_Model> reList, DrPatientIdModel model) {
+        
+        if (model == null) {
+            return;
+        }
+        
+        List<String> ptIdList = model.getPatientIdList();
+        for (Iterator<RE_Model> itr = reList.iterator(); itr.hasNext();) {
+            RE_Model reModel = itr.next();
+            if (!ptIdList.contains(reModel.getPatientId())) {
+                itr.remove();
+            }
+        }
+    }
 
     // 審査機関別のJTabbedPaneを作成する
-    private JTabbedPane createTabbedPane(List<IR_Model> list) {
+    private JTabbedPane createTabbedPane(List<IR_Model> list, DrPatientIdModel model) {
 
         String[] columnNames = reTblHelper.getTableModelColumnNames();
         String[] methods = reTblHelper.getTableModelColumnMethods();
@@ -595,6 +738,7 @@ public class RezeptViewer {
             final JTable table = panel.getReTable();
             final ListTableModel<RE_Model> tableModel = new ListTableModel<>(columnNames, 1, methods, cls);
             List<RE_Model> reList = new ArrayList<>(irModel.getReModelList());
+            filterReModel(reList, model);
             tableModel.setDataProvider(reList);
             final ListTableSorter<RE_Model> sorter = new ListTableSorter<>(tableModel);
             table.setModel(sorter);
@@ -611,10 +755,10 @@ public class RezeptViewer {
                 public void valueChanged(ListSelectionEvent e) {
                     int row = table.getSelectedRow();
                     if (e.getValueIsAdjusting() == false && row != -1) {
-                        RE_Model reModel = sorter.getObject(row);
-                        reModelToView(reModel, kikanNum);
+                            RE_Model reModel = sorter.getObject(row);
+                            reModelToView(reModel, kikanNum);
+                        }
                     }
-                }
             });
 
             table.addMouseListener(new MouseAdapter() {
@@ -665,7 +809,39 @@ public class RezeptViewer {
         }
     }
     
+    private void clearReModelView() {
+        
+        view.getBillYmField().setText(EMPTY);
+        view.getPtIdField().setText(EMPTY);
+        view.getPtNameField().setText(EMPTY);
+        view.getPtSexField().setText(EMPTY);
+        view.getPtBirthdayField().setText(EMPTY);
+        view.getPtAgeField().setText(EMPTY);
+        view.getInsTypeField().setText(EMPTY);
+        view.getInsField().setText(EMPTY);
+        view.getInsSymbolField().setText(EMPTY);
+        view.getInsNumberField().setText(EMPTY);
+        view.getPubIns1Field().setText(EMPTY);
+        view.getPubIns1NumField().setText(EMPTY);
+        view.getPubIns2Field().setText(EMPTY);
+        view.getPubIns2NumField().setText(EMPTY);
+        view.getPubIns3Field().setText(EMPTY);
+        view.getPubIns3NumField().setText(EMPTY);
+        view.getTenField().setText(EMPTY);
+        view.getNumDayField().setText(EMPTY);
+        view.getDiagCountField().setText(EMPTY);
+        view.getCommentArea().setText(EMPTY);
+        view.getFacilityField().setText(EMPTY);
+
+        diagTableModel.setDataProvider(null);
+        itemTableModel.setDataProvider(null);
+        infoTableModel.setDataProvider(null);
+    }
+    
     private void reModelToView(RE_Model reModel, int kikanNum) {
+        
+        clearReModelView();
+        view.getFacilityField().setText(facilityName);
         
         // 患者
         String ym = RezeUtil.getInstance().getYMStr(reModel.getBillDate());
@@ -689,10 +865,6 @@ public class RezeptViewer {
             view.getInsNumberField().setText(hoModel.getCertificateNum());
             ten += hoModel.getTen();
             numDays += hoModel.getDays();
-        } else {
-            view.getInsField().setText(EMPTY);
-            view.getInsSymbolField().setText(EMPTY);
-            view.getInsNumberField().setText(EMPTY);
         }
         // 公費
         if (reModel.getKOModelList() != null && !reModel.getKOModelList().isEmpty()) {
@@ -727,13 +899,6 @@ public class RezeptViewer {
                 ten += koModel.getTen();
                 numDays += koModel.getDays();
             }
-        } else {
-            view.getPubIns1Field().setText(EMPTY);
-            view.getPubIns1NumField().setText(EMPTY);
-            view.getPubIns2Field().setText(EMPTY);
-            view.getPubIns2NumField().setText(EMPTY);
-            view.getPubIns3Field().setText(EMPTY);
-            view.getPubIns3NumField().setText(EMPTY);
         }
         
         // 点数、診療日数
@@ -759,16 +924,12 @@ public class RezeptViewer {
                 sb.append(sjModel.getData()).append("\n");
             }
             view.getCommentArea().setText(sb.toString());
-        } else {
-            view.getCommentArea().setText("");
         }
         
         // Info
         if (reModel.getCheckResults() != null) {
             List<CheckResult> results = new ArrayList<>(reModel.getCheckResults());
             infoTableModel.setDataProvider(results);
-        } else {
-            infoTableModel.setDataProvider(null);
         }
     }
     

@@ -14,13 +14,12 @@ import javax.swing.table.AbstractTableModel;
  * @author modified by masuda, Masuda Naika
  */
 public class ListTableModel<T> extends AbstractTableModel {
-    
+
     public static final String COLLECTION_CHANGED = "collectionChanged";
 
     private String[] columnNames;
 
     //private int startNumRows;
-
     private String[] propNames;
 
     private Class[] columnClasses;
@@ -28,7 +27,6 @@ public class ListTableModel<T> extends AbstractTableModel {
     private List<T> dataProvider = new ArrayList<>();
 
     private PropertyChangeSupport boundSupport;
-
 
     public ListTableModel(String[] columnNames, int startNumRows) {
         super();
@@ -57,7 +55,7 @@ public class ListTableModel<T> extends AbstractTableModel {
             boundSupport.removePropertyChangeListener(l);
         }
     }
-    
+
 //masuda^
     public void setObject(int row, T obj) {
         if (dataProvider != null) {
@@ -68,6 +66,7 @@ public class ListTableModel<T> extends AbstractTableModel {
             }
         }
     }
+
     public String getProperty(int col) {
         if (propNames != null && col >= 0 && col < propNames.length) {
             return propNames[col];
@@ -75,16 +74,16 @@ public class ListTableModel<T> extends AbstractTableModel {
         return null;
     }
 //masuda$
-    
+
     @Override
     public int getRowCount() {
 //masuda^   startNumRows, don't care!
         return (dataProvider == null) ? 0 : dataProvider.size();
-/*
-        return (dataProvider != null && dataProvider.size() > startNumRows)
-                ? dataProvider.size()
-                : startNumRows;
-*/
+        /*
+         return (dataProvider != null && dataProvider.size() > startNumRows)
+         ? dataProvider.size()
+         : startNumRows;
+         */
 //masuda$
     }
 
@@ -99,7 +98,7 @@ public class ListTableModel<T> extends AbstractTableModel {
                 ? columnNames[index]
                 : null;
     }
-    
+
     @Override
     public Class getColumnClass(int index) {
         return (columnClasses != null && index < columnClasses.length) ? columnClasses[index]
@@ -110,7 +109,7 @@ public class ListTableModel<T> extends AbstractTableModel {
     public Object getValueAt(int rowIndex, int columnIndex) {
 
         T object = getObject(rowIndex);
-        
+
         if (propNames == null) {
             return (Object) object;
         }
@@ -119,13 +118,16 @@ public class ListTableModel<T> extends AbstractTableModel {
 
             try {
                 String prop = propNames[columnIndex];
-                
+
                 StringBuilder sb = new StringBuilder();
-                if (prop.startsWith("get") || prop.startsWith("is")) {
+                if (prop.endsWith("()")) {
+                    int len = prop.length();
+                    sb.append(prop.substring(0, len - 2));
+                } else if (prop.startsWith("get") || prop.startsWith("is")) {
                     sb.append(prop);
                 } else {
                     sb.append("get");
-                    sb.append(prop.substring(0,1).toUpperCase());
+                    sb.append(prop.substring(0, 1).toUpperCase());
                     sb.append(prop.substring(1));
                 }
                 prop = sb.toString();
@@ -217,7 +219,7 @@ public class ListTableModel<T> extends AbstractTableModel {
     }
 
     public void moveRow(int from, int to) {
-        if (! isValidRow(from) || ! isValidRow(to)) {
+        if (!isValidRow(from) || !isValidRow(to)) {
             return;
         }
         if (from == to) {
@@ -237,30 +239,30 @@ public class ListTableModel<T> extends AbstractTableModel {
     }
 
     public void setColumnName(String columnName, int col) {
-        if (col >=0 && col < columnNames.length) {
+        if (col >= 0 && col < columnNames.length) {
             columnNames[col] = columnName;
             this.fireTableStructureChanged();
         }
     }
 
     public void setColumnNames(String[] newNames) {
-        if (newNames!=null) {
+        if (newNames != null) {
             this.columnNames = newNames;
             this.fireTableStructureChanged();
         }
     }
 
     public void setProperty(String prop, int col) {
-        if (propNames != null && col >=0 && col < propNames.length) {
+        if (propNames != null && col >= 0 && col < propNames.length) {
             propNames[col] = prop;
-            if(dataProvider != null) {
+            if (dataProvider != null) {
                 this.fireTableDataChanged();
             }
         }
     }
 
     public boolean isValidRow(int row) {
-        return (dataProvider != null 
+        return (dataProvider != null
                 && (!dataProvider.isEmpty()) && row >= 0 && row < dataProvider.size());
     }
 }

@@ -263,7 +263,9 @@ public abstract class AbstractStampEditor implements StampEditorConst {
                 || code.startsWith(EDITABLE_COMMENT_83)
                 || code.startsWith(EDITABLE_COMMENT_0083)
                 || code.startsWith(EDITABLE_COMMENT_85)
-                || code.startsWith(EDITABLE_COMMENT_0085));
+                || code.startsWith(EDITABLE_COMMENT_0085)
+                || code.startsWith(EDITABLE_COMMENT_86)
+                || code.startsWith(EDITABLE_COMMENT_0086));
     }
 
     //---------------------------------------

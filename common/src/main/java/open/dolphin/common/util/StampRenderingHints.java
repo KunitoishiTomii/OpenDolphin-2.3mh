@@ -62,9 +62,15 @@ public class StampRenderingHints {
     }
     
     public String build84Name(ClaimItem item) {
+        
+        String number = item.getNumber();
+        if (number == null) {
+            return item.getName();
+        }
+        
         try {
             char[] chars = item.getName().toCharArray();
-            String[] numTokens = item.getNumber().split("-");
+            String[] numTokens = number.split("-");
             StringBuilder sb = new StringBuilder();
             boolean skip = false;
             int index = 0;
@@ -85,7 +91,7 @@ public class StampRenderingHints {
         } catch (Exception ex) {
         }
         
-        return item.getName() + " " + item.getNumber();
+        return item.getName() + " " + number;
     }
     
     public String getMedTypeAndCode(BundleDolphin model) {

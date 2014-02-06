@@ -41,10 +41,14 @@ public class UserServiceBean {
                     em.createQuery(QUERY_USER_BY_UID)
                     .setParameter(UID, userName)
                     .getSingleResult();
-            if (user.getPassword().equals(password)) {
+            if (user.getPassword().equals(password) && user.getFailCount() < 5) {
                 ret = true;
+                user.setFailCount(0);
+            } else {
+                int failCount = user.getFailCount();
+                user.setFailCount(failCount + 1);
             }
-
+            
         } catch (Exception e) {
         }
 

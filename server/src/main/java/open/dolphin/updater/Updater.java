@@ -17,33 +17,36 @@ public class Updater {
     private static final String SQL = 
             "select count(m) from MsdUpdaterModel m where m.moduleName = :moduleName and m.versionDate = :verDate";
     
-    private static final AbstractUpdaterModule[] modules = new AbstractUpdaterModule[]{
-        new AddInitialUser(),   // 初期ユーザ―登録
-        new DbSchemaUpdater(),  // Database Schemaを変更
-        new LetterConverter(),  // Letterを新フォーマットに変換
-        new PvtStateUpdater(),  // 今日の診察終了PvtStateを変換
-        new RoutineMedUpdater(),// RoutineMed修正
+    private static final Class[] moduleClasses = new Class[] {
+        AddInitialUser.class,   // 初期ユーザ―登録
+        DbSchemaUpdater.class,  // Database Schemaを変更
+        LetterConverter.class,  // Letterを新フォーマットに変換
+        PvtStateUpdater.class,  // 今日の診察終了PvtStateを変換
+        RoutineMedUpdater.class,// RoutineMed修正
     };
 
     @PersistenceContext
     private EntityManager em;
     
     public void start() {
-
-        for (AbstractUpdaterModule module : modules) {
-            
-            String moduleName = module.getModuleName();
-            Date versionDate = module.getVersionDate();
-            long count = (Long) em.createQuery(SQL)
-                    .setParameter("moduleName", moduleName)
-                    .setParameter("verDate", versionDate)
-                    .getSingleResult();
-            if (count == 0) {
-                module.setEntityManager(em);
-                MsdUpdaterModel ret = module.start();
-                if (ret != null) {
-                    em.persist(ret);
+        
+        for (Class clazz : moduleClasses) {
+            try {
+                AbstractUpdaterModule module = (AbstractUpdaterModule) clazz.newInstance();
+                String moduleName = module.getModuleName();
+                Date versionDate = module.getVersionDate();
+                long count = (Long) em.createQuery(SQL)
+                        .setParameter("moduleName", moduleName)
+                        .setParameter("verDate", versionDate)
+                        .getSingleResult();
+                if (count == 0) {
+                    module.setEntityManager(em);
+                    MsdUpdaterModel ret = module.start();
+                    if (ret != null) {
+                        em.persist(ret);
+                    }
                 }
+            } catch (InstantiationException | IllegalAccessException ex) {
             }
         }
     }

@@ -1312,4 +1312,56 @@ public class MasudaServiceBean {
         }
         return -1;
     }
+    
+    // 指定月の医師と担当患者のリストを取得する
+    public List<DrPatientIdModel> getDrPatientIdModelList(String ym) {
+        
+        final String sql = "from DocumentModel d"
+                + " where d.started >= :from and d.started < :to"
+                + " and d.status='F'";
+        
+        try {
+            SimpleDateFormat frmt = new SimpleDateFormat("yyyyMMdd");
+            GregorianCalendar gc = new GregorianCalendar();
+            gc.setTime(frmt.parse(ym + "01"));
+            Date from = gc.getTime();
+            gc.add(GregorianCalendar.MONTH, 1);
+            Date to = gc.getTime();
+            
+            // 文書を取得する
+            List<DocumentModel> docList = em.createQuery(sql)
+                    .setParameter("from", from)
+                    .setParameter("to", to)
+                    .getResultList();
+            
+            // 医師ごとに分類する
+            Map<UserModel, Set<String>> map = new HashMap<>();
+            for (DocumentModel docModel : docList) {
+                UserModel user = docModel.getCreator();
+                Set<String> set = map.get(user);
+                if (set == null) {
+                    set = new HashSet<>();
+                    map.put(user, set);
+                }
+                String ptId = docModel.getKarteBean().getPatientModel().getPatientId();
+                set.add(ptId);
+            }
+            
+            // 返却モデルを作成する
+            List<DrPatientIdModel> ret = new ArrayList<>();
+            for (Map.Entry<UserModel, Set<String>> entry : map.entrySet()) {
+                DrPatientIdModel model = new DrPatientIdModel();
+                model.setUserModel(entry.getKey());
+                model.setPatientIdList(new ArrayList<>(entry.getValue()));
+                ret.add(model);
+            }
+            map.clear();
+            
+            return ret;
+            
+        } catch (java.text.ParseException ex) {
+        }
+        
+        return null;
+    }
 }

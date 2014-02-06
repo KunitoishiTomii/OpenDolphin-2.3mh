@@ -7,6 +7,7 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -37,6 +38,8 @@ public class RezeptView extends JPanel {
     private JButton checkBtn;
     private JButton prevBtn;
     private JButton nextBtn;
+    private JComboBox drCombo;
+    private JButton printBtn;
     
     private JTextField insTypeField;
     private JTextField pubIns1Field;
@@ -51,6 +54,7 @@ public class RezeptView extends JPanel {
     private JTextField insSymbolField;
     private JTextField insNumberField;
     private JButton refreshBtn;
+    private JTextField facilityField;
     
     private JTextField ptIdField;
     private JTextField billYmField;
@@ -106,6 +110,13 @@ public class RezeptView extends JPanel {
         btnPanel.add(prevBtn);
         btnPanel.add(nextBtn);
         leftPanel.add(btnPanel);
+        JPanel filterPanel = createXBoxPanel();
+        filterPanel.add(new JLabel("担当医："));
+        drCombo = new JComboBox();
+        filterPanel.add(drCombo);
+        printBtn = new JButton("印刷");
+        filterPanel.add(printBtn);
+        leftPanel.add(filterPanel);
         leftPanel.add(Box.createVerticalStrut(5));
         
         tabbedPane = new JTabbedPane(JTabbedPane.BOTTOM);
@@ -198,9 +209,8 @@ public class RezeptView extends JPanel {
         north.add(p3);
         
         JPanel p4 = createYBoxPanel();
-        JTextField facilityFld = createTextField(20);
-        facilityFld.setText(Project.getUserModel().getFacilityModel().getFacilityName());
-        p4.add(facilityFld);
+        facilityField = createTextField(20);
+        p4.add(facilityField);
         insTypeField= createTextField(20);
         p4.add(insTypeField);
         JPanel p42 = createXBoxPanel();
@@ -395,5 +405,14 @@ public class RezeptView extends JPanel {
     }
     public JButton getRefreshBtn() {
         return refreshBtn;
+    }
+    public JComboBox getDrCombo() {
+        return drCombo;
+    }
+    public JButton getPrintBtn() {
+        return printBtn;
+    }
+    public JTextField getFacilityField() {
+        return facilityField;
     }
 }

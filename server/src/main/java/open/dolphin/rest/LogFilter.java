@@ -64,6 +64,7 @@ public class LogFilter implements Filter {
         boolean authentication = password.equals(userMap.get(userName));
         
         if (!authentication) {
+            userMap.remove(userName);
             authentication = userService.authenticate(userName, password);
             if (!authentication) {
                 HttpServletResponse res = (HttpServletResponse) response;
