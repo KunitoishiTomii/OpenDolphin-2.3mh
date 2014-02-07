@@ -1,6 +1,7 @@
 package open.dolphin.session;
 
 import java.util.List;
+import java.util.logging.Logger;
 import javax.ejb.Stateless;
 import javax.persistence.EntityExistsException;
 import javax.persistence.EntityManager;
@@ -14,6 +15,8 @@ import open.dolphin.infomodel.*;
  */
 @Stateless
 public class UserServiceBean {
+    
+    private static final Logger logger = Logger.getLogger(UserServiceBean.class.getName());
 
     private static final String UID = "uid";
     private static final String FID = "fid";
@@ -45,8 +48,10 @@ public class UserServiceBean {
                 ret = true;
                 user.setFailCount(0);
             } else {
-                int failCount = user.getFailCount();
-                user.setFailCount(failCount + 1);
+                int failCount = user.getFailCount() + 1;
+                user.setFailCount(failCount);
+                String msg = String.format("Authentication Failed: user=%s, failCount=%d", userName, failCount);
+                logger.warning(msg);
             }
             
         } catch (Exception e) {
