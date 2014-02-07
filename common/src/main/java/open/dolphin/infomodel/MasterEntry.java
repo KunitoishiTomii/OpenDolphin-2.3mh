@@ -28,14 +28,6 @@ import java.util.GregorianCalendar;
  * @author  Minagawa,Kazushi
  */
 public class MasterEntry implements Serializable, Comparable {
-
-    protected static String refDate;
-    
-    static {
-        GregorianCalendar gc = new GregorianCalendar();
-        SimpleDateFormat f = new SimpleDateFormat("yyyyMMdd");
-        refDate = f.format(gc.getTime()).toString();
-    }
     
     private String code;
     
@@ -153,6 +145,10 @@ public class MasterEntry implements Serializable, Comparable {
     }
     
     protected int getUseState(String startDate, String endDate) {
+        
+        GregorianCalendar gc = new GregorianCalendar();
+        SimpleDateFormat f = new SimpleDateFormat("yyyyMMdd");
+        String refDate = f.format(gc.getTime());
         
         // 有効期限前
         if (startDate != null && refDate.compareTo(startDate) < 0) {
