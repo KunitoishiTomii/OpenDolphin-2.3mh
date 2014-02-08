@@ -429,24 +429,22 @@ public final class SqlMiscDao extends SqlDaoBean {
         String sql = sb.toString();
 
         List<String[]> valuesList = executeStatement(sql);
-        ArrayList<TensuMaster> tmList = new ArrayList();
+        List<TensuMaster> tmList = new ArrayList();
         for (String[] values : valuesList) {
             TensuMaster tm = getTensuMaster(values);
             tmList.add(tm);
         }
-        filterTensuMaster(tmList);
-        
-        return tmList;
+       
+        return filterTensuMaster(tmList);
     }
     
     // 古いTensuMasterを振るい落とす
-    public void filterTensuMaster(ArrayList<TensuMaster> list) {
+    public List<TensuMaster> filterTensuMaster(List<TensuMaster> list) {
         
         int todayYmd = MMLDate.getTodayInt();
         Map<String, TensuMaster> map = new HashMap<>();
         
-        for (Iterator<TensuMaster> itr = list.iterator(); itr.hasNext();) {
-            TensuMaster test = itr.next();
+        for (TensuMaster test : list) {
             String srycd = test.getSrycd();
             TensuMaster exist = map.get(srycd);
             if (exist == null) {
@@ -457,14 +455,14 @@ public final class SqlMiscDao extends SqlDaoBean {
                 int testEdYmd = Integer.parseInt(test.getYukoedymd());
                 if (testStYmd <= todayYmd && testEdYmd > existEdYmd) {
                     map.put(srycd, test);
-                } else {
-                    itr.remove();
                 }
             }
         }
-        list.trimToSize();
         
+        List<TensuMaster> ret = new ArrayList<>(map.values());
         map.clear();
+        
+        return ret;
     }
     
     // 傷病名コードからまとめてDiseaseEntryを取得
