@@ -1244,20 +1244,40 @@ public class MasudaServiceBean {
     
     public List<IndicationModel> getIndicationList(String fid, List<String> srycds) {
         
-        final String sql = "from IndicationModel i where i.fid = :fid and i.srycd in (:srycds)";
+        List<IndicationModel> list;
         
-        List<IndicationModel> list = (List<IndicationModel>)
-                em.createQuery(sql)
-                .setParameter("fid", fid)
-                .setParameter("srycds", srycds)
-                .getResultList();
-        
+        if (!srycds.isEmpty()) {
+            final String sql = "from IndicationModel i where i.fid = :fid and i.srycd in (:srycds)";
+            list = (List<IndicationModel>) em.createQuery(sql)
+                    .setParameter("fid", fid)
+                    .setParameter("srycds", srycds)
+                    .getResultList();
+        } else {
+            final String sql = "from IndicationModel i where i.fid = :fid";
+            list = (List<IndicationModel>) em.createQuery(sql)
+                    .setParameter("fid", fid)
+                    .getResultList();
+        }
         // lazy fetch
         for (IndicationModel model : list) {
             model.getIndicationItems().size();
         }
-        
+
         return list;
+    }
+    
+    public int importIndicationModels(String fid, List<IndicationModel> list) {
+        
+        // 既存のものを消す
+        final String sql1 ="delete from IndicationModel i where i.fid = :fid";
+        em.createQuery(sql1).executeUpdate();
+        
+        // persistする
+        for (IndicationModel model : list) {
+            em.persist(model);
+        }
+        
+        return list.size();
     }
     
     public IndicationModel getIndicationModel(String fid, String srycd) {
