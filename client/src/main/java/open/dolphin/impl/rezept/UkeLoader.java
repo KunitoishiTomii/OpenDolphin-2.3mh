@@ -53,6 +53,7 @@ public class UkeLoader {
                     // tbl_recedenにIRは記録されていないので作成する
                     IR_Model irModel = new IR_Model();
                     irModel.setShinsaKikan(teisyutusaki);
+                    irModel.setNyugaikbn(nyugaikbn);
                     irModel.setTenTable(1);     // 医科
                     
                     LineParser parser = new LineParser();

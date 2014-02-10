@@ -737,6 +737,25 @@ public class MasudaDelegater extends BusinessDelegater {
         response.close();
     }
     
+    public void importIndicationModels(List<IndicationModel> list) throws Exception {
+        
+        String path = RES_BASE + "indication/import";
+        
+        TypeReference typeRef = new TypeReference<List<IndicationModel>>(){};
+        Entity entity = toJsonEntity(list, typeRef);
+
+        Response response = getWebTarget()
+                .path(path)
+                .request(MEDIATYPE_TEXT_UTF8)
+                .post(entity);
+
+        int status = checkHttpStatus(response);
+        String ret = response.readEntity(String.class);
+        debug(status, ret);
+        
+        response.close();
+    }
+    
     public void updateIndicationModel(IndicationModel model) throws Exception {
         
         String path = RES_BASE + "indication";

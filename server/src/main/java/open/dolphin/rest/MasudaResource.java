@@ -579,6 +579,21 @@ public class MasudaResource extends AbstractResource {
     }
     
     @POST
+    @Path("indication/import")
+    @Produces(MEDIATYPE_TEXT_UTF8)
+    public Response importIndicationModels(String json) {
+        
+        String fid = getRemoteFacility();
+        TypeReference typeRef = new TypeReference<List<IndicationModel>>(){};
+        List<IndicationModel> list = (List<IndicationModel>) 
+                getConverter().fromJson(json, typeRef);
+        
+        int cnt = masudaServiceBean.importIndicationModels(fid, list);
+        
+        return Response.ok(String.valueOf(cnt)).build();
+    }
+    
+    @POST
     @Path("indication/list")
     @Produces(MEDIATYPE_TEXT_UTF8)
     public Response addIndicationModels(String json) {
