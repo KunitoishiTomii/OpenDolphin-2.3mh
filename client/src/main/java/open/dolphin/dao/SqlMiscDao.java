@@ -173,8 +173,8 @@ public final class SqlMiscDao extends SqlDaoBean {
 
         // SQL文を作成
         sb.append("select drugcd, drugcd2, TI.syojyoucd, syojyou ");
-        sb.append("from tbl_interact TI inner join tbl_sskijyo TS on TI.syojyoucd = TS.syojyoucd ");
-        sb.append("where (drugcd in (");
+        sb.append("from tbl_interact TI, tbl_sskijyo TS where TI.syojyoucd = TS.syojyoucd ");
+        sb.append("and (drugcd in (");
         sb.append(getCodes(drug1));
         sb.append(") and drugcd2 in (");
         sb.append(getCodes(drug2));
@@ -421,36 +421,50 @@ public final class SqlMiscDao extends SqlDaoBean {
             return Collections.emptyList();
         }
 
-        int todayInt = MMLDate.getTodayInt();
         int hospNum = getHospNum();
-        
         StringBuilder sb = new StringBuilder();
         sb.append(SELECT_TBL_TENSU);
         sb.append("where hospnum = ").append(String.valueOf(hospNum));
         sb.append(" and srycd in (").append(getCodes(srycdList)).append(")");
         String sql = sb.toString();
 
-        HashMap<Integer, TensuMaster> tmMap = new HashMap<>();
-        
         List<String[]> valuesList = executeStatement(sql);
+        List<TensuMaster> tmList = new ArrayList();
         for (String[] values : valuesList) {
             TensuMaster tm = getTensuMaster(values);
-            // HashMapに登録していく
-            int srycd = Integer.valueOf(tm.getSrycd());
-            TensuMaster old = tmMap.get(srycd);
-            if (old == null) {
-                tmMap.put(srycd, tm);
+            tmList.add(tm);
+        }
+       
+        return filterTensuMaster(tmList);
+    }
+    
+    // 古いTensuMasterを振るい落とす
+    public List<TensuMaster> filterTensuMaster(List<TensuMaster> list) {
+        
+        int todayYmd = MMLDate.getTodayInt();
+        Map<String, TensuMaster> map = new HashMap<>();
+        
+        for (TensuMaster test : list) {
+            String srycd = test.getSrycd();
+            TensuMaster exist = map.get(srycd);
+            if (exist == null) {
+                map.put(srycd, test);
             } else {
-                // 有効期限が新しければ更新する
-                if (Integer.parseInt(tm.getYukostymd()) <= todayInt
-                        && Integer.parseInt(tm.getYukoedymd()) > Integer.parseInt(old.getYukoedymd())) {
-                    tmMap.put(srycd, tm);
+                int existEdYmd = Integer.parseInt(exist.getYukoedymd());
+                int testStYmd = Integer.parseInt(test.getYukostymd());
+                int testEdYmd = Integer.parseInt(test.getYukoedymd());
+                if (testStYmd <= todayYmd && testEdYmd > existEdYmd) {
+                    map.put(srycd, test);
                 }
             }
         }
-        return new ArrayList<>(tmMap.values());
+        
+        List<TensuMaster> ret = new ArrayList<>(map.values());
+        map.clear();
+        
+        return ret;
     }
-
+    
     // 傷病名コードからまとめてDiseaseEntryを取得
     public List<DiseaseEntry> getDiseaseEntries(Collection<String> srycdList){
         
