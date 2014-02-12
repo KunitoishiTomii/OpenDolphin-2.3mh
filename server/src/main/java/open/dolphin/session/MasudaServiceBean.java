@@ -1268,15 +1268,23 @@ public class MasudaServiceBean {
     
     public int importIndicationModels(String fid, List<IndicationModel> list) {
         
+        final String sql = "select i.id from IndicationModel i where i.fid = :fid";
+ 
         // 既存のものを消す
-        final String sql1 = "delete from IndicationModel i where i.fid = :fid";
-        em.createQuery(sql1).setParameter("fid", fid).executeUpdate();
+        List<Long> ids = em.createQuery(sql)
+                .setParameter("fid", fid)
+                .getResultList();
+        for (long id : ids) {
+            IndicationModel exist = em.find(IndicationModel.class, id);
+            em.remove(exist);
+        }
+        em.flush();
 
         // persistする
         for (IndicationModel model : list) {
             em.persist(model);
         }
-        
+
         return list.size();
     }
     

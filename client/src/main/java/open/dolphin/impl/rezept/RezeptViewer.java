@@ -634,6 +634,7 @@ public class RezeptViewer {
                 public void actionPerformed(ActionEvent e) {
                     IndicationExporter exporter = new IndicationExporter(RezeptViewer.this);
                     exporter.importFromFile();
+                    indicationMap.clear();
                 }
             });
             pMenu.add(item1);

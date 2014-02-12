@@ -6,11 +6,14 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import javax.swing.BorderFactory;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.border.Border;
 import javax.swing.plaf.basic.BasicTableUI;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellRenderer;
 import open.dolphin.client.ClientContext;
 
 
@@ -53,8 +56,8 @@ public class StripeTableCellRenderer extends DefaultTableCellRenderer {
 
     // このレンダラでレンダリングするクラスを指定する
     public void setDefaultRenderer() {
-        ((JComponent) table.getDefaultRenderer(Boolean.class)).setOpaque(false);
-        table.setDefaultRenderer(Object.class, this);   // 含むBoolean, String
+        table.setDefaultRenderer(Boolean.class, new StripeBooleanRenderer());
+        table.setDefaultRenderer(Object.class, this);
         table.setDefaultRenderer(Integer.class, this);
         table.setDefaultRenderer(Float.class, this);
     }
@@ -70,10 +73,7 @@ public class StripeTableCellRenderer extends DefaultTableCellRenderer {
         setOpaque(true);
 
         // valueの種類に応じてアライメントとボーダーを設定する
-        if (value instanceof Boolean) {
-            //setHorizontalAlignment(CENTER);
-            setBorder(null);
-        } else if (value instanceof Number) {
+        if (value instanceof Number) {
             setHorizontalAlignment(RIGHT);
             setBorder(rtPadding);
         } else {
@@ -118,6 +118,35 @@ public class StripeTableCellRenderer extends DefaultTableCellRenderer {
                 currentRow++;
             }
             super.paint(g, c);
+        }
+    }
+    
+    
+    private static class StripeBooleanRenderer extends JCheckBox implements TableCellRenderer, javax.swing.plaf.UIResource {
+
+        public StripeBooleanRenderer() {
+            super();
+            setHorizontalAlignment(JLabel.CENTER);
+            setBorder(null);
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value,
+                boolean isSelected, boolean hasFocus, int row, int column) {
+            
+            if (isSelected) {
+                setForeground(table.getSelectionForeground());
+                setBackground(table.getSelectionBackground());
+                setOpaque(true);
+            } else {
+                setForeground(table.getForeground());
+                setBackground(table.getBackground());
+                setOpaque(false);
+            }
+            
+            setSelected((value != null && ((Boolean) value).booleanValue()));
+
+            return this;
         }
     }
 }
