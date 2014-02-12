@@ -159,6 +159,7 @@ public class DiagnosisFilter extends AbstractCheckFilter {
         Deque<Boolean> stack = new ArrayDeque();
         List<String> tokens = LexicalAnalyzer.toPostFixNotation(keyword);
 
+        boolean dobon = false;
         for (String token : tokens) {
             switch (token) {
                 case AND_OPERATOR:
@@ -178,6 +179,7 @@ public class DiagnosisFilter extends AbstractCheckFilter {
                             if (b3) {
                                 // ドボン
                                 syModel.setPass(false);
+                                dobon = true;
                             }
                         } else {
                             if (b3) {
@@ -190,7 +192,7 @@ public class DiagnosisFilter extends AbstractCheckFilter {
             }
         }
 
-        boolean pass = stack.pop();
+        boolean pass = !dobon && stack.pop();
         if (!stack.isEmpty()) {
             System.out.println("DiagnosisFilter lexicalAnalyze: stack is not empty");
         }
