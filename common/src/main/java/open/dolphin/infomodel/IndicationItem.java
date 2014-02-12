@@ -9,6 +9,11 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlIDREF;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * 適応症モデル子さん
@@ -17,6 +22,8 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "msd_indication_item")
+@XmlRootElement
+@XmlAccessorType(XmlAccessType.FIELD)
 public class IndicationItem implements Serializable {
     
     @Id
@@ -33,6 +40,8 @@ public class IndicationItem implements Serializable {
     @JsonBackReference // bi-directional references
     @ManyToOne
     @JoinColumn(name="indication_id", nullable=false)
+    @XmlIDREF
+    @XmlElement(name = "indication_id")
     private IndicationModel indication;
     
     public IndicationItem() {
