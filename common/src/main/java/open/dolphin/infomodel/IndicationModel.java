@@ -12,6 +12,12 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlID;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 import org.hibernate.annotations.BatchSize;
 
 /**
@@ -21,6 +27,8 @@ import org.hibernate.annotations.BatchSize;
  */
 @Entity
 @Table(name = "msd_indication")
+@XmlRootElement
+@XmlAccessorType(XmlAccessType.FIELD)
 public class IndicationModel implements Serializable {
     
     @Id
@@ -43,13 +51,20 @@ public class IndicationModel implements Serializable {
     @JsonDeserialize(contentAs = IndicationItem.class)
     @BatchSize(size = 20)
     @OneToMany(mappedBy = "indication", cascade = CascadeType.ALL, orphanRemoval = true)
+    @XmlElement(name = "items")
     private List<IndicationItem> items;
     
+    @XmlTransient
     private Boolean isLock;   // てぬき排他処理
 
     public IndicationModel() {
         outPatient = true;
         admission = true;
+    }
+    
+    @XmlID
+    public String getStringId() {
+        return String.valueOf(id);
     }
     
     public void setId(long id) {

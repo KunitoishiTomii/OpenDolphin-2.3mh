@@ -12,28 +12,17 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
-import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
@@ -50,7 +39,6 @@ import open.dolphin.client.BlockGlass;
 import open.dolphin.client.ChartEventListener;
 import open.dolphin.client.ClientContext;
 import open.dolphin.client.Dolphin;
-import open.dolphin.common.util.BeanUtils;
 import open.dolphin.dao.SqlMiscDao;
 import open.dolphin.delegater.MasudaDelegater;
 import open.dolphin.helper.ComponentMemory;
@@ -439,8 +427,12 @@ public class RezeptViewer {
         return indicationMap;
     }
     
-    public int getReModelCount() {
-        return reModelCount;
+    public RezeptView getRezeptView() {
+        return view;
+    }
+    
+    public BlockGlass getBlockGlass() {
+        return blockGlass;
     }
     
     private void checkSingleReze() {
@@ -625,98 +617,29 @@ public class RezeptViewer {
             item2.addActionListener(listener);
             
         } else {
-            JMenuItem item0 = new JMenuItem("エクスポート");
+            JMenuItem item0 = new JMenuItem("適応症XML出力");
             item0.addActionListener(new ActionListener(){
 
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    exportToFile();
+                    IndicationExporter exporter = new IndicationExporter(RezeptViewer.this);
+                    exporter.exportToFile();
                 }
             });
             pMenu.add(item0);
-            JMenuItem item1 = new JMenuItem("インポート");
-            item0.addActionListener(new ActionListener(){
+            JMenuItem item1 = new JMenuItem("適応症XML読込");
+            item1.addActionListener(new ActionListener(){
 
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    importFromFile();
+                    IndicationExporter exporter = new IndicationExporter(RezeptViewer.this);
+                    exporter.importFromFile();
                 }
             });
             pMenu.add(item1);
         }
 
         pMenu.show(view.getImportBtn(), 0, 0);
-    }
-    
-    private void exportToFile() {
-
-        JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setDialogType(JFileChooser.SAVE_DIALOG);
-        fileChooser.setDialogTitle("適応症データエクスポート");
-        File current = fileChooser.getCurrentDirectory();
-        fileChooser.setSelectedFile(new File(current.getPath(), "Indication.xml"));
-        int selected = fileChooser.showSaveDialog(view);
-
-        if (selected == JFileChooser.APPROVE_OPTION) {
-            final Path path = fileChooser.getSelectedFile().toPath();
-            if (!Files.exists(path) || overwriteConfirmed(path)) {
-                blockGlass.setText("適応症データをエクスポート中です。");
-                blockGlass.block();
-
-                SwingWorker worker = new SwingWorker<String, Void>() {
-
-                    @Override
-                    protected String doInBackground() throws Exception {
-                        List<String> srycds = Collections.emptyList();
-                        List<IndicationModel> list = MasudaDelegater.getInstance().getIndicationList(srycds);
-
-                        String xml = BeanUtils.beanToXml(list);
-                        return xml;
-                    }
-
-                    @Override
-                    protected void done() {
-                        try {
-                            String xml = get();
-                            Charset cs = Charset.forName("UTF-8");
-                            try (BufferedWriter writer = Files.newBufferedWriter(path, cs)) {
-                                writer.write(xml);
-                                writer.close();
-                            } catch (IOException ex) {
-                            }
-                        } catch (InterruptedException | ExecutionException ex) {
-                        }
-
-                        blockGlass.unblock();
-                    }
-                };
-                worker.execute();
-            }
-        }
-        
-    }
-    
-    /**
-     * ファイル上書き確認ダイアログを表示する。
-     * @param file 上書き対象ファイル
-     * @return 上書きOKが指示されたらtrue
-     */
-    private boolean overwriteConfirmed(Path path){
-        
-        String title = "上書き確認";
-        String message = "既存のファイル " + path.getFileName().toString() + "\n"
-                        +"を上書きしようとしています。続けますか？";
-
-        int confirm = JOptionPane.showConfirmDialog(
-                view, message, title,
-                JOptionPane.OK_CANCEL_OPTION,
-                JOptionPane.WARNING_MESSAGE );
-
-        return confirm == JOptionPane.OK_OPTION;
-    }
-    
-    private void importFromFile() {
-        // not yet
     }
     
     // ORCAからレセ電データを取得し、表示する
