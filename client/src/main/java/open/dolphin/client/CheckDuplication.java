@@ -58,17 +58,15 @@ public class CheckDuplication {
             return false;
         } else {
             StringBuilder sb = new StringBuilder();
-            sb.append("<html>");
             boolean first = true;
             for (ClaimItem ci : dupItems) {
                 if (!first) {
-                    sb.append("<br>");
+                    sb.append("\n");
                 } else {
                     first = false;
                 }
                 sb.append(ci.getName()).append("は重複しています。");
             }
-            sb.append("</html>");
             
             String msg = sb.toString();
             Toolkit.getDefaultToolkit().beep();
