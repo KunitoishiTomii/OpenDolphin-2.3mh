@@ -3,7 +3,6 @@ package open.dolphin.delegater;
 import java.io.IOException;
 import javax.ws.rs.client.ClientRequestContext;
 import javax.ws.rs.client.ClientRequestFilter;
-import javax.ws.rs.core.MultivaluedMap;
 
 /**
  * DolphinAuthFilter
@@ -36,8 +35,7 @@ public class DolphinAuthFilter implements ClientRequestFilter {
 
     @Override
     public void filter(ClientRequestContext ctx) throws IOException {
-        MultivaluedMap<String, Object> map = ctx.getHeaders();
-        map.add(USER_NAME, userName);
-        map.add(PASSWORD, password);
+        ctx.getHeaders().add(USER_NAME, userName);
+        ctx.getHeaders().add(PASSWORD, password);
     }
 }
