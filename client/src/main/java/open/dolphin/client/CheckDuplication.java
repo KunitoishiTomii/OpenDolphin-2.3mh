@@ -55,7 +55,7 @@ public class CheckDuplication {
         }
         
         if (dupItems.isEmpty()) {
-            return true;
+            return false;
         } else {
             StringBuilder sb = new StringBuilder();
             sb.append("<html>");
