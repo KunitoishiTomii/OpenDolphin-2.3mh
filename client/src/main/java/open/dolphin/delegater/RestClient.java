@@ -5,6 +5,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.concurrent.TimeUnit;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
@@ -15,14 +16,9 @@ import javax.ws.rs.client.WebTarget;
 import open.dolphin.project.Project;
 import open.dolphin.setting.MiscSettingPanel;
 import open.dolphin.util.HashUtil;
-import org.apache.http.params.HttpConnectionParams;
-import org.apache.http.params.HttpParams;
 import org.glassfish.jersey.client.ClientProperties;
-import org.glassfish.jersey.client.JerseyClient;
 import org.glassfish.jersey.client.JerseyClientBuilder;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
-import org.jboss.resteasy.client.jaxrs.engines.ApacheHttpClient4Engine;
 
 /**
  * RestClient
@@ -128,33 +124,31 @@ public class RestClient {
     // JerseyClientを作成する
     private Client createJerseyClient(SSLContext ssl, HostnameVerifier verifier, boolean enableTimeout) {
         
-        JerseyClient jerseyClient = (ssl != null && verifier != null)
-                ? new JerseyClientBuilder().sslContext(ssl).hostnameVerifier(verifier).build()
-                : new JerseyClientBuilder().build();
+        JerseyClientBuilder builder = new JerseyClientBuilder();
         
-        // read timeoutを設定する
+        if (ssl != null && verifier != null) {
+            builder = builder.sslContext(ssl).hostnameVerifier(verifier);
+        }
         if (enableTimeout) {
-            jerseyClient.getConfiguration().property(ClientProperties.READ_TIMEOUT, TIMEOUT_IN_MILLISEC);
+            builder.getConfiguration().property(ClientProperties.READ_TIMEOUT, TIMEOUT_IN_MILLISEC);
         }
         
-        return jerseyClient;
+        return builder.build();
     }
     
     // ResteasyClientを作成する
     private Client createResteasyClient(SSLContext ssl, HostnameVerifier verifier, boolean enableTimeout) {
         
-        ResteasyClient resteasyClient = (ssl != null && verifier != null)
-                ? new ResteasyClientBuilder().sslContext(ssl).hostnameVerifier(verifier).build()
-                : new ResteasyClientBuilder().build();
+        ResteasyClientBuilder builder = new ResteasyClientBuilder();
         
-        // read timeoutを設定する、めんどくちゃ
-        if (enableTimeout && resteasyClient.httpEngine() instanceof ApacheHttpClient4Engine) {
-            ApacheHttpClient4Engine engine = (ApacheHttpClient4Engine) resteasyClient.httpEngine();
-            HttpParams params = engine.getHttpClient().getParams();
-            HttpConnectionParams.setConnectionTimeout(params, TIMEOUT_IN_MILLISEC);
+        if (ssl != null && verifier != null) {
+            builder = builder.sslContext(ssl).hostnameVerifier(verifier);
         }
-
-        return resteasyClient;
+        if (enableTimeout) {
+            builder = builder.socketTimeout(TIMEOUT_IN_MILLISEC, TimeUnit.MILLISECONDS);
+        }
+        
+        return builder.build();
     }
 
     private static class OreOreHostnameVerifier implements HostnameVerifier {
