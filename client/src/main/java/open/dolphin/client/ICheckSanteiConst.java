@@ -115,6 +115,12 @@ public interface ICheckSanteiConst {
     public static final int srycd_HoumounShinsatsuJikan  = 114001470; // 在宅患者訪問診療料（診療時間）加算
     public static final int srycd_Oufuku_Jikan_2gou      = 114002970; // 往診往復時間加算（２号地域）
     
+    // 時間外コメント　CLAIM送信できませんでした o..TZ
+    public static final int srycd_Jikangai_Comment      = 840000028;    // 時間外　　　月　　日　　時　　分
+    public static final int srycd_Kyujitsu_Comment      = 840000030;    // 休日　　　月　　日
+    public static final int srycd_Shinya_Comment        = 840000031;    // 深夜　　　月　　日　　時　　分
+    public static final int srycd_JikanDayHrMin_Comment = 840000115;   // 日　　時　　分
+
     // 施設基準
     public enum Shienshin {
         NON_SHIENSHIN, SHIENSHIN,

@@ -6,7 +6,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import javax.swing.*;
@@ -71,7 +73,7 @@ public class MakeBaseChargeStamp extends CheckSantei {
     private JRadioButton rb_houmonShinsatsu;
     private JCheckBox cb_douitsu;
     private JLabel lbl_shienshin;
-
+    
     // 往診診察時間コンボボックス
     private static final String[] timeItem = new String[]{
         "<60", "70", "80", "90",
@@ -81,6 +83,8 @@ public class MakeBaseChargeStamp extends CheckSantei {
     
     public static final String BCS_TITLE_IN = "基本料(院内)";
     public static final String BCS_TITLE_OUT = "基本料(院外)";
+    
+    private DocInfoModel docInfo;
     
     // EditorFrameのwizardボタンを押したときはここから入る
     public final void enter(KarteEditor editor) {
@@ -186,6 +190,11 @@ public class MakeBaseChargeStamp extends CheckSantei {
         srycdList.add(srycdFrmt.format(srycd_Yakuzaijouhou));
         srycdList.add(srycdFrmt.format(srycd_Techoukisai));
         srycdList.add(srycdFrmt.format(srycd_GenericName_Kasan));
+        
+        srycdList.add(srycdFrmt.format(srycd_Jikangai_Comment));
+        srycdList.add(srycdFrmt.format(srycd_Kyujitsu_Comment));
+        srycdList.add(srycdFrmt.format(srycd_Shinya_Comment));
+        srycdList.add(srycdFrmt.format(srycd_JikanDayHrMin_Comment));
 
         // ORCAにマスターを問い合わせるようにした
         final SqlMiscDao dao = SqlMiscDao.getInstance();
@@ -201,6 +210,8 @@ public class MakeBaseChargeStamp extends CheckSantei {
     }
 
     private void start(KarteEditor editor, StampHolder sh) {
+        
+        docInfo = editor.getModel().getDocInfoModel();
 
         // 編集元のスタンプホルダを設定する
         setSourceStampHolder(sh);
@@ -222,7 +233,7 @@ public class MakeBaseChargeStamp extends CheckSantei {
         
         // CheckSanteiの初期化
         try {
-            init(editor.getContext(), stamps, editor.getModel().getDocInfoModel().getFirstConfirmDate(), null);
+            init(editor.getContext(), stamps, docInfo.getFirstConfirmDate(), null);
         } catch (Exception ex) {
             return;
         }
@@ -576,9 +587,9 @@ public class MakeBaseChargeStamp extends CheckSantei {
                 claimClassCode = item.getSrysyuKbn();
                 first = false;
             }
-            int num = pair.getNumber();
-            if (num > 1) {
-                item.setNumber(String.valueOf(num));
+            String num = pair.getNumber();
+            if (!"1".equals(num)) {
+                item.setNumber(num);
             }
             bundle.addClaimItem(item);
         }
@@ -593,6 +604,16 @@ public class MakeBaseChargeStamp extends CheckSantei {
         retStamp.setModel(bundle);
         isModified = true;
     }
+    
+    private String getFormattedConfirmedDate(String frmtStr) {
+        
+        SimpleDateFormat frmt = new SimpleDateFormat(frmtStr);
+        Date d = docInfo.getFirstConfirmDate();
+        if (d == null) {
+            d = new Date();
+        }
+        return frmt.format(d);
+    }
 
     private List<SrycdNumberPair> collectData() {
 
@@ -604,15 +625,23 @@ public class MakeBaseChargeStamp extends CheckSantei {
             // 夜間・早朝加算
             if (cb_yakan_souchou_kasan.isSelected()) {
                 srycdList.add(new SrycdNumberPair(srycd_Shoshin_Yakan_Souchou_Kasan));
+                //String num = getFormattedConfirmedDate("d-h-m");
+                //srycdList.add(new SrycdNumberPair(srycd_JikanDayHrMin_Comment, num));
             }
             if (rb_jikangai.isSelected()) {
                 srycdList.add(new SrycdNumberPair(srycd_Shoshin_Jikangai_Kasan));
+                //String num = getFormattedConfirmedDate("M-d-h-m");
+                //srycdList.add(new SrycdNumberPair(srycd_Jikangai_Comment, num));
             }
             if (rb_kyujitsu.isSelected()) {
                 srycdList.add(new SrycdNumberPair(srycd_Shoshin_Kyujitsu_Kasan));
+                //String num = getFormattedConfirmedDate("M-d");
+                //srycdList.add(new SrycdNumberPair(srycd_Kyujitsu_Comment, num));
             }
             if (rb_shinya.isSelected()) {
                 srycdList.add(new SrycdNumberPair(srycd_Shoshin_Shinya_Kasan));
+                //String num = getFormattedConfirmedDate("M-d-h-m");
+                //srycdList.add(new SrycdNumberPair(srycd_Shinya_Comment, num));
             }
         }
         // 再診
@@ -632,15 +661,23 @@ public class MakeBaseChargeStamp extends CheckSantei {
                 // 夜間・早朝加算
                 if (cb_yakan_souchou_kasan.isSelected()) {
                     srycdList.add(new SrycdNumberPair(srycd_Saishin_Yakan_Souchou_Kasan));
+                    //String num = getFormattedConfirmedDate("d-h-m");
+                    //srycdList.add(new SrycdNumberPair(srycd_JikanDayHrMin_Comment, num));
                 }
                 if (rb_jikangai.isSelected()) {
                     srycdList.add(new SrycdNumberPair(srycd_Saishin_Jikangai));
+                    //String num = getFormattedConfirmedDate("M-d-h-m");
+                    //srycdList.add(new SrycdNumberPair(srycd_Jikangai_Comment, num));
                 }
                 if (rb_kyujitsu.isSelected()) {
                     srycdList.add(new SrycdNumberPair(srycd_Saishin_Kyujitsu));
+                    //String num = getFormattedConfirmedDate("M-d");
+                    //srycdList.add(new SrycdNumberPair(srycd_Kyujitsu_Comment, num));
                 }
                 if (rb_shinya.isSelected()) {
                     srycdList.add(new SrycdNumberPair(srycd_Saishin_Shinya));
+                    //String num = getFormattedConfirmedDate("M-d-h-m");
+                    //srycdList.add(new SrycdNumberPair(srycd_Shinya_Comment, num));
                 }
             } else {
                 srycdList.add(new SrycdNumberPair(srycd_Saishin_Dummy));
@@ -728,7 +765,7 @@ public class MakeBaseChargeStamp extends CheckSantei {
             // 時間加算は数量を設定する
             int i = cmb_jikan.getSelectedIndex();
             if (i != 0) {
-                int number = i * 10 + 60;
+                String number = String.valueOf(i * 10 + 60);
                 srycdList.add(new SrycdNumberPair(srycd_Oushin_ShinryoJikan_Kasan, number));
             }
         }
@@ -843,7 +880,7 @@ public class MakeBaseChargeStamp extends CheckSantei {
             // 時間加算は数量を設定する
             int i = cmb_jikan.getSelectedIndex();
             if (i != 0) {
-                int number = i * 10 + 60;
+                String number = String.valueOf(i * 10 + 60);
                 srycdList.add(new SrycdNumberPair(srycd_HoumounShinsatsuJikan, number));
             }
         }
@@ -1402,23 +1439,23 @@ public class MakeBaseChargeStamp extends CheckSantei {
     private static class SrycdNumberPair {
 
         private final int srycd;
-        private final int number;
+        private final String number;
 
-        private SrycdNumberPair(int srycd, int number) {
+        private SrycdNumberPair(int srycd, String number) {
             this.srycd = srycd;
             this.number = number;
         }
 
         private SrycdNumberPair(int srycd) {
             this.srycd = srycd;
-            number = 1;
+            number = "1";
         }
 
         private int getSrycd() {
             return srycd;
         }
 
-        private int getNumber() {
+        private String getNumber() {
             return number;
         }
     }
