@@ -145,7 +145,7 @@ public final class SqlMiscDao extends SqlDaoBean {
         }
         
         // コードが後発品ならばその先発品のコードを追加する
-        Collection<String> allDrug = new ArrayList<>();
+        Collection<String> allDrug = new HashSet<>();
         allDrug.addAll(src1);
         allDrug.addAll(src2);
         

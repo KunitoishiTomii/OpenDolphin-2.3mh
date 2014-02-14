@@ -5,7 +5,7 @@ import javax.ws.rs.client.WebTarget;
 import open.dolphin.project.Project;
 import open.dolphin.setting.MiscSettingPanel;
 import org.glassfish.jersey.client.JerseyClientBuilder;
-import org.glassfish.jersey.client.filter.HttpBasicAuthFilter;
+import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 import org.jboss.resteasy.client.jaxrs.BasicAuthentication;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 
@@ -48,7 +48,7 @@ public class OrcaApiClient implements IOrcaApi {
         if (useJersey) {
             client = new JerseyClientBuilder().build();
             webTarget = client.target(uri);
-            webTarget.register(new HttpBasicAuthFilter(username, password));
+            webTarget.register(HttpAuthenticationFeature.basic(username, password));
         } else {
             client = new ResteasyClientBuilder().build();
             webTarget = client.target(uri);

@@ -83,7 +83,7 @@ public class BasicFilter extends AbstractCheckFilter {
         // 重複
         for (int i = 0; i < len; ++i) {
             String diag1 = diagList.get(i).getDiagName();
-            for (int j = 0; j < len; ++j) {
+            for (int j = i; j < len; ++j) {
                 if (i != j) {
                     String diag2 = diagList.get(j).getDiagName();
                     if (diag1.equals(diag2)) {

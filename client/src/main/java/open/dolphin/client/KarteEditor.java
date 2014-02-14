@@ -786,6 +786,12 @@ public class KarteEditor extends AbstractChartDocument implements IInfoModel,
             if (ci.checkStart(context, stamps)) {
                 return false;
             }
+            
+            // 診療行為重複チェック
+            CheckDuplication cd = new CheckDuplication();
+            if (cd.checkStart(context, stamps)) {
+                return false;
+            }
 
             // 入院の場合の追加チェック
             if (inHospital) {

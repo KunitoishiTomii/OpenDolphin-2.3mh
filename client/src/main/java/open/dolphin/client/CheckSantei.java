@@ -977,27 +977,29 @@ public class CheckSantei implements ICheckSanteiConst {
 
         // 処方が同じかどうかを調べる
         // 薬剤数が違うなら、処方は違うはず！？
-        if (al1.size() != al2.size()) {
+        int len = al1.size();
+        if (len != al2.size()) {
             return false;
         }
-/*
+        
         // 薬剤数が同じなら各項目を調べてみる
-        for (RpModel rp1 : al1) {
-            RpModel toRemove = null;
-            for (RpModel rp2 : al2) {
-                // 各々の薬剤項目が同じかどうか
+        for (int i = 0; i < len; ++i) {
+            RpModel rp1 = al1.get(i);
+            boolean found = false;
+            for (int j = 0; j < len; ++j) {
+                RpModel rp2 = al2.get(i);
                 if (rp1.isSameWith(rp2)) {
-                    // 同じ薬剤・用法・用量ならal2から項目を削除
-                    toRemove = rp2;
+                    found = true;
                     break;
                 }
             }
-            if (toRemove != null) {
-                al2.remove(toRemove);
+            if (!found) {
+                return false;
             }
         }
-*/
-        // 薬剤数が同じなら各項目を調べてみる
+        return true;
+        
+/*
         for (RpModel rp1 : al1) {
             for (Iterator<RpModel> itr = al2.iterator(); itr.hasNext();) {
                 // 各々の薬剤項目が同じかどうか
@@ -1012,5 +1014,6 @@ public class CheckSantei implements ICheckSanteiConst {
             
         // すべて同じならal2の項目はなくなっているはず
         return al2.isEmpty();
+*/
     }
 }
