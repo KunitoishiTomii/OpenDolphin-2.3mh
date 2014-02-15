@@ -7,6 +7,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.concurrent.TimeUnit;
 import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
@@ -19,6 +20,7 @@ import open.dolphin.util.HashUtil;
 import org.glassfish.jersey.client.ClientProperties;
 import org.glassfish.jersey.client.JerseyClientBuilder;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
+import org.jboss.resteasy.client.jaxrs.engines.URLConnectionEngine;
 
 /**
  * RestClient
@@ -142,7 +144,11 @@ public class RestClient {
         ResteasyClientBuilder builder = new ResteasyClientBuilder();
         
         if (ssl != null && verifier != null) {
-            builder = builder.sslContext(ssl).hostnameVerifier(verifier);
+            // エンジン交換
+            HttpsURLConnection.setDefaultSSLSocketFactory(ssl.getSocketFactory());
+            HttpsURLConnection.setDefaultHostnameVerifier(verifier);
+            URLConnectionEngine engine = new URLConnectionEngine();
+            builder = builder.httpEngine(engine).sslContext(ssl).hostnameVerifier(verifier);
         }
         if (enableTimeout) {
             builder = builder.socketTimeout(TIMEOUT_IN_MILLISEC, TimeUnit.MILLISECONDS);
