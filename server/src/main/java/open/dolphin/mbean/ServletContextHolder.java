@@ -21,6 +21,9 @@ public class ServletContextHolder {
     // AsyncResponseのリスト
     private final List<AsyncResponseModel> arList;
     
+    // javax.websocket.Sessionのリスト
+    private final List<WsSessionModel> sessionList;
+    
     // facilityIdとpvtListのマップ
     private final Map<String, List<PatientVisitModel>> pvtListMap;
     
@@ -37,12 +40,17 @@ public class ServletContextHolder {
     public ServletContextHolder() {
         serverUUID = UUID.randomUUID().toString();
         arList = new CopyOnWriteArrayList<>();
+        sessionList = new CopyOnWriteArrayList<>();
         pvtListMap = new ConcurrentHashMap<>();
         userMap = new ConcurrentHashMap<>();
     }
 
     public List<AsyncResponseModel> getAsyncResponseList() {
         return arList;
+    }
+    
+    public List<WsSessionModel> getWsSessionList() {
+        return sessionList;
     }
     
     public String getServerUUID() {

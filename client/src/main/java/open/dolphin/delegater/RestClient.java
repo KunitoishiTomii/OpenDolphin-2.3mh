@@ -101,6 +101,8 @@ public class RestClient {
             
             client = createClient(useJersey, ssl, verifier, true);
             asyncClient = createClient(useJersey, ssl, verifier, false);
+            
+
 
         } catch (KeyManagementException | NoSuchAlgorithmException ex) {
             client = createClient(useJersey, null, null, true);
