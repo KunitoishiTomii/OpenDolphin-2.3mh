@@ -147,10 +147,8 @@ public class RestClient {
         
         if (ssl != null && verifier != null) {
             // エンジン交換
-            HttpsURLConnection.setDefaultSSLSocketFactory(ssl.getSocketFactory());
-            HttpsURLConnection.setDefaultHostnameVerifier(verifier);
-            URLConnectionEngine engine = new URLConnectionEngine();
-            builder = builder.httpEngine(engine).sslContext(ssl).hostnameVerifier(verifier);
+            URLConnectionEngine engine = new HttpsURLConnectionEngine(ssl, verifier);
+            builder = builder.httpEngine(engine);
         }
         if (enableTimeout) {
             builder = builder.socketTimeout(TIMEOUT_IN_MILLISEC, TimeUnit.MILLISECONDS);
