@@ -1,8 +1,8 @@
-OpenDolphin 2.3m
+OpenDolphin 2.3m_WF8
 
-JBOSS 7.1.1, RESTEasy, JSON
+WildFly 8.0.0.Final
 
-OpenDolphin 2.3m is a fork of OpenDolphin 2.2.1, (c)Digital Globe Inc.
+OpenDolphin 2.3m_WF8 is a fork of OpenDolphin 2.2.1, (c)Digital Globe Inc.
 OpenDolphin 2.3m contains codes of Dr. Matsumura, Motomachi Dermatology Clinic in Sapporo.
 
 thanks to Takayoshi Kimura san @JBOSS no nakano-hito
