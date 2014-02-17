@@ -2,16 +2,9 @@ package open.dolphin.delegater;
 
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.util.concurrent.TimeUnit;
 import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.WebTarget;
 import open.dolphin.project.Project;
@@ -94,15 +87,10 @@ public class RestClient {
         boolean useJersey = Project.getBoolean(MiscSettingPanel.USE_JERSEY, MiscSettingPanel.DEFAULT_USE_JERSEY);
 
         try {
-            SSLContext ssl = SSLContext.getInstance("TLS");
-            TrustManager[] certs = {new OreOreTrustManager()};
-            ssl.init(null, certs, new SecureRandom());
-            HostnameVerifier verifier = new OreOreHostnameVerifier();
-            
+            SSLContext ssl = OreOreSSL.getSslContext();
+            HostnameVerifier verifier = OreOreSSL.getVerifier();
             client = createClient(useJersey, ssl, verifier, true);
             asyncClient = createClient(useJersey, ssl, verifier, false);
-            
-
 
         } catch (KeyManagementException | NoSuchAlgorithmException ex) {
             client = createClient(useJersey, null, null, true);
@@ -155,30 +143,5 @@ public class RestClient {
         }
         
         return builder.build();
-    }
-
-    private static class OreOreHostnameVerifier implements HostnameVerifier {
-
-        @Override
-        public boolean verify(String string, SSLSession ssls) {
-            return true;
-        }
-        
-    }
-    
-    private static class OreOreTrustManager implements X509TrustManager {
-
-        @Override
-        public void checkClientTrusted(X509Certificate[] xcs, String string) throws CertificateException {
-        }
-
-        @Override
-        public void checkServerTrusted(X509Certificate[] xcs, String string) throws CertificateException {
-        }
-
-        @Override
-        public X509Certificate[] getAcceptedIssuers() {
-            return null;
-        }
     }
 }

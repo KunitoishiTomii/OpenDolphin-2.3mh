@@ -1,6 +1,8 @@
 package open.dolphin.rest;
 
 import java.io.IOException;
+import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -18,7 +20,6 @@ import open.dolphin.infomodel.IInfoModel;
 import open.dolphin.mbean.ServletContextHolder;
 import open.dolphin.mbean.WsSessionModel;
 import open.dolphin.session.ChartEventServiceBean;
-import open.dolphin.session.UserServiceBean;
 
 /**
  * ChartEventEndpoint
@@ -30,12 +31,7 @@ import open.dolphin.session.UserServiceBean;
 public class ServerChartEventEndpoint {
     
     private static final Logger logger = Logger.getLogger(ServerChartEventEndpoint.class.getSimpleName());
-    
-    private static final boolean debug = true;
-    
-    @Inject
-    private UserServiceBean userServiceBean;
-    
+
     @Inject
     private ChartEventServiceBean eventServiceBean;
     
@@ -49,20 +45,20 @@ public class ServerChartEventEndpoint {
             @PathParam("passwd") String passwd, 
             @PathParam("clientUUID") String clientUUID) {
         
-        debug("onOpen");
-        boolean auth = userServiceBean.authenticate(fidUid, passwd);
+        Map<String, String> userMap = contextHolder.getUserMap();
+        boolean auth = passwd.equals(userMap.get(fidUid));
         
         if (auth) {
             int pos = fidUid.indexOf(IInfoModel.COMPOSITE_KEY_MAKER);
             String fid = fidUid.substring(0, pos);
             WsSessionModel model = new WsSessionModel(session, fid, clientUUID);
             contextHolder.getWsSessionList().add(model);
-            debug("web socekt auth success");
+            logger.log(Level.INFO, "WebSocket authenticated: {0}", fidUid);
         } else {
             try {
                 CloseReason cr = new CloseReason(CloseReason.CloseCodes.CANNOT_ACCEPT, "Not authenticated.");
                 session.close(cr);
-                debug("web socekt auth failed");
+                logger.log(Level.INFO, "WebSocket auth failed: {0}", fidUid);
             } catch (IOException ex) {
             }
         }
@@ -70,16 +66,13 @@ public class ServerChartEventEndpoint {
     
     @OnClose
     public void onClose(Session session) {
+        //logger.info("WebSocket onClose");
         removeSessionModel(session);
-        debug("onClose");
     }
     
     @OnError
     public void onError(Session session, Throwable t) {
-        
-        System.err.println(session.toString());
-        t.printStackTrace(System.err);
-        
+        //t.printStackTrace(System.err);
         removeSessionModel(session);
     }
     
@@ -94,21 +87,15 @@ public class ServerChartEventEndpoint {
         if (toRemove != null) {
             contextHolder.getWsSessionList().remove(toRemove);
         }
+
     }
     
     @OnMessage
     public void onMessage(String json, Session session) {
-        
-        debug("onMessage");
+        //logger.info("onMessage");
         ChartEventModel msg = (ChartEventModel)
                 JsonConverter.getInstance().fromJson(json, ChartEventModel.class);
 
         eventServiceBean.processChartEvent(msg);
-    }
-    
-    private void debug(String msg) {
-        if (debug) {
-            logger.info(msg);
-        }
     }
 }

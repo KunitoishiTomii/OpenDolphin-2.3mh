@@ -155,7 +155,7 @@ public class ChartEventListener {
         onEventExec = Executors.newSingleThreadExecutor(factory);
         try {
             endpoint = new ClientChartEventEndpoint();
-            endpoint.init();
+            endpoint.connect();
             useWebSocket = true;
         } catch (Exception ex) {
             ex.printStackTrace(System.err);

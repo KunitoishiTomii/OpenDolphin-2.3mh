@@ -29,9 +29,9 @@
             <version>2.3.8.8</version>
         </dependency>
         <dependency>
-            <groupId>io.undertow</groupId>
-            <artifactId>undertow-websockets-jsr</artifactId>
-            <version>1.0.0.Final</version>
+            <groupId>org.glassfish.tyrus.bundles</groupId>
+            <artifactId>tyrus-standalone-client</artifactId>
+            <version>1.4</version>
         </dependency>
         <dependency>
             <groupId>org.hibernate</groupId>
@@ -147,7 +147,7 @@
     </dependencies>
   
     <build>
-        <finalName>OpenDolphin-2.3.8.8m</finalName>
+        <finalName>OpenDolphin-2.3m_WF8</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

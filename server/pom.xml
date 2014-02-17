@@ -55,7 +55,7 @@
     </dependencies>
     
     <build>
-        <finalName>OpenDolphin-server-2.3.8.8m</finalName>
+        <finalName>OpenDolphin-server-2.3m_WF8</finalName>
         <plugins>
             <plugin>            
                 <groupId>org.apache.maven.plugins</groupId>
