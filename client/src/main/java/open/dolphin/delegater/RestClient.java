@@ -97,12 +97,12 @@ public class RestClient {
             ssl.init(null, certs, new SecureRandom());
             HostnameVerifier verifier = new OreOreHostnameVerifier();
             
-            client = createClient(useJersey, ssl, verifier, true);
-            asyncClient = createClient(useJersey, ssl, verifier, false);
+            client = createClient(useJersey, ssl, verifier, false);
+            asyncClient = createClient(useJersey, ssl, verifier, true);
 
         } catch (KeyManagementException | NoSuchAlgorithmException ex) {
-            client = createClient(useJersey, null, null, true);
-            asyncClient = createClient(useJersey, null, null, false);
+            client = createClient(useJersey, null, null, false);
+            asyncClient = createClient(useJersey, null, null, true);
         }
 
         // DolphnAuthFilterを設定する
@@ -129,7 +129,7 @@ public class RestClient {
         if (ssl != null && verifier != null) {
             builder = builder.sslContext(ssl).hostnameVerifier(verifier);
         }
-        if (async) {
+        if (!async) {
             builder.getConfiguration().property(ClientProperties.READ_TIMEOUT, TIMEOUT_IN_MILLISEC);
         }
         
@@ -142,11 +142,10 @@ public class RestClient {
         ResteasyClientBuilder builder = new ResteasyClientBuilder();
         
         if (ssl != null && verifier != null) {
-            int poolSize = async ? 1 : 3;
-            builder.connectionPoolSize(poolSize);
             builder.disableTrustManager();
         }
-        if (async) {
+        if (!async) {
+            builder.connectionPoolSize(20);
             builder = builder.socketTimeout(TIMEOUT_IN_MILLISEC, TimeUnit.MILLISECONDS);
         }
         
