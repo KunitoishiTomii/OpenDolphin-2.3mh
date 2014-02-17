@@ -127,7 +127,7 @@ public class RestClient {
         JerseyClientBuilder builder = new JerseyClientBuilder();
         
         if (ssl != null && verifier != null) {
-            builder = builder.sslContext(ssl).hostnameVerifier(verifier);
+            builder.sslContext(ssl).hostnameVerifier(verifier);
         }
         if (!async) {
             builder.getConfiguration().property(ClientProperties.READ_TIMEOUT, TIMEOUT_IN_MILLISEC);
@@ -142,11 +142,12 @@ public class RestClient {
         ResteasyClientBuilder builder = new ResteasyClientBuilder();
         
         if (ssl != null && verifier != null) {
-            builder.disableTrustManager();
+            //builder.disableTrustManager();
+            builder.sslContext(ssl).hostnameVerifier(verifier);
         }
         if (!async) {
             builder.connectionPoolSize(20);
-            builder = builder.socketTimeout(TIMEOUT_IN_MILLISEC, TimeUnit.MILLISECONDS);
+            builder.socketTimeout(TIMEOUT_IN_MILLISEC, TimeUnit.MILLISECONDS);
         }
         
         return builder.build();
