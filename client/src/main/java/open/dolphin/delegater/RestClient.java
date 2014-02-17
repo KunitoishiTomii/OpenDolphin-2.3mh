@@ -7,7 +7,6 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.concurrent.TimeUnit;
 import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
@@ -20,7 +19,6 @@ import open.dolphin.util.HashUtil;
 import org.glassfish.jersey.client.ClientProperties;
 import org.glassfish.jersey.client.JerseyClientBuilder;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
-import org.jboss.resteasy.client.jaxrs.engines.URLConnectionEngine;
 
 /**
  * RestClient
@@ -114,24 +112,24 @@ public class RestClient {
     }
     
     // Clientを作成する
-    private Client createClient(boolean useJersey, SSLContext ssl, HostnameVerifier verifier, boolean enableTimeout) {
+    private Client createClient(boolean useJersey, SSLContext ssl, HostnameVerifier verifier, boolean async) {
 
         Client ret = useJersey
-                ? createJerseyClient(ssl, verifier, enableTimeout)
-                : createResteasyClient(ssl, verifier, enableTimeout);
+                ? createJerseyClient(ssl, verifier, async)
+                : createResteasyClient(ssl, verifier, async);
         
         return ret;
     }
     
     // JerseyClientを作成する
-    private Client createJerseyClient(SSLContext ssl, HostnameVerifier verifier, boolean enableTimeout) {
+    private Client createJerseyClient(SSLContext ssl, HostnameVerifier verifier, boolean async) {
         
         JerseyClientBuilder builder = new JerseyClientBuilder();
         
         if (ssl != null && verifier != null) {
             builder = builder.sslContext(ssl).hostnameVerifier(verifier);
         }
-        if (enableTimeout) {
+        if (async) {
             builder.getConfiguration().property(ClientProperties.READ_TIMEOUT, TIMEOUT_IN_MILLISEC);
         }
         
@@ -139,16 +137,16 @@ public class RestClient {
     }
     
     // ResteasyClientを作成する
-    private Client createResteasyClient(SSLContext ssl, HostnameVerifier verifier, boolean enableTimeout) {
+    private Client createResteasyClient(SSLContext ssl, HostnameVerifier verifier, boolean async) {
         
         ResteasyClientBuilder builder = new ResteasyClientBuilder();
         
         if (ssl != null && verifier != null) {
-            // エンジン交換
-            URLConnectionEngine engine = new HttpsURLConnectionEngine(ssl, verifier);
-            builder = builder.httpEngine(engine);
+            int poolSize = async ? 1 : 3;
+            builder.connectionPoolSize(poolSize);
+            builder.disableTrustManager();
         }
-        if (enableTimeout) {
+        if (async) {
             builder = builder.socketTimeout(TIMEOUT_IN_MILLISEC, TimeUnit.MILLISECONDS);
         }
         
