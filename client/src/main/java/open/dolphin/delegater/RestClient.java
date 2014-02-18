@@ -13,7 +13,6 @@ import open.dolphin.util.HashUtil;
 import org.glassfish.jersey.client.ClientProperties;
 import org.glassfish.jersey.client.JerseyClientBuilder;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
-import org.jboss.resteasy.client.jaxrs.engines.URLConnectionEngine;
 
 /**
  * RestClient
@@ -89,12 +88,12 @@ public class RestClient {
         try {
             SSLContext ssl = OreOreSSL.getSslContext();
             HostnameVerifier verifier = OreOreSSL.getVerifier();
-            client = createClient(useJersey, ssl, verifier, true);
-            asyncClient = createClient(useJersey, ssl, verifier, false);
+            client = createClient(useJersey, ssl, verifier, false);
+            asyncClient = createClient(useJersey, ssl, verifier, true);
 
         } catch (KeyManagementException | NoSuchAlgorithmException ex) {
-            client = createClient(useJersey, null, null, true);
-            asyncClient = createClient(useJersey, null, null, false);
+            client = createClient(useJersey, null, null, false);
+            asyncClient = createClient(useJersey, null, null, true);
         }
 
         // DolphnAuthFilterを設定する
@@ -104,24 +103,24 @@ public class RestClient {
     }
     
     // Clientを作成する
-    private Client createClient(boolean useJersey, SSLContext ssl, HostnameVerifier verifier, boolean enableTimeout) {
+    private Client createClient(boolean useJersey, SSLContext ssl, HostnameVerifier verifier, boolean async) {
 
         Client ret = useJersey
-                ? createJerseyClient(ssl, verifier, enableTimeout)
-                : createResteasyClient(ssl, verifier, enableTimeout);
+                ? createJerseyClient(ssl, verifier, async)
+                : createResteasyClient(ssl, verifier, async);
         
         return ret;
     }
     
     // JerseyClientを作成する
-    private Client createJerseyClient(SSLContext ssl, HostnameVerifier verifier, boolean enableTimeout) {
+    private Client createJerseyClient(SSLContext ssl, HostnameVerifier verifier, boolean async) {
         
         JerseyClientBuilder builder = new JerseyClientBuilder();
         
         if (ssl != null && verifier != null) {
-            builder = builder.sslContext(ssl).hostnameVerifier(verifier);
+            builder.sslContext(ssl).hostnameVerifier(verifier);
         }
-        if (enableTimeout) {
+        if (!async) {
             builder.getConfiguration().property(ClientProperties.READ_TIMEOUT, TIMEOUT_IN_MILLISEC);
         }
         
@@ -129,17 +128,17 @@ public class RestClient {
     }
     
     // ResteasyClientを作成する
-    private Client createResteasyClient(SSLContext ssl, HostnameVerifier verifier, boolean enableTimeout) {
+    private Client createResteasyClient(SSLContext ssl, HostnameVerifier verifier, boolean async) {
         
         ResteasyClientBuilder builder = new ResteasyClientBuilder();
         
         if (ssl != null && verifier != null) {
-            // エンジン交換
-            URLConnectionEngine engine = new HttpsURLConnectionEngine(ssl, verifier);
-            builder = builder.httpEngine(engine);
+            //builder.disableTrustManager();
+            builder.sslContext(ssl).hostnameVerifier(verifier);
         }
-        if (enableTimeout) {
-            builder = builder.socketTimeout(TIMEOUT_IN_MILLISEC, TimeUnit.MILLISECONDS);
+        if (!async) {
+            builder.connectionPoolSize(20);
+            builder.socketTimeout(TIMEOUT_IN_MILLISEC, TimeUnit.MILLISECONDS);
         }
         
         return builder.build();
