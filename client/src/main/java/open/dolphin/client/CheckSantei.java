@@ -987,7 +987,7 @@ public class CheckSantei implements ICheckSanteiConst {
             RpModel rp1 = al1.get(i);
             boolean found = false;
             for (int j = 0; j < len; ++j) {
-                RpModel rp2 = al2.get(i);
+                RpModel rp2 = al2.get(j);
                 if (rp1.isSameWith(rp2)) {
                     found = true;
                     break;
