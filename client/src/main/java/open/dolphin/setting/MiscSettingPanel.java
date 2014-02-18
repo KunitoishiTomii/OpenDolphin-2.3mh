@@ -81,6 +81,7 @@ public class MiscSettingPanel extends AbstractSettingPanel {
     public static final String ZEBRA_COLOR = "zebraColor";
     public static final String HL7_FORMAT = "hl7format";
     public static final String USE_JERSEY = "useJersey";
+    public static final String USE_WEBSOCKET = "useWebsocket";
 
     // preferencesのdefault
     public static final String DEFAULT_LBLPRT_ADDRESS = null;
@@ -129,6 +130,7 @@ public class MiscSettingPanel extends AbstractSettingPanel {
     
     public static final String DEFAULT_HL7_FORMAT = "wakayama";
     public static final boolean DEFAULT_USE_JERSEY = true;
+    public static final boolean DEFAULT_USE_WEBSOCKET = false;
 
     // GUI staff
     private JTextField tf_lblPrtAddress;
@@ -208,6 +210,8 @@ public class MiscSettingPanel extends AbstractSettingPanel {
     
     private JRadioButton rb_jersey;
     private JRadioButton rb_resteasy;
+    private JRadioButton rb_comet;
+    private JRadioButton rb_websocket;
 
     
     /** 画面モデル */
@@ -730,6 +734,22 @@ public class MiscSettingPanel extends AbstractSettingPanel {
 
         gbl.add(pnlRest, 0, row, GridBagConstraints.CENTER);
         JPanel rest = gbl.getProduct();
+        
+        // comet / websocket
+        gbl = new GridBagBuilder("チャート状態同期");
+        rb_comet = new JRadioButton("Comet");
+        rb_websocket = new JRadioButton("WebSocket");
+        ButtonGroup bgSync = new ButtonGroup();
+        bgSync.add(rb_comet);
+        bgSync.add(rb_websocket);
+
+        JPanel pnlSync = new JPanel();
+        pnlSync.setLayout(new FlowLayout());
+        pnlSync.add(rb_comet);
+        pnlSync.add(rb_websocket);
+
+        gbl.add(pnlSync, 0, row, GridBagConstraints.CENTER);
+        JPanel sync = gbl.getProduct();
 
         
         // 全体レイアウト
@@ -738,6 +758,7 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         gbl.add(labo, 0, 1, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
         gbl.add(hs, 0, 2, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
         gbl.add(rest, 0, 3, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
+        gbl.add(sync, 0, 4, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
         JPanel setting3 = gbl.getProduct();
         
         JTabbedPane tabbedPane = new JTabbedPane();
@@ -1007,6 +1028,13 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         } else {
             rb_resteasy.setSelected(true);
         }
+        
+        // Chart sync
+        if (model.useWebsocket) {
+            rb_websocket.setSelected(true);
+        } else {
+            rb_comet.setSelected(true);
+        }
     }
 
     /**
@@ -1088,6 +1116,9 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         
         // rest
         model.useJersey = rb_jersey.isSelected();
+        
+        // Chart sync
+        model.useWebsocket = rb_websocket.isSelected();
     }
 
     /**
@@ -1139,6 +1170,7 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         private String falcoFacilityId;
         
         private boolean useJersey;
+        private boolean useWebsocket;
 
         public void populate() {
 
@@ -1203,6 +1235,9 @@ public class MiscSettingPanel extends AbstractSettingPanel {
             
             // rest
             useJersey = Project.getBoolean(USE_JERSEY, DEFAULT_USE_JERSEY);
+            
+            // Chart sync
+            useWebsocket = Project.getBoolean(USE_WEBSOCKET, DEFAULT_USE_WEBSOCKET);
         }
 
         public void restore() {
@@ -1262,6 +1297,9 @@ public class MiscSettingPanel extends AbstractSettingPanel {
             
             // rest
             Project.setBoolean(USE_JERSEY, useJersey);
+            
+            // Chart sync
+            Project.setBoolean(USE_WEBSOCKET, useWebsocket);
         }
     }
 

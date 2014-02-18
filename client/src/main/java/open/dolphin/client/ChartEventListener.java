@@ -17,15 +17,17 @@ import open.dolphin.common.util.BeanUtils;
 import open.dolphin.common.util.JsonConverter;
 import open.dolphin.delegater.ClientChartEventEndpoint;
 import open.dolphin.delegater.PatientDelegater;
+import open.dolphin.setting.MiscSettingPanel;
 import open.dolphin.util.NamedThreadFactory;
 
 /**
  * カルテオープンなどの状態の変化をまとめて管理する
+ * 
  * @author masuda, Masuda Naika
  */
 public class ChartEventListener {
 
-     // このクライアントのパラメーター類
+    // このクライアントのパラメーター類
     private String clientUUID;
     private String orcaId;
     private String deptCode;
@@ -71,6 +73,7 @@ public class ChartEventListener {
         jmariCode = Project.getString(Project.JMARI_CODE);
         facilityId = Project.getFacilityId();
         listeners = new ArrayList<>();
+        useWebSocket = Project.getBoolean(MiscSettingPanel.USE_WEBSOCKET, MiscSettingPanel.DEFAULT_USE_WEBSOCKET);
     }
 
     public String getClientUUID() {
@@ -151,17 +154,22 @@ public class ChartEventListener {
     }
 
     public void start() {
+        
         NamedThreadFactory factory = new NamedThreadFactory("ChartEvent Handle Task");
         onEventExec = Executors.newSingleThreadExecutor(factory);
-        try {
-            endpoint = new ClientChartEventEndpoint();
-            endpoint.connect();
-            useWebSocket = true;
-        } catch (Exception ex) {
-            ex.printStackTrace(System.err);
+        
+        if (useWebSocket) {
+            try {
+                endpoint = new ClientChartEventEndpoint();
+                endpoint.connect();
+            } catch (Exception ex) {
+                useWebSocket = false;
+                ex.printStackTrace(System.err);
+            }
+        }
+        if (!useWebSocket) {
             listenThread = new EventListenThread();
             listenThread.start();
-            useWebSocket = false;
         }
     }
 

@@ -27,6 +27,9 @@ public class RestClient {
     
     private String baseURI;
     
+    private final boolean useJersey;
+    private final boolean useComet;
+    
     // 非同期通信を分けるほうがよいのかどうか不明だが
     private Client client;
     private Client asyncClient;
@@ -41,6 +44,10 @@ public class RestClient {
     }
 
     private RestClient() {
+        
+        useJersey = Project.getBoolean(MiscSettingPanel.USE_JERSEY, MiscSettingPanel.DEFAULT_USE_JERSEY);
+        useComet = !Project.getBoolean(MiscSettingPanel.USE_WEBSOCKET, MiscSettingPanel.DEFAULT_USE_WEBSOCKET);
+        
         setupSslClients();
     }
 
@@ -68,7 +75,9 @@ public class RestClient {
         }
         
         webTarget = client.target(baseURI);
-        asyncWebTarget = asyncClient.target(baseURI);
+        if (useComet) {
+            asyncWebTarget = asyncClient.target(baseURI);
+        }
     }
     
     public WebTarget getWebTarget() {
@@ -83,27 +92,31 @@ public class RestClient {
     // オレオレSSL復活ｗ
     private void setupSslClients() {
         
-        boolean useJersey = Project.getBoolean(MiscSettingPanel.USE_JERSEY, MiscSettingPanel.DEFAULT_USE_JERSEY);
-
+        // DolphnAuthFilterを設定する
+        authFilter = new DolphinAuthFilter();
+        
         try {
             SSLContext ssl = OreOreSSL.getSslContext();
             HostnameVerifier verifier = OreOreSSL.getVerifier();
-            client = createClient(useJersey, ssl, verifier, false);
-            asyncClient = createClient(useJersey, ssl, verifier, true);
+            client = createClient(ssl, verifier, false);
+            client.register(authFilter);
+            if (useComet) {
+                asyncClient = createClient(ssl, verifier, true);
+                asyncClient.register(authFilter);
+            }
 
         } catch (KeyManagementException | NoSuchAlgorithmException ex) {
-            client = createClient(useJersey, null, null, false);
-            asyncClient = createClient(useJersey, null, null, true);
+            client = createClient(null, null, false);
+            client.register(authFilter);
+            if (useComet) {
+                asyncClient = createClient(null, null, true);
+                asyncClient.register(authFilter);
+            }
         }
-
-        // DolphnAuthFilterを設定する
-        authFilter = new DolphinAuthFilter();
-        client.register(authFilter);
-        asyncClient.register(authFilter);
     }
     
     // Clientを作成する
-    private Client createClient(boolean useJersey, SSLContext ssl, HostnameVerifier verifier, boolean async) {
+    private Client createClient(SSLContext ssl, HostnameVerifier verifier, boolean async) {
 
         Client ret = useJersey
                 ? createJerseyClient(ssl, verifier, async)
