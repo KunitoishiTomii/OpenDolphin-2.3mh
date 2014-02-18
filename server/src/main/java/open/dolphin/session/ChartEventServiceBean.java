@@ -9,14 +9,13 @@ import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.websocket.Session;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import open.dolphin.common.util.JsonConverter;
 import open.dolphin.infomodel.*;
 import open.dolphin.mbean.AsyncResponseModel;
 import open.dolphin.mbean.ServletContextHolder;
-import open.dolphin.mbean.WsSessionModel;
-import open.dolphin.rest.ChartEventResource;
 
 /**
  * ChartEventServiceBean
@@ -38,9 +37,6 @@ public class ChartEventServiceBean {
     
     @Inject
     private ServletContextHolder contextHolder;
-    
-    @Inject
-    private ChartEventResource chartEventResource;
     
     @PersistenceContext
     private EntityManager em;
@@ -71,19 +67,19 @@ public class ChartEventServiceBean {
         deliverChartEvent(arSendList, evt);
         
         // websocket
-        List<WsSessionModel> wsList = contextHolder.getWsSessionList();
-        List<WsSessionModel> wsSendList = new ArrayList<>();
+        List<Session> sessionList = contextHolder.getSessionList();
+        List<Session> wsSendList = new ArrayList<>();
 
-        for (WsSessionModel wsModel : wsList) {
+        for (Session session : sessionList) {
 
-            String acFid = wsModel.getFid();
-            String acUUID = wsModel.getClientUUID();
+            String acFid = (String) session.getUserProperties().get("fid");
+            String acUUID = (String) session.getUserProperties().get("clientUUID");
             String issuerUUID = evt.getIssuerUUID();
 
             // 同一施設かつChartEventModelの発行者でないクライアントに通知する
             // fid == nullなら全部にブロードキャストする
             if (fid == null || (fid.equals(acFid) && !acUUID.equals(issuerUUID))) {
-                wsSendList.add(wsModel);
+                wsSendList.add(session);
             }
 
         }
@@ -101,11 +97,13 @@ public class ChartEventServiceBean {
     }
     
     @Asynchronous
-    private void deliverChartEventWs(List<WsSessionModel> sendList, ChartEventModel evt) {
+    private void deliverChartEventWs(List<Session> sessionList, ChartEventModel evt) {
         String json = JsonConverter.getInstance().toJson(evt);
-        for (WsSessionModel model : sendList) {
+        for (Session session : sessionList) {
             try {
-                model.getWsSession().getBasicRemote().sendText(json);
+                if (session.isOpen()) {
+                    session.getBasicRemote().sendText(json);
+                }
             } catch (IOException ex) {
             }
         }

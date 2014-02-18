@@ -30,15 +30,4 @@ public class AsyncResponseModel {
     public String getFid() {
         return fid;
     }
-/*
-    public void setAsyncResponse(AsyncResponse asyncResponse) {
-        this.asyncResponse = asyncResponse;
-    }
-    public void setClientUUID(String clientUUID) {
-        this.clientUUID = clientUUID;
-    }
-    public void setFid(String fid) {
-        this.fid = fid;
-    }
-*/
 }

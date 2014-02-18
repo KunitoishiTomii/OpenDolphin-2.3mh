@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import javax.inject.Singleton;
+import javax.websocket.Session;
 import open.dolphin.infomodel.PatientVisitModel;
 
 /**
@@ -22,7 +23,7 @@ public class ServletContextHolder {
     private final List<AsyncResponseModel> arList;
     
     // javax.websocket.Sessionのリスト
-    private final List<WsSessionModel> sessionList;
+    private final List<Session> sessionList;
     
     // facilityIdとpvtListのマップ
     private final Map<String, List<PatientVisitModel>> pvtListMap;
@@ -49,7 +50,7 @@ public class ServletContextHolder {
         return arList;
     }
     
-    public List<WsSessionModel> getWsSessionList() {
+    public List<Session> getSessionList() {
         return sessionList;
     }
     

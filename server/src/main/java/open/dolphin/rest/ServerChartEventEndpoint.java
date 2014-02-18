@@ -18,7 +18,6 @@ import open.dolphin.common.util.JsonConverter;
 import open.dolphin.infomodel.ChartEventModel;
 import open.dolphin.infomodel.IInfoModel;
 import open.dolphin.mbean.ServletContextHolder;
-import open.dolphin.mbean.WsSessionModel;
 import open.dolphin.session.ChartEventServiceBean;
 
 /**
@@ -51,8 +50,9 @@ public class ServerChartEventEndpoint {
         if (auth) {
             int pos = fidUid.indexOf(IInfoModel.COMPOSITE_KEY_MAKER);
             String fid = fidUid.substring(0, pos);
-            WsSessionModel model = new WsSessionModel(session, fid, clientUUID);
-            contextHolder.getWsSessionList().add(model);
+            session.getUserProperties().put("fid", fid);
+            session.getUserProperties().put("clientUUID", clientUUID);
+            contextHolder.getSessionList().add(session);
             logger.log(Level.INFO, "WebSocket authenticated: {0}", fidUid);
         } else {
             try {
@@ -67,31 +67,17 @@ public class ServerChartEventEndpoint {
     @OnClose
     public void onClose(Session session) {
         //logger.info("WebSocket onClose");
-        removeSessionModel(session);
+        contextHolder.getSessionList().remove(session);
     }
     
     @OnError
     public void onError(Session session, Throwable t) {
         //t.printStackTrace(System.err);
-        removeSessionModel(session);
-    }
-    
-    private void removeSessionModel(Session session) {
-        WsSessionModel toRemove = null;
-        for (WsSessionModel model : contextHolder.getWsSessionList()) {
-            if (model.getWsSession() == session) {
-                toRemove = model;
-                break;
-            }
-        }
-        if (toRemove != null) {
-            contextHolder.getWsSessionList().remove(toRemove);
-        }
-
+        contextHolder.getSessionList().remove(session);
     }
     
     @OnMessage
-    public void onMessage(String json, Session session) {
+    public void onMessage(String json) {
         //logger.info("onMessage");
         ChartEventModel msg = (ChartEventModel)
                 JsonConverter.getInstance().fromJson(json, ChartEventModel.class);
