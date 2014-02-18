@@ -136,7 +136,7 @@ public class BasicFilter extends AbstractCheckFilter {
         }
         if (shoshinDate != null) {
             for (SY_Model syModel : diagList) {
-                if (syModel.getStartDate().before(shoshinDate)) {
+                if (syModel.isActive() && syModel.getStartDate().before(shoshinDate)) {
                     String diag = syModel.getDiagName();
                     String msg = String.format("初診算定日より前の病名 %s", diag);
                     CheckResult result = createCheckResult(msg, CheckResult.CHECK_ERROR);

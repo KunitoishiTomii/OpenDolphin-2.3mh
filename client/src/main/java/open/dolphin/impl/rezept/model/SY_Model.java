@@ -39,7 +39,35 @@ public class SY_Model implements IRezeModel {
         return outcome;
     }
     public String getOutcomeStr() {
-        return RezeUtil.getInstance().getOutcome(outcome);
+        if (outcome == null) {
+            return "";
+        }
+        switch (outcome) {
+            case "2":
+                return "治ゆ";
+            case "3":
+                return("死亡");
+            case "4":
+                //return("中止（転医）");
+                return("中止");
+            case "1":   // 治癒、死亡、中止以外
+            default:
+                return "";
+        }
+    }
+    public boolean isActive() {
+        if (outcome == null) {
+            return true;
+        }
+        switch (outcome) {
+            case "2":   // 治ゆ
+            case "3":   // 死亡
+            case "4":   // 中止
+                return false;
+            case "1":   // 治癒、死亡、中止以外
+            default:
+                return true;
+        }
     }
     public String getModifier() {
         return modifier;
