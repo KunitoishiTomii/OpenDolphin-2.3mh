@@ -137,7 +137,7 @@ public class DiagnosisFilter extends AbstractCheckFilter {
             try {
                 String keyword = item.getKeyword();
                 boolean b = checkIndicatedDiag(diagList, keyword, true);
-                if (!b) {
+                if (b) {
                     // ドボンの場合
                     rezeItem.setPass(false);
                     String msg = String.format("%sの禁止句「%s」が病名に存在します", description, keyword);
@@ -159,7 +159,6 @@ public class DiagnosisFilter extends AbstractCheckFilter {
         Deque<Boolean> stack = new ArrayDeque();
         List<String> tokens = LexicalAnalyzer.toPostFixNotation(keyword);
 
-        boolean dobon = false;
         for (String token : tokens) {
             switch (token) {
                 case AND_OPERATOR:
@@ -179,7 +178,6 @@ public class DiagnosisFilter extends AbstractCheckFilter {
                             if (b3) {
                                 // ドボン
                                 syModel.setPass(false);
-                                dobon = true;
                             }
                         } else {
                             if (b3) {
@@ -192,7 +190,7 @@ public class DiagnosisFilter extends AbstractCheckFilter {
             }
         }
 
-        boolean pass = !dobon && stack.pop();
+        boolean pass = stack.pop();
         if (!stack.isEmpty()) {
             System.out.println("DiagnosisFilter lexicalAnalyze: stack is not empty");
         }
