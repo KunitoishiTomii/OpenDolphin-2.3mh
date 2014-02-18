@@ -12,6 +12,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
@@ -56,6 +57,10 @@ public class IndicationModel implements Serializable {
     
     @XmlTransient
     private Boolean isLock;   // てぬき排他処理
+    
+    @Transient
+    @XmlTransient
+    private String description;
 
     public IndicationModel() {
         outPatient = true;
@@ -91,6 +96,9 @@ public class IndicationModel implements Serializable {
     public void setLock(boolean isLock) {
         this.isLock = isLock;
     }
+    public void setDescription(String description) {
+        this.description = description;
+    }
     
     public long getId() {
         return id;
@@ -115,5 +123,8 @@ public class IndicationModel implements Serializable {
     }
     public Boolean isLock() {
         return isLock == null ? false : isLock;
+    }
+    public String getDescription() {
+        return description;
     }
 }

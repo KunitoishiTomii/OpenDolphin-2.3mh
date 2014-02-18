@@ -617,6 +617,16 @@ public class RezeptViewer {
             item2.addActionListener(listener);
             
         } else {
+            JMenuItem item2 = new JMenuItem("適応症編集");
+            item2.addActionListener(new ActionListener(){
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    AllIndicationEditor editor = new AllIndicationEditor(RezeptViewer.this);
+                    editor.start();
+                }
+            });
+            pMenu.add(item2);
             JMenuItem item0 = new JMenuItem("適応症XML出力");
             item0.addActionListener(new ActionListener(){
 
