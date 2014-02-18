@@ -155,37 +155,6 @@ public class RezeUtil {
     public Date fromYearMonth(String str) {
         return fromYearMonthDate(str.trim() + "01");
     }
-    
-    public String getOutcome(String str) {
-        if (str == null) {
-            return "";
-        }
-        switch (str) {
-            case "2":
-                return "治ゆ";
-            case "3":
-                return("死亡");
-            case "4":
-                //return("中止（転医）");
-                return("中止");
-            case "1":   // 治癒、死亡、中止以外
-            default:
-                return "";
-        }
-    }
-
-    public String getShinsaKikanStr(int num) {
-        switch (num) {
-            case 1:
-                return "社会保険診療報酬支払基金";
-            case 2:
-                return "国民健康保険団体連合会";
-            case 6:
-                return "後期高齢者医療広域連合";
-            default:
-                return "Unkonwn";
-        }
-    }
 
     public String getPrefecture(int code) {
         return PREFECTURES[code -1];

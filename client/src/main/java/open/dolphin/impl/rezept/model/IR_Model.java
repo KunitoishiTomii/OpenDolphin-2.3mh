@@ -38,7 +38,16 @@ public class IR_Model implements IRezeModel {
         return shinsaKikanNumber;
     }
     public String getShinsaKikanStr() {
-        return RezeUtil.getInstance().getShinsaKikanStr(shinsaKikanNumber);
+        switch (shinsaKikanNumber) {
+            case 1:
+                return "社会保険診療報酬支払基金";
+            case 2:
+                return "国民健康保険団体連合会";
+            case 6:
+                return "後期高齢者医療広域連合";
+            default:
+                return "Unkonwn";
+        }
     }
     public void setShinsaKikan(int shinsaKikanNumber) {
         this.shinsaKikanNumber = shinsaKikanNumber;
