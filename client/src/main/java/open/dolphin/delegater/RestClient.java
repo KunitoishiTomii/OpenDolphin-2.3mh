@@ -23,7 +23,7 @@ public class RestClient {
 
     private static final RestClient instance;
     
-    private static final int TIMEOUT_IN_MILLISEC = 30 * 1000; // 30sec
+    private static final int TIMEOUT_IN_MILLISEC = 60 * 1000; // 60sec
     
     private String baseURI;
     

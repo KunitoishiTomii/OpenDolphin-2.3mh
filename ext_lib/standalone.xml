@@ -50,6 +50,7 @@
                     <properties path="application-roles.properties" relative-to="jboss.server.config.dir"/>
                 </authorization>
             </security-realm>
+<!-- Add OreoreRealm start -->
             <security-realm name="OreoreRealm">
                 <server-identities>
                     <ssl>
@@ -57,6 +58,7 @@
                     </ssl>
                 </server-identities>
             </security-realm>
+<!-- Add OreoreRealm end   -->
         </security-realms>
         <audit-log>
             <formatters>
@@ -154,7 +156,13 @@
                         <password>sa</password>
                     </security>
                 </datasource>
+<!-- Add datasource start -->
                 <datasource jta="true" jndi-name="java:jboss/datasources/DolphinDS" pool-name="DolphinDS" enabled="true" use-ccm="false">
+<!-- mysql
+                    <connection-url>jdbc:mysql://localhost:3306/dolphin</connection-url>
+                    <driver-class>com.mysql.jdbc.Driver</driver-class>
+                    <driver>mysql-connector-java-5.1.29-bin.jar</driver>
+-->
                     <connection-url>jdbc:postgresql://localhost:5432/dolphin</connection-url>
                     <driver-class>org.postgresql.Driver</driver-class>
                     <driver>postgresql-9.3-1100-jdbc41.jar</driver>
@@ -171,6 +179,7 @@
                         <share-prepared-statements>false</share-prepared-statements>
                     </statement>
                 </datasource>
+<!-- Add datasource end   -->
                 <drivers>
                     <driver name="h2" module="com.h2database.h2">
                         <xa-datasource-class>org.h2.jdbcx.JdbcDataSource</xa-datasource-class>
@@ -358,7 +367,9 @@
             </buffer-caches>
             <server name="default-server">
                 <http-listener name="default" socket-binding="http"/>
-                <https-listener name="https" socket-binding="https" verify-client="NOT_REQUESTED" security-realm="OreoreRealm"/>
+<!-- Add https start -->
+                <https-listener name="https" socket-binding="https" security-realm="OreoreRealm"/>
+<!-- Add https end   -->
                 <host name="default-host" alias="localhost">
                     <location name="/" handler="welcome-content"/>
                     <filter-ref name="server-header"/>
@@ -395,7 +406,12 @@
             <inet-address value="${jboss.bind.address.management:127.0.0.1}"/>
         </interface>
         <interface name="public">
+<!-- Allow connection from any address start -->
+<!--
             <inet-address value="${jboss.bind.address:127.0.0.1}"/>
+-->
+            <any-address/>
+<!-- Allow connection from any address end  -->
         </interface>
         <interface name="unsecure">
             <inet-address value="${jboss.bind.address.unsecure:127.0.0.1}"/>
