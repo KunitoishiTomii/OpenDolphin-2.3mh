@@ -517,7 +517,8 @@ public final class SqlMiscDao extends SqlDaoBean {
         sb.append("act.srycd3,act.srysuryo3,act.srykaisu3,inputnum3,");
         sb.append("act.srycd4,act.srysuryo4,act.srykaisu4,inputnum4,");
         sb.append("act.srycd5,act.srysuryo5,act.srykaisu5,inputnum5,");
-        sb.append("main.").append(dayColumn);
+        sb.append("main.").append(dayColumn).append(",");
+        sb.append("main.zaikaisu");
         sb.append(" from tbl_sryact act, tbl_sryacct_main main");
         sb.append(" where act.zainum=main.zainum and act.ptid=main.ptid");
         sb.append(" and act.srysyukbn~'2[1239]'");
@@ -532,7 +533,9 @@ public final class SqlMiscDao extends SqlDaoBean {
 
         for (String[] values : valuesList) {
             
+            boolean hasAdmin = false;
             int dayColumnValue = Integer.valueOf(values[20]);
+            int zaiKaisu = Integer.valueOf(values[21]);
             
             for (int i = 0; i < 20; i += 4) {
 
@@ -555,6 +558,7 @@ public final class SqlMiscDao extends SqlDaoBean {
                     // tbl_sryacct_subを参照すれば分離できるが、めんどくさいｗ
                     srysuryo = (srykaisu == 0) ? dayColumnValue : srykaisu;
                     dataList.add(new String[]{srycd, frmt.format(srysuryo)});
+                    hasAdmin = true;
                 } else if (inputnum != 0) {
                     // おそらくコメント
                     dataList.add(new String[]{srycd, null});
@@ -562,6 +566,12 @@ public final class SqlMiscDao extends SqlDaoBean {
                     // 普通の薬
                     dataList.add(new String[]{srycd, frmt.format(srysuryo)});
                 }
+            }
+            
+            // 「薬剤コード」△「数量」＊「回数」の対応
+            // 取り敢えず　医師の指示通りにしておく。ただしこれは屯用になるが。
+            if (!hasAdmin) {
+                dataList.add(new String[]{"001000101", frmt.format(zaiKaisu)});
             }
         }
 
