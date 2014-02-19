@@ -368,7 +368,7 @@
             <server name="default-server">
                 <http-listener name="default" socket-binding="http"/>
 <!-- Add https start -->
-                <https-listener name="https" socket-binding="https" security-realm="OreoreRealm"/>
+                <https-listener name="https" socket-binding="https" verify-client="NOT_REQUESTED" security-realm="OreoreRealm"/>
 <!-- Add https end   -->
                 <host name="default-host" alias="localhost">
                     <location name="/" handler="welcome-content"/>
