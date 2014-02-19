@@ -561,6 +561,12 @@ public final class SqlMiscDao extends SqlDaoBean {
                 } else {
                     // 普通の薬
                     dataList.add(new String[]{srycd, frmt.format(srysuryo)});
+                    // 「薬剤コード」△「数量」＊「回数」の対応
+                    // 取り敢えず　医師の指示通りにしておく。ただしこれは屯用になるが。
+                    if (srykaisu != 0) {
+                        dataList.add(new String[]{"001000101", frmt.format(srykaisu)});
+                        
+                    }
                 }
             }
         }
