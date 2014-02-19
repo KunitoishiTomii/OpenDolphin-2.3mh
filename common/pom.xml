@@ -9,6 +9,13 @@
 
     <name>OpenDolphin-common</name>
     <url>http://maven.apache.org</url>
+    
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!-- linuxの場合は /var/lucene/indexes2 等に変更-->
+        <lucene.index.base>d:/lucene/index2</lucene.index.base>
+    </properties>
+    
     <build>
         <plugins>
             <plugin>
@@ -21,11 +28,14 @@
                 </configuration>
             </plugin>
         </plugins>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
     </build>
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
-
+    
     <dependencies>
         <dependency>
             <groupId>org.hibernate</groupId>
