@@ -24,8 +24,12 @@ public class IR_Model implements IRezeModel {
     
     private String nyugaikbn;      // 1:入院、2:入院外
     
-    private LinkedList<RE_Model> reModelList;
+    private final LinkedList<RE_Model> reModelList;
     private GO_Model goModel;
+    
+    public IR_Model() {
+        reModelList = new LinkedList();
+    }
     
     public String getNyugaikbn() {
         return nyugaikbn;
@@ -90,9 +94,6 @@ public class IR_Model implements IRezeModel {
         return reModelList.getLast();
     }
     public void addReModel(RE_Model model) {
-        if (reModelList == null) {
-            reModelList = new LinkedList<>();
-        }
         reModelList.add(model);
     }
     public void setGOModel(GO_Model model) {
