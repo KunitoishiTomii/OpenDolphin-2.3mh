@@ -14,6 +14,8 @@ import open.dolphin.infomodel.MsdUpdaterModel;
 @Stateless
 public class Updater {
     
+    private static final String INIT_OPTION = "initdatabase";
+    
     private static final String SQL = 
             "select count(m) from MsdUpdaterModel m where m.moduleName = :moduleName and m.versionDate = :verDate";
     
@@ -30,11 +32,18 @@ public class Updater {
     
     public void start() {
         
+        // 初期ユーザー登録
+        boolean init = Boolean.parseBoolean(System.getProperty(INIT_OPTION));
+        
         for (Class clazz : moduleClasses) {
             try {
                 AbstractUpdaterModule module = (AbstractUpdaterModule) clazz.newInstance();
+                if (module instanceof AddInitialUser && !init) {
+                    continue;
+                }
                 String moduleName = module.getModuleName();
                 Date versionDate = module.getVersionDate();
+                
                 long count = (Long) em.createQuery(SQL)
                         .setParameter("moduleName", moduleName)
                         .setParameter("verDate", versionDate)
