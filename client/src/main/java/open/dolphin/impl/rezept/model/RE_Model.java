@@ -28,15 +28,22 @@ public class RE_Model implements IRezeModel {
     private String nyugaikbn;   // 1:入院、2:入院外
     
     private HO_Model hoModel;
-    private List<KO_Model> koModelList;
+    private final List<KO_Model> koModelList;
     private KH_Model khModel;
-    private List<SY_Model> syModelList;
-    private List<IRezeItem> itemList;
-    private List<SJ_Model> sjModelList;
+    private final List<SY_Model> syModelList;
+    private final List<IRezeItem> itemList;
+    private final List<SJ_Model> sjModelList;
     
     private List<CheckResult> checkResults;
     
     private IR_Model irModel;
+    
+    public RE_Model() {
+        koModelList = new ArrayList<>();
+        syModelList = new ArrayList<>();
+        itemList = new ArrayList<>();
+        sjModelList = new ArrayList<>();
+    }
     
     public IR_Model getIrModel() {
         return irModel;
@@ -91,18 +98,12 @@ public class RE_Model implements IRezeModel {
         return itemList;
     }
     public void addItem(IRezeItem item) {
-        if (itemList == null) {
-            itemList = new ArrayList<>();
-        }
         itemList.add(item);
     }
     public List<SJ_Model> getSJModelList() {
         return sjModelList;
     }
     public void addSJModel(SJ_Model sjModel) {
-        if (sjModelList == null) {
-            sjModelList = new ArrayList<>();
-        }
         sjModelList.add(sjModel);
     }
     public void setHOModel(HO_Model model) {
@@ -112,9 +113,6 @@ public class RE_Model implements IRezeModel {
         return hoModel;
     }
     public void addKOModel(KO_Model model) {
-        if (koModelList == null) {
-            koModelList = new ArrayList<>();
-        }
         koModelList.add(model);
     }
     public List<KO_Model> getKOModelList() {
@@ -130,9 +128,6 @@ public class RE_Model implements IRezeModel {
         return syModelList;
     }
     public void addSYModel(SY_Model model) {
-        if (syModelList == null) {
-            syModelList = new ArrayList<>();
-        }
         syModelList.add(model);
     }
     
