@@ -17,7 +17,7 @@ import open.dolphin.util.MMLDate;
 public final class SqlMiscDao extends SqlDaoBean {
 
     private static final SqlMiscDao instance;
-    
+
     // srycdと検査等実施判断グループ区分のマップ
     private final Map<String, Integer> hokatsuKbnMap;
 
@@ -32,10 +32,10 @@ public final class SqlMiscDao extends SqlDaoBean {
     private SqlMiscDao() {
         hokatsuKbnMap = new HashMap<>();
     }
-    
+
     // 検査等実施判断グループ区分を調べる
     public Map<String, Integer> getHokatsuKbnMap(List<String> srycds) {
-        
+
         List<String> srycdsToGet = new ArrayList<>();
         for (String srycd : srycds) {
             if (!hokatsuKbnMap.containsKey(srycd)) {
@@ -45,16 +45,16 @@ public final class SqlMiscDao extends SqlDaoBean {
         if (srycdsToGet.isEmpty()) {
             return hokatsuKbnMap;
         }
-        
+
         int hospNum = getHospNum();
         StringBuilder sb = new StringBuilder();
         sb.append("select srycd, houksnkbn from tbl_tensu");
         sb.append(" where yukoedymd = '99999999'");
         sb.append(" and srycd in (").append(getCodes(srycdsToGet)).append(")");
         sb.append(" and hospnum = ").append(String.valueOf(hospNum));
-        
+
         final String sql = sb.toString();
-        
+
         List<String[]> valuesList = executeStatement(sql);
         for (String[] values : valuesList) {
             String srycd = values[0];
@@ -68,21 +68,21 @@ public final class SqlMiscDao extends SqlDaoBean {
 
     // 入院中の患者を検索し入院モデルを作成する
     public List<AdmissionModel> getInHospitalPatients(Date date) {
-        
+
         final String sql = "select TP.ptnum, TN.brmnum, TN.nyuinka, TN.nyuinymd , TN.drcd1 "
                 + "from tbl_ptnyuinrrk TN inner join tbl_ptnum TP on TP.ptid = TN.ptid "
                 + "where TN.tennyuymd <= ? and ? <= TN.tenstuymd and TN.hospnum = ?";
-        
+
         SimpleDateFormat frmt = new SimpleDateFormat("yyyyMMdd");
         String dateStr = frmt.format(date);
         int hospNum = getHospNum();
-        
+
         List<AdmissionModel> ret = new ArrayList<>();
-        
+
         Object[] params = {dateStr, dateStr, hospNum};
-        
+
         List<String[]> valuesList = executePreparedStatement(sql, params);
-        
+
         for (String[] values : valuesList) {
             String patientId = values[0].trim();
             String room = getRoomNumber(values[1].trim());
@@ -107,14 +107,14 @@ public final class SqlMiscDao extends SqlDaoBean {
 
         return ret;
     }
-    
+
     private String getOrcaStaffName(String code) {
         String staffName = SyskanriInfo.getInstance().getOrcaStaffName(code);
         return staffName;
     }
 
     private String getRoomNumber(String str) {
-        
+
         // 病棟番号を除去
         str = str.substring(2);
         // 先頭のゼロを除去
@@ -131,24 +131,23 @@ public final class SqlMiscDao extends SqlDaoBean {
         }
         return sb.toString();
     }
-    
+
     private String getDepartmentDesc(String code) {
         return SyskanriInfo.getInstance().getOrcaDeptDesc(code.trim());
     }
 
-    
     public List<DrugInteractionModel> checkInteraction(Collection<String> src1, Collection<String> src2) {
         // 引数はdrugcdの配列ｘ２
 
         if (src1 == null || src1.isEmpty() || src2 == null || src2.isEmpty()) {
             return Collections.emptyList();
         }
-        
+
         // コードが後発品ならばその先発品のコードを追加する
         Collection<String> allDrug = new HashSet<>();
         allDrug.addAll(src1);
         allDrug.addAll(src2);
-        
+
         // ゾロと先発の対応リストを作成する one-to-many
         List<ZoroBrandPair> zoroBrandList = getZoroBrandPair(allDrug);
 
@@ -159,7 +158,7 @@ public final class SqlMiscDao extends SqlDaoBean {
                 drug1.add(pair.brandSrycd);
             }
         }
-        
+
         Collection<String> drug2 = new ArrayList<>(src2);
         for (String srycd : src2) {
             List<ZoroBrandPair> pairs = getBrands(zoroBrandList, srycd);
@@ -167,7 +166,7 @@ public final class SqlMiscDao extends SqlDaoBean {
                 drug2.add(pair.brandSrycd);
             }
         }
-        
+
         StringBuilder sb = new StringBuilder();
         Map<String, DrugInteractionModel> map = new HashMap<>();
 
@@ -189,7 +188,7 @@ public final class SqlMiscDao extends SqlDaoBean {
             String syojoucd = values[3];
             String brandName1 = null;
             String brandName2 = null;
-            
+
             ZoroBrandPair zoro = getZoro(zoroBrandList, srycd1);
             // ゾロのエイリアスとしての先発薬の場合
             if (zoro != null) {
@@ -231,13 +230,13 @@ public final class SqlMiscDao extends SqlDaoBean {
             map.put(srycd1, new DrugInteractionModel(
                     srycd1, srycd2, sskijo, syojoucd, brandName1, brandName2));
         }
-        
+
         List<DrugInteractionModel> ret = new ArrayList<>(map.values());
         map.clear();
-        
+
         return ret;
     }
-    
+
     private static class ZoroBrandPair {
 
         String zoroSrycd;
@@ -264,18 +263,18 @@ public final class SqlMiscDao extends SqlDaoBean {
         }
         return ret;
     }
-    
+
     private List<ZoroBrandPair> getZoroBrandPair(Collection codes) {
-        
+
         List<ZoroBrandPair> ret = new ArrayList<>();
-        
+
         // 後発薬の薬価基準コードを取得する。先頭９ケタ
         StringBuilder sb = new StringBuilder();
         sb.append("select distinct srycd,name,yakkakjncd from tbl_tensu where srycd in (");
         sb.append(getCodes(codes));
         sb.append(") and kouhatukbn='1' and yukoedymd='99999999'");
         String sql = sb.toString();
-        
+
         Map<String, ZoroBrandPair> yakkakjncdMap = new HashMap<>();
         List<String[]> valuesList = executeStatement(sql);
         for (String[] values : valuesList) {
@@ -286,11 +285,11 @@ public final class SqlMiscDao extends SqlDaoBean {
             String yakkakjncd = values[2].substring(0, 9);
             yakkakjncdMap.put(yakkakjncd, pair);
         }
-        
+
         if (yakkakjncdMap.isEmpty()) {
             return Collections.emptyList();
         }
-        
+
         // 先発薬を調べる
         sb = new StringBuilder();
         // sqlのsubstringはsubstring(yakkakjncd,0,10)である
@@ -313,14 +312,14 @@ public final class SqlMiscDao extends SqlDaoBean {
                 ret.add(pair);
             }
         }
-        
+
         yakkakjncdMap.clear();
 
         return ret;
     }
 
     // srycdからgairaiKanriKbnの有無をチェックする。算定チェックに利用
-    public boolean hasGairaiKanriKbn(Collection<String> srycdList){
+    public boolean hasGairaiKanriKbn(Collection<String> srycdList) {
 
         if (srycdList == null || srycdList.isEmpty()) {
             return false;
@@ -343,7 +342,7 @@ public final class SqlMiscDao extends SqlDaoBean {
     }
 
     // srycdから腫瘍マーカー検査の有無をチェックする。算定チェックに利用
-    public boolean hasTumorMarkers(Collection<String> srycdList){
+    public boolean hasTumorMarkers(Collection<String> srycdList) {
 
         if (srycdList == null || srycdList.isEmpty()) {
             return false;
@@ -359,64 +358,64 @@ public final class SqlMiscDao extends SqlDaoBean {
         sb.append(" and srycd in (").append(getCodes(srycdList)).append(")");
 
         String sql = sb.toString();
-        
+
         List<String[]> valuesList = executeStatement(sql);
         boolean ret = !valuesList.isEmpty();
 
         return ret;
     }
-    
-/*  もっさり。。。
-    // srycdからTensuMasterをまとめて取得。LaboTestPanel, BaseEditor, RpEditor, ImportOrcaMedicine, CheckSanteiで利用
-    public List<TensuMaster> getTensuMasterList(List<String> srycdList) {
 
-        if (srycdList == null || srycdList.isEmpty()) {
-            return null;
-        }
+    /*  もっさり。。。
+     // srycdからTensuMasterをまとめて取得。LaboTestPanel, BaseEditor, RpEditor, ImportOrcaMedicine, CheckSanteiで利用
+     public List<TensuMaster> getTensuMasterList(List<String> srycdList) {
 
-        // 結果を格納するリスト
-        List<TensuMaster> ret = new ArrayList<TensuMaster>();
+     if (srycdList == null || srycdList.isEmpty()) {
+     return null;
+     }
+
+     // 結果を格納するリスト
+     List<TensuMaster> ret = new ArrayList<TensuMaster>();
         
-        StringBuilder sb = new StringBuilder();
-        sb.append(SELECT_TBL_TENSU2);
-        sb.append("where t.hospnum = ");
-        sb.append(String.valueOf(getHospNum()));
-        sb.append(" and ");
-        sb.append("t.srycd in (");
-        sb.append(getCodes(srycdList));
-        sb.append(")");
-        sb.append(" and ");
-        sb.append(" t.yukoedymd = (select max(t2.yukoedymd) from tbl_tensu t2 where t.srycd = t2.srycd group by t2.srycd)");
-        String sql = sb.toString();
+     StringBuilder sb = new StringBuilder();
+     sb.append(SELECT_TBL_TENSU2);
+     sb.append("where t.hospnum = ");
+     sb.append(String.valueOf(getHospNum()));
+     sb.append(" and ");
+     sb.append("t.srycd in (");
+     sb.append(getCodes(srycdList));
+     sb.append(")");
+     sb.append(" and ");
+     sb.append(" t.yukoedymd = (select max(t2.yukoedymd) from tbl_tensu t2 where t.srycd = t2.srycd group by t2.srycd)");
+     String sql = sb.toString();
 
-        Connection con = null;
-        Statement st = null;
+     Connection con = null;
+     Statement st = null;
 
-        try {
-            con = getConnection();
-            st = con.createStatement();
-            ResultSet rs = st.executeQuery(sql);
+     try {
+     con = getConnection();
+     st = con.createStatement();
+     ResultSet rs = st.executeQuery(sql);
 
-            while (rs.next()) {
-                TensuMaster tm = getTensuMaster(rs);
-                ret.add(tm);
-            }
-            rs.close();
-            closeStatement(st);
-            closeConnection(con);
-            return ret;
+     while (rs.next()) {
+     TensuMaster tm = getTensuMaster(rs);
+     ret.add(tm);
+     }
+     rs.close();
+     closeStatement(st);
+     closeConnection(con);
+     return ret;
 
-        } catch (Exception e) {
-            processError(e);
-            closeStatement(st);
-            closeConnection(con);
-        }
-        return null;
-    }
-*/
+     } catch (Exception e) {
+     processError(e);
+     closeStatement(st);
+     closeConnection(con);
+     }
+     return null;
+     }
+     */
     // srycdからTensuMasterをまとめて取得。LaboTestPanel, BaseEditor, RpEditor, ImportOrcaMedicine, CheckSanteiで利用
     public List<TensuMaster> getTensuMasterList(Collection<String> srycdList) {
-        
+
         if (srycdList == null || srycdList.isEmpty()) {
             return Collections.emptyList();
         }
@@ -434,16 +433,16 @@ public final class SqlMiscDao extends SqlDaoBean {
             TensuMaster tm = getTensuMaster(values);
             tmList.add(tm);
         }
-       
+
         return filterTensuMaster(tmList);
     }
-    
+
     // 古いTensuMasterを振るい落とす
     public List<TensuMaster> filterTensuMaster(List<TensuMaster> list) {
-        
+
         int todayYmd = MMLDate.getTodayInt();
         Map<String, TensuMaster> map = new HashMap<>();
-        
+
         for (TensuMaster test : list) {
             String srycd = test.getSrycd();
             TensuMaster exist = map.get(srycd);
@@ -458,23 +457,23 @@ public final class SqlMiscDao extends SqlDaoBean {
                 }
             }
         }
-        
+
         List<TensuMaster> ret = new ArrayList<>(map.values());
         map.clear();
-        
+
         return ret;
     }
-    
+
     // 傷病名コードからまとめてDiseaseEntryを取得
-    public List<DiseaseEntry> getDiseaseEntries(Collection<String> srycdList){
-        
+    public List<DiseaseEntry> getDiseaseEntries(Collection<String> srycdList) {
+
         if (srycdList == null || srycdList.isEmpty()) {
             return Collections.emptyList();
         }
         String selectSql = SyskanriInfo.getInstance().isOrca45()
                 ? SELECT_TBL_BYOMEI.replace("icd10_1", "icd10")
                 : SELECT_TBL_BYOMEI;
-        
+
         StringBuilder sb = new StringBuilder();
         sb.append(selectSql);
         sb.append("where byomeicd in (").append(getCodes(srycdList)).append(")");
@@ -482,7 +481,7 @@ public final class SqlMiscDao extends SqlDaoBean {
 
         List<DiseaseEntry> collection = new ArrayList<>();
         List<DiseaseEntry> outUse = new ArrayList<>();
-        
+
         List<String[]> valuesList = executeStatement(sql);
         for (String[] values : valuesList) {
             DiseaseEntry de = getDiseaseEntry(values);
@@ -493,7 +492,7 @@ public final class SqlMiscDao extends SqlDaoBean {
             }
         }
         collection.addAll(outUse);
-        
+
         return collection;
     }
 
@@ -502,7 +501,8 @@ public final class SqlMiscDao extends SqlDaoBean {
 
         final String ADMIN_MARK = "[用法] ";
 
-        List<String[]> dataList = new ArrayList<>();      // {srycd, suryo}
+        List<MasterItem> list = new ArrayList<>();
+        Set<String> srycdSet = new HashSet<>();
 
         String sryYM = visitYMD.substring(0, 6);
         String sryD = String.valueOf(Integer.parseInt(visitYMD.substring(6)));
@@ -527,16 +527,16 @@ public final class SqlMiscDao extends SqlDaoBean {
         sb.append(" and main.").append(dayColumn).append("<>0");
         sb.append(" order by act.zainum, act.rennum");
         String sql = sb.toString();
-        
+
         List<String[]> valuesList = executeStatement(sql);
         DecimalFormat frmt = new DecimalFormat("0.###");
 
         for (String[] values : valuesList) {
-            
+
             boolean hasAdmin = false;
             int dayColumnValue = Integer.valueOf(values[20]);
             int zaiKaisu = Integer.valueOf(values[21]);
-            
+
             for (int i = 0; i < 20; i += 4) {
 
                 // 外用薬ならsrykaisu=1、内服ならsrykaisu = 0
@@ -546,10 +546,12 @@ public final class SqlMiscDao extends SqlDaoBean {
                 if (srycd.isEmpty()) {
                     break;
                 }
+                srycdSet.add(srycd);
+
                 // 数量はfloatにしないと、0.5錠とかNGになる
                 float srysuryo = Float.parseFloat(values[i + 1]);
                 int srykaisu = Integer.parseInt(values[i + 2]);
-                int inputnum = Integer.parseInt(values[i + 3]);
+                //int inputnum = Integer.parseInt(values[i + 3]);
 
                 if (srycd.startsWith("001")) {
                     // srycdが001から始まっていたら用法コード
@@ -557,85 +559,80 @@ public final class SqlMiscDao extends SqlDaoBean {
                     // 同日に同じ処方があると、その処方の日数は合計になる。
                     // tbl_sryacct_subを参照すれば分離できるが、めんどくさいｗ
                     srysuryo = (srykaisu == 0) ? dayColumnValue : srykaisu;
-                    dataList.add(new String[]{srycd, frmt.format(srysuryo)});
+                    MasterItem mi = new MasterItem();
+                    mi.setCode(srycd);
+                    mi.setBundleNumber(frmt.format(srysuryo));
+                    list.add(mi);
                     hasAdmin = true;
-                } else if (inputnum != 0) {
-                    // おそらくコメント
-                    dataList.add(new String[]{srycd, null});
                 } else {
-                    // 普通の薬
-                    dataList.add(new String[]{srycd, frmt.format(srysuryo)});
+                    // 普通の薬とコメント
+                    MasterItem mi = new MasterItem();
+                    mi.setCode(srycd);
+                    mi.setNumber(frmt.format(srysuryo));
+                    list.add(mi);
                 }
             }
-            
+
             // 「薬剤コード」△「数量」＊「回数」の対応
             // 取り敢えず　医師の指示通りにしておく。ただしこれは屯用になるが。
             if (!hasAdmin) {
-                dataList.add(new String[]{"001000101", frmt.format(zaiKaisu)});
+                final String srycd = "001000101";
+                MasterItem mi = new MasterItem();
+                mi.setCode(srycd);
+                mi.setNumber(frmt.format(zaiKaisu));
+                list.add(mi);
+                srycdSet.add(srycd);
             }
         }
 
         // 調べたsrycdに応じたTensuMasterを取得して、MasterItemのリストに追加する。
         // まずはTensuMasterをまとめて取得しHashMapに登録する
-        // srycd群を用意
-        int len = dataList.size();
+        int len = list.size();
         if (len == 0) {
             return Collections.emptyList();
         }
-        List<String> srycdList = new ArrayList<>(len);
-        for (int i = 0; i < len; ++i) {
-            srycdList.add(dataList.get(i)[0]);
-        }
+
         // ORCAに問い合わせ
-        List<TensuMaster> tmList = getTensuMasterList(srycdList);
+        List<TensuMaster> tmList = getTensuMasterList(srycdSet);
         // HashMapに登録
-        HashMap<Integer, TensuMaster> tensuMasterMap = new HashMap<>();
+        HashMap<String, TensuMaster> tensuMasterMap = new HashMap<>();
         for (TensuMaster tm : tmList) {
-            tensuMasterMap.put(Integer.valueOf(tm.getSrycd()), tm);
+            tensuMasterMap.put(tm.getSrycd(), tm);
         }
-        
-        // MasterItemを作成する
-        List<MasterItem> miList = new ArrayList<>();
-        for (int i = 0; i < dataList.size(); ++i) {
-            
-            String srycd = dataList.get(i)[0];
-            String value = dataList.get(i)[1];
-            
-            TensuMaster tm = tensuMasterMap.get(Integer.valueOf(srycd));
-            if (tm == null) {
-                continue;
-            }
-                
-            MasterItem mItem = new MasterItem();
-            mItem.setCode(tm.getSrycd());
-            mItem.setDataKbn(tm.getDataKbn());
-            miList.add(mItem);
-            
-            if (value == null) {
-                // コメントコードのTensuMasterを作成、内容はめんどくさいので無視
-                mItem.setClassCode(ClaimConst.OTHER);
-                mItem.setUnit(tm.getTaniname());
-                mItem.setName(tm.getName());
-                mItem.setYkzKbn(tm.getYkzkbn());
-            } else if (!srycd.startsWith("001")) {
-                // 薬剤コードのTensuMasterを作成
-                mItem.setClassCode(ClaimConst.YAKUZAI);
-                mItem.setUnit(tm.getTaniname());
-                mItem.setName(tm.getName());
-                mItem.setNumber(value);
-                mItem.setYkzKbn(tm.getYkzkbn());
-            } else {
+
+        // reconstruct
+        for (MasterItem mi : list) {
+            String srycd = mi.getCode();
+            TensuMaster tm = tensuMasterMap.get(srycd);
+            mi.setDataKbn(tm.getDataKbn());
+
+            if (srycd.startsWith("8") || srycd.startsWith("008")) {
+                // コメントコード
+                mi.setClassCode(ClaimConst.OTHER);
+                mi.setUnit(tm.getTaniname());
+                mi.setName(tm.getName());
+                mi.setYkzKbn(tm.getYkzkbn());
+                mi.setNumber(null);
+                mi.setBundleNumber(null);
+            } else if (srycd.startsWith("001")) {
                 // 用法コードのTensuMasterを作成
-                mItem.setClassCode(ClaimConst.ADMIN);
-                mItem.setName(ADMIN_MARK + tm.getName());
-                mItem.setDummy("X");
-                mItem.setBundleNumber(value);
+                mi.setClassCode(ClaimConst.ADMIN);
+                mi.setName(ADMIN_MARK + tm.getName());
+                mi.setDummy("X");
+                mi.setNumber(null);
+            } else {
+                // 薬剤コードのTensuMasterを作成
+                mi.setClassCode(ClaimConst.YAKUZAI);
+                mi.setUnit(tm.getTaniname());
+                mi.setName(tm.getName());
+                mi.setYkzKbn(tm.getYkzkbn());
             }
         }
-        
+
+        srycdSet.clear();
         tensuMasterMap.clear();
-        
-        return miList;
+
+        return list;
     }
 
     // 期間内の受診日を取得する。返り値は"YYYYMMDD"形式の文字列リスト
@@ -654,19 +651,23 @@ public final class SqlMiscDao extends SqlDaoBean {
         sb.append(" between to_date(").append(addSingleQuote(startDate)).append(",'YYYYMMDD')");
         sb.append(" and to_date(").append(addSingleQuote(endDate)).append(",'YYYYMMDD')");
         sb.append(" and ptid=").append(String.valueOf(ptid));
-        if ("medOrder".equals(search)){
+        if ("medOrder".equals(search)) {
             sb.append(" and (srykbn2 = '01' or srykbn3 = '01' or srykbn4 = '01')");
         }
         sb.append(" order by rennum asc, to_date(sryymd,'YYYYMMDD')");
-        if (desc){
+        if (desc) {
             sb.append(" desc");
         }
         String sql = sb.toString();
 
         List<String[]> valuesList = executeStatement(sql);
-        
+
         for (String[] values : valuesList) {
-            orcaVisit.add(values[0]);
+            StringBuilder sb1 = new StringBuilder();
+            sb1.append(values[0].substring(0, 4)).append("-");
+            sb1.append(values[0].substring(4, 6)).append("-");
+            sb1.append(values[0].substring(6, 8));
+            orcaVisit.add(sb1.toString());
         }
 
         return orcaVisit;
@@ -677,7 +678,7 @@ public final class SqlMiscDao extends SqlDaoBean {
         long count = 0;
 
         String sql = "select count(*) from " + tableName;
-        
+
         List<String[]> valuesList = executeStatement(sql);
         if (!valuesList.isEmpty()) {
             String[] values = valuesList.get(0);
@@ -686,27 +687,27 @@ public final class SqlMiscDao extends SqlDaoBean {
 
         return count;
     }
-    
+
     public List<String[]> getRecedenCsv(String ym, String nyugaikbn, int teisyutusaki) {
-        
+
         final String sql = "select recedata, totalten from tbl_receden"
                 + " where sryym = ? and nyugaikbn = ? and teisyutusaki = ? and hospnum = ?"
                 + " order by nyugaikbn, ptid, rennum";
-        
+
         int hospNum = getHospNum();
         Object[] params = {ym, nyugaikbn, teisyutusaki, hospNum};
         List<String[]> valuesList = executePreparedStatement(sql, params);
-        
+
         for (String[] values : valuesList) {
             values[0] = values[0].trim();
             values[1] = values[1].trim();
         }
-        
+
         return valuesList;
     }
-    
+
     public IndicationModel getTekiouByomei(String srycd) {
-        
+
         final String sql1 = "select byomei from tbl_tekioubyomei"
                 + " where srycd = ? order by rennum";
         // chkkbn 1:医薬品と病名 2:診療行為と病名 6:投与禁忌医薬品と病名
@@ -717,7 +718,7 @@ public final class SqlMiscDao extends SqlDaoBean {
         // tbl_chk005
         final String sql4 = "select byomei from tbl_chk005"
                 + " where srycd = ? order by rennum";
-        
+
         IndicationModel model = new IndicationModel();
         model.setSrycd(srycd);
         model.setOutPatient(true);
@@ -725,9 +726,9 @@ public final class SqlMiscDao extends SqlDaoBean {
         model.setInclusive(false);
         model.setFacilityId(Project.getFacilityId());
         model.setIndicationItems(new ArrayList<IndicationItem>());
-        
+
         Object[] params = {srycd};
-        
+
         List<String[]> valuesList1 = executePreparedStatement(sql1, params);
         for (String[] values : valuesList1) {
             IndicationItem item = new IndicationItem();
@@ -735,7 +736,7 @@ public final class SqlMiscDao extends SqlDaoBean {
             item.setIndicationModel(model);
             addNewIndication(model, item);
         }
-        
+
         List<String[]> valuesList2 = executePreparedStatement(sql2, params);
         for (String[] values : valuesList2) {
             IndicationItem item = new IndicationItem();
@@ -743,7 +744,7 @@ public final class SqlMiscDao extends SqlDaoBean {
             item.setIndicationModel(model);
             addNewIndication(model, item);
         }
-        
+
         List<String[]> valuesList3 = executePreparedStatement(sql3, params);
         for (String[] values : valuesList3) {
             IndicationItem item = new IndicationItem();
@@ -760,12 +761,12 @@ public final class SqlMiscDao extends SqlDaoBean {
             item.setIndicationModel(model);
             addNewIndication(model, item);
         }
-        
+
         return model;
     }
-    
+
     private void addNewIndication(IndicationModel model, IndicationItem newItem) {
-        
+
         boolean found = false;
         for (IndicationItem item : model.getIndicationItems()) {
             if (isSameIndicationItem(item, newItem)) {
@@ -777,11 +778,11 @@ public final class SqlMiscDao extends SqlDaoBean {
             model.getIndicationItems().add(newItem);
         }
     }
-    
+
     private boolean isSameIndicationItem(IndicationItem item1, IndicationItem item2) {
-        
+
         boolean same = true;
-        
+
         if (item1 == null || item2 == null) {
             return false;
         }
@@ -790,7 +791,7 @@ public final class SqlMiscDao extends SqlDaoBean {
         }
         same &= item1.getKeyword().equals(item2.getKeyword());
         same &= item1.isNotCondition() == item2.isNotCondition();
-        
+
         return same;
     }
 }

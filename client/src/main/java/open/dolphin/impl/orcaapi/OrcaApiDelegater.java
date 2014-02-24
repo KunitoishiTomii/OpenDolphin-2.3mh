@@ -3,6 +3,7 @@ package open.dolphin.impl.orcaapi;
 import java.io.IOException;
 import java.io.StringReader;
 import java.text.SimpleDateFormat;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import javax.ws.rs.client.Entity;
@@ -11,6 +12,8 @@ import javax.ws.rs.core.Response;
 import open.dolphin.client.ClientContext;
 import open.dolphin.client.KarteSenderResult;
 import open.dolphin.dao.SyskanriInfo;
+import open.dolphin.order.MasterItem;
+import open.dolphin.project.Project;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.jdom2.Attribute;
@@ -216,6 +219,105 @@ public class OrcaApiDelegater implements IOrcaApi {
         return xml;
     }
     
+    public List<String> getOrcaVisit(String patientId, String ymd) throws Exception {
+        
+        final String path = "/api01rv2/medicalgetv2";
+        final String deptCode = Project.getUserModel().getDepartmentModel().getDepartment();
+        final String xml = createMedicalgetreqtXml2(patientId, ymd, deptCode);
+        
+        final Entity entity = toXmlEntity(xml);
+
+        Response response = getWebTarget()
+                .path(path)
+                .queryParam(CLASS, "01")
+                .request(MEDIATYPE_XML_UTF8)
+                .post(entity);
+
+        int status = checkHttpStatus(response);
+        String resXml = response.readEntity(String.class);
+        debug(status, resXml);
+        
+        response.close();
+
+        try {
+            Document res = builder.build(new StringReader(resXml));
+            MedicalgetResParser parser = new MedicalgetResParser(res);
+            String code = parser.getApiResult();
+            String msg = parser.getApiResultMessage();
+            if (API_NO_ERROR.equals(code)) {
+                return parser.getPerformDate();
+            }
+        } catch (JDOMException | IOException ex) {
+        }
+        return Collections.emptyList();
+    }
+    
+    public List<MasterItem> getOrcaMed(String patientId, String ymd) throws Exception {
+        
+        final String path = "/api01rv2/medicalgetv2";
+        final String deptCode = Project.getUserModel().getDepartmentModel().getDepartment();
+        final String xml = createMedicalgetreqtXml2(patientId, ymd, deptCode);
+        
+        final Entity entity = toXmlEntity(xml);
+
+        Response response = getWebTarget()
+                .path(path)
+                .queryParam(CLASS, "02")
+                .request(MEDIATYPE_XML_UTF8)
+                .post(entity);
+
+        int status = checkHttpStatus(response);
+        String resXml = response.readEntity(String.class);
+        debug(status, resXml);
+
+        response.close();
+
+        try {
+            Document res = builder.build(new StringReader(resXml));
+            MedicalgetResParser parser = new MedicalgetResParser(res);
+            String code = parser.getApiResult();
+            String msg = parser.getApiResultMessage();
+            if (API_NO_ERROR.equals(code)) {
+                return parser.getMedMasterItem();
+            }
+        } catch (JDOMException | IOException ex) {
+        }
+        return Collections.emptyList();
+    }
+
+    private String createMedicalgetreqtXml2(String patientId, String ymd, String deptCode) {
+
+        Element data = new Element(DATA)
+                .addContent(new Element("medicalgetreq").setAttribute(TYPE, RECORD)
+                        .addContent(new Element("Patient_ID").setAttribute(TYPE,
+                                        STRING).addContent(patientId))
+                        .addContent(new Element("Perform_Date").setAttribute(TYPE,
+                                        STRING).addContent(ymd))
+                        .addContent(createMedicalInfoElem2(deptCode))
+                );
+
+        Document post = new Document(data);
+        String xml = outputter.outputString(post);
+        return xml;
+    }
+
+    private Element createMedicalInfoElem2(String deptCode) {
+
+        Element elem = new Element("Medical_Information").setAttribute(TYPE, RECORD)
+                .addContent(new Element("Department_Code").setAttribute(TYPE, STRING).addContent(deptCode))
+                .addContent(new Element("Sequential_Number").setAttribute(TYPE, STRING))
+                .addContent(new Element("Insurance_Combination_Number").setAttribute(TYPE, STRING))
+                .addContent(new Element("HealthInsurance_Information").setAttribute(TYPE, RECORD)
+                        .addContent(new Element("InsuranceProvider_Class").setAttribute(TYPE, STRING))
+                        .addContent(new Element("InsuranceProvider_WholeName").setAttribute(TYPE, STRING))
+                        .addContent(new Element("InsuranceProvider_Number").setAttribute(TYPE, STRING))
+                        .addContent(new Element("HealthInsuredPerson_Symbol").setAttribute(TYPE, STRING))
+                        .addContent(new Element("HealthInsuredPerson_Number").setAttribute(TYPE, STRING))
+                );
+
+        return elem;
+    }
+ 
     private WebTarget getWebTarget() {
         return OrcaApiClient.getInstance().getWebTarget();
     }

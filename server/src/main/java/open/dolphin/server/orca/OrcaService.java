@@ -128,6 +128,8 @@ public class OrcaService {
         p.setMaxWait(5000);
         p.setRemoveAbandonedTimeout(30);
         p.setRemoveAbandoned(true);
+        p.setTestOnBorrow(true);
+        p.setValidationQuery("select 1");
         DataSource ds = new DataSource();
         ds.setPoolProperties(p);
 
