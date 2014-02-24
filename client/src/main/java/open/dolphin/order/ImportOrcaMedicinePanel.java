@@ -33,7 +33,7 @@ import open.dolphin.table.StripeTableCellRenderer;
 
 public class ImportOrcaMedicinePanel {
 
-    private static final boolean USE_ORCA_API = false;
+    private static final boolean USE_ORCA_API = true;
     private static final int period = 6;  // うんヶ月前から
     private String patientId;
     private boolean importFlag = false;
@@ -64,7 +64,9 @@ public class ImportOrcaMedicinePanel {
         // 開始
         patientId = ptid;
         if (USE_ORCA_API) {
-            getOrcaVisitApi();
+            // 投薬のない日も含まれてしまう
+            //getOrcaVisitApi();
+            getOrcaVisit();
         } else {
             getOrcaVisit();
         }

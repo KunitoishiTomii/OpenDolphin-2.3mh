@@ -503,7 +503,6 @@ public final class SqlMiscDao extends SqlDaoBean {
 
         List<MasterItem> list = new ArrayList<>();
         Set<String> srycdSet = new HashSet<>();
-        //List<String[]> dataList = new ArrayList<>();      // {srycd, suryo}
 
         String sryYM = visitYMD.substring(0, 6);
         String sryD = String.valueOf(Integer.parseInt(visitYMD.substring(6)));
@@ -577,10 +576,12 @@ public final class SqlMiscDao extends SqlDaoBean {
             // 「薬剤コード」△「数量」＊「回数」の対応
             // 取り敢えず　医師の指示通りにしておく。ただしこれは屯用になるが。
             if (!hasAdmin) {
+                final String srycd = "001000101";
                 MasterItem mi = new MasterItem();
-                mi.setCode("001000101");
+                mi.setCode(srycd);
                 mi.setNumber(frmt.format(zaiKaisu));
                 list.add(mi);
+                srycdSet.add(srycd);
             }
         }
 
@@ -662,7 +663,11 @@ public final class SqlMiscDao extends SqlDaoBean {
         List<String[]> valuesList = executeStatement(sql);
 
         for (String[] values : valuesList) {
-            orcaVisit.add(values[0]);
+            StringBuilder sb1 = new StringBuilder();
+            sb1.append(values[0].substring(0, 4)).append("-");
+            sb1.append(values[0].substring(4, 6)).append("-");
+            sb1.append(values[0].substring(6, 8));
+            orcaVisit.add(sb1.toString());
         }
 
         return orcaVisit;

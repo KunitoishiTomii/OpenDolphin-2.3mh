@@ -51,9 +51,12 @@ public class MedicalgetResParser extends AbstractOrcaApiParser {
             String classCode = elem.getChildText("Medical_Class");
             // 薬剤の場合
             if (classCode != null && classCode.matches("2[1239].")) {
+                
                 Element info= elem.getChild("Medication_info");
                 List<Element> children = info.getChildren();
                 boolean hasAdmin = false;
+                String bundleNumber = elem.getChildText("Medical_Class_Number");
+                
                 for (Element child : children) {
                     String srycd = child.getChildText("Medication_Code");
                     String name = child.getChildText("Medication_Name");
@@ -63,16 +66,19 @@ public class MedicalgetResParser extends AbstractOrcaApiParser {
                     mi.setName(name);
                     mi.setNumber(num);
                     if (srycd.startsWith("001")) {
-                        String bundleNumber = elem.getChildText("Medical_Class_Number");
                         mi.setBundleNumber(bundleNumber);
                         hasAdmin = true;
                     }
                     list.add(mi);
                     srycdSet.add(srycd);
                 }
+                
                 if (!hasAdmin) {
-                    MasterItem mi = list.get(list.size() - 1);
-                    mi.setBundleNumber(classCode);
+                    final String srycd = "001000101";
+                    MasterItem mi = new MasterItem();
+                    mi.setCode(srycd);
+                    mi.setBundleNumber(bundleNumber);
+                    srycdSet.add(srycd);
                 }
             }
         }
@@ -101,7 +107,7 @@ public class MedicalgetResParser extends AbstractOrcaApiParser {
                 // コメントコード
                 mi.setClassCode(ClaimConst.OTHER);
                 mi.setUnit(tm.getTaniname());
-                mi.setName(tm.getName());
+                //mi.setName(tm.getName());
                 mi.setYkzKbn(tm.getYkzkbn());
                 mi.setNumber(null);
                 mi.setBundleNumber(null);
