@@ -78,6 +78,7 @@ public class MedicalgetResParser extends AbstractOrcaApiParser {
                     MasterItem mi = new MasterItem();
                     mi.setCode(srycd);
                     mi.setBundleNumber(bundleNumber);
+                    list.add(mi);
                     srycdSet.add(srycd);
                 }
             }
