@@ -176,7 +176,7 @@ public class MedicalgetResParser extends AbstractOrcaApiParser {
     }
     
     private static final String[] ZENKAKU_NUM = {"０", "１", "２", "３", "４", "５", "６", "７", "８", "９", "．"};
-    private static final String[] HANKAKU_NUM = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ","};
+    private static final String[] HANKAKU_NUM = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "."};
     
     private String toHankakuNum(String str) {
         str = str.replace(" ", "").replace("　", "");
