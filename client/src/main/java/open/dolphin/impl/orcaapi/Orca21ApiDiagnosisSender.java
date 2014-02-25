@@ -9,6 +9,7 @@ import open.dolphin.client.IDiagnosisSender;
 import open.dolphin.client.KarteSenderResult;
 import open.dolphin.infomodel.RegisteredDiagnosisModel;
 import open.dolphin.project.Project;
+import open.dolphin.impl.orcaapi.model.MedicalModModel;
 
 /**
  * Orca21ApiDiagnosisSender

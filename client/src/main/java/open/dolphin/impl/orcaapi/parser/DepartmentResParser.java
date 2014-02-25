@@ -1,9 +1,12 @@
-package open.dolphin.impl.orcaapi;
+package open.dolphin.impl.orcaapi.parser;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import open.dolphin.impl.orcaapi.model.DepartmentInfo;
 import org.jdom2.Document;
 import org.jdom2.Element;
+import org.jdom2.JDOMException;
 
 /**
  * ORCA API46のDepartment_Informationをパースする
@@ -16,6 +19,9 @@ public class DepartmentResParser extends AbstractOrcaApiParser {
             Code, WholeName, Name1, Name2, Name3, Receipt_Code, other
     };
 
+    public DepartmentResParser(String xml) throws JDOMException, IOException {
+        super(xml);
+    }
     
     public DepartmentResParser(Document doc) {
         super(doc);
