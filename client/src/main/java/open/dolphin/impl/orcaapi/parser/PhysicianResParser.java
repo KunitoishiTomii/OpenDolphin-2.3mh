@@ -1,9 +1,12 @@
-package open.dolphin.impl.orcaapi;
+package open.dolphin.impl.orcaapi.parser;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import open.dolphin.impl.orcaapi.model.PhysicianInfo;
 import org.jdom2.Document;
 import org.jdom2.Element;
+import org.jdom2.JDOMException;
 
 /**
  * ORCA API46のPhysician_Informationをパースする
@@ -18,6 +21,10 @@ public class PhysicianResParser extends AbstractOrcaApiParser {
             Department_Code3, Department_Code4, Department_Code5,
             other
     };
+    
+    public PhysicianResParser(String xml) throws JDOMException, IOException {
+        super(xml);
+    }
     
     public PhysicianResParser(Document doc) {
         super(doc);
