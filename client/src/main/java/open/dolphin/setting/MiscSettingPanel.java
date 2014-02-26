@@ -81,6 +81,13 @@ public class MiscSettingPanel extends AbstractSettingPanel {
     public static final String ZEBRA_COLOR = "zebraColor";
     public static final String HL7_FORMAT = "hl7format";
     public static final String USE_JERSEY = "useJersey";
+    
+    public static final String UI_FONT_SIZE = "uiFontSize";
+    public static final String UI_FONT_NAME = "uiFontName";
+    public static final String UI_FONT_STYLE = "uiFontStyle";
+    public static final String STAMP_FONT_SIZE = "stampFontSize";
+    public static final String STAMP_FONT_NAME = "stampFontName";
+    public static final String STAMP_FONT_STYLE = "stampFontStyle";
 
     // preferencesのdefault
     public static final String DEFAULT_LBLPRT_ADDRESS = null;
@@ -129,6 +136,13 @@ public class MiscSettingPanel extends AbstractSettingPanel {
     
     public static final String DEFAULT_HL7_FORMAT = "wakayama";
     public static final boolean DEFAULT_USE_JERSEY = true;
+    
+    public static final int DEFAULT_UI_FONT_SIZE = 13;
+    public static final String DEFAULT_UI_FONT_NAME = Font.SANS_SERIF;
+    public static final int DEFAULT_UI_FONT_STYLE = Font.PLAIN;
+    public static final int DEFAULT_STAMP_FONT_SIZE = 12;
+    public static final String DEFAULT_STAMP_FONT_NAME = Font.SANS_SERIF;
+    public static final int DEFAULT_STAMP_FONT_STYLE = Font.PLAIN;
 
     // GUI staff
     private JTextField tf_lblPrtAddress;
@@ -208,8 +222,15 @@ public class MiscSettingPanel extends AbstractSettingPanel {
     
     private JRadioButton rb_jersey;
     private JRadioButton rb_resteasy;
-
     
+    private JComboBox cmb_UiFontName;
+    private JComboBox cmb_UiFontSize;
+    private JComboBox cmb_UiFontStyle;
+    private JComboBox cmb_StampFontName;
+    private JComboBox cmb_StampFontSize;
+    private JComboBox cmb_StampFontStyle;
+    private JButton btn_UiDefault;
+
     /** 画面モデル */
     private MiscModel model;
     private StateMgr stateMgr;
@@ -244,6 +265,8 @@ public class MiscSettingPanel extends AbstractSettingPanel {
     public void save() {
         bindViewToModel();
         model.restore();
+        
+        ClientContext.getClientContextStub().setupFonts();
     }
 
     /**
@@ -612,7 +635,6 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         gbl.add(tf_weasis, 1, row, GridBagConstraints.WEST);
         JPanel weasis = gbl.getProduct();
     
-
         // 全体レイアウト
         gbl = new GridBagBuilder();
         gbl.add(server, 0, 0, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
@@ -663,6 +685,44 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         gbl.add(btn_openFalcoPath, 2, row, GridBagConstraints.WEST);
         JPanel labo = gbl.getProduct();
         
+        // HibernateSearch
+        gbl = new GridBagBuilder("HibernateSearch");
+        btn_hsInit = new JButton("初期インデックス作成");
+        btn_hsInit.addActionListener(new ActionListener(){
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                InitHibernateSearchIndex ihsi = new InitHibernateSearchIndex();
+                ihsi.start(getContext());
+            }
+        });
+        gbl.add(btn_hsInit, 0, 0, GridBagConstraints.CENTER);
+        JPanel hs = gbl.getProduct();
+        
+        // client REST
+        gbl = new GridBagBuilder("クライアントJAX-RS");
+        rb_jersey = new JRadioButton("Jersey");
+        rb_resteasy = new JRadioButton("RESTEasy");
+        ButtonGroup bgRest = new ButtonGroup();
+        bgRest.add(rb_jersey);
+        bgRest.add(rb_resteasy);
+
+        JPanel pnlRest = new JPanel();
+        pnlRest.setLayout(new FlowLayout());
+        pnlRest.add(rb_jersey);
+        pnlRest.add(rb_resteasy);
+
+        gbl.add(pnlRest, 0, row, GridBagConstraints.CENTER);
+        JPanel rest = gbl.getProduct();
+
+        // 全体レイアウト
+        gbl = new GridBagBuilder();
+        gbl.add(labo, 0, 0, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
+        gbl.add(hs, 0, 1, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
+        gbl.add(rest, 0, 2, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
+        JPanel setting3 = gbl.getProduct();
+        
+        // UI設定
         // 色
         gbl = new GridBagBuilder("表ストライプの色");
         tf_zebra = GUIFactory.createTextField(15, null, null, null);
@@ -701,50 +761,69 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         gbl.add(defaultColorBtn, 1, 1, GridBagConstraints.CENTER);
         JPanel color = gbl.getProduct();
         
-        // HibernateSearch
-        gbl = new GridBagBuilder("HibernateSearch");
-        btn_hsInit = new JButton("初期インデックス作成");
-        btn_hsInit.addActionListener(new ActionListener(){
+        // フォント
+        gbl = new GridBagBuilder("ＵＩフォント設定");
+        String[] fontNames = getFontNames();
+        cmb_UiFontName = new JComboBox();
+        cmb_StampFontName = new JComboBox();
+        for (String fontName : fontNames) {
+            cmb_UiFontName.addItem(fontName);
+            cmb_StampFontName.addItem(fontName);
+        }
+        cmb_UiFontSize = new JComboBox();
+        cmb_StampFontSize = new JComboBox();
+        final int[] fontSizes = {10, 11, 12, 13, 14, 15, 16, 18, 20};
+        for (int fontSize : fontSizes) {
+            cmb_UiFontSize.addItem(fontSize);
+            cmb_StampFontSize.addItem(fontSize);
+        }
+        final String[] fontStyles = {"PLAIN", "BOLD", "ITALIC"};
+        cmb_UiFontStyle = new JComboBox();
+        cmb_StampFontStyle = new JComboBox();
+        for (String style : fontStyles) {
+            cmb_UiFontStyle.addItem(style);
+            cmb_StampFontStyle.addItem(style);
+        }
+         
+        btn_UiDefault = new JButton("デフォルト");
+        btn_UiDefault.addActionListener(new ActionListener(){
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                InitHibernateSearchIndex ihsi = new InitHibernateSearchIndex();
-                ihsi.start(getContext());
+                cmb_UiFontName.setSelectedItem(DEFAULT_UI_FONT_NAME);
+                cmb_UiFontSize.setSelectedItem(DEFAULT_UI_FONT_SIZE);
+                cmb_UiFontStyle.setSelectedIndex(0);
+                cmb_StampFontName.setSelectedItem(DEFAULT_STAMP_FONT_NAME);
+                cmb_StampFontSize.setSelectedItem(DEFAULT_STAMP_FONT_SIZE);
+                cmb_StampFontStyle.setSelectedIndex(0);
+                
             }
         });
-        gbl.add(btn_hsInit, 0, 0, GridBagConstraints.CENTER);
-        JPanel hs = gbl.getProduct();
         
-        // client REST
-        gbl = new GridBagBuilder("クライアントJAX-RS");
-        rb_jersey = new JRadioButton("Jersey");
-        rb_resteasy = new JRadioButton("RESTEasy");
-        ButtonGroup bgRest = new ButtonGroup();
-        bgRest.add(rb_jersey);
-        bgRest.add(rb_resteasy);
+        gbl.add(new JLabel("ＵＩフォント"), 0, 0, GridBagConstraints.CENTER);
+        gbl.add(cmb_UiFontName, 1, 0, GridBagConstraints.CENTER);
+        gbl.add(cmb_UiFontSize, 2, 0, GridBagConstraints.CENTER);
+        gbl.add(cmb_UiFontStyle, 3, 0, GridBagConstraints.CENTER);
+        gbl.add(new JLabel("スタンプ"), 0, 1, GridBagConstraints.CENTER);
+        gbl.add(cmb_StampFontName, 1, 1, GridBagConstraints.CENTER);
+        gbl.add(cmb_StampFontSize, 2, 1, GridBagConstraints.CENTER);
+        gbl.add(cmb_StampFontStyle, 3, 1, GridBagConstraints.CENTER);
+        gbl.add(btn_UiDefault, 1, 2, GridBagConstraints.CENTER);
+        JPanel font = gbl.getProduct();
 
-        JPanel pnlRest = new JPanel();
-        pnlRest.setLayout(new FlowLayout());
-        pnlRest.add(rb_jersey);
-        pnlRest.add(rb_resteasy);
-
-        gbl.add(pnlRest, 0, row, GridBagConstraints.CENTER);
-        JPanel rest = gbl.getProduct();
-
-        
         // 全体レイアウト
         gbl = new GridBagBuilder();
         gbl.add(color, 0, 0, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
-        gbl.add(labo, 0, 1, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
-        gbl.add(hs, 0, 2, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
-        gbl.add(rest, 0, 3, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
-        JPanel setting3 = gbl.getProduct();
+        gbl.add(font, 0, 1, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
+        JPanel uiSetting = gbl.getProduct();
+        
         
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.addTab("設定１", setting);
         tabbedPane.addTab("設定２", setting2);
         tabbedPane.addTab("設定３", setting3);
         //tabbedPane.addTab("RS_Base", settingRSB);
+        tabbedPane.addTab("ＵＩ", uiSetting);
         tabbedPane.addTab("PACS", pacsSetting);
 
         getUI().setLayout(new BorderLayout());
@@ -1007,6 +1086,14 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         } else {
             rb_resteasy.setSelected(true);
         }
+        
+        // UI
+        cmb_UiFontName.setSelectedItem(model.uiFontName);
+        cmb_UiFontSize.setSelectedItem(model.uiFontSize);
+        cmb_UiFontStyle.setSelectedIndex(model.uiFontStyle);
+        cmb_StampFontName.setSelectedItem(model.stampFontName);
+        cmb_StampFontSize.setSelectedItem(model.stampFontSize);
+        cmb_StampFontStyle.setSelectedIndex(model.stampFontStyle);
     }
 
     /**
@@ -1088,6 +1175,14 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         
         // rest
         model.useJersey = rb_jersey.isSelected();
+        
+        // UI
+        model.uiFontName = (String) cmb_UiFontName.getSelectedItem();
+        model.uiFontSize = (int) cmb_UiFontSize.getSelectedItem();
+        model.uiFontStyle = cmb_UiFontStyle.getSelectedIndex();
+        model.stampFontName = (String) cmb_StampFontName.getSelectedItem();
+        model.stampFontSize = (int) cmb_StampFontSize.getSelectedItem();
+        model.stampFontStyle = cmb_StampFontStyle.getSelectedIndex();
     }
 
     /**
@@ -1139,6 +1234,13 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         private String falcoFacilityId;
         
         private boolean useJersey;
+        
+        private String uiFontName;
+        private int uiFontSize;
+        private int uiFontStyle;
+        private String stampFontName;
+        private int stampFontSize;
+        private int stampFontStyle;
 
         public void populate() {
 
@@ -1203,6 +1305,14 @@ public class MiscSettingPanel extends AbstractSettingPanel {
             
             // rest
             useJersey = Project.getBoolean(USE_JERSEY, DEFAULT_USE_JERSEY);
+            
+            // UI
+            uiFontName = Project.getString(UI_FONT_NAME, DEFAULT_UI_FONT_NAME);
+            uiFontSize = Project.getInt(UI_FONT_SIZE, DEFAULT_UI_FONT_SIZE);
+            uiFontStyle = Project.getInt(UI_FONT_STYLE, DEFAULT_UI_FONT_STYLE);
+            stampFontName = Project.getString(STAMP_FONT_NAME, DEFAULT_STAMP_FONT_NAME);
+            stampFontSize = Project.getInt(STAMP_FONT_SIZE, DEFAULT_STAMP_FONT_SIZE);
+            stampFontStyle = Project.getInt(STAMP_FONT_STYLE, DEFAULT_STAMP_FONT_STYLE);
         }
 
         public void restore() {
@@ -1262,6 +1372,14 @@ public class MiscSettingPanel extends AbstractSettingPanel {
             
             // rest
             Project.setBoolean(USE_JERSEY, useJersey);
+            
+            // UI
+            Project.setString(UI_FONT_NAME, uiFontName);
+            Project.setInt(UI_FONT_SIZE, uiFontSize);
+            Project.setInt(UI_FONT_STYLE, uiFontStyle);
+            Project.setString(STAMP_FONT_NAME, stampFontName);
+            Project.setInt(STAMP_FONT_SIZE, stampFontSize);
+            Project.setInt(STAMP_FONT_STYLE, stampFontStyle);
         }
     }
 
@@ -1393,5 +1511,11 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         } catch (NullPointerException | NumberFormatException e) {
         }
         return c;
+    }
+    
+    private String[] getFontNames() {
+        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        String[] fontNames =  ge.getAvailableFontFamilyNames();
+        return fontNames;
     }
 }

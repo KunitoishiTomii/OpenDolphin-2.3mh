@@ -2,6 +2,7 @@ package open.dolphin.client;
 
 import open.dolphin.common.util.StampRenderingHints;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
@@ -33,6 +34,7 @@ public final class StampHolder extends AbstractComponentHolder {
         function = StampHolderFunction.getInstance();
         function.setDeleteAction(StampHolder.this);
         hints = StampRenderingHints.getInstance();
+        setFont(hints.getFont());
         setForeground(FOREGROUND);
         setStamp(stamp);
     }
