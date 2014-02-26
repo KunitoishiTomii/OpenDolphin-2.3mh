@@ -348,6 +348,13 @@ public class RezeptViewer {
             }
         });
         
+        view.getCSVBtn().addActionListener(new ActionListener(){
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                csvOut();
+            }
+        });
         view.getPrintBtn().addActionListener(new ActionListener(){
 
             @Override
@@ -356,8 +363,12 @@ public class RezeptViewer {
             }
         });
         view.getPrintBtn().setEnabled(false);
+        view.getCSVBtn().setEnabled(false);
     }
     
+    private void csvOut() { 
+        
+    }
     private void print() {
         
         final String[] commands = {"エラー", "警告", "INFO", "全部"};
@@ -505,6 +516,7 @@ public class RezeptViewer {
                     }
                 }
                 view.getPrintBtn().setEnabled(true);
+                view.getCSVBtn().setEnabled(true);
                 blockGlass.setText("");
                 blockGlass.unblock();
             }
@@ -659,6 +671,7 @@ public class RezeptViewer {
         blockGlass.setText("処理中です...");
         blockGlass.block();
         view.getPrintBtn().setEnabled(false);
+        view.getCSVBtn().setEnabled(false);
         
         SimpleWorker worker = new SimpleWorker<List<IR_Model>, Void>(){
 
@@ -693,6 +706,7 @@ public class RezeptViewer {
                         }
                     }
                     view.getPrintBtn().setEnabled(true);
+                    view.getCSVBtn().setEnabled(true);
                     //showRezeData(null);
                 } else {
                     JOptionPane.showMessageDialog(view, "指定月のレセ電データがありません。",
