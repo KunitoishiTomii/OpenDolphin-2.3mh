@@ -14,6 +14,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import open.dolphin.client.AutoRomanListener;
 import open.dolphin.client.ClientContext;
+import open.dolphin.client.FontManager;
 import open.dolphin.client.GUIFactory;
 import open.dolphin.client.RegexConstrainedDocument;
 import open.dolphin.delegater.MasudaDelegater;
@@ -266,7 +267,7 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         bindViewToModel();
         model.restore();
         
-        ClientContext.getClientContextStub().setupFonts();
+        FontManager.updateFonts();
     }
 
     /**
@@ -772,7 +773,7 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         }
         cmb_UiFontSize = new JComboBox();
         cmb_StampFontSize = new JComboBox();
-        final int[] fontSizes = {10, 11, 12, 13, 14, 15, 16, 18, 20};
+        final int[] fontSizes = FontManager.getFontSizes();
         for (int fontSize : fontSizes) {
             cmb_UiFontSize.addItem(fontSize);
             cmb_StampFontSize.addItem(fontSize);

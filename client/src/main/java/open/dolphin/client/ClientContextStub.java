@@ -14,7 +14,6 @@ import javax.swing.border.BevelBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.plaf.basic.BasicTextPaneUI;
 import javax.swing.text.DefaultEditorKit;
-import open.dolphin.common.util.StampRenderingHints;
 import open.dolphin.exception.DolphinException;
 import open.dolphin.infomodel.DepartmentModel;
 import open.dolphin.infomodel.DiagnosisCategoryModel;
@@ -688,7 +687,7 @@ public final class ClientContextStub {
         }
 
         // フォント設定
-        setupFonts();
+        FontManager.initFonts();
         
         // 上書き設定群
         if (isQuaqua) {
@@ -740,50 +739,6 @@ public final class ClientContextStub {
         // ウィンドウフレームの装飾
         //JFrame.setDefaultLookAndFeelDecorated(true);
         //JDialog.setDefaultLookAndFeelDecorated(true);
-    }
-    
-    
-    // フォント設定
-    public void setupFonts() {
-        
-        String fontName = Project.getString(MiscSettingPanel.UI_FONT_NAME, MiscSettingPanel.DEFAULT_UI_FONT_NAME);
-        int fontSize = Project.getInt(MiscSettingPanel.UI_FONT_SIZE, MiscSettingPanel.DEFAULT_UI_FONT_SIZE);
-        int fontStyle = Project.getInt(MiscSettingPanel.UI_FONT_STYLE, MiscSettingPanel.DEFAULT_UI_FONT_STYLE);
-
-        Font fontSmallest = new Font(fontName, fontStyle, fontSize - 2);
-        Font fontSmaller = new Font(fontName, fontStyle, fontSize - 1);
-        Font fontStandard = new Font(fontName, fontStyle, fontSize);
-
-        UIManager.put("TextPane.font", fontStandard);
-        UIManager.put("TextField.font", fontStandard);
-        UIManager.put("PasswordField.font", fontStandard);
-        UIManager.put("TextArea.font", fontStandard);
-        UIManager.put("OptionPane.font", fontStandard);
-        UIManager.put("OptionPane.messageFont", fontStandard);
-        UIManager.put("Label.font", fontSmaller);
-        UIManager.put("Button.font", fontSmaller);
-        UIManager.put("ToggleButton.font", fontSmaller);
-        UIManager.put("Menu.font", fontSmaller);
-        UIManager.put("MenuItem.font", fontSmaller);
-        UIManager.put("CheckBox.font", fontSmaller);
-        UIManager.put("CheckBoxMenuItem.font", fontSmaller);
-        UIManager.put("RadioButton.font", fontSmaller);
-        UIManager.put("RadioButtonMenuItem.font", fontSmaller);
-        UIManager.put("ToolBar.font", fontSmaller);
-        UIManager.put("ComboBox.font", fontSmaller);
-        UIManager.put("TabbedPane.font", fontSmaller);
-        UIManager.put("TitledBorder.font", fontSmaller);
-        UIManager.put("List.font", fontSmaller);
-        UIManager.put("Table.font", fontSmaller);
-        UIManager.put("TabbedPane.font", fontSmaller);
-        UIManager.put("TableHeader.font", fontSmallest);    // 小さ目
-
-        // スタンプホルダフォント
-        String stampFontName = Project.getString(MiscSettingPanel.STAMP_FONT_NAME, MiscSettingPanel.DEFAULT_STAMP_FONT_NAME);
-        int stampFontSize = Project.getInt(MiscSettingPanel.STAMP_FONT_SIZE, MiscSettingPanel.DEFAULT_STAMP_FONT_SIZE);
-        int stampFontStyle = Project.getInt(MiscSettingPanel.STAMP_FONT_STYLE, MiscSettingPanel.DEFAULT_STAMP_FONT_STYLE);;
-        StampRenderingHints.getInstance().setFont(stampFontName, stampFontStyle, stampFontSize);
-
     }
 
     public Color getZebraColor() {
