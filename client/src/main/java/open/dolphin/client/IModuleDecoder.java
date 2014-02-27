@@ -28,9 +28,8 @@ public class IModuleDecoder {
     
     private static final Map<String, MethodHandle> METHOD_HANDLE_MAP;
 
-    private ProgressCourse progressCourse;
-    private BundleDolphin bundleDolphin;
-    private BundleMed bundleMed;
+    private IModuleModel moduleModel;
+    
     private final StringBuilder sb;
 
     private ClaimItem claimItem;
@@ -77,16 +76,7 @@ public class IModuleDecoder {
             }
         }
 
-        IModuleModel ret = null;
-        if (progressCourse != null) {
-            ret = progressCourse;
-        } else if (bundleDolphin != null) {
-            ret = bundleDolphin;
-        } else if (bundleMed != null) {
-            ret = bundleMed;
-        }
-        
-        return ret;
+        return moduleModel;
     }
 
     private void endElement(final XMLStreamReader reader) {
@@ -116,7 +106,7 @@ public class IModuleDecoder {
                 break;
             case "string":
                 final String value = reader.getElementText();
-                if (progressCourse != null) {
+                if (moduleModel instanceof ProgressCourse) {
                     writeProgressCourse(value);
                 } else if (arrayIndex != -1) {
                     writeClaimItemField(value);
@@ -126,13 +116,11 @@ public class IModuleDecoder {
                 break;
             case "array":
                 final int len = Integer.parseInt(reader.getAttributeValue(null, "length"));
-                if (bundleDolphin != null) {
-                    bundleDolphin.setClaimItem(new ClaimItem[len]);
-                } else if (bundleMed != null) {
-                    bundleMed.setClaimItem(new ClaimItem[len]);
+                if (moduleModel instanceof BundleDolphin) {
+                    BundleDolphin bundle = (BundleDolphin) moduleModel;
+                    bundle.setClaimItem(new ClaimItem[len]);
                 }
         }
-
     }
 
     private void createObject(final String className) {
@@ -140,20 +128,17 @@ public class IModuleDecoder {
         switch (className) {
             case "open.dolphin.infomodel.ClaimItem":
                 claimItem = new ClaimItem();
-                if (bundleDolphin != null) {
-                    bundleDolphin.getClaimItem()[++arrayIndex] = claimItem;
-                } else if (bundleMed != null) {
-                    bundleMed.getClaimItem()[++arrayIndex] = claimItem;
-                }
+                BundleDolphin bundle = (BundleDolphin) moduleModel;
+                bundle.getClaimItem()[++arrayIndex] = claimItem;
                 break;
             case "open.dolphin.infomodel.BundleDolphin":
-                bundleDolphin = new BundleDolphin();
+                moduleModel = new BundleDolphin();
                 break;
             case "open.dolphin.infomodel.BundleMed":
-                bundleMed = new BundleMed();
+                moduleModel = new BundleMed();
                 break;
             case "open.dolphin.infomodel.ProgressCourse":
-                progressCourse = new ProgressCourse();
+                moduleModel = new ProgressCourse();
                 break;
             default:
                 System.out.println("Unknown class : " + className);
@@ -162,21 +147,19 @@ public class IModuleDecoder {
     }
 
     private void writeProgressCourse(final String value) {
-        progressCourse.setFreeText(value);
+        ProgressCourse pc = (ProgressCourse) moduleModel;
+        pc.setFreeText(value);
     }
 
     private void writeBundleField(final String value) throws Throwable {
 
         String methodName = getCamelCaseSetMethodName(fieldName);
-
-        if (bundleDolphin != null) {
-            MethodHandle mh = getMethodHandle(BundleDolphin.class, methodName);
-            mh.invokeExact(bundleDolphin, value);
-        } else if (bundleMed != null) {
-            MethodHandle mh = getMethodHandle(BundleMed.class, methodName);
-            mh.invokeExact(bundleMed, value);
+        MethodHandle mh = getMethodHandle(moduleModel.getClass(), methodName);
+        if (moduleModel instanceof BundleMed) {
+            mh.invokeExact((BundleMed) moduleModel, value);
+        } else if (moduleModel instanceof BundleDolphin) {
+            mh.invokeExact((BundleDolphin) moduleModel, value);
         }
-
     }
 
     private void writeClaimItemField(final String value) throws Throwable {
