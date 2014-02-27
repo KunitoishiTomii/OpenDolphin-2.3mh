@@ -65,7 +65,6 @@ public class IModuleDecoder {
 
         private Object lastObject;
 
-        private String fieldName;
         private int arrayIndex;
         private int depth;
         private int voidIndexDepth;
@@ -152,30 +151,36 @@ public class IModuleDecoder {
                 case "void":
                     String attrName = reader.getAttributeLocalName(0);
                     String attrValue = reader.getAttributeValue(0);
+                    
                     switch (attrName) {
                         case "property":
-                            fieldName = attrValue;
+                            // attrValueはフィールド名である
+                            // 一つ進める
+                            reader.nextTag();
+                            String nextElemName = reader.getLocalName();
+                            switch(nextElemName) {
+                                case "string":
+                                    String value = reader.getElementText();
+                                    writeObjectField(attrValue, value); 
+                                    break;
+                                case "array":
+                                    String className = reader.getAttributeValue(0);
+                                    String strLen = reader.getAttributeValue(1);
+                                    writeArray(attrValue, className, strLen);
+                                    break;
+                            }
                             break;
                         case "index":
+                            // attrValueはarrayIndexである
                             voidIndexDepth = depth;
                             arrayIndex = Integer.valueOf(attrValue);
                             break;
                     }
                     break;
-                case "string":
-                    String value = reader.getElementText();
-                    depth--;
-                    writeObjectField(value);
-                    break;
-                case "array":
-                    String className = reader.getAttributeValue(0);
-                    String strLen = reader.getAttributeValue(1);
-                    writeArray(className, strLen);
-                    break;
             }
         }
 
-        private void writeArray(String className, String strLen) throws Throwable {
+        private void writeArray(String fieldName, String className, String strLen) throws Throwable {
             
             int len = Integer.parseInt(strLen);
             String methodName = getCamelCaseSetMethodName(fieldName);
@@ -208,7 +213,7 @@ public class IModuleDecoder {
         }
 
         // モデルを作成する
-        private void createObject(final String className) {
+        private void createObject(String className) {
 
             switch (className) {
                 case "open.dolphin.infomodel.ClaimItem":
@@ -234,7 +239,7 @@ public class IModuleDecoder {
         }
         
         // モデルに値を設定する
-        private void writeObjectField(final String value) throws Throwable {
+        private void writeObjectField(String fieldName, String value) throws Throwable {
 
             String methodName = getCamelCaseSetMethodName(fieldName);
             
