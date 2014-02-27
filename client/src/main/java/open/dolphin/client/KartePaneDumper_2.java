@@ -31,6 +31,7 @@ public final class KartePaneDumper_2 {
     private static final String FOREGROUND_NAME = StyleConstants.Foreground.toString();
     private static final String NAME_NAME = StyleConstants.NameAttribute.toString();
     private static final String CONTENT_NAME = AbstractDocument.ContentElementName;
+    private static final String SIZE_NAME = StyleConstants.Size.toString();
     private static final String TEXT_NAME = "text";
     private static final String ATTR_START = "start";
     private static final String ATTR_END = "end";
@@ -44,6 +45,7 @@ public final class KartePaneDumper_2 {
     private SimpleXmlWriter writer;
     private String spec;
     
+    private int baseFontSize;
     
     public KartePaneDumper_2() {
         logger = ClientContext.getBootLogger();
@@ -95,6 +97,8 @@ public final class KartePaneDumper_2 {
      */
     public void dump(DefaultStyledDocument doc) {
         
+        baseFontSize = ((KarteStyledDocument) doc).getKartePane().getTextPane().getFont().getSize();
+
         writer = new SimpleXmlWriter();
         writer.setRepcaceXmlChar(true);
         writer.setReplaceZenkaku(false);
@@ -180,7 +184,11 @@ public final class KartePaneDumper_2 {
                 Color c = (Color) atts.getAttribute(StyleConstants.Foreground);
                 logger.debug("color = " + c.toString());
                 writer.writeAttribute(attrName, getColorStr(c));
-
+            } else if (SIZE_NAME.equals(attrName)) {
+                int viewFontSize = (int) atts.getAttribute(StyleConstants.Size);
+                int modelFontSize = FontManager.toModelFontSize(viewFontSize, baseFontSize);
+                //logger.debug("size = " + String.valueOf(viewFontSize));
+                writer.writeAttribute(attrName, String.valueOf(modelFontSize));
             } else {
                 // 属性セットから名前をキーにして属性オブジェクトを取得する
                 Object attObject = atts.getAttribute(nextName);

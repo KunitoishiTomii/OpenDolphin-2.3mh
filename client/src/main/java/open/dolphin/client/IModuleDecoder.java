@@ -1,8 +1,12 @@
 package open.dolphin.client;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -13,21 +17,34 @@ import open.dolphin.infomodel.IModuleModel;
 import open.dolphin.infomodel.ProgressCourse;
 
 /**
- * IModuleDecoder
- * 速度優先、汎用性なしｗ
+ * IModuleDecoder 
+ * MethodHandle使いたくて、汎用性なしｗ
  *
  * @author masuda, Masuda Naika
  */
 public class IModuleDecoder {
+
+    private static final MethodType MT_VOID_STRING = MethodType.methodType(void.class, String.class);
     
+    private static final Map<String, MethodHandle> METHOD_HANDLE_MAP;
+
     private ProgressCourse progressCourse;
-    private BundleDolphin bundle;
-    
+    private BundleDolphin bundleDolphin;
+    private BundleMed bundleMed;
+    private final StringBuilder sb;
+
     private ClaimItem claimItem;
     private String fieldName;
     private int arrayIndex = -1;
 
-    
+    static {
+        METHOD_HANDLE_MAP = new ConcurrentHashMap<>();
+    }
+
+    public IModuleDecoder() {
+        sb = new StringBuilder();
+    }
+
     public final IModuleModel decode(final byte[] beanBytes) {
 
         final XMLInputFactory factory = XMLInputFactory.newInstance();
@@ -49,7 +66,8 @@ public class IModuleDecoder {
                 }
             }
 
-        } catch (XMLStreamException | IOException ex) {
+        } catch (Throwable ex) {
+            ex.printStackTrace(System.err);
         } finally {
             try {
                 if (reader != null) {
@@ -59,11 +77,16 @@ public class IModuleDecoder {
             }
         }
 
+        IModuleModel ret = null;
         if (progressCourse != null) {
-            return progressCourse;
-        } else {
-            return bundle;
+            ret = progressCourse;
+        } else if (bundleDolphin != null) {
+            ret = bundleDolphin;
+        } else if (bundleMed != null) {
+            ret = bundleMed;
         }
+        
+        return ret;
     }
 
     private void endElement(final XMLStreamReader reader) {
@@ -77,7 +100,7 @@ public class IModuleDecoder {
         }
     }
 
-    private void startElement(final XMLStreamReader reader) throws XMLStreamException {
+    private void startElement(final XMLStreamReader reader) throws Throwable {
 
         final String eName = reader.getLocalName();
 
@@ -103,7 +126,11 @@ public class IModuleDecoder {
                 break;
             case "array":
                 final int len = Integer.parseInt(reader.getAttributeValue(null, "length"));
-                bundle.setClaimItem(new ClaimItem[len]);
+                if (bundleDolphin != null) {
+                    bundleDolphin.setClaimItem(new ClaimItem[len]);
+                } else if (bundleMed != null) {
+                    bundleMed.setClaimItem(new ClaimItem[len]);
+                }
         }
 
     }
@@ -113,13 +140,17 @@ public class IModuleDecoder {
         switch (className) {
             case "open.dolphin.infomodel.ClaimItem":
                 claimItem = new ClaimItem();
-                bundle.getClaimItem()[++arrayIndex] = claimItem;
+                if (bundleDolphin != null) {
+                    bundleDolphin.getClaimItem()[++arrayIndex] = claimItem;
+                } else if (bundleMed != null) {
+                    bundleMed.getClaimItem()[++arrayIndex] = claimItem;
+                }
                 break;
             case "open.dolphin.infomodel.BundleDolphin":
-                bundle = new BundleDolphin();
+                bundleDolphin = new BundleDolphin();
                 break;
             case "open.dolphin.infomodel.BundleMed":
-                bundle = new BundleMed();
+                bundleMed = new BundleMed();
                 break;
             case "open.dolphin.infomodel.ProgressCourse":
                 progressCourse = new ProgressCourse();
@@ -134,93 +165,45 @@ public class IModuleDecoder {
         progressCourse.setFreeText(value);
     }
 
-    private void writeBundleField(final String value) {
+    private void writeBundleField(final String value) throws Throwable {
 
-        switch (fieldName) {
-            case "className":
-                bundle.setClassName(value);
-                break;
-            case "classCode":
-                bundle.setClassCode(value);
-                break;
-            case "classCodeSystem":
-                bundle.setClassCodeSystem(value);
-                break;
-            case "admin":
-                bundle.setAdmin(value);
-                break;
-            case "adminCode":
-                bundle.setAdminCode(value);
-                break;
-            case "adminCodeSystem":
-                bundle.setAdminCodeSystem(value);
-                break;
-            case "adminMemo":
-                bundle.setAdminMemo(value);
-                break;
-            case "bundleNumber":
-                bundle.setBundleNumber(value);
-                break;
-            case "memo":
-                bundle.setMemo(value);
-                break;
-            case "insurance":
-                bundle.setInsurance(value);
-                break;
-            case "orderName":
-                bundle.setOrderName(value);
-                break;
-            default:
-                System.out.println("Unknown field name in BundleDolphin : " + fieldName);
-                break;
+        String methodName = getCamelCaseSetMethodName(fieldName);
+
+        if (bundleDolphin != null) {
+            MethodHandle mh = getMethodHandle(BundleDolphin.class, methodName);
+            mh.invokeExact(bundleDolphin, value);
+        } else if (bundleMed != null) {
+            MethodHandle mh = getMethodHandle(BundleMed.class, methodName);
+            mh.invokeExact(bundleMed, value);
         }
+
     }
 
-    private void writeClaimItemField(final String value) {
+    private void writeClaimItemField(final String value) throws Throwable {
 
-        switch (fieldName) {
-            case "name":
-                claimItem.setName(value);
-                break;
-            case "code":
-                claimItem.setCode(value);
-                break;
-            case "codeSystem":
-                claimItem.setCodeSystem(value);
-                break;
-            case "classCode":
-                claimItem.setClassCode(value);
-                break;
-            case "classCodeSystem":
-                claimItem.setClassCodeSystem(value);
-                break;
-            case "number":
-                claimItem.setNumber(value);
-                break;
-            case "unit":
-                claimItem.setUnit(value);
-                break;
-            case "numberCode":
-                claimItem.setNumberCode(value);
-                break;
-            case "numberCodeSystem":
-                claimItem.setNumberCodeSystem(value);
-                break;
-            case "memo":
-                claimItem.setMemo(value);
-                break;
-            case "ykzKbn":
-                claimItem.setYkzKbn(value);
-                break;
-            case "srysyuKbn":
-                claimItem.setSrysyuKbn(value);
-                break;
-            case "dataKbn":
-                claimItem.setDataKbn(value);
-                break;
-            default:
-                System.out.println("Unknown field name in ClaimItem : " + fieldName);
-                break;
+        String methodName = getCamelCaseSetMethodName(fieldName);
+        MethodHandle mh = getMethodHandle(ClaimItem.class, methodName);
+        mh.invokeExact(claimItem, value);
+    }
+
+    private String getCamelCaseSetMethodName(String name) {
+        sb.setLength(0);
+        sb.append("set").append(name.substring(0, 1).toUpperCase()).append(name.substring(1));
+        return sb.toString();
+    }
+
+    private MethodHandle getMethodHandle(Class clazz, String methodName) throws Throwable {
+
+        sb.setLength(0);
+        sb.append(clazz.getSimpleName()).append(':').append(methodName);
+        String key = sb.toString();
+
+        MethodHandle mt = METHOD_HANDLE_MAP.get(key);
+        if (mt == null) {
+            mt = MethodHandles.lookup().findVirtual(clazz, methodName, MT_VOID_STRING);
+            METHOD_HANDLE_MAP.put(key, mt);
         }
+
+        return mt;
     }
 }

@@ -1,4 +1,4 @@
-package open.dolphin.impl.orcaapi;
+package open.dolphin.impl.orcaapi.model;
 
 /**
  * ORCA APIで返ってくる医師情報

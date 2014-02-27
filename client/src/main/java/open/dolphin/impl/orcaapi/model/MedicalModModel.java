@@ -1,4 +1,4 @@
-package open.dolphin.impl.orcaapi;
+package open.dolphin.impl.orcaapi.model;
 
 import java.util.Date;
 import java.util.List;
