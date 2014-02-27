@@ -194,9 +194,9 @@ public class IModuleDecoder {
 
     private MethodHandle getMethodHandle(Class clazz, String methodName) throws Throwable {
 
-        StringBuilder keyBuf = new StringBuilder();
-        keyBuf.append(clazz.getSimpleName()).append(':').append(methodName);
-        String key = keyBuf.toString();
+        sb.setLength(0);
+        sb.append(clazz.getSimpleName()).append(':').append(methodName);
+        String key = sb.toString();
 
         MethodHandle mt = METHOD_HANDLE_MAP.get(key);
         if (mt == null) {
