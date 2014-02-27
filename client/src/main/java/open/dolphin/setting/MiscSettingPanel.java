@@ -790,6 +790,9 @@ public class MiscSettingPanel extends AbstractSettingPanel {
             cmb_UiFontStyle.addItem(style);
             cmb_StampFontStyle.addItem(style);
         }
+        // style変更はやめとく
+        cmb_UiFontStyle.setVisible(false);
+        cmb_StampFontStyle.setVisible(false);
          
         btn_UiDefault = new JButton("デフォルト");
         btn_UiDefault.addActionListener(new ActionListener(){
@@ -806,7 +809,7 @@ public class MiscSettingPanel extends AbstractSettingPanel {
             }
         });
         
-        gbl.add(new JLabel("ＵＩフォント"), 0, 0, GridBagConstraints.CENTER);
+        gbl.add(new JLabel("カルテ"), 0, 0, GridBagConstraints.CENTER);
         gbl.add(cmb_UiFontName, 1, 0, GridBagConstraints.CENTER);
         gbl.add(cmb_UiFontSize, 2, 0, GridBagConstraints.CENTER);
         gbl.add(cmb_UiFontStyle, 3, 0, GridBagConstraints.CENTER);
