@@ -167,6 +167,7 @@ public class IModuleDecoder {
                                     String className = reader.getAttributeValue(0);
                                     String strLen = reader.getAttributeValue(1);
                                     writeArray(attrValue, className, strLen);
+                                    depth++;
                                     break;
                             }
                             break;
