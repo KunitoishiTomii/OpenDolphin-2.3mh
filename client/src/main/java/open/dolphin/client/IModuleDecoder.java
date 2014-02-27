@@ -120,7 +120,7 @@ public class IModuleDecoder {
                     break;
                 case "array":
                     arrayIndex = -1;
-                    objStack.removeFirst().getObject();
+                    objStack.removeFirst();
                     break;
             }
         }
