@@ -67,11 +67,14 @@ public class IModuleDecoder {
 
         private String fieldName;
         private int arrayIndex;
+        private int depth;
+        private int voidIndexDepth;
 
         private final Deque<ObjectClassTypeModel> objStack;
 
         private IModuleDecoderImpl() {
             arrayIndex = -1;
+            voidIndexDepth = 0;
             objStack = new ArrayDeque();
         }
 
@@ -89,10 +92,12 @@ public class IModuleDecoder {
                     final int eventType = reader.next();
                     switch (eventType) {
                         case XMLStreamReader.START_ELEMENT:
+                            depth++;
                             startElement(reader);
                             break;
                         case XMLStreamReader.END_ELEMENT:
                             endElement(reader);
+                            depth--;
                             break;
                     }
                 }
@@ -114,13 +119,24 @@ public class IModuleDecoder {
         private void endElement(final XMLStreamReader reader) {
 
             final String eName = reader.getLocalName();
+            
             switch (eName) {
                 case "object":
                     lastObject = objStack.removeFirst().getObject();
                     break;
                 case "array":
                     arrayIndex = -1;
+                    voidIndexDepth = -1;
                     objStack.removeFirst();
+                    break;
+                case "void":
+                    // うまくない
+                    if (depth == voidIndexDepth) {
+                        ObjectClassTypeModel objModel = objStack.getFirst();
+                        if (objModel.getObjectType() == OBJECT_TYPE.claimItemArray) {
+                            ((ClaimItem[]) objModel.getObject())[arrayIndex] = (ClaimItem) lastObject;
+                        }
+                    }
                     break;
             }
         }
@@ -141,12 +157,14 @@ public class IModuleDecoder {
                             fieldName = attrValue;
                             break;
                         case "index":
+                            voidIndexDepth = depth;
                             arrayIndex = Integer.valueOf(attrValue);
                             break;
                     }
                     break;
                 case "string":
                     String value = reader.getElementText();
+                    depth--;
                     writeObjectField(value);
                     break;
                 case "array":
@@ -195,11 +213,6 @@ public class IModuleDecoder {
             switch (className) {
                 case "open.dolphin.infomodel.ClaimItem":
                     ClaimItem ci = new ClaimItem();
-                    // うまくない
-                    ObjectClassTypeModel objModel = objStack.getFirst();
-                    if (objModel.getObjectType() == OBJECT_TYPE.claimItemArray) {
-                        ((ClaimItem[]) objModel.getObject())[arrayIndex] = ci;
-                    }
                     objStack.addFirst(new ObjectClassTypeModel(OBJECT_TYPE.claimItem, ci));
                     break;
                 case "open.dolphin.infomodel.BundleDolphin":
