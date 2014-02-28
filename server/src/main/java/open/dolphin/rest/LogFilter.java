@@ -3,6 +3,7 @@ package open.dolphin.rest;
 import java.io.IOException;
 import java.net.URLDecoder;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 import javax.inject.Inject;
 import javax.servlet.*;
@@ -60,7 +61,7 @@ public class LogFilter implements Filter {
             return;
         }
         
-        Map<String, String> userMap = contextHolder.getUserMap();
+        ConcurrentHashMap<String, String> userMap = contextHolder.getUserMap();
         boolean authentication = password.equals(userMap.get(userName));
         
         if (!authentication) {
@@ -76,7 +77,7 @@ public class LogFilter implements Filter {
                 res.sendError(401);
                 return;
             } else {
-                userMap.put(userName, password);
+                userMap.putIfAbsent(userName, password);
             }
         }
         
