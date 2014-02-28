@@ -663,7 +663,7 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
             if (mc != null && !mc.isEmpty()) {
                 for (ModuleModel module : mc) {
                     //module.setModel((IModuleModel) BeanUtils.xmlDecode(module.getBeanBytes()));
-                    module.setModel(IModuleDecoder.getInstance().decode(module.getBeanBytes()));
+                    module.setModel(ModuleBeanDecoder.getInstance().decode(module.getBeanBytes()));
                 }
             }
 
