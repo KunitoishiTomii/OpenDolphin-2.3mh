@@ -367,7 +367,25 @@ public class RezeptViewer {
     }
     
     private void csvOut() { 
+        final List<ListTableModel<RE_Model>> list = getAllReListTableModel();
+        if (list.isEmpty()) {
+            return;
+        }
         
+        List<RE_Model> reModelList = new ArrayList<>();
+        for (ListTableModel<RE_Model> tableModel : list) {
+            for (RE_Model reModel : tableModel.getDataProvider()) {
+                reModelList.add(reModel);
+            }
+        }
+        
+        RezeCheckCsvMaker csvMaker = new RezeCheckCsvMaker();
+        csvMaker.setParent(view);
+        csvMaker.setReModelList(reModelList);
+        JComboBox combo = view.getDrCombo();
+        String drName = combo.getSelectedItem().toString();
+        csvMaker.setDrName(drName);
+        csvMaker.create();        
     }
     private void print() {
         

@@ -3,6 +3,7 @@ package open.dolphin.impl.rezept;
 import java.io.BufferedWriter;
 import java.awt.Desktop;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -28,7 +29,6 @@ public class RezeCheckCsvMaker {
 
     private List<RE_Model> reModelList;
     private String drName;
-    private CsvWriter pdfWriter;
     private RezeptView view;
 
     public void setReModelList(List<RE_Model> list) {
@@ -103,14 +103,16 @@ public class RezeCheckCsvMaker {
         return confirm == JOptionPane.OK_OPTION;
     }
 
-    private boolean makeCSV(String filePath) {
+    private boolean makeCSV(String filePath) throws IOException {
 
         boolean result = false;
+        BufferedWriter bw;
+        bw = null;
 
         try {
             // Open Document
             Path path = Paths.get(filePath);
-	    BufferedWriter bw = new BufferedWriter(new FileWriter(new File(path)));
+	    bw = new BufferedWriter(new FileWriter(new File(path.toString())));
 
             // タイトルはつけない。点検結果のみの出力とする（後で変えるかも）
             //StringBuilder sb = new StringBuilder();
@@ -127,10 +129,10 @@ public class RezeCheckCsvMaker {
 
             result = true;
 
-        } catch (IOException | DocumentException ex) {
+        } catch (IOException ex) {
         } finally {
-            if (document.isOpen()) {
-                document.close();
+            if (bw != null) {
+                bw.close();
             }
         }
         return result;
@@ -142,10 +144,9 @@ public class RezeCheckCsvMaker {
 
         for (RE_Model reModel : reModelList) {
             // インフォ
-            table.addCell(createInfoTable(reModel));
             List<CheckResult> results = reModel.getCheckResults();
             if (results == null) {
-                return table;
+                return;
             }
     
             for (CheckResult result : results) {
@@ -177,12 +178,11 @@ public class RezeCheckCsvMaker {
 		sb.append(result.getFilterName());
 		sb.append(",");
 		sb.append(result.getMsg());
-		bw.write(sb.getString());
+                sb.append(System.getProperty("line.separator"));
+		bw.write(sb.toString());
             }
 	    // 検査結果出力
-	    createDiagTable(reModel);
-
         }
-        return table;
+        return;
     }
 }
