@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 import open.dolphin.infomodel.ClaimMessageModel;
@@ -26,7 +27,7 @@ public class OrcaService {
     private static final String passwd = "";
     
     private SendClaimImpl sendClaim;
-    private ConcurrentHashMap<String, DataSource> dataSourceMap;
+    private Map<String, DataSource> dataSourceMap;
     
     private static final OrcaService instance;
     
@@ -105,7 +106,7 @@ public class OrcaService {
         if (ds == null) {
             try {
                 ds = setupDataSource(url, user, pass);
-                dataSourceMap.putIfAbsent(url, ds);
+                dataSourceMap.put(url, ds);
             } catch (ClassNotFoundException ex) {
             }
         }

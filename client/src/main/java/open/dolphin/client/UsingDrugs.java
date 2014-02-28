@@ -72,7 +72,7 @@ public class UsingDrugs {
             if (model != null) {
                 try {
                     del.addUsingDrugModel(model);
-                    usingDrugMap.putIfAbsent(model.getSrycd(), model);
+                    usingDrugMap.put(model.getSrycd(), model);
                     changed = true;
                 } catch (Exception ex) {
                 }

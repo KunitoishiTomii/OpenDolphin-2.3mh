@@ -22,13 +22,13 @@ public class ServletContextHolder {
     private final List<AsyncResponseModel> arList;
     
     // facilityIdとpvtListのマップ
-    private final ConcurrentHashMap<String, List<PatientVisitModel>> pvtListMap;
+    private final Map<String, List<PatientVisitModel>> pvtListMap;
     
     // サーバーのUUID
     private final String serverUUID;
     
     // ユーザーのキャッシュ
-    private final ConcurrentHashMap<String, String> userMap;
+    private final Map<String, String> userMap;
     
     // データベースのタイプ
     private String database;
@@ -53,7 +53,7 @@ public class ServletContextHolder {
     //    serverUUID = uuid;
     //}
 
-    public ConcurrentHashMap<String, List<PatientVisitModel>> getPvtListMap() {
+    public Map<String, List<PatientVisitModel>> getPvtListMap() {
         return pvtListMap;
     }
     
@@ -61,7 +61,7 @@ public class ServletContextHolder {
         List<PatientVisitModel> pvtList = pvtListMap.get(fid);
         if (pvtList == null) {
             pvtList = new CopyOnWriteArrayList<>();
-            pvtListMap.putIfAbsent(fid, pvtList);
+            pvtListMap.put(fid, pvtList);
         }
         return pvtList;
     }
@@ -87,7 +87,7 @@ public class ServletContextHolder {
         return tomorrow;
     }
     
-    public ConcurrentHashMap<String, String> getUserMap() {
+    public Map<String, String> getUserMap() {
         return userMap;
     }
     
