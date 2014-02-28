@@ -23,7 +23,7 @@ public class ModuleBeanDecoder {
 
     private static final ModuleBeanDecoder instance;
 
-    private final Map<Class, Map<String, Field>> reflectFieldMap;
+    private final Map<String, Map<String, Field>> reflectFieldMap;
 
     static {
         instance = new ModuleBeanDecoder();
@@ -182,10 +182,11 @@ public class ModuleBeanDecoder {
     // java.lang.reflect.Fieldを作る
     private Field getReflectField(final Class clazz, final String fieldName) throws Exception {
 
-        Map<String, Field> fieldMap = reflectFieldMap.get(clazz);
+        final String className = clazz.getName();
+        Map<String, Field> fieldMap = reflectFieldMap.get(className);
         if (fieldMap == null) {
             fieldMap = new ConcurrentHashMap<>();
-            reflectFieldMap.put(clazz, fieldMap);
+            reflectFieldMap.put(className, fieldMap);
         }
         Field field = fieldMap.get(fieldName);
 
