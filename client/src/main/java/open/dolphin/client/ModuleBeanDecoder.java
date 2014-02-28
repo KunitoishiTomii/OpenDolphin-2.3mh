@@ -6,7 +6,6 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.util.ArrayDeque;
 import java.util.Deque;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -23,7 +22,7 @@ public class ModuleBeanDecoder {
 
     private static final ModuleBeanDecoder instance;
 
-    private final Map<Class, Map<String, Field>> reflectFieldMap;
+    private final ConcurrentHashMap<Class, ConcurrentHashMap<String, Field>> reflectFieldMap;
 
     static {
         instance = new ModuleBeanDecoder();
@@ -182,10 +181,10 @@ public class ModuleBeanDecoder {
     // java.lang.reflect.Fieldを作る
     private Field getReflectField(final Class clazz, final String fieldName) throws Exception {
 
-        Map<String, Field> fieldMap = reflectFieldMap.get(clazz);
+        ConcurrentHashMap<String, Field> fieldMap = reflectFieldMap.get(clazz);
         if (fieldMap == null) {
             fieldMap = new ConcurrentHashMap<>();
-            reflectFieldMap.put(clazz, fieldMap);
+            reflectFieldMap.putIfAbsent(clazz, fieldMap);
         }
         Field field = fieldMap.get(fieldName);
 
@@ -211,7 +210,7 @@ public class ModuleBeanDecoder {
             }
 
             field.setAccessible(true);
-            fieldMap.put(fieldName, field);
+            fieldMap.putIfAbsent(fieldName, field);
         }
 
         return field;
