@@ -368,6 +368,7 @@ public class KarteRenderer_2 {
         private String italic;
         private String underline;
         private boolean componentFlg;
+        private int baseFontSize;
 
         private List<ElementSpec> specList;
 
@@ -381,12 +382,13 @@ public class KarteRenderer_2 {
             this.modules = modules;
             this.schemas = schemas;
             this.kartePane = kartePane;
+            baseFontSize = kartePane.getTextPane().getFont().getSize();
             specList = new ArrayList<>();
                         
             doc = new KarteStyledDocument(kartePane);
             
             defaultStyle = doc.getStyle(DEFAULT_STYLE_NAME);
-
+            
             XMLInputFactory factory = XMLInputFactory.newInstance();
             XMLStreamReader reader = null;
             
@@ -539,7 +541,9 @@ public class KarteRenderer_2 {
 
             // size 属性を設定する
             if (size != null) {
-                StyleConstants.setFontSize(atts, Integer.parseInt(size));
+                int modelFontSize = Integer.parseInt(size);
+                int viewFontSize = FontManager.toViewFontSize(modelFontSize, baseFontSize);
+                StyleConstants.setFontSize(atts, viewFontSize);
             }
             // bold 属性を設定する
             if (bold != null) {

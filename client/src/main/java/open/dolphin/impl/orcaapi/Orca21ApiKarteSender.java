@@ -10,6 +10,7 @@ import open.dolphin.dao.SqlMiscDao;
 import open.dolphin.infomodel.*;
 import open.dolphin.project.Project;
 import open.dolphin.common.util.ZenkakuUtils;
+import open.dolphin.impl.orcaapi.model.MedicalModModel;
 
 /**
  * Orca21ApiKarteSender

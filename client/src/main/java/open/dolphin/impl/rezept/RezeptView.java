@@ -114,6 +114,8 @@ public class RezeptView extends JPanel {
         JPanel filterPanel = createXBoxPanel();
         filterPanel.add(new JLabel("担当医："));
         drCombo = new JComboBox();
+        // macでレイアウトおかしくなるので
+        drCombo.setMaximumSize(new Dimension(150, drCombo.getPreferredSize().height));
         filterPanel.add(drCombo);
         csvBtn = new JButton("csv出力");
         filterPanel.add(csvBtn);

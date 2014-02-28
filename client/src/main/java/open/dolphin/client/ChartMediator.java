@@ -32,8 +32,7 @@ public final class ChartMediator extends MenuSupport {
 
         NONE, SOA, SOA_TEXT, SCHEMA, P, P_TEXT, STAMP
     };
-    //private static final int[] FONT_SIZE = {10, 12, 14, 16, 18, 24, 36};
-    private static final int[] FONT_SIZE = {10, 13, 15, 18, 20, 24, 36};
+
     private int curSize = 1;
     // CurrentComponent
     private JComponent currentFocusOwner;
@@ -515,17 +514,24 @@ public final class ChartMediator extends MenuSupport {
             pane.setCharacterAttributes(SimpleAttributeSet.EMPTY, true);
         }
     }
+    
+    private int getBaseFontSize(JTextPane pane) {
+        //DefaultStyledDocument doc = (DefaultStyledDocument) pane.getDocument();
+        //Style defaultStyle = doc.getStyle(StyleContext.DEFAULT_STYLE);
+        //return (int) defaultStyle.getAttribute(StyleConstants.Size);
+        return pane.getFont().getSize();
+    }
 
     public void fontLarger() {
         
         JComponent focusOwner = getCurrentFocusOwner();
         if (focusOwner != null && focusOwner instanceof JTextPane) {
-            if (curSize < FONT_SIZE.length - 1) {
-                curSize++;
-            }
-            int size = FONT_SIZE[curSize];
+            int baseFontSize = getBaseFontSize((JTextPane) focusOwner);
+            int len = FontManager.getFontSizeIncrements().length;
+            curSize = Math.min(len, curSize + 1);
+            int size = FontManager.getFontSize(curSize, baseFontSize);
             performFontSizeAction(size, focusOwner);
-            if (curSize == FONT_SIZE.length - 1) {
+            if (curSize == len - 1) {
                 enabledAction("fontLarger", false);
             }
         }
@@ -535,10 +541,9 @@ public final class ChartMediator extends MenuSupport {
         
         JComponent focusOwner = getCurrentFocusOwner();
         if (focusOwner != null && focusOwner instanceof JTextPane) {
-            if (curSize > 0) {
-                curSize--;
-            }
-            int size = FONT_SIZE[curSize];
+            int baseFontSize = getBaseFontSize((JTextPane) focusOwner);
+            curSize = Math.max(0, curSize - 1);
+            int size = FontManager.getFontSize(curSize, baseFontSize);
             performFontSizeAction(size, focusOwner);
             if (curSize == 0) {
                 enabledAction("fontSmaller", false);
@@ -550,8 +555,9 @@ public final class ChartMediator extends MenuSupport {
         
         JComponent focusOwner = getCurrentFocusOwner();
         if (focusOwner != null && focusOwner instanceof JTextPane) {
+            int baseFontSize = getBaseFontSize((JTextPane) focusOwner);
             curSize = 1;
-            int size = FONT_SIZE[curSize];
+            int size = FontManager.getFontSize(curSize, baseFontSize);
             performFontSizeAction(size, focusOwner);
             enabledAction("fontSmaller", true);
             enabledAction("fontLarger", true);

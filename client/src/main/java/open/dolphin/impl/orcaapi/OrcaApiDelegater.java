@@ -1,9 +1,8 @@
 package open.dolphin.impl.orcaapi;
 
+import open.dolphin.impl.orcaapi.model.OrcaApiRequestBuilder;
 import java.io.IOException;
-import java.io.StringReader;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.util.Collections;
 import java.util.List;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
@@ -11,14 +10,13 @@ import javax.ws.rs.core.Response;
 import open.dolphin.client.ClientContext;
 import open.dolphin.client.KarteSenderResult;
 import open.dolphin.dao.SyskanriInfo;
+import open.dolphin.order.MasterItem;
+import open.dolphin.project.Project;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.jdom2.Attribute;
-import org.jdom2.Document;
-import org.jdom2.Element;
 import org.jdom2.JDOMException;
-import org.jdom2.input.SAXBuilder;
-import org.jdom2.output.XMLOutputter;
+import open.dolphin.impl.orcaapi.model.*;
+import open.dolphin.impl.orcaapi.parser.*;
 
 /**
  * ORCA APIのデレゲータ
@@ -32,8 +30,6 @@ public class OrcaApiDelegater implements IOrcaApi {
     private static final OrcaApiDelegater instance;
 
     private final boolean DEBUG;
-    private final XMLOutputter outputter;
-    private final SAXBuilder builder;
     
     private List<PhysicianInfo> physicianList;
     private List<DepartmentInfo> deptList;
@@ -49,11 +45,10 @@ public class OrcaApiDelegater implements IOrcaApi {
     }
     
     private OrcaApiDelegater() {
-        DEBUG = (ClientContext.getBootLogger().getLevel()==Level.DEBUG);
-        outputter = new XMLOutputter();
-        builder = new SAXBuilder();
+        DEBUG = (ClientContext.getBootLogger().getLevel() == Level.DEBUG);
         xml2 = SyskanriInfo.getInstance().isOrca47();
     }
+    
     
     public KarteSenderResult sendMedicalModModel(MedicalModModel model) {
         try {
@@ -71,10 +66,10 @@ public class OrcaApiDelegater implements IOrcaApi {
                 ? "/api21/medicalmodv2"
                 : "/api21/medicalmod";
 
-        final Document post = xml2
-                ? new Document(new OrcaApiElement2.MedicalMod(model))
-                : new Document(new OrcaApiElement.MedicalMod(model));
-        final String xml = outputter.outputString(post);
+        final String xml = xml2
+                ? OrcaApiRequestBuilder.createSystem01ManagereqXml2()
+                : OrcaApiRequestBuilder.createSystem01ManagereqXml();
+
         final Entity entity = toXmlEntity(xml);
 
         Response response = getWebTarget()
@@ -91,8 +86,7 @@ public class OrcaApiDelegater implements IOrcaApi {
 
         KarteSenderResult result;
         try {
-            Document res = builder.build(new StringReader(resXml));
-            MedicalreqResParser parser = new MedicalreqResParser(res);
+            MedicalreqResParser parser = new MedicalreqResParser(resXml);
             String code = parser.getApiResult();
             String msg = parser.getApiResultMessage();
             result = new KarteSenderResult(ORCA_API, code, msg);
@@ -110,8 +104,8 @@ public class OrcaApiDelegater implements IOrcaApi {
                 : "/api01r/system01lst";
 
         final String xml = xml2
-                ? createSystem01ManagereqXml2()
-                : createSystem01ManagereqXml();
+                ? OrcaApiRequestBuilder.createSystem01ManagereqXml2()
+                : OrcaApiRequestBuilder.createSystem01ManagereqXml();
         
         final Entity entity = toXmlEntity(xml);
 
@@ -128,8 +122,7 @@ public class OrcaApiDelegater implements IOrcaApi {
         response.close();
 
         try {
-            Document res = builder.build(new StringReader(resXml));
-            DepartmentResParser parser = new DepartmentResParser(res);
+            DepartmentResParser parser = new DepartmentResParser(resXml);
             String code = parser.getApiResult();
             String msg = parser.getApiResultMessage();
             if (!API_NO_ERROR.equals(code)) {
@@ -147,8 +140,8 @@ public class OrcaApiDelegater implements IOrcaApi {
                 : "/api01r/system01lst";
 
         final String xml = xml2
-                ? createSystem01ManagereqXml2()
-                : createSystem01ManagereqXml();
+                ? OrcaApiRequestBuilder.createSystem01ManagereqXml2()
+                : OrcaApiRequestBuilder.createSystem01ManagereqXml();
         
         final Entity entity = toXmlEntity(xml);
 
@@ -165,8 +158,7 @@ public class OrcaApiDelegater implements IOrcaApi {
         response.close();
 
         try {
-            Document res = builder.build(new StringReader(resXml));
-            PhysicianResParser parser = new PhysicianResParser(res);
+            PhysicianResParser parser = new PhysicianResParser(resXml);
             String code = parser.getApiResult();
             String msg = parser.getApiResultMessage();
             if (!API_NO_ERROR.equals(code)) {
@@ -176,46 +168,71 @@ public class OrcaApiDelegater implements IOrcaApi {
         }
     }
     
-    private Entity toXmlEntity(String xml) {
-        return Entity.entity(xml, MEDIATYPE_XML_UTF8);
+    public List<String> getOrcaVisit(String patientId, String ymd) throws Exception {
+        
+        final String path = "/api01rv2/medicalgetv2";
+        final String deptCode = Project.getUserModel().getDepartmentModel().getDepartment();
+        final String xml = OrcaApiRequestBuilder.createMedicalgetreqXml2(patientId, ymd, deptCode);
+        
+        final Entity entity = toXmlEntity(xml);
+
+        Response response = getWebTarget()
+                .path(path)
+                .queryParam(CLASS, "01")
+                .request(MEDIATYPE_XML_UTF8)
+                .post(entity);
+
+        int status = checkHttpStatus(response);
+        String resXml = response.readEntity(String.class);
+        debug(status, resXml);
+        
+        response.close();
+
+        try {
+            MedicalgetResParser parser = new MedicalgetResParser(resXml);
+            String code = parser.getApiResult();
+            String msg = parser.getApiResultMessage();
+            if (API_NO_ERROR.equals(code)) {
+                return parser.getPerformDate();
+            }
+        } catch (JDOMException | IOException ex) {
+        }
+        return Collections.emptyList();
     }
     
-    private String createSystem01ManagereqXml() {
+    public List<MasterItem> getOrcaMed(String patientId, String ymd) throws Exception {
         
-        final SimpleDateFormat frmt = new SimpleDateFormat("yyyy-MM-dd");
-        Element data = new Element(DATA);
-        Element record1 = new Element(RECORD);
-        data.addContent(record1);
-        Element record2 = new Element(RECORD);
-        record2.setAttribute(new Attribute(NAME, "system01_managereq"));
-        record1.addContent(record2);
-        Element string2 = new Element(STRING);
-        string2.setAttribute(new Attribute(NAME, "Base_Date"));
-        string2.addContent(frmt.format(new Date()));
-        record2.addContent(string2);
+        final String path = "/api01rv2/medicalgetv2";
+        final String deptCode = Project.getUserModel().getDepartmentModel().getDepartment();
+        final String xml = OrcaApiRequestBuilder.createMedicalgetreqXml2(patientId, ymd, deptCode);
         
-        Document post = new Document(data);
-        String xml = outputter.outputString(post);
-        return xml;
+        final Entity entity = toXmlEntity(xml);
+
+        Response response = getWebTarget()
+                .path(path)
+                .queryParam(CLASS, "02")
+                .request(MEDIATYPE_XML_UTF8)
+                .post(entity);
+
+        int status = checkHttpStatus(response);
+        String resXml = response.readEntity(String.class);
+        debug(status, resXml);
+
+        response.close();
+
+        try {
+            MedicalgetResParser parser = new MedicalgetResParser(resXml);
+            String code = parser.getApiResult();
+            String msg = parser.getApiResultMessage();
+            if (API_NO_ERROR.equals(code)) {
+                return parser.getMedMasterItem();
+            }
+        } catch (JDOMException | IOException ex) {
+        }
+        return Collections.emptyList();
     }
     
-    private String createSystem01ManagereqXml2() {
-        
-        final SimpleDateFormat frmt = new SimpleDateFormat("yyyy-MM-dd");
-        Element data = new Element(DATA);
-        Element elm1 = new Element("system01_managereq");
-        elm1.setAttribute(TYPE, RECORD);
-        Element elm2 = new Element(BASE_DATE);
-        elm2.setAttribute(TYPE, STRING);
-        elm2.addContent(frmt.format(new Date()));
-        elm1.addContent(elm2);
-        data.addContent(elm1);
-        
-        Document post = new Document(data);
-        String xml = outputter.outputString(post);
-        return xml;
-    }
-    
+
     private WebTarget getWebTarget() {
         return OrcaApiClient.getInstance().getWebTarget();
     }
@@ -228,6 +245,10 @@ public class OrcaApiDelegater implements IOrcaApi {
             throw new Exception(msg);
         }
         return status;
+    }
+    
+    private Entity toXmlEntity(String xml) {
+        return Entity.entity(xml, MEDIATYPE_XML_UTF8);
     }
     
     private void debug(int status, String entity) {

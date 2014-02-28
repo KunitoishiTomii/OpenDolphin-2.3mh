@@ -1,8 +1,9 @@
-package open.dolphin.impl.orcaapi;
+package open.dolphin.impl.orcaapi.model;
 
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import open.dolphin.impl.orcaapi.IOrcaApi;
 import open.dolphin.infomodel.*;
 import org.apache.commons.lang.StringUtils;
 import org.jdom2.Element;
