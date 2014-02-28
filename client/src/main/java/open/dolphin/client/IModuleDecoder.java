@@ -28,7 +28,7 @@ public class IModuleDecoder {
 
     private static enum OBJECT_TYPE {
 
-        unknown, bundleMed, bundleDolphin, progressCourse, claimItem, claimItemArray
+        Unknown, BundleMed, BundleDolphin, ProgressCourse, ClaimItem, ClaimItemArray
     };
 
     private static final MethodType MT_VOID_WITH_STRING_ARG
@@ -56,29 +56,32 @@ public class IModuleDecoder {
 
     public IModuleModel decode(final byte[] beanBytes) {
 
-        Object obj =  new IModuleDecoderImpl().decode(beanBytes);
+        IModuleModel model =  new IModuleDecoderImpl().decode(beanBytes);
         
-        return (IModuleModel) obj;
+        return model;
     }
 
     private class IModuleDecoderImpl {
 
-        private Object lastObject;
+        private ObjectClassTypeModel lastObject;
 
         private String fieldName;
         private int arrayIndex;
         private int depth;
         private int voidIndexDepth;
+        
+        private final StringBuilder sb;
 
         private final Deque<ObjectClassTypeModel> objStack;
 
         private IModuleDecoderImpl() {
             arrayIndex = -1;
-            voidIndexDepth = 0;
+            voidIndexDepth = -1;
             objStack = new ArrayDeque();
+            sb = new StringBuilder();
         }
 
-        private Object decode(final byte[] beanBytes) {
+        private IModuleModel decode(final byte[] beanBytes) {
 
             // いつものStAX
             final XMLInputFactory factory = XMLInputFactory.newInstance();
@@ -113,7 +116,7 @@ public class IModuleDecoder {
                 }
             }
 
-            return lastObject;
+            return (IModuleModel) lastObject.getObject();
         }
 
         private void endElement(final XMLStreamReader reader) {
@@ -122,7 +125,7 @@ public class IModuleDecoder {
             
             switch (eName) {
                 case "object":
-                    lastObject = objStack.removeFirst().getObject();
+                    lastObject = objStack.removeFirst();
                     break;
                 case "array":
                     arrayIndex = -1;
@@ -133,8 +136,8 @@ public class IModuleDecoder {
                     // うまくない
                     if (depth == voidIndexDepth) {
                         ObjectClassTypeModel objModel = objStack.getFirst();
-                        if (objModel.getObjectType() == OBJECT_TYPE.claimItemArray) {
-                            ((ClaimItem[]) objModel.getObject())[arrayIndex] = (ClaimItem) lastObject;
+                        if (objModel.getObjectType() == OBJECT_TYPE.ClaimItemArray) {
+                            ((ClaimItem[]) objModel.getObject())[arrayIndex] = (ClaimItem) lastObject.getObject();
                         }
                     }
                     break;
@@ -164,6 +167,7 @@ public class IModuleDecoder {
                     break;
                 case "string":
                     String value = reader.getElementText();
+                    // getElementTextはreaderをEndElementまで進めるのでdepthを戻す
                     depth--;
                     writeObjectField(fieldName, value);
                     break;
@@ -186,14 +190,14 @@ public class IModuleDecoder {
                     ObjectClassTypeModel objModel = objStack.getFirst();
                     
                     switch (objModel.getObjectType()) {
-                        case bundleDolphin: {
+                        case BundleDolphin: {
                             BundleDolphin bundleDolphin = (BundleDolphin) objModel.getObject();
                             MethodHandle mh = getMethodHandle(BundleDolphin.class, 
                                     methodName, MT_VOID_WITH_CLAIM_ARRAY_ARG);
                             mh.invokeExact(bundleDolphin, claimItemArray);
                             break;
                         }
-                        case bundleMed: {
+                        case BundleMed: {
                             BundleMed bundleMed = (BundleMed) objModel.getObject();
                             MethodHandle mh = getMethodHandle(BundleMed.class, 
                                     methodName, MT_VOID_WITH_CLAIM_ARRAY_ARG);
@@ -202,7 +206,10 @@ public class IModuleDecoder {
                         }
                     }
                     
-                    objStack.addFirst(new ObjectClassTypeModel(OBJECT_TYPE.claimItemArray, claimItemArray));
+                    objStack.addFirst(new ObjectClassTypeModel(OBJECT_TYPE.ClaimItemArray, claimItemArray));
+                    break;
+                default:
+                    System.out.println("Unknown class : " + className);
                     break;
             }
         }
@@ -213,19 +220,19 @@ public class IModuleDecoder {
             switch (className) {
                 case "open.dolphin.infomodel.ClaimItem":
                     ClaimItem ci = new ClaimItem();
-                    objStack.addFirst(new ObjectClassTypeModel(OBJECT_TYPE.claimItem, ci));
+                    objStack.addFirst(new ObjectClassTypeModel(OBJECT_TYPE.ClaimItem, ci));
                     break;
                 case "open.dolphin.infomodel.BundleDolphin":
                     BundleDolphin bundleDolphin = new BundleDolphin();
-                    objStack.addFirst(new ObjectClassTypeModel(OBJECT_TYPE.bundleDolphin, bundleDolphin));
+                    objStack.addFirst(new ObjectClassTypeModel(OBJECT_TYPE.BundleDolphin, bundleDolphin));
                     break;
                 case "open.dolphin.infomodel.BundleMed":
                     BundleMed bundleMed = new BundleMed();
-                    objStack.addFirst(new ObjectClassTypeModel(OBJECT_TYPE.bundleMed, bundleMed));
+                    objStack.addFirst(new ObjectClassTypeModel(OBJECT_TYPE.BundleMed, bundleMed));
                     break;
                 case "open.dolphin.infomodel.ProgressCourse":
                     ProgressCourse pc = new ProgressCourse();
-                    objStack.addFirst(new ObjectClassTypeModel(OBJECT_TYPE.progressCourse, pc));
+                    objStack.addFirst(new ObjectClassTypeModel(OBJECT_TYPE.ProgressCourse, pc));
                     break;
                 default:
                     System.out.println("Unknown class : " + className);
@@ -241,35 +248,44 @@ public class IModuleDecoder {
             ObjectClassTypeModel objModel = objStack.getFirst();
             
             switch (objModel.getObjectType()) {
-                case bundleMed: {
+                case BundleMed: {
                     BundleMed bundleMed = (BundleMed) objModel.getObject();
                     MethodHandle mh = getMethodHandle(BundleMed.class,
                             methodName, MT_VOID_WITH_STRING_ARG);
                     mh.invokeExact(bundleMed, value);
                     break;
                 }
-                case bundleDolphin: {
+                case BundleDolphin: {
                     BundleDolphin bundleDolphin = (BundleDolphin) objModel.getObject();
                     MethodHandle mh = getMethodHandle(BundleDolphin.class,
                             methodName, MT_VOID_WITH_STRING_ARG);
                     mh.invokeExact(bundleDolphin, value);
                     break;
                 }
-                case progressCourse: {
+                case ProgressCourse: {
                     ProgressCourse pc = (ProgressCourse) objModel.getObject();
                     MethodHandle mh = getMethodHandle(ProgressCourse.class,
                             methodName, MT_VOID_WITH_STRING_ARG);
                     mh.invokeExact(pc, value);
                     break;
                 }
-                case claimItem: {
+                case ClaimItem: {
                     ClaimItem ci = (ClaimItem) objModel.getObject();
                     MethodHandle mh = getMethodHandle(ClaimItem.class,
                             methodName, MT_VOID_WITH_STRING_ARG);
                     mh.invokeExact(ci, value);
                     break;
                 }
+                default:
+                    break;
             }
+        }
+
+        // setter method名を作成する
+        private String getCamelCaseSetMethodName(String name) {
+            sb.setLength(0);
+            sb.append("set").append(name.substring(0, 1).toUpperCase()).append(name.substring(1));
+            return sb.toString();
         }
     }
 
@@ -291,13 +307,6 @@ public class IModuleDecoder {
         private Object getObject() {
             return object;
         }
-    }
-
-    // setter method名を作成する
-    private String getCamelCaseSetMethodName(String name) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("set").append(name.substring(0, 1).toUpperCase()).append(name.substring(1));
-        return sb.toString();
     }
 
     // MethodHandleを作る
