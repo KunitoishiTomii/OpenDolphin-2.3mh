@@ -106,7 +106,7 @@ public abstract class KartePanel extends Panel2 {
     protected final JTextPane createTextPane() {
         JTextPane textPane = new JTextPane();
         textPane.setMargin(TEXT_PANE_MARGIN);
-        textPane.setEditorKit(KartePanelEditorKit.getInstance());
+        textPane.setEditorKit(new KartePanelEditorKit());
         // これをセットしないと，勝手に cut copy paste のポップアップがセットされてしまう。 thx to Dr. pns
         textPane.putClientProperty("Quaqua.TextComponent.showPopup", false);
         return textPane;
