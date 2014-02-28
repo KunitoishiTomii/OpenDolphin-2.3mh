@@ -176,8 +176,7 @@ public class ModuleBeanDecoder {
 
     private Object createArray(final String className, final int len) throws Exception {
         Class clazz = Class.forName(className);
-        Object array = Array.newInstance(clazz, len);
-        return array;
+        return Array.newInstance(clazz, len);
     }
 
     // java.lang.reflect.Fieldを作る
