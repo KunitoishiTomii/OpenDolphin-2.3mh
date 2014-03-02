@@ -526,6 +526,8 @@ public class Dolphin implements MainWindow, IChartEventListener {
         } else {
             tempKarte.dispose();
         }
+        // ModuleBeanDecoderを初期化
+        ModuleBeanDecoder.getInstance().init();
 //masuda$
     }
 

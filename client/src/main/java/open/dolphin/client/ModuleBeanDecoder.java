@@ -8,10 +8,15 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import javassist.Modifier;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
+import open.dolphin.infomodel.BundleDolphin;
+import open.dolphin.infomodel.BundleMed;
+import open.dolphin.infomodel.ClaimItem;
 import open.dolphin.infomodel.IModuleModel;
+import open.dolphin.infomodel.ProgressCourse;
 
 /**
  * ModuleBeanDecoder 
@@ -20,10 +25,16 @@ import open.dolphin.infomodel.IModuleModel;
  * @author masuda, Masuda Naika
  */
 public class ModuleBeanDecoder {
+    
+    private static final Class[] KNOWN_CLASSES = {
+        ClaimItem.class, BundleDolphin.class, BundleMed.class, ProgressCourse.class
+    };
 
     private static final ModuleBeanDecoder instance;
 
-    private final Map<String, Map<String, Field>> reflectFieldMap;
+    private final Map<Class, Map<String, Field>> reflectFieldMap;
+    
+    private final Map<String, Class> classMap;
 
     static {
         instance = new ModuleBeanDecoder();
@@ -31,10 +42,35 @@ public class ModuleBeanDecoder {
 
     private ModuleBeanDecoder() {
         reflectFieldMap = new ConcurrentHashMap<>();
+        classMap = new ConcurrentHashMap<>();
     }
 
     public static ModuleBeanDecoder getInstance() {
         return instance;
+    }
+    
+    // 前もって関連クラス・フィールドを登録しておく
+    public void init() {
+
+        for (Class clazz : KNOWN_CLASSES) {
+            // クラスを登録する
+            classMap.put(clazz.getName(), clazz);
+            // フィールドを登録する
+            Map<String, Field> fieldMap = new ConcurrentHashMap<>();
+            reflectFieldMap.put(clazz, fieldMap);
+            for (Class cls = clazz; cls != null; cls = cls.getSuperclass()) {
+                for (Field field : cls.getDeclaredFields()) {
+                    int modifier = field.getModifiers();
+                    // static final定数とtransientは除外する
+                    if ((Modifier.isStatic(modifier) && Modifier.isFinal(modifier))
+                            || Modifier.isTransient(modifier)) {
+                        continue;
+                    }
+                    field.setAccessible(true);
+                    fieldMap.put(field.getName(), field);
+                }
+            }
+        }
     }
 
     public IModuleModel decode(final byte[] beanBytes) {
@@ -130,7 +166,8 @@ public class ModuleBeanDecoder {
 
             switch (eName) {
                 case "object":
-                    objStack.addFirst(createObject(reader.getAttributeValue(0)));
+                    String objClassName = reader.getAttributeValue(0);
+                    objStack.addFirst(getClassForName(objClassName).newInstance());
                     break;
                 case "void":
                     String attrName = reader.getAttributeLocalName(0);
@@ -158,7 +195,7 @@ public class ModuleBeanDecoder {
                     String className = reader.getAttributeValue(0);
                     int len = Integer.parseInt(reader.getAttributeValue(1));
                     // arrayを設定する
-                    Object array = createArray(className, len);
+                    Object array = Array.newInstance(getClassForName(className), len);
                     Object object = objStack.getFirst();
                     Field arrayFld = getReflectField(object.getClass(), fieldName);
                     arrayFld.set(object, array);
@@ -168,51 +205,44 @@ public class ModuleBeanDecoder {
         }
     }
 
-    // モデルを作成する
-    private Object createObject(final String className) throws Exception {
-        Class clazz = Class.forName(className);
-        return clazz.newInstance();
+    // クラス名に対応したクラスを作る
+    private Class getClassForName(final String className) throws Exception {
+        
+        Class clazz = classMap.get(className);
+        if (clazz == null) {
+            clazz = Class.forName(className);
+            classMap.put(className, clazz);
+        }
+        return clazz;
     }
-
-    private Object createArray(final String className, final int len) throws Exception {
-        Class clazz = Class.forName(className);
-        return Array.newInstance(clazz, len);
-    }
-
+    
     // java.lang.reflect.Fieldを作る
     private Field getReflectField(final Class clazz, final String fieldName) throws Exception {
 
-        final String className = clazz.getName();
-        Map<String, Field> fieldMap = reflectFieldMap.get(className);
+        Map<String, Field> fieldMap = reflectFieldMap.get(clazz);
         if (fieldMap == null) {
             fieldMap = new ConcurrentHashMap<>();
-            reflectFieldMap.put(className, fieldMap);
+            reflectFieldMap.put(clazz, fieldMap);
         }
         Field field = fieldMap.get(fieldName);
 
         if (field == null) {
-            
-            try {
-                field = clazz.getDeclaredField(fieldName);
-                
-            } catch (NoSuchFieldException ex1) {
-                // 親クラスを検索する
-                Class parent = clazz.getSuperclass();
-                while (parent != null) {
-                    try {
-                        field = parent.getDeclaredField(fieldName);
-                        break;
-                    } catch (NoSuchFieldException ex2) {
-                        parent = parent.getSuperclass();
+            Exception ex = null;
+            for (Class cls = clazz; cls != null; cls = cls.getSuperclass()) {
+                try {
+                    field = clazz.getDeclaredField(fieldName);
+                    field.setAccessible(true);
+                    fieldMap.put(fieldName, field);
+                    break;
+                } catch (NoSuchFieldException nsfex) {
+                    if (ex != null) {
+                        ex = nsfex;
                     }
                 }
-                if (field == null) {
-                    throw ex1;
-                }
             }
-
-            field.setAccessible(true);
-            fieldMap.put(fieldName, field);
+            if (field == null && ex != null) {
+                throw ex;
+            }
         }
 
         return field;
