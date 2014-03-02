@@ -239,12 +239,12 @@ public class ModuleBeanDecoder {
             Exception ex = null;
             for (Class cls = clazz; cls != null; cls = cls.getSuperclass()) {
                 try {
-                    field = clazz.getDeclaredField(fieldName);
+                    field = cls.getDeclaredField(fieldName);
                     field.setAccessible(true);
                     fieldMap.put(fieldName, field);
                     break;
                 } catch (NoSuchFieldException nsfex) {
-                    if (ex != null) {
+                    if (ex == null) {
                         ex = nsfex;
                     }
                 }
