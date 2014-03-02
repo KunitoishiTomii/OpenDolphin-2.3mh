@@ -19,13 +19,12 @@ import open.dolphin.infomodel.IModuleModel;
 import open.dolphin.infomodel.ProgressCourse;
 
 /**
- * ModuleBeanDecoder 
- * 結局reflectionにｗ
+ * ModuleBeanDecoder 結局reflectionにｗ
  *
  * @author masuda, Masuda Naika
  */
 public class ModuleBeanDecoder {
-    
+
     private static final Class[] KNOWN_CLASSES = {
         ClaimItem.class, BundleDolphin.class, BundleMed.class, ProgressCourse.class
     };
@@ -33,7 +32,7 @@ public class ModuleBeanDecoder {
     private static final ModuleBeanDecoder instance;
 
     private final Map<Class, Map<String, Field>> reflectFieldMap;
-    
+
     private final Map<String, Class> classMap;
 
     static {
@@ -48,7 +47,149 @@ public class ModuleBeanDecoder {
     public static ModuleBeanDecoder getInstance() {
         return instance;
     }
-    
+
+    public IModuleModel decode(final byte[] beanBytes) {
+
+        IModuleModel model = new ModuleDecoder().decode(beanBytes);
+
+        return model;
+    }
+
+    private class ModuleDecoder {
+
+        private Object lastObject;
+
+        private final Deque<Object> objStack;
+        private final Deque<VoidCommand> cmdStack;
+
+        private ModuleDecoder() {
+            objStack = new ArrayDeque();
+            cmdStack = new ArrayDeque();
+        }
+
+        private IModuleModel decode(final byte[] beanBytes) {
+
+            // いつものStAX
+            final XMLInputFactory factory = XMLInputFactory.newInstance();
+            XMLStreamReader reader = null;
+
+            try (InputStream is = new ByteArrayInputStream(beanBytes)) {
+
+                reader = factory.createXMLStreamReader(is);
+
+                while (reader.hasNext()) {
+                    final int eventType = reader.next();
+                    switch (eventType) {
+                        case XMLStreamReader.START_ELEMENT:
+                            startElement(reader);
+                            break;
+                        case XMLStreamReader.END_ELEMENT:
+                            endElement(reader);
+                            break;
+                    }
+                }
+
+            } catch (Exception ex) {
+                ex.printStackTrace(System.err);
+            } finally {
+                try {
+                    if (reader != null) {
+                        reader.close();
+                    }
+                } catch (XMLStreamException ex) {
+                }
+            }
+
+            return (IModuleModel) lastObject;
+        }
+
+        private void processVoidCommand(final Object obj) throws Exception {
+
+            VoidCommand voidCmd = cmdStack.pollFirst();
+            if (voidCmd == null) {
+                return;
+            }
+
+            final Object target = objStack.getFirst();
+            final String cmd = voidCmd.getCommand();
+            final String value = voidCmd.getValue();
+
+            switch (cmd) {
+                case "property":
+                    Field field = getReflectField(target.getClass(), value);
+                    field.set(target, obj);
+                    break;
+                case "index":
+                    int index = Integer.valueOf(value);
+                    ((Object[]) target)[index] = obj;
+                    break;
+            }
+        }
+
+        private void startElement(final XMLStreamReader reader) throws Exception {
+
+            final String eName = reader.getLocalName();
+
+            switch (eName) {
+                case "void":
+                    String cmd = reader.getAttributeLocalName(0);
+                    String value = reader.getAttributeValue(0);
+                    cmdStack.add(new VoidCommand(cmd, value));
+                    break;
+                case "object":
+                    String objClsName = reader.getAttributeValue(0);
+                    Object obj = getClassForName(objClsName).newInstance();
+                    processVoidCommand(obj);
+                    objStack.addFirst(obj);
+                    break;
+                case "array":
+                    String arrayClsName = reader.getAttributeValue(0);
+                    int len = Integer.parseInt(reader.getAttributeValue(1));
+                    Object array = Array.newInstance(getClassForName(arrayClsName), len);
+                    processVoidCommand(array);
+                    objStack.addFirst(array);
+                    break;
+                case "string":
+                    String str = reader.getElementText();
+                    processVoidCommand(str);
+                    break;
+            }
+        }
+
+        private void endElement(final XMLStreamReader reader) {
+
+            final String eName = reader.getLocalName();
+
+            switch (eName) {
+                case "object":
+                    lastObject = objStack.removeFirst();
+                    break;
+                case "array":
+                    objStack.removeFirst();
+                    break;
+            }
+        }
+    }
+
+    private static class VoidCommand {
+
+        private final String cmd;
+        private final String value;
+
+        private VoidCommand(String cmd, String value) {
+            this.cmd = cmd;
+            this.value = value;
+        }
+
+        private String getCommand() {
+            return cmd;
+        }
+
+        private String getValue() {
+            return value;
+        }
+    }
+
     // 前もって関連クラス・フィールドを登録しておく
     public void init() {
 
@@ -73,141 +214,9 @@ public class ModuleBeanDecoder {
         }
     }
 
-    public IModuleModel decode(final byte[] beanBytes) {
-
-        IModuleModel model = new ModuleDecoder().decode(beanBytes);
-
-        return model;
-    }
-
-    private class ModuleDecoder {
-
-        private Object lastObject;
-
-        private String fieldName;
-        private int arrayIndex;
-        private int depth;
-        private int voidIndexDepth;
-
-        private final Deque<Object> objStack;
-
-        private ModuleDecoder() {
-            arrayIndex = -1;
-            voidIndexDepth = -1;
-            objStack = new ArrayDeque();
-        }
-
-        private IModuleModel decode(final byte[] beanBytes) {
-
-            // いつものStAX
-            final XMLInputFactory factory = XMLInputFactory.newInstance();
-            XMLStreamReader reader = null;
-
-            try (InputStream is = new ByteArrayInputStream(beanBytes)) {
-
-                reader = factory.createXMLStreamReader(is);
-
-                while (reader.hasNext()) {
-                    final int eventType = reader.next();
-                    switch (eventType) {
-                        case XMLStreamReader.START_ELEMENT:
-                            depth++;
-                            startElement(reader);
-                            break;
-                        case XMLStreamReader.END_ELEMENT:
-                            endElement(reader);
-                            depth--;
-                            break;
-                    }
-                }
-
-            } catch (Exception ex) {
-                ex.printStackTrace(System.err);
-            } finally {
-                try {
-                    if (reader != null) {
-                        reader.close();
-                    }
-                } catch (XMLStreamException ex) {
-                }
-            }
-
-            return (IModuleModel) lastObject;
-        }
-
-        private void endElement(final XMLStreamReader reader) {
-
-            final String eName = reader.getLocalName();
-
-            switch (eName) {
-                case "object":
-                    lastObject = objStack.removeFirst();
-                    break;
-                case "array":
-                    arrayIndex = -1;
-                    voidIndexDepth = -1;
-                    objStack.removeFirst();
-                    break;
-                case "void":
-                    // <void index="?"> のdepthまで戻った時点でarray項目を設定する
-                    if (depth == voidIndexDepth) {
-                        Object obj = objStack.getFirst();
-                        if (obj instanceof Object[]) {
-                            ((Object[]) obj)[arrayIndex] = lastObject;
-                        }
-                    }
-                    break;
-            }
-        }
-
-        private void startElement(final XMLStreamReader reader) throws Exception {
-
-            final String eName = reader.getLocalName();
-
-            switch (eName) {
-                case "object":
-                    String objClassName = reader.getAttributeValue(0);
-                    objStack.addFirst(getClassForName(objClassName).newInstance());
-                    break;
-                case "void":
-                    String attrName = reader.getAttributeLocalName(0);
-                    String attrValue = reader.getAttributeValue(0);
-                    switch (attrName) {
-                        case "property":
-                            fieldName = attrValue;
-                            break;
-                        case "index":
-                            voidIndexDepth = depth;
-                            arrayIndex = Integer.valueOf(attrValue);
-                            break;
-                    }
-                    break;
-                case "string":
-                    String value = reader.getElementText();
-                    // getElementTextはreaderをEndElementまで進めるのでdepthを戻す
-                    depth--;
-                    // モデルに値を設定する
-                    Object obj = objStack.getFirst();
-                    Field field = getReflectField(obj.getClass(), fieldName);
-                    field.set(obj, value);
-                    break;
-                case "array":
-                    String className = reader.getAttributeValue(0);
-                    int len = Integer.parseInt(reader.getAttributeValue(1));
-                    // arrayを設定する
-                    Object array = Array.newInstance(getClassForName(className), len);
-                    Object object = objStack.getFirst();
-                    Field arrayFld = getReflectField(object.getClass(), fieldName);
-                    arrayFld.set(object, array);
-                    objStack.addFirst(array);
-                    break;
-            }
-        }
-    }
-
     // クラス名に対応したクラスを作る
     private Class getClassForName(final String className) throws Exception {
-        
+
         Class clazz = classMap.get(className);
         if (clazz == null) {
             clazz = Class.forName(className);
@@ -215,7 +224,7 @@ public class ModuleBeanDecoder {
         }
         return clazz;
     }
-    
+
     // java.lang.reflect.Fieldを作る
     private Field getReflectField(final Class clazz, final String fieldName) throws Exception {
 
