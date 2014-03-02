@@ -27,11 +27,20 @@ public final class StampHolder extends AbstractComponentHolder {
     private ModuleModel stamp;
 
     public StampHolder(KartePane kartePane, ModuleModel stamp) {
+        this(kartePane, stamp, true);
+    }
+    
+    public StampHolder(KartePane kartePane, ModuleModel stamp, boolean setMyText) {
         super(kartePane);
         getFunction().setDeleteAction(StampHolder.this);
         setFont(getHints().getFont());
         setForeground(FOREGROUND);
-        setStamp(stamp);
+        if (setMyText) {
+            setStamp(stamp);
+        } else {
+            // setMyTextは後回し
+            this.stamp = stamp;
+        }
     }
     
     private StampHolderFunction getFunction() {
@@ -135,27 +144,20 @@ public final class StampHolder extends AbstractComponentHolder {
         
         kartePane.setDirty(true);
     }
-    
+
     public void setMyText() {
 
         if (getStamp() == null) {
             return;
         }
 
-        final StampHtmlRenderer renderer = new StampHtmlRenderer(getStamp(), getHints());
-        final String text = renderer.getStampHtml(true);
+        StampHtmlRenderer renderer = new StampHtmlRenderer(getStamp(), getHints());
+        setText(renderer.getStampHtml(true));
 
-        SwingUtilities.invokeLater(new Runnable() {
-
-            @Override
-            public void run() {
-                setText(text);
-                // カルテペインへ展開された時広がるのを防ぐ
-                setMaximumSize(getPreferredSize());
-            }
-        });
+        // カルテペインへ展開された時広がるのを防ぐ
+        setMaximumSize(getPreferredSize());
     }
-    
+
     @Override
     public String getAttributeName() {
         return ATTRIBUTE_NAME;
