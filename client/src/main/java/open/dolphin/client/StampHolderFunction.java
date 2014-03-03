@@ -1,6 +1,5 @@
 package open.dolphin.client;
 
-import open.dolphin.common.util.StampHtmlRenderer;
 import java.awt.Frame;
 import java.awt.Point;
 import java.awt.Toolkit;
@@ -333,7 +332,7 @@ public class StampHolderFunction {
                     clsCode = ClaimConst.RECEIPT_CODE_NAIYO_HOKATSU;
                 }
                 bundle.setClassCode(clsCode);
-                setMyText(sh);
+                setStampTextLater(sh);
                 sh.getKartePane().setDirty(true);
             }
         }
@@ -357,7 +356,7 @@ public class StampHolderFunction {
                     clsCode = clsCode.substring(0, 2) + "0";
                 }
                 bundle.setClassCode(clsCode);
-                setMyText(sh);
+                setStampTextLater(sh);
                 sh.getKartePane().setDirty(true);
             }
         }
@@ -380,7 +379,7 @@ public class StampHolderFunction {
                 bundle.setMemo(memo);
                 clsCode = clsCode.substring(0, 2) + (exMed ? "2" : "1");
                 bundle.setClassCode(clsCode);
-                setMyText(sh);
+                setStampTextLater(sh);
                 sh.getKartePane().setDirty(true);
             }
         }
@@ -421,7 +420,7 @@ public class StampHolderFunction {
                 if (!(bundle.getClassCode()).startsWith("23")) {
                     bundle.setBundleNumber(num);
                 }
-                setMyText(sh);
+                setStampTextLater(sh);
                 sh.getKartePane().setDirty(true);
             }
         }
@@ -473,7 +472,7 @@ public class StampHolderFunction {
                     ++nyuin;
                 }
                 mm.setModuleInfoBean(info);
-                setMyText(sh);
+                setStampTextLater(sh);
                 sh.getKartePane().setDirty(true);
             }
         }
@@ -519,28 +518,14 @@ public class StampHolderFunction {
         return StampHolderTransferHandler.getInstance().getSelectedStampHolder();
     }
     
-    /**
-     * スタンプのHTML内容をセットする
-     */
-    public void setMyText(final StampHolder sh) {
-
-        if (sh.getStamp() == null) {
-            return;
-        }
-
-        final StampHtmlRenderer renderer = new StampHtmlRenderer(sh.getStamp(), sh.getHints());
-        final String text = renderer.getStampHtml(true);
-
-        // まさかinvokeLaterしたほうが速いとは…
-        SwingUtilities.invokeLater(new Runnable() {
+    private void setStampTextLater(final StampHolder sh) {
+        
+        SwingUtilities.invokeLater(new Runnable(){
 
             @Override
             public void run() {
-                sh.setText(text);
-                // カルテペインへ展開された時広がるのを防ぐ
-                sh.setMaximumSize(sh.getPreferredSize());
+                sh.setMyText();
             }
         });
     }
-
 }
