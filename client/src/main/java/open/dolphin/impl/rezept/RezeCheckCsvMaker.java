@@ -125,8 +125,6 @@ public class RezeCheckCsvMaker {
             // 実際のレセ点結果を出力する
             createRezeCheckCsv(bw);
 
-            bw.close();
-
             result = true;
 
         } catch (IOException ex) {
