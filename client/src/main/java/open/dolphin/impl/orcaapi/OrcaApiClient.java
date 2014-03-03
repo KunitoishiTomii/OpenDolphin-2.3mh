@@ -1,5 +1,6 @@
 package open.dolphin.impl.orcaapi;
 
+import java.net.URI;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.WebTarget;
 import open.dolphin.project.Project;
@@ -39,7 +40,7 @@ public class OrcaApiClient implements IOrcaApi {
         sb.append("http://");
         sb.append(Project.getString(Project.CLAIM_ADDRESS));
         sb.append(":").append(String.valueOf(API_PORT));
-        String uri = sb.toString();
+        URI uri = URI.create(sb.toString());
         String username = Project.getString(Project.ORCA_USER_ID);
         String password = Project.getString(Project.ORCA_USER_PASSWORD);
         
