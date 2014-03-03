@@ -12,8 +12,8 @@
     
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <!-- linuxの場合は /var/lucene/indexes2 等に変更-->
-        <lucene.index.base>d:/lucene/index2</lucene.index.base>
+        <!-- ビルド前に環境変数 LUCENE_INDEX_BASEに d:/lucene/indexes2 など設定しておくこと-->
+        <lucene.index.base>${env.LUCENE_INDEX_BASE}</lucene.index.base>
     </properties>
     
     <build>
