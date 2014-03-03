@@ -142,11 +142,19 @@ public class RezeCheckCsvMaker {
     // CSVに点検結果を追加する
     private void createRezeCheckCsv(BufferedWriter bw) throws IOException {
 
+        // １行目にタイトル行を挿入
+        StringBuilder sbFirst = new StringBuilder();
+        sbFirst.append("名前,ID,入外区分,保険区分,指摘レベル,指摘箇所,内容");
+        sbFirst.append(System.getProperty("line.separator"));
+        bw.write(sbFirst.toString());
+        
         for (RE_Model reModel : reModelList) {
             // インフォ
             List<CheckResult> results = reModel.getCheckResults();
             if (results == null) {
-                return;
+                // 書くべきことが無いので次の患者を処理
+                // ID・患者名は記載した上で「指摘無し」と書いた方が使いやすい？
+                continue;
             }
     
             for (CheckResult result : results) {
@@ -155,6 +163,31 @@ public class RezeCheckCsvMaker {
                 StringBuilder sb = new StringBuilder();
                 sb.append(reModel.getName()).append(",");
                 sb.append(reModel.getPatientId()).append(",");
+                switch (reModel.getIrModel().getNyugaikbn()) {
+                    case "1":
+                        sb.append("入院").append(",");
+                        break;
+                    case "2":
+                        sb.append("外来").append(",");
+                        break;
+                    default:
+                        sb.append("不明").append(",");
+                        break;
+                }
+                switch (reModel.getIrModel().getShinsaKikanNumber()) {
+                    case 1:
+                        sb.append("社保").append(",");
+                        break;
+                    case 2:
+                        sb.append("国保").append(",");
+                        break;
+                    case 6:
+                        sb.append("後期高齢").append(",");
+                        break;
+                    default:
+                        sb.append("その他").append(",");
+                        break;
+                }
 
                 // PDFには傷病名があったが、CSV出力は患者IDとNG箇所のみの記載とし、
 	        // 詳細は直接アクセスして確認してもらうのを是とする。
@@ -163,20 +196,18 @@ public class RezeCheckCsvMaker {
                 int status = result.getResult();
                 switch (status) {
                     case CheckResult.CHECK_INFO:
-                        sb.append("情報");
+                        sb.append("情報").append(",");
                         break;
                     case CheckResult.CHECK_WARNING:
-                        sb.append("警告");
+                        sb.append("警告").append(",");
                         break;
                     case CheckResult.CHECK_ERROR:
-                        sb.append("エラー");
+                        sb.append("エラー").append(",");
                         break;
                     default:
                         break;
                 }
-		sb.append(",");
-		sb.append(result.getFilterName());
-		sb.append(",");
+		sb.append(result.getFilterName()).append(",");
 		sb.append(result.getMsg());
                 sb.append(System.getProperty("line.separator"));
 		bw.write(sb.toString());
