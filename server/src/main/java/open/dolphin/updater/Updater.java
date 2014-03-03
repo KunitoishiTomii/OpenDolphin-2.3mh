@@ -25,6 +25,7 @@ public class Updater {
         LetterConverter.class,  // Letterを新フォーマットに変換
         PvtStateUpdater.class,  // 今日の診察終了PvtStateを変換
         RoutineMedUpdater.class,// RoutineMed修正
+        CreateDocIdIndex.class  // d_moduleとd_imageのdoc_idカラムにインデックス設定
     };
 
     @PersistenceContext
