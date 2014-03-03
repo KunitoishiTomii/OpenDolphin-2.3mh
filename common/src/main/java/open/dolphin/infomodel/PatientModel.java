@@ -89,7 +89,7 @@ public class PatientModel implements Serializable {
     @Transient
     private String maritalStatusCodeSys;
     
-    @Lob
+    //@Lob
     private byte[] jpegPhoto;
     
     private String memo;

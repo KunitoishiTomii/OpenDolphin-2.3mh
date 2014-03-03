@@ -57,7 +57,7 @@ public class PublishedTreeModel implements IStampTreeModel {
     //masuda Lobのサイズを拡張する
     //@Column(nullable=false)
     @Column(nullable=false, length=16777215)    // MEDIUMBLOB
-    @Lob
+    //@Lob
     private byte[] treeBytes;
     
     // 更新した日
