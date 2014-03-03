@@ -720,12 +720,29 @@ public class MiscSettingPanel extends AbstractSettingPanel {
 
         gbl.add(pnlRest, 0, row, GridBagConstraints.CENTER);
         JPanel rest = gbl.getProduct();
+        
+        // comet / websocket
+        gbl = new GridBagBuilder("チャート状態同期");
+        rb_comet = new JRadioButton("Comet");
+        rb_websocket = new JRadioButton("WebSocket");
+        ButtonGroup bgSync = new ButtonGroup();
+        bgSync.add(rb_comet);
+        bgSync.add(rb_websocket);
 
+        JPanel pnlSync = new JPanel();
+        pnlSync.setLayout(new FlowLayout());
+        pnlSync.add(rb_comet);
+        pnlSync.add(rb_websocket);
+
+        gbl.add(pnlSync, 0, row, GridBagConstraints.CENTER);
+        JPanel sync = gbl.getProduct();
+        
         // 全体レイアウト
         gbl = new GridBagBuilder();
         gbl.add(labo, 0, 0, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
         gbl.add(hs, 0, 1, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
         gbl.add(rest, 0, 2, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
+        gbl.add(sync, 0, 4, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
         JPanel setting3 = gbl.getProduct();
         
         // UI設定
