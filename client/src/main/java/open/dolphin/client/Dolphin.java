@@ -518,12 +518,16 @@ public class Dolphin implements MainWindow, IChartEventListener {
         windowSupport.getFrame().setVisible(true);
         
 //masuda^   仮保存カルテチェック
-        TempKarteCheckDialog tempKarte = TempKarteCheckDialog.getInstance();
+        TempKarteCheckDialog tempKarte = new TempKarteCheckDialog();
         if (tempKarte.isTempKarteExists()) {
             Toolkit.getDefaultToolkit().beep();
             tempKarte.setLocationRelativeTo(null);
             tempKarte.setVisible(true);
+        } else {
+            tempKarte.dispose();
         }
+        // ModuleBeanDecoderを初期化
+        ModuleBeanDecoder.getInstance().init();
 //masuda$
     }
 
@@ -1633,8 +1637,8 @@ public class Dolphin implements MainWindow, IChartEventListener {
     
     public void checkTempKarte() {
         try {
-            TempKarteCheckDialog tempKarte = TempKarteCheckDialog.getInstance();
-            tempKarte.renewList();
+            TempKarteCheckDialog tempKarte = new TempKarteCheckDialog();
+            tempKarte.setLocationRelativeTo(null);
             tempKarte.setVisible(true);
         } catch (Exception ex) {
         }

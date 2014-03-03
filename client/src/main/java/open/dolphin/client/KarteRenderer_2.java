@@ -3,6 +3,7 @@ package open.dolphin.client;
 import java.awt.Color;
 import java.io.StringReader;
 import java.util.*;
+import javax.swing.SwingUtilities;
 import javax.swing.text.*;
 import javax.swing.text.DefaultStyledDocument.ElementSpec;
 import javax.xml.stream.XMLInputFactory;
@@ -371,6 +372,7 @@ public class KarteRenderer_2 {
         private int baseFontSize;
 
         private List<ElementSpec> specList;
+        private List<StampHolder> shList;
 
         /**
          * TextPane Dump の XML を解析する。
@@ -384,6 +386,7 @@ public class KarteRenderer_2 {
             this.kartePane = kartePane;
             baseFontSize = kartePane.getTextPane().getFont().getSize();
             specList = new ArrayList<>();
+            shList = new ArrayList<>();
                         
             doc = new KarteStyledDocument(kartePane);
             
@@ -422,6 +425,19 @@ public class KarteRenderer_2 {
             doc.createDocument(specList);
             // ComponentHolderのPositionを設定する。ダサイが止む無し
             doc.setComponentPositions();
+
+            // setMyTextは後回しにしているのでまとめてinvokeLaterする
+            if (!shList.isEmpty()) {
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        for (StampHolder sh : shList) {
+                            sh.setMyText();
+                        }
+                    }
+                });
+            }
             
             // レンダリング後はdefault styleに戻す
             doc.setDefaultStyle();
@@ -571,9 +587,10 @@ public class KarteRenderer_2 {
             final int index = Integer.parseInt(number);
             switch (name) {
                 case STAMP_HOLDER: {
-                    // StampHolderを作成する
-                    final StampHolder sh = new StampHolder(kartePane, modules.get(index));
+                    // StampHolderを作成する。setMyTextは後回し
+                    final StampHolder sh = new StampHolder(kartePane, modules.get(index), false);
                     sh.setTransferHandler(StampHolderTransferHandler.getInstance());
+                    shList.add(sh);
                     // このスタンプ用のスタイルを生成する
                     final MutableAttributeSet atts = doc.createComponentAttribute(sh);
                     insertString(" ", atts);

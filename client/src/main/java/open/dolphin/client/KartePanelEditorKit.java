@@ -19,19 +19,10 @@ public class KartePanelEditorKit extends StyledEditorKit {
     private static final Image EOF_ICON = ClientContext.getImageIconAlias("icon_eof").getImage();
     private static final int crMargin = 20;
 
-    private static final KartePanelEditorKit instance;
     private final ViewFactory viewFactory;
-    
-    static {
-        instance = new KartePanelEditorKit();
-    }
 
-    private KartePanelEditorKit() {
+    public KartePanelEditorKit() {
         viewFactory = new VisibleCrViewFactory();
-    }
-    
-    public static KartePanelEditorKit getInstance() {
-        return instance;
     }
 
     @Override

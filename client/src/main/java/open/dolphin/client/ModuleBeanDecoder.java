@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Map;
@@ -11,19 +12,28 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
+import open.dolphin.infomodel.BundleDolphin;
+import open.dolphin.infomodel.BundleMed;
+import open.dolphin.infomodel.ClaimItem;
 import open.dolphin.infomodel.IModuleModel;
+import open.dolphin.infomodel.ProgressCourse;
 
 /**
- * ModuleBeanDecoder 
- * 結局reflectionにｗ
+ * ModuleBeanDecoder 結局reflectionにｗ
  *
  * @author masuda, Masuda Naika
  */
 public class ModuleBeanDecoder {
 
+    private static final Class[] KNOWN_CLASSES = {
+        ClaimItem.class, BundleDolphin.class, BundleMed.class, ProgressCourse.class
+    };
+
     private static final ModuleBeanDecoder instance;
 
     private final Map<Class, Map<String, Field>> reflectFieldMap;
+
+    private final Map<String, Class> classMap;
 
     static {
         instance = new ModuleBeanDecoder();
@@ -31,6 +41,7 @@ public class ModuleBeanDecoder {
 
     private ModuleBeanDecoder() {
         reflectFieldMap = new ConcurrentHashMap<>();
+        classMap = new ConcurrentHashMap<>();
     }
 
     public static ModuleBeanDecoder getInstance() {
@@ -48,17 +59,12 @@ public class ModuleBeanDecoder {
 
         private Object lastObject;
 
-        private String fieldName;
-        private int arrayIndex;
-        private int depth;
-        private int voidIndexDepth;
-
         private final Deque<Object> objStack;
+        private final Deque<VoidCommand> cmdStack;
 
         private ModuleDecoder() {
-            arrayIndex = -1;
-            voidIndexDepth = -1;
             objStack = new ArrayDeque();
+            cmdStack = new ArrayDeque();
         }
 
         private IModuleModel decode(final byte[] beanBytes) {
@@ -75,12 +81,10 @@ public class ModuleBeanDecoder {
                     final int eventType = reader.next();
                     switch (eventType) {
                         case XMLStreamReader.START_ELEMENT:
-                            depth++;
                             startElement(reader);
                             break;
                         case XMLStreamReader.END_ELEMENT:
                             endElement(reader);
-                            depth--;
                             break;
                     }
                 }
@@ -99,27 +103,25 @@ public class ModuleBeanDecoder {
             return (IModuleModel) lastObject;
         }
 
-        private void endElement(final XMLStreamReader reader) {
+        private void processVoidCommand(final Object obj) throws Exception {
 
-            final String eName = reader.getLocalName();
+            VoidCommand voidCmd = cmdStack.pollFirst();
+            if (voidCmd == null) {
+                return;
+            }
 
-            switch (eName) {
-                case "object":
-                    lastObject = objStack.removeFirst();
+            final Object target = objStack.getFirst();
+            final String cmd = voidCmd.getCommand();
+            final String value = voidCmd.getValue();
+
+            switch (cmd) {
+                case "property":
+                    Field field = getReflectField(target.getClass(), value);
+                    field.set(target, obj);
                     break;
-                case "array":
-                    arrayIndex = -1;
-                    voidIndexDepth = -1;
-                    objStack.removeFirst();
-                    break;
-                case "void":
-                    // <void index="?"> のdepthまで戻った時点でarray項目を設定する
-                    if (depth == voidIndexDepth) {
-                        Object obj = objStack.getFirst();
-                        if (obj instanceof Object[]) {
-                            ((Object[]) obj)[arrayIndex] = lastObject;
-                        }
-                    }
+                case "index":
+                    int index = Integer.valueOf(value);
+                    ((Object[]) target)[index] = obj;
                     break;
             }
         }
@@ -129,54 +131,98 @@ public class ModuleBeanDecoder {
             final String eName = reader.getLocalName();
 
             switch (eName) {
-                case "object":
-                    objStack.addFirst(createObject(reader.getAttributeValue(0)));
-                    break;
                 case "void":
-                    String attrName = reader.getAttributeLocalName(0);
-                    String attrValue = reader.getAttributeValue(0);
-                    switch (attrName) {
-                        case "property":
-                            fieldName = attrValue;
-                            break;
-                        case "index":
-                            voidIndexDepth = depth;
-                            arrayIndex = Integer.valueOf(attrValue);
-                            break;
-                    }
+                    String cmd = reader.getAttributeLocalName(0);
+                    String value = reader.getAttributeValue(0);
+                    cmdStack.add(new VoidCommand(cmd, value));
                     break;
-                case "string":
-                    String value = reader.getElementText();
-                    // getElementTextはreaderをEndElementまで進めるのでdepthを戻す
-                    depth--;
-                    // モデルに値を設定する
-                    Object obj = objStack.getFirst();
-                    Field field = getReflectField(obj.getClass(), fieldName);
-                    field.set(obj, value);
+                case "object":
+                    String objClsName = reader.getAttributeValue(0);
+                    Object obj = getClassForName(objClsName).newInstance();
+                    processVoidCommand(obj);
+                    objStack.addFirst(obj);
                     break;
                 case "array":
-                    String className = reader.getAttributeValue(0);
+                    String arrayClsName = reader.getAttributeValue(0);
                     int len = Integer.parseInt(reader.getAttributeValue(1));
-                    // arrayを設定する
-                    Object array = createArray(className, len);
-                    Object object = objStack.getFirst();
-                    Field arrayFld = getReflectField(object.getClass(), fieldName);
-                    arrayFld.set(object, array);
+                    Object array = Array.newInstance(getClassForName(arrayClsName), len);
+                    processVoidCommand(array);
                     objStack.addFirst(array);
+                    break;
+                case "string":
+                    String str = reader.getElementText();
+                    processVoidCommand(str);
+                    break;
+            }
+        }
+
+        private void endElement(final XMLStreamReader reader) {
+
+            final String eName = reader.getLocalName();
+
+            switch (eName) {
+                case "object":
+                    lastObject = objStack.removeFirst();
+                    break;
+                case "array":
+                    objStack.removeFirst();
                     break;
             }
         }
     }
 
-    // モデルを作成する
-    private Object createObject(final String className) throws Exception {
-        Class clazz = Class.forName(className);
-        return clazz.newInstance();
+    private static class VoidCommand {
+
+        private final String cmd;
+        private final String value;
+
+        private VoidCommand(String cmd, String value) {
+            this.cmd = cmd;
+            this.value = value;
+        }
+
+        private String getCommand() {
+            return cmd;
+        }
+
+        private String getValue() {
+            return value;
+        }
     }
 
-    private Object createArray(final String className, final int len) throws Exception {
-        Class clazz = Class.forName(className);
-        return Array.newInstance(clazz, len);
+    // 前もって関連クラス・フィールドを登録しておく
+    public void init() {
+
+        for (Class clazz : KNOWN_CLASSES) {
+            // クラスを登録する
+            classMap.put(clazz.getName(), clazz);
+            // フィールドを登録する
+            Map<String, Field> fieldMap = new ConcurrentHashMap<>();
+            reflectFieldMap.put(clazz, fieldMap);
+            for (Class cls = clazz; cls != null; cls = cls.getSuperclass()) {
+                for (Field field : cls.getDeclaredFields()) {
+                    int modifier = field.getModifiers();
+                    // static final定数とtransientは除外する
+                    if ((Modifier.isStatic(modifier) && Modifier.isFinal(modifier))
+                            || Modifier.isTransient(modifier)) {
+                        continue;
+                    }
+                    field.setAccessible(true);
+                    fieldMap.put(field.getName(), field);
+                }
+            }
+        }
+    }
+
+    // クラス名に対応したクラスを作る
+    private Class getClassForName(final String className) throws Exception {
+
+        Class clazz = classMap.get(className);
+        if (clazz == null) {
+            clazz = Class.forName(className);
+            classMap.put(className, clazz);
+        }
+        return clazz;
     }
 
     // java.lang.reflect.Fieldを作る
@@ -190,28 +236,22 @@ public class ModuleBeanDecoder {
         Field field = fieldMap.get(fieldName);
 
         if (field == null) {
-            
-            try {
-                field = clazz.getDeclaredField(fieldName);
-                
-            } catch (NoSuchFieldException ex1) {
-                // 親クラスを検索する
-                Class parent = clazz.getSuperclass();
-                while (parent != null) {
-                    try {
-                        field = parent.getDeclaredField(fieldName);
-                        break;
-                    } catch (NoSuchFieldException ex2) {
-                        parent = parent.getSuperclass();
+            Exception ex = null;
+            for (Class cls = clazz; cls != null; cls = cls.getSuperclass()) {
+                try {
+                    field = cls.getDeclaredField(fieldName);
+                    field.setAccessible(true);
+                    fieldMap.put(fieldName, field);
+                    break;
+                } catch (NoSuchFieldException nsfex) {
+                    if (ex == null) {
+                        ex = nsfex;
                     }
                 }
-                if (field == null) {
-                    throw ex1;
-                }
             }
-
-            field.setAccessible(true);
-            fieldMap.put(fieldName, field);
+            if (field == null && ex != null) {
+                throw ex;
+            }
         }
 
         return field;

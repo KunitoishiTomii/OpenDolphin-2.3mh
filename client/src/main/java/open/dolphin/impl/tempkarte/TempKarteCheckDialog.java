@@ -66,21 +66,10 @@ public class TempKarteCheckDialog extends JDialog implements IChartEventListener
     
     private ChartEventListener cel;
     
-    
-    private static final TempKarteCheckDialog instance;
-    
-    static {
-        instance = new TempKarteCheckDialog();
-    }
-    
-    private TempKarteCheckDialog() {
+    public TempKarteCheckDialog() {
         setup();
         initComponents();
         connect();
-    }
-    
-    public static TempKarteCheckDialog getInstance() {
-        return instance;
     }
     
     private void setup() {
@@ -225,7 +214,7 @@ public class TempKarteCheckDialog extends JDialog implements IChartEventListener
         });
     }
     
-    public void renewList() throws Exception {
+    private void renewList() throws Exception {
 
         UserModel user = Project.getUserModel();
         long userPk = user.getId();
@@ -250,12 +239,14 @@ public class TempKarteCheckDialog extends JDialog implements IChartEventListener
             return;
         }
         if (b) {
-            cel.addListener(instance);
+            cel.addListener(this);
+            super.setVisible(b);
         } else {
-            cel.removeListener(instance);
+            cel.removeListener(this);
             setModal(false);
+            super.setVisible(b);
+            dispose();
         }
-        super.setVisible(b);
     }
     
     public boolean isTempKarteExists() {
