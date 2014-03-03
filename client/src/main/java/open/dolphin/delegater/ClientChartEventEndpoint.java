@@ -37,7 +37,7 @@ public class ClientChartEventEndpoint {
         StringBuilder sb = new StringBuilder();
         sb.append("wss").append(baseURI.substring(pos)).append("/dolphin/ws/");
         sb.append(fidUid).append("/").append(passwd).append("/").append(clientUUID);
-        URI uri = new URI(sb.toString());
+        URI uri = URI.create(sb.toString());
         
         SSLContext ssl = OreOreSSL.getSslContext();
         SSLEngineConfigurator sslConfig = new SSLEngineConfigurator(ssl, true, false, false);
