@@ -18,7 +18,7 @@ public class SchemaModel extends KarteEntryBean {
     @Embedded
     private ExtRefModel extRef;
     
-    //@Lob
+    @Lob
     @Column(nullable=false, length=16777215)    // MEDIUMBLOB
     private byte[] jpegByte;
     

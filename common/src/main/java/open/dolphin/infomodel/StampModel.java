@@ -24,7 +24,7 @@ public class StampModel implements Serializable {
     private String entity;
     
     @Column(nullable=false)
-    //@Lob
+    @Lob
     private byte[] stampBytes;
 
 //masuda^

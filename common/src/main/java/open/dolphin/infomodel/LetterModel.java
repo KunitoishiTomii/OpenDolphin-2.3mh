@@ -15,7 +15,7 @@ import javax.persistence.*;
 @Table(name = "d_letter")
 public class LetterModel extends KarteEntryBean {
     
-    //@Lob // OpenDolphin-1.4 ではこのアノテーションなし
+    @Lob // OpenDolphin-1.4 ではこのアノテーションなし
     @Column(nullable=false)
     private byte[] beanBytes;
     

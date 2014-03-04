@@ -31,7 +31,7 @@ public class ModuleModel extends KarteEntryBean {
     @Field(index=Index.YES)                         // hibernate search
     @FieldBridge(impl = ModuleModelBridge.class)    // hibernate search
     @Analyzer(impl = CJKAnalyzer.class)             // hibernate search
-    //@Lob
+    @Lob
     @Column(nullable=false)
     private byte[] beanBytes;
     

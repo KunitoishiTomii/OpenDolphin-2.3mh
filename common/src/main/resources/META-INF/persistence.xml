@@ -14,7 +14,6 @@
             <property name="hibernate.search.default.optimizer.operation_limit.max" value="1000"/>
             <property name="hibernate.search.default.optimizer.transaction_limit.max" value="100"/>
             <property name="hibernate.hbm2ddl.auto" value="update"/>
-            <property name="hibernate.jdbc.use_streams_for_binary" value="true"/>
         </properties>
     </persistence-unit>
 </persistence>

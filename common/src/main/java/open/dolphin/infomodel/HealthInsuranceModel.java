@@ -17,7 +17,7 @@ public class HealthInsuranceModel implements Serializable {
     @Id @GeneratedValue(strategy=GenerationType.AUTO)
     private long id;
     
-    //@Lob
+    @Lob
     @Column(nullable=false)
     private byte[] beanBytes;
     
