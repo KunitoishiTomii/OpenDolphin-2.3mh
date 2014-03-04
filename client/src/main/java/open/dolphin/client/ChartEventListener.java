@@ -12,11 +12,16 @@ import java.util.concurrent.TimeUnit;
 import javax.ws.rs.client.InvocationCallback;
 import javax.ws.rs.core.Response;
 import open.dolphin.delegater.ChartEventDelegater;
-import open.dolphin.infomodel.*;
 import open.dolphin.project.Project;
 import open.dolphin.common.util.BeanUtils;
 import open.dolphin.common.util.JsonConverter;
 import open.dolphin.delegater.PatientDelegater;
+import open.dolphin.infomodel.ChartEventModel;
+import open.dolphin.infomodel.HealthInsuranceModel;
+import open.dolphin.infomodel.ModelUtils;
+import open.dolphin.infomodel.PVTHealthInsuranceModel;
+import open.dolphin.infomodel.PatientModel;
+import open.dolphin.infomodel.PatientVisitModel;
 import open.dolphin.util.NamedThreadFactory;
 
 /**

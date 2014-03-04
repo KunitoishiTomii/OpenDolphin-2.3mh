@@ -13,8 +13,13 @@ import open.dolphin.dao.SqlMasterDao;
 import open.dolphin.dao.SqlMiscDao;
 import open.dolphin.delegater.MasudaDelegater;
 import open.dolphin.helper.ComponentMemory;
-import open.dolphin.infomodel.*;
 import open.dolphin.common.util.StringTool;
+import open.dolphin.infomodel.ClaimBundle;
+import open.dolphin.infomodel.ClaimItem;
+import open.dolphin.infomodel.DrugInteractionModel;
+import open.dolphin.infomodel.IInfoModel;
+import open.dolphin.infomodel.ModuleModel;
+import open.dolphin.infomodel.TensuMaster;
 
 /**
  * 薬剤併用チェックを行うためのパネル

@@ -4,7 +4,11 @@ import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.*;
-import open.dolphin.infomodel.*;
+import open.dolphin.infomodel.ETensuModel1;
+import open.dolphin.infomodel.ETensuModel2;
+import open.dolphin.infomodel.ETensuModel3;
+import open.dolphin.infomodel.ETensuModel4;
+import open.dolphin.infomodel.ETensuModel5;
 
 /**
  * 電子点数表を参照するDAO

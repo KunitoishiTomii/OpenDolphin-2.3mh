@@ -5,8 +5,16 @@ import java.util.*;
 import javax.swing.JOptionPane;
 import open.dolphin.dao.SqlMiscDao;
 import open.dolphin.delegater.MasudaDelegater;
-import open.dolphin.infomodel.*;
 import open.dolphin.common.util.ZenkakuUtils;
+import open.dolphin.infomodel.BundleDolphin;
+import open.dolphin.infomodel.BundleMed;
+import open.dolphin.infomodel.ClaimConst;
+import open.dolphin.infomodel.ClaimItem;
+import open.dolphin.infomodel.DrugInteractionModel;
+import open.dolphin.infomodel.IInfoModel;
+import open.dolphin.infomodel.ModuleModel;
+import open.dolphin.infomodel.PatientModel;
+import open.dolphin.infomodel.UsingDrugModel;
 
 /**
  * KarteEditorで保存したとき呼ばれる

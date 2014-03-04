@@ -9,7 +9,14 @@ import java.util.List;
 import open.dolphin.client.Chart;
 import open.dolphin.client.IKarteSender;
 import open.dolphin.client.KarteSenderResult;
-import open.dolphin.infomodel.*;
+import open.dolphin.infomodel.BundleDolphin;
+import open.dolphin.infomodel.ClaimItem;
+import open.dolphin.infomodel.DocumentModel;
+import open.dolphin.infomodel.IInfoModel;
+import open.dolphin.infomodel.ModuleInfoBean;
+import open.dolphin.infomodel.ModuleModel;
+import open.dolphin.infomodel.PatientModel;
+import open.dolphin.infomodel.UserModel;
 import open.dolphin.project.Project;
 
 /**

@@ -15,7 +15,12 @@ import java.util.List;
 import java.util.ResourceBundle;
 import javax.swing.*;
 import open.dolphin.helper.WindowSupport;
-import open.dolphin.infomodel.*;
+import open.dolphin.infomodel.DocumentModel;
+import open.dolphin.infomodel.IInfoModel;
+import open.dolphin.infomodel.KarteBean;
+import open.dolphin.infomodel.PVTHealthInsuranceModel;
+import open.dolphin.infomodel.PatientModel;
+import open.dolphin.infomodel.PatientVisitModel;
 import open.dolphin.project.Project;
 
 /**

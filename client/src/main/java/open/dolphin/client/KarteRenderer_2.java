@@ -8,8 +8,12 @@ import javax.swing.text.DefaultStyledDocument.ElementSpec;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
-import open.dolphin.infomodel.*;
 import open.dolphin.common.util.XmlUtils;
+import open.dolphin.infomodel.DocumentModel;
+import open.dolphin.infomodel.IInfoModel;
+import open.dolphin.infomodel.ModuleModel;
+import open.dolphin.infomodel.ProgressCourse;
+import open.dolphin.infomodel.SchemaModel;
 import open.dolphin.tr.SchemaHolderTransferHandler;
 import open.dolphin.tr.StampHolderTransferHandler;
 

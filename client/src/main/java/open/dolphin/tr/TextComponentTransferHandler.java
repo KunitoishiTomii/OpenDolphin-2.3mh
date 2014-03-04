@@ -8,7 +8,11 @@ import javax.swing.ActionMap;
 import javax.swing.JComponent;
 import javax.swing.text.JTextComponent;
 import open.dolphin.client.GUIConst;
-import open.dolphin.infomodel.*;
+import open.dolphin.infomodel.BundleDolphin;
+import open.dolphin.infomodel.BundleMed;
+import open.dolphin.infomodel.IModuleModel;
+import open.dolphin.infomodel.ModuleModel;
+import open.dolphin.infomodel.RegisteredDiagnosisModel;
 
 /**
  * TextComponentTransferHandler (renamed from BundleTransferHandler)
@@ -116,8 +120,8 @@ public class TextComponentTransferHandler extends AbstractKarteTransferHandler {
             ModuleModel[] stamps = list.getOrderList();
             // pPaneにスタンプを挿入する
             StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < stamps.length; i++) {
-                IModuleModel model = stamps[i].getModel();
+            for (ModuleModel stamp : stamps) {
+                IModuleModel model = stamp.getModel();
                 if (model instanceof BundleMed) {
                     BundleMed bm = (BundleMed) model;
                     sb.append(bm.getAdminDisplayString2());

@@ -18,7 +18,11 @@ import open.dolphin.client.GUIFactory;
 import open.dolphin.delegater.StampDelegater;
 import open.dolphin.helper.GridBagBuilder;
 import open.dolphin.helper.ProgressMonitorWorker;
-import open.dolphin.infomodel.*;
+import open.dolphin.infomodel.FacilityModel;
+import open.dolphin.infomodel.IInfoModel;
+import open.dolphin.infomodel.IStampTreeModel;
+import open.dolphin.infomodel.ModelUtils;
+import open.dolphin.infomodel.StampTreeModel;
 import open.dolphin.project.Project;
 
 /**
