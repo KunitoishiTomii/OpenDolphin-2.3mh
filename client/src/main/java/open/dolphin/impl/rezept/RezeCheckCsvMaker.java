@@ -131,6 +131,7 @@ public class RezeCheckCsvMaker {
         } finally {
             if (bw != null) {
                 bw.close();
+                bw = null;
             }
         }
         return result;
