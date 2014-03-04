@@ -18,10 +18,20 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import open.dolphin.client.ClientContext;
-import open.dolphin.infomodel.*;
 import open.dolphin.project.Project;
 import open.dolphin.common.util.StampRenderingHints;
 import open.dolphin.common.util.XmlUtils;
+import open.dolphin.infomodel.AdmissionModel;
+import open.dolphin.infomodel.BundleDolphin;
+import open.dolphin.infomodel.BundleMed;
+import open.dolphin.infomodel.ClaimItem;
+import open.dolphin.infomodel.DocInfoModel;
+import open.dolphin.infomodel.DocumentModel;
+import open.dolphin.infomodel.IInfoModel;
+import open.dolphin.infomodel.ModelUtils;
+import open.dolphin.infomodel.ModuleModel;
+import open.dolphin.infomodel.ProgressCourse;
+import open.dolphin.infomodel.SchemaModel;
 import open.dolphin.util.AgeCalculator;
 
 

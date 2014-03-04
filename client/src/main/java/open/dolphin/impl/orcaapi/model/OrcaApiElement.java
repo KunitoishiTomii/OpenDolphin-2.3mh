@@ -4,7 +4,12 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import open.dolphin.impl.orcaapi.IOrcaApi;
-import open.dolphin.infomodel.*;
+import open.dolphin.infomodel.ClaimBundle;
+import open.dolphin.infomodel.ClaimItem;
+import open.dolphin.infomodel.ModelUtils;
+import open.dolphin.infomodel.PVTHealthInsuranceModel;
+import open.dolphin.infomodel.PVTPublicInsuranceItemModel;
+import open.dolphin.infomodel.RegisteredDiagnosisModel;
 import org.apache.commons.lang.StringUtils;
 import org.jdom2.Element;
 

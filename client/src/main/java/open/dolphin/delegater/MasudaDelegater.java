@@ -6,8 +6,24 @@ import java.util.Date;
 import java.util.List;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Response;
-import open.dolphin.infomodel.*;
 import open.dolphin.common.util.BeanUtils;
+import open.dolphin.infomodel.DisconItemModel;
+import open.dolphin.infomodel.DocInfoModel;
+import open.dolphin.infomodel.DrPatientIdModel;
+import open.dolphin.infomodel.ETensuModel1;
+import open.dolphin.infomodel.ExamHistoryModel;
+import open.dolphin.infomodel.IModuleModel;
+import open.dolphin.infomodel.InFacilityLaboItem;
+import open.dolphin.infomodel.IndicationModel;
+import open.dolphin.infomodel.ModuleModel;
+import open.dolphin.infomodel.PatientModel;
+import open.dolphin.infomodel.PatientVisitModel;
+import open.dolphin.infomodel.RoutineMedModel;
+import open.dolphin.infomodel.RpModel;
+import open.dolphin.infomodel.SanteiHistoryModel;
+import open.dolphin.infomodel.SearchResultModel;
+import open.dolphin.infomodel.UserPropertyModel;
+import open.dolphin.infomodel.UsingDrugModel;
 
 /**
  * MasudaDelegater

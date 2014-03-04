@@ -6,7 +6,11 @@ import java.awt.print.PageFormat;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.border.Border;
-import open.dolphin.infomodel.*;
+import open.dolphin.infomodel.AdmissionModel;
+import open.dolphin.infomodel.DocInfoModel;
+import open.dolphin.infomodel.DocumentModel;
+import open.dolphin.infomodel.IInfoModel;
+import open.dolphin.infomodel.ModelUtils;
 import open.dolphin.project.Project;
 import open.dolphin.util.AgeCalculator;
 
@@ -141,6 +145,10 @@ public abstract class KarteViewer extends AbstractChartDocument {
 //masuda^   タイトルを文書種別によって色分けする
         kartePanel.setTitleColor(docInfo);
 //masuda$
+    }
+    
+    protected final void renderKarte() {
+        KarteRenderer_2.getInstance().render(getModel(), getSOAPane(), getPPane());
     }
 
     protected final void setKartePanel(KartePanel kartePanel) {

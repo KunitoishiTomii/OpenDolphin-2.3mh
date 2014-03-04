@@ -5,7 +5,12 @@ import java.awt.event.ActionEvent;
 import java.text.SimpleDateFormat;
 import javax.swing.*;
 import open.dolphin.common.util.BeanUtils;
-import open.dolphin.infomodel.*;
+import open.dolphin.infomodel.DocumentModel;
+import open.dolphin.infomodel.IInfoModel;
+import open.dolphin.infomodel.ModelUtils;
+import open.dolphin.infomodel.ModuleModel;
+import open.dolphin.infomodel.ProgressCourse;
+import open.dolphin.infomodel.SimpleAddressModel;
 
 /**
  * BasicInfoInspector

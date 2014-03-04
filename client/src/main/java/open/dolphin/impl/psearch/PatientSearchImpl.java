@@ -24,13 +24,17 @@ import open.dolphin.delegater.PatientDelegater;
 import open.dolphin.dto.PatientSearchSpec;
 import open.dolphin.helper.KeyBlocker;
 import open.dolphin.helper.SimpleWorker;
-import open.dolphin.infomodel.*;
 import open.dolphin.project.Project;
 import open.dolphin.setting.MiscSettingPanel;
 import open.dolphin.table.*;
 import open.dolphin.util.AgeCalculator;
 import open.dolphin.common.util.StringTool;
 import open.dolphin.common.util.ZenkakuUtils;
+import open.dolphin.infomodel.ChartEventModel;
+import open.dolphin.infomodel.PatientModel;
+import open.dolphin.infomodel.PatientVisitModel;
+import open.dolphin.infomodel.SearchResultModel;
+import open.dolphin.infomodel.SimpleDate;
 
 /**
  * 患者検索PatientSearchPlugin

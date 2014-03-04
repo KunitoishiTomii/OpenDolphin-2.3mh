@@ -1,7 +1,11 @@
 package open.dolphin.client;
 
 import javax.swing.JFrame;
-import open.dolphin.infomodel.*;
+import open.dolphin.infomodel.DocumentModel;
+import open.dolphin.infomodel.KarteBean;
+import open.dolphin.infomodel.PVTHealthInsuranceModel;
+import open.dolphin.infomodel.PatientModel;
+import open.dolphin.infomodel.PatientVisitModel;
 
 /**
  *
