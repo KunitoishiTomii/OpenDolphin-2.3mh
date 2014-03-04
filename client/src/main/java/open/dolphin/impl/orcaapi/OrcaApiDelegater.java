@@ -67,8 +67,8 @@ public class OrcaApiDelegater implements IOrcaApi {
                 : "/api21/medicalmod";
 
         final String xml = xml2
-                ? OrcaApiRequestBuilder.createSystem01ManagereqXml2()
-                : OrcaApiRequestBuilder.createSystem01ManagereqXml();
+                ? OrcaApiRequestBuilder.createMedicalModModelXml2(model)
+                : OrcaApiRequestBuilder.createMedicalModModelXml(model);
 
         final Entity entity = toXmlEntity(xml);
 

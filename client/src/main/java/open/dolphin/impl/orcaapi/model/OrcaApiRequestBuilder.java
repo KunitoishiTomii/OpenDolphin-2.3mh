@@ -14,13 +14,13 @@ import org.jdom2.output.XMLOutputter;
  */
 public class OrcaApiRequestBuilder implements IOrcaApi {
     
-    public static String sendMedicalModModelXml(MedicalModModel model) {
+    public static String createMedicalModModelXml(MedicalModModel model) {
         
         Element elem = new OrcaApiElement.MedicalMod(model);
         return elememtToXml(elem);
     }
     
-    public static String sendMedicalModModelXml2(MedicalModModel model) {
+    public static String createMedicalModModelXml2(MedicalModModel model) {
         
         Element elem = new OrcaApiElement2.MedicalMod(model);
         return elememtToXml(elem);
