@@ -59,10 +59,7 @@ public class KarteViewer1 extends KarteViewer {
         setTitle();
 
         // レンダリングする
-//masuda^
-        //new KarteRenderer_2(soaPane, null).render(getModel());
-        KarteRenderer_2.getInstance().render(getModel(), soaPane, null);
-//masuda$
+        renderKarte();
         
         // モデル表示後にリスナ等を設定する
         ChartMediator mediator = getContext().getChartMediator();

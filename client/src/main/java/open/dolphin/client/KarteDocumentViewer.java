@@ -338,7 +338,7 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
 
     private void showKarteViewers() {
         
-        SwingWorker worker = new SwingWorker<Void, KarteViewer>() {
+        SwingWorker worker = new SwingWorker<Void, Void>() {
 
             @Override
             protected Void doInBackground() throws Exception {

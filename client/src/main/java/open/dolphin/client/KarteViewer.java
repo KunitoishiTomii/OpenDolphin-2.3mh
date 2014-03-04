@@ -142,6 +142,10 @@ public abstract class KarteViewer extends AbstractChartDocument {
         kartePanel.setTitleColor(docInfo);
 //masuda$
     }
+    
+    protected final void renderKarte() {
+        KarteRenderer_2.getInstance().render(getModel(), getSOAPane(), getPPane());
+    }
 
     protected final void setKartePanel(KartePanel kartePanel) {
         this.kartePanel = kartePanel;

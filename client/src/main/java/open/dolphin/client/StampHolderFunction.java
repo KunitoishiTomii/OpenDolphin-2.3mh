@@ -332,7 +332,7 @@ public class StampHolderFunction {
                     clsCode = ClaimConst.RECEIPT_CODE_NAIYO_HOKATSU;
                 }
                 bundle.setClassCode(clsCode);
-                setStampTextLater(sh);
+                sh.setMyText();
                 sh.getKartePane().setDirty(true);
             }
         }
@@ -356,7 +356,7 @@ public class StampHolderFunction {
                     clsCode = clsCode.substring(0, 2) + "0";
                 }
                 bundle.setClassCode(clsCode);
-                setStampTextLater(sh);
+                sh.setMyText();
                 sh.getKartePane().setDirty(true);
             }
         }
@@ -379,7 +379,7 @@ public class StampHolderFunction {
                 bundle.setMemo(memo);
                 clsCode = clsCode.substring(0, 2) + (exMed ? "2" : "1");
                 bundle.setClassCode(clsCode);
-                setStampTextLater(sh);
+                sh.setMyText();
                 sh.getKartePane().setDirty(true);
             }
         }
@@ -420,7 +420,7 @@ public class StampHolderFunction {
                 if (!(bundle.getClassCode()).startsWith("23")) {
                     bundle.setBundleNumber(num);
                 }
-                setStampTextLater(sh);
+                sh.setMyText();
                 sh.getKartePane().setDirty(true);
             }
         }
@@ -472,7 +472,7 @@ public class StampHolderFunction {
                     ++nyuin;
                 }
                 mm.setModuleInfoBean(info);
-                setStampTextLater(sh);
+                sh.setMyText();
                 sh.getKartePane().setDirty(true);
             }
         }
@@ -516,16 +516,5 @@ public class StampHolderFunction {
 
     private List<StampHolder> getSelectedStampHolder() {
         return StampHolderTransferHandler.getInstance().getSelectedStampHolder();
-    }
-    
-    private void setStampTextLater(final StampHolder sh) {
-        
-        SwingUtilities.invokeLater(new Runnable(){
-
-            @Override
-            public void run() {
-                sh.setMyText();
-            }
-        });
     }
 }
