@@ -1,5 +1,6 @@
 package open.dolphin.delegater;
 
+import java.net.URI;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -59,22 +60,23 @@ public class RestClient {
         authFilter.setUserName(username);
         authFilter.setPassword(password);
     }
-
+/*
     public String getBaseURI() {
         return baseURI;
     }
-
-    public void setBaseURI(String uri) {
+*/
+    public void setBaseURI(String strUri) {
 
         String oldURI = baseURI;
-        baseURI = uri;
+        baseURI = strUri;
 
         if (baseURI == null || baseURI.equals(oldURI)) {
             return;
         }
         
-        webTarget = client.target(baseURI);
-        asyncWebTarget = asyncClient.target(baseURI);
+        URI uri = URI.create(baseURI);
+        webTarget = client.target(uri);
+        asyncWebTarget = asyncClient.target(uri);
     }
     
     public WebTarget getWebTarget() {

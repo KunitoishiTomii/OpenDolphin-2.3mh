@@ -30,7 +30,7 @@ public class FontManager {
         UIManager.put("PasswordField.font", font13);
         UIManager.put("TextArea.font", font13);
         UIManager.put("OptionPane.font", font13);
-        UIManager.put("OptionPane.messageFont", font13);
+        UIManager.put("OptionPane.messageFont", font13.deriveFont(Font.BOLD));
         UIManager.put("Label.font", font12);
         UIManager.put("Button.font", font12);
         UIManager.put("ToggleButton.font", font12);
