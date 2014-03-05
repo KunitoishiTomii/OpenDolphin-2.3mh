@@ -331,12 +331,13 @@ public class PatientSearchImpl extends AbstractMainComponent {
         renderer.setTable(view.getTable());
         renderer.setDefaultRenderer();
 
-        // HibernateSearchを使用するかなど
-        final JComboBox methodCombo = view.getMethodCombo();
-        if (!useHibernateSearch()) {
-            methodCombo.setSelectedItem(PatientSearchView.ALL_SEARCH);
-        }
+        // HibernateSearchを使用するかなど Katou: 橋本医院では常時H検とする
+        // final JComboBox methodCombo = view.getMethodCombo();
+        // if (!useHibernateSearch()) {
+        //     methodCombo.setSelectedItem(PatientSearchView.ALL_SEARCH);
+        // }
         
+        /*
         methodCombo.addItemListener(new ItemListener() {
 
             @Override
@@ -347,6 +348,7 @@ public class PatientSearchImpl extends AbstractMainComponent {
                 }
             }
         });
+        */
 
         // カルテ検索Radioをシフト右クリックでインデックス作成
         view.getKarteSearchBtn().addMouseListener(new MouseAdapter() {
@@ -361,8 +363,8 @@ public class PatientSearchImpl extends AbstractMainComponent {
             }
             private void maybePopup(MouseEvent e) {
                 if ( e.isPopupTrigger() && e.isShiftDown()
-                        && view.getKarteSearchBtn().isSelected()
-                        && methodCombo.getSelectedItem() == PatientSearchView.HIBERNATE_SEARCH) {
+                        /*&& view.getKarteSearchBtn().isSelected()
+                        && methodCombo.getSelectedItem() == PatientSearchView.HIBERNATE_SEARCH*/) {
                     JPopupMenu popup = new JPopupMenu();
                     JMenuItem mi;
                     mi = new JMenuItem("インデックス作成");
@@ -384,7 +386,7 @@ public class PatientSearchImpl extends AbstractMainComponent {
             @Override
             public void itemStateChanged(ItemEvent e) {
                 boolean b = !view.getPtSearchBtn().isSelected();
-                view.getMethodCombo().setEnabled(b);
+                // view.getMethodCombo().setEnabled(b);
             }
         });
 
@@ -634,11 +636,13 @@ public class PatientSearchImpl extends AbstractMainComponent {
 
             } else if (StringTool.startsWithKatakana(text)) {
                 spec.setCode(PatientSearchSpec.KANA_SEARCH);
+                text = text.replace("　", " ");     // 全角スペースは半角に置換する
                 spec.setName(text);
 
             } else if (StringTool.startsWithHiragana(text)) {
                 text = StringTool.hiraganaToKatakana(text);
                 spec.setCode(PatientSearchSpec.KANA_SEARCH);
+                text = text.replace("　", " ");     // 全角スペースは半角に置換する
                 spec.setName(text);
 
             } else if (isNameAddress(text)) {
@@ -957,7 +961,8 @@ public class PatientSearchImpl extends AbstractMainComponent {
 
             progressMonitor = new ProgressMonitor(view, message, initialNote, 0, 100);
 
-            boolean hibernateSearch = view.getMethodCombo().getSelectedItem() == PatientSearchView.HIBERNATE_SEARCH;
+            // boolean hibernateSearch = view.getMethodCombo().getSelectedItem() == PatientSearchView.HIBERNATE_SEARCH;
+            boolean hibernateSearch = true;
 
             // 患者検索
             if (!hibernateSearch) {
@@ -980,8 +985,9 @@ public class PatientSearchImpl extends AbstractMainComponent {
         private List<PatientModel> grepSearch() throws Exception {
 
             final int maxResult = 500;
-            final boolean progressCourseOnly 
-                    = view.getMethodCombo().getSelectedItem() == PatientSearchView.CONTENT_SEARCH;
+            /* final boolean progressCourseOnly 
+                    = view.getMethodCombo().getSelectedItem() == PatientSearchView.CONTENT_SEARCH;*/
+            final boolean progressCourseOnly = false;
 
             // 検索開始
             MasudaDelegater dl = MasudaDelegater.getInstance();
