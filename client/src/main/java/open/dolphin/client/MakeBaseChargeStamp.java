@@ -14,7 +14,15 @@ import java.util.List;
 import javax.swing.*;
 import open.dolphin.dao.SqlMiscDao;
 import open.dolphin.helper.ComponentMemory;
-import open.dolphin.infomodel.*;
+import open.dolphin.infomodel.BundleDolphin;
+import open.dolphin.infomodel.ClaimConst;
+import open.dolphin.infomodel.ClaimItem;
+import open.dolphin.infomodel.DocInfoModel;
+import open.dolphin.infomodel.IInfoModel;
+import open.dolphin.infomodel.MMLTable;
+import open.dolphin.infomodel.ModuleInfoBean;
+import open.dolphin.infomodel.ModuleModel;
+import open.dolphin.infomodel.TensuMaster;
 
 /**
  * MakeBaseChargeStamp.java

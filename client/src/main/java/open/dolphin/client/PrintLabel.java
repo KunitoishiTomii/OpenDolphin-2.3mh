@@ -11,10 +11,15 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import javax.swing.SwingWorker;
-import open.dolphin.infomodel.*;
 import open.dolphin.project.Project;
 import open.dolphin.setting.MiscSettingPanel;
 import open.dolphin.common.util.StringTool;
+import open.dolphin.infomodel.BundleDolphin;
+import open.dolphin.infomodel.BundleMed;
+import open.dolphin.infomodel.ClaimConst;
+import open.dolphin.infomodel.ClaimItem;
+import open.dolphin.infomodel.IInfoModel;
+import open.dolphin.infomodel.ModuleModel;
 
 /**
  * Brother QL-580Nで処方注射ラベルを印刷する

@@ -12,9 +12,14 @@ import javax.swing.tree.*;
 import open.dolphin.client.ClientContext;
 import open.dolphin.delegater.StampDelegater;
 import open.dolphin.helper.ProgressMonitorWorker;
-import open.dolphin.infomodel.*;
+import open.dolphin.infomodel.IInfoModel;
+import open.dolphin.infomodel.ModuleInfoBean;
+import open.dolphin.infomodel.ModuleModel;
+import open.dolphin.infomodel.RegisteredDiagnosisModel;
+import open.dolphin.infomodel.TextStampModel;
 import open.dolphin.project.Project;
 import open.dolphin.common.util.BeanUtils;
+import open.dolphin.infomodel.StampModel;
 import open.dolphin.util.GUIDGenerator;
 import org.apache.log4j.Logger;
 

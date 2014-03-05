@@ -12,8 +12,19 @@ import open.dolphin.client.ImageEntry;
 import open.dolphin.dto.DocumentSearchSpec;
 import open.dolphin.dto.ImageSearchSpec;
 import open.dolphin.dto.ModuleSearchSpec;
-import open.dolphin.infomodel.*;
 import open.dolphin.common.util.BeanUtils;
+import open.dolphin.infomodel.AppointmentModel;
+import open.dolphin.infomodel.DocInfoModel;
+import open.dolphin.infomodel.DocumentModel;
+import open.dolphin.infomodel.IInfoModel;
+import open.dolphin.infomodel.IModuleModel;
+import open.dolphin.infomodel.KarteBean;
+import open.dolphin.infomodel.LetterModule;
+import open.dolphin.infomodel.ModuleModel;
+import open.dolphin.infomodel.ObservationModel;
+import open.dolphin.infomodel.PatientMemoModel;
+import open.dolphin.infomodel.RegisteredDiagnosisModel;
+import open.dolphin.infomodel.SchemaModel;
 
 /**
  * Session と Document の送受信を行う Delegater クラス。

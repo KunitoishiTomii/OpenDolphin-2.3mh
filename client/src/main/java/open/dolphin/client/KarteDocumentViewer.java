@@ -12,7 +12,11 @@ import javax.swing.*;
 import open.dolphin.delegater.DocumentDelegater;
 import open.dolphin.helper.DBTask;
 import open.dolphin.helper.WindowSupport;
-import open.dolphin.infomodel.*;
+import open.dolphin.infomodel.DocInfoModel;
+import open.dolphin.infomodel.DocumentModel;
+import open.dolphin.infomodel.IInfoModel;
+import open.dolphin.infomodel.ModuleModel;
+import open.dolphin.infomodel.SchemaModel;
 import open.dolphin.letter.KartePDFMaker;
 import open.dolphin.project.Project;
 //import open.dolphin.util.LapTimer;
@@ -338,7 +342,7 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
 
     private void showKarteViewers() {
         
-        SwingWorker worker = new SwingWorker<Void, KarteViewer>() {
+        SwingWorker worker = new SwingWorker<Void, Void>() {
 
             @Override
             protected Void doInBackground() throws Exception {

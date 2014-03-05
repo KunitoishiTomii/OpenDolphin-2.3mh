@@ -20,12 +20,18 @@ import javax.swing.table.TableColumn;
 import open.dolphin.client.*;
 import open.dolphin.dao.SqlMasterDao;
 import open.dolphin.dao.SqlMiscDao;
-import open.dolphin.infomodel.*;
 import open.dolphin.project.Project;
 import open.dolphin.table.ListTableModel;
 import open.dolphin.table.StripeTableCellRenderer;
 import open.dolphin.tr.MasterItemTransferHandler;
 import open.dolphin.common.util.ZenkakuUtils;
+import open.dolphin.infomodel.AdmissionModel;
+import open.dolphin.infomodel.BundleDolphin;
+import open.dolphin.infomodel.ClaimConst;
+import open.dolphin.infomodel.ClaimItem;
+import open.dolphin.infomodel.IInfoModel;
+import open.dolphin.infomodel.ModuleModel;
+import open.dolphin.infomodel.TensuMaster;
 import open.dolphin.table.ListTableSorter;
 
 /**
@@ -334,13 +340,13 @@ public abstract class AbstractStampEditor implements StampEditorConst {
             return TT_CODE_SEARCH;
         }
 
-        // ３文字以上 2013/11/16 katou 検索開始のトリガを入力３文字目に変更（要望反映）
-        if ((!textIsCode) && test.length() >= 3) {
+        // ２文字以上
+        if (!textIsCode && test.length() > 1) {
             return TT_LETTER_SEARCH;
         }
 
-        // １文字でreturn確定 2013/11/16 katou 検索開始のトリガを入力３文字目に変更（要望反映）
-        if ((!textIsCode) && hitReturn) {
+        // １文字でreturn確定
+        if (!textIsCode && hitReturn) {
             return TT_LETTER_SEARCH;
         }
 

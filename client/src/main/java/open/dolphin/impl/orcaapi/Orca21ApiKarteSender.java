@@ -7,10 +7,20 @@ import open.dolphin.client.Chart;
 import open.dolphin.client.IKarteSender;
 import open.dolphin.client.KarteSenderResult;
 import open.dolphin.dao.SqlMiscDao;
-import open.dolphin.infomodel.*;
 import open.dolphin.project.Project;
 import open.dolphin.common.util.ZenkakuUtils;
 import open.dolphin.impl.orcaapi.model.MedicalModModel;
+import open.dolphin.infomodel.AdmissionModel;
+import open.dolphin.infomodel.ClaimBundle;
+import open.dolphin.infomodel.ClaimConst;
+import open.dolphin.infomodel.ClaimItem;
+import open.dolphin.infomodel.DocInfoModel;
+import open.dolphin.infomodel.DocumentModel;
+import open.dolphin.infomodel.IInfoModel;
+import open.dolphin.infomodel.IModuleModel;
+import open.dolphin.infomodel.MMLTable;
+import open.dolphin.infomodel.ModuleModel;
+import open.dolphin.infomodel.PVTHealthInsuranceModel;
 
 /**
  * Orca21ApiKarteSender

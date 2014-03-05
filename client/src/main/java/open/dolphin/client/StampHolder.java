@@ -27,22 +27,13 @@ public final class StampHolder extends AbstractComponentHolder {
     private ModuleModel stamp;
 
     public StampHolder(KartePane kartePane, ModuleModel stamp) {
-        this(kartePane, stamp, true);
-    }
-    
-    public StampHolder(KartePane kartePane, ModuleModel stamp, boolean setMyText) {
         super(kartePane);
         getFunction().setDeleteAction(StampHolder.this);
         setFont(getHints().getFont());
         setForeground(FOREGROUND);
-        if (setMyText) {
-            setStamp(stamp);
-        } else {
-            // setMyTextは後回し
-            this.stamp = stamp;
-        }
+        setStamp(stamp);
     }
-    
+
     private StampHolderFunction getFunction() {
         return StampHolderFunction.getInstance();
     }
@@ -144,18 +135,29 @@ public final class StampHolder extends AbstractComponentHolder {
         
         kartePane.setDirty(true);
     }
+    
+    public String createStampHtml() {
+        StampHtmlRenderer renderer = new StampHtmlRenderer(getStamp(), getHints());
+        return renderer.getStampHtml(true);
+    }
 
     public void setMyText() {
 
         if (getStamp() == null) {
             return;
         }
+        
+        final String stampHtml = createStampHtml();
 
-        StampHtmlRenderer renderer = new StampHtmlRenderer(getStamp(), getHints());
-        setText(renderer.getStampHtml(true));
+        SwingUtilities.invokeLater(new Runnable() {
 
-        // カルテペインへ展開された時広がるのを防ぐ
-        setMaximumSize(getPreferredSize());
+            @Override
+            public void run() {
+                setText(stampHtml);
+                // カルテペインへ展開された時広がるのを防ぐ
+                setMaximumSize(getPreferredSize());
+            }
+        });
     }
 
     @Override
