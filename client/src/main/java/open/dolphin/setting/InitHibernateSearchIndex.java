@@ -45,6 +45,7 @@ public class InitHibernateSearchIndex {
             MasudaDelegater dl = MasudaDelegater.getInstance();
 
             // maxResult毎にインデックス作成する
+            long totalModelCount = 0;
             final int maxResults = 200;
             long fromDocPk = 0;
             int page = 0;
@@ -57,10 +58,10 @@ public class InitHibernateSearchIndex {
                 if (progressMonitor.isCanceled()) {
                     break;
                 }
-                ret = dl.makeDocumentModelIndex(fromDocPk, maxResults);
+                ret = dl.makeDocumentModelIndex(fromDocPk, maxResults, totalModelCount);
                 if (!FINISHED.equals(ret)) {
                     String[] str = ret.split(",");
-                    long totalModelCount = Long.valueOf(str[1]);
+                    totalModelCount = Long.valueOf(str[1]);
                     fromDocPk = Long.valueOf(str[0]);
                     page++;
                     // progress bar 表示

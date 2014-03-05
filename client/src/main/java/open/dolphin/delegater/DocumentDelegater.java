@@ -158,7 +158,7 @@ public class  DocumentDelegater extends BusinessDelegater {
                 .path(path)
                 .queryParam(FROM_DATE, toRestFormat(spec.getFromDate()))
                 .queryParam(TO_DATE, toRestFormat(spec.getToDate()))
-                .queryParam(INCLUDE_MODIFIED, String.valueOf(spec.isIncludeModifid()))
+                .queryParam(INCLUDE_MODIFIED, spec.isIncludeModifid())
                 .request(MEDIATYPE_JSON_UTF8)
                 .get();
 
@@ -513,7 +513,7 @@ public class  DocumentDelegater extends BusinessDelegater {
         Response response = getWebTarget()
                 .path(path)
                 .queryParam(FROM_DATE, toRestFormat(fromDate))
-                .queryParam(ACTIVE_ONLY, String.valueOf(activeOnly))
+                .queryParam(ACTIVE_ONLY, activeOnly)
                 .request(MEDIATYPE_JSON_UTF8)
                 .get();
 

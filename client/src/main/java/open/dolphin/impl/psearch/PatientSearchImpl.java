@@ -990,6 +990,7 @@ public class PatientSearchImpl extends AbstractMainComponent {
 
             long fromId = 0;
             int page = 0;
+            long moduleCount = 0;
             // progress bar 表示
             publish(new String[]{startingNote, "0"});
             
@@ -998,10 +999,10 @@ public class PatientSearchImpl extends AbstractMainComponent {
                 if (progressMonitor.isCanceled()) {
                     return new ArrayList<>(pmSet);
                 }
-                srm = dl.getSearchResult(searchText, fromId, maxResult, progressCourseOnly);
+                srm = dl.getSearchResult(searchText, fromId, maxResult, moduleCount, progressCourseOnly);
 
                 if (srm != null) {
-                    long moduleCount = srm.getTotalCount();
+                    moduleCount = srm.getTotalCount();
                     fromId = srm.getDocPk();
                     List<PatientModel> newList = srm.getResultList();
 
@@ -1095,6 +1096,7 @@ public class PatientSearchImpl extends AbstractMainComponent {
             MasudaDelegater dl = MasudaDelegater.getInstance();
 
             // maxResult毎にインデックス作成する
+            long totalModelCount = 0;
             final int maxResults = 200;
             long fromDocPk = 0;
             int page = 0;
@@ -1107,10 +1109,10 @@ public class PatientSearchImpl extends AbstractMainComponent {
                 if (progressMonitor.isCanceled()) {
                     break;
                 }
-                ret = dl.makeDocumentModelIndex(fromDocPk, maxResults);
+                ret = dl.makeDocumentModelIndex(fromDocPk, maxResults, totalModelCount);
                 if (!FINISHED.equals(ret)) {
                     String[] str = ret.split(",");
-                    long totalModelCount = Long.valueOf(str[1]);
+                    totalModelCount = Long.valueOf(str[1]);
                     fromDocPk = Long.valueOf(str[0]);
                     page++;
                     // progress bar 表示

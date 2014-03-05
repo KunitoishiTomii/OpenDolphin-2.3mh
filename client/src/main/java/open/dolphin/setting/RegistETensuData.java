@@ -140,7 +140,7 @@ public class RegistETensuData {
                     break;
                 }
 
-                ret = del.initSanteiHistory(fromId, maxResults);
+                ret = del.initSanteiHistory(fromId, maxResults, totalModelCount);
                 
                 if (!FINISHED.equals(ret)) {
                     String[] str = ret.split(",");
