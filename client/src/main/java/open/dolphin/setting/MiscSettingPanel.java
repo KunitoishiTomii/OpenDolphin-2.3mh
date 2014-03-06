@@ -660,7 +660,6 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         cb_orcaMedUseApi = new JCheckBox("ORCA APIを利用する");
         gbl.add(cb_orcaMedUseApi, 0, 0, GridBagConstraints.CENTER);
         JPanel orcaMed = gbl.getProduct();
-        
         // Labo
         gbl = new GridBagBuilder("ラボ");
         row = 0;
@@ -750,9 +749,10 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         
         // 全体レイアウト
         gbl = new GridBagBuilder();
-        gbl.add(labo, 0, 0, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
-        gbl.add(hs, 0, 1, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
-        gbl.add(rest, 0, 2, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
+        gbl.add(orcaMed, 0, 0, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
+        gbl.add(labo, 0, 1, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
+        gbl.add(hs, 0, 2, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
+        gbl.add(rest, 0, 3, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
         gbl.add(sync, 0, 4, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
         JPanel setting3 = gbl.getProduct();
         
