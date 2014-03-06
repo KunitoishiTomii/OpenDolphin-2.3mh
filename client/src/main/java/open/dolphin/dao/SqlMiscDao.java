@@ -504,7 +504,7 @@ public final class SqlMiscDao extends SqlDaoBean {
 
     // 患者の処方をORCAから取り出してMasterItemのリストとして返す
     public List<MasterItem> getMedMasterItemFromOrca(String patientId, String visitYMD) {
-
+        
         final String ADMIN_MARK = "[用法] ";
 
         List<MasterItem> list = new ArrayList<>();
@@ -512,6 +512,7 @@ public final class SqlMiscDao extends SqlDaoBean {
 
         String sryYM = visitYMD.substring(0, 6);
         String sryD = String.valueOf(Integer.parseInt(visitYMD.substring(6)));
+        long ptid = getOrcaPtID(patientId);
 
         // まずは調べたい日の処方のコード・数量、用法のコード・日数をピックアップ
         String dayColumn = "day_" + sryD;
@@ -524,11 +525,11 @@ public final class SqlMiscDao extends SqlDaoBean {
         sb.append("act.srycd4,act.srysuryo4,act.srykaisu4,inputnum4,");
         sb.append("act.srycd5,act.srysuryo5,act.srykaisu5,inputnum5,");
         sb.append("main.").append(dayColumn).append(",");
-        sb.append("main.zaikaisu");
+        sb.append("main.zaikaisu, act.zainum");
         sb.append(" from tbl_sryact act, tbl_sryacct_main main");
         sb.append(" where act.zainum=main.zainum and act.ptid=main.ptid");
         sb.append(" and act.srysyukbn~'2[1239]'");
-        sb.append(" and main.ptid=").append(String.valueOf(getOrcaPtID(patientId)));
+        sb.append(" and main.ptid=").append(String.valueOf(ptid));
         sb.append(" and main.sryym=").append(addSingleQuote(sryYM));
         sb.append(" and main.").append(dayColumn).append("<>0");
         sb.append(" order by act.zainum, act.rennum");
@@ -542,6 +543,7 @@ public final class SqlMiscDao extends SqlDaoBean {
             boolean hasAdmin = false;
             int dayColumnValue = Integer.valueOf(values[20]);
             int zaiKaisu = Integer.valueOf(values[21]);
+            int zainum = Integer.valueOf(values[22]);
 
             for (int i = 0; i < 20; i += 4) {
 
@@ -557,7 +559,7 @@ public final class SqlMiscDao extends SqlDaoBean {
                 // 数量はfloatにしないと、0.5錠とかNGになる
                 float srysuryo = Float.parseFloat(values[i + 1]);
                 int srykaisu = Integer.parseInt(values[i + 2]);
-                //int inputnum = Integer.parseInt(values[i + 3]);
+                int inputnum = Integer.parseInt(values[i + 3]);
 
                 if (srycd.startsWith("001")) {
                     // srycdが001から始まっていたら用法コード
@@ -575,6 +577,11 @@ public final class SqlMiscDao extends SqlDaoBean {
                     MasterItem mi = new MasterItem();
                     mi.setCode(srycd);
                     mi.setNumber(frmt.format(srysuryo));
+                    // コメントの入力値がある場合
+                    if (inputnum != 0) {
+                        mi.setInputnum(inputnum);
+                        mi.setZainum(zainum);
+                    }
                     list.add(mi);
                 }
             }
@@ -620,6 +627,7 @@ public final class SqlMiscDao extends SqlDaoBean {
                 mi.setYkzKbn(tm.getYkzkbn());
                 mi.setNumber(null);
                 mi.setBundleNumber(null);
+                processComment(ptid, mi);
             } else if (srycd.startsWith("001")) {
                 // 用法コードのTensuMasterを作成
                 mi.setClassCode(ClaimConst.ADMIN);
@@ -639,6 +647,52 @@ public final class SqlMiscDao extends SqlDaoBean {
         tensuMasterMap.clear();
 
         return list;
+    }
+    
+    private void processComment(long ptid, MasterItem mi) {
+
+        int zainum = mi.getZainum();
+        int inputnum = mi.getInputnum();    // inputnum = rennum
+        if (inputnum == 0) {
+            return;
+        }
+
+        final String sql = "select inputcoment, inputchi1, inputchi2, inputchi3, inputchi4, inputchi5 "
+                + " from tbl_ptcom where ptid = ? and zainum = ? and rennum = ?";        
+        Object[] params = {ptid, zainum, inputnum};
+
+        List<String[]> valuesList = executePreparedStatement(sql, params);
+
+        String srycd = mi.getCode();
+
+        for (String[] values : valuesList) {
+
+            if ("810000001".equals(srycd) || srycd.matches("008[356].*")
+                    || srycd.matches("8[356].*")) {
+                // 編集可能なコメントコードの場合は編集したものに置き換える
+                mi.setName(values[0]);
+
+            } else if (srycd.startsWith("0084") || srycd.startsWith("84")) {
+                // 84コメントの場合はnameはマスターのままで数量を1-1-1のように設定する
+                StringBuilder sb = new StringBuilder();
+                boolean first = true;
+                for (int i = 1; i < values.length; ++i) {
+                    String inputchi = values[i];
+                    if (inputchi != null && !inputchi.isEmpty()) {
+                        if (!first) {
+                            sb.append("-");
+                        } else {
+                            first = false;
+                        }
+                        sb.append(inputchi);
+                    }
+                }
+                String num = sb.toString();
+                if (!num.isEmpty()) {
+                    mi.setNumber(num);
+                }
+            }
+        }
     }
 
     // 期間内の受診日を取得する。返り値は"YYYYMMDD"形式の文字列リスト
