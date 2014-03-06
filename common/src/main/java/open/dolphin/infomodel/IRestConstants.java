@@ -34,6 +34,7 @@ public interface IRestConstants {
     public static final String FROM_DOC_PK = "fromDocPk";
     public static final String INCLUDE_MODIFIED = "includeModified";
     public static final String ACTIVE_ONLY = "activeOnly";
+    public static final String TOTAL_COUNT = "totalCount";
 
     // toucha
     public static final String DIRECTION = "direction";

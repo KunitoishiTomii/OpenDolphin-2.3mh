@@ -204,14 +204,17 @@ public class KarteStyledDocument extends DefaultStyledDocument {
     // 文書末の余分な改行文字を削除する
     public void removeExtraCR() {
 
-        int len = getLength();
-        int pos;
         try {
+            int len = getLength();
+            char[] charArray = getText(0, len).toCharArray();
+
             // 改行文字以外が出てくるまで文書末からスキャン
-            for (pos = len - 1; pos >= 0; --pos) {
-                if (!CR.equals(getText(pos, 1))) {
+            int pos = len - 1;
+            while (pos >= 0) {
+                if (charArray[pos] != '\n') {
                     break;
                 }
+                --pos;
             }
             // 一文字戻す
             ++pos;

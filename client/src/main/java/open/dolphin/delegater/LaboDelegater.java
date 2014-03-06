@@ -92,8 +92,8 @@ public class LaboDelegater extends BusinessDelegater {
 
         Response response = getWebTarget()
                 .path(path)
-                .queryParam(FIRST_RESULT, String.valueOf(firstResult))
-                .queryParam(MAX_RESULTS, String.valueOf(maxResult))
+                .queryParam(FIRST_RESULT, firstResult)
+                .queryParam(MAX_RESULTS, maxResult)
                 .request(MEDIATYPE_JSON_UTF8)
                 .get();
 
