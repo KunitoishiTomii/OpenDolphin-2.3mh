@@ -22,6 +22,8 @@ import open.dolphin.dao.SqlMiscDao;
 import open.dolphin.helper.ComponentMemory;
 import open.dolphin.impl.orcaapi.OrcaApiDelegater;
 import open.dolphin.infomodel.IInfoModel;
+import open.dolphin.project.Project;
+import open.dolphin.setting.MiscSettingPanel;
 import open.dolphin.table.ListTableModel;
 import open.dolphin.table.StripeTableCellRenderer;
 
@@ -33,7 +35,6 @@ import open.dolphin.table.StripeTableCellRenderer;
 
 public class ImportOrcaMedicinePanel {
 
-    private static final boolean USE_ORCA_API = true;
     private static final int period = 6;  // うんヶ月前から
     private String patientId;
     private boolean importFlag = false;
@@ -54,16 +55,19 @@ public class ImportOrcaMedicinePanel {
     private JTable tbl_MasterItem;
     private JPanel view;
     private JDialog dialog;
+    
+    private final boolean useOrcaApi;
 
     public ImportOrcaMedicinePanel() {
         initComponents();
+        useOrcaApi = Project.getBoolean(MiscSettingPanel.ORCA_MED_USE_API, MiscSettingPanel.DEFAULT_ORCA_MED_USE_API);
     }
 
     public void enter(String ptid) {
 
         // 開始
         patientId = ptid;
-        if (USE_ORCA_API) {
+        if (useOrcaApi) {
             // 投薬のない日も含まれてしまう
             //getOrcaVisitApi();
             getOrcaVisit();
@@ -120,7 +124,7 @@ public class ImportOrcaMedicinePanel {
             @Override
             protected List<MasterItem> doInBackground() throws Exception {
                 blockGlass.block();
-                if (USE_ORCA_API) {
+                if (useOrcaApi) {
                     final OrcaApiDelegater del = OrcaApiDelegater.getInstance();
                     return del.getOrcaMed(patientId, ymd);
                 } else {

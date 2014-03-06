@@ -90,6 +90,8 @@ public class MiscSettingPanel extends AbstractSettingPanel {
     public static final String STAMP_FONT_SIZE = "stampFontSize";
     public static final String STAMP_FONT_NAME = "stampFontName";
     public static final String STAMP_FONT_STYLE = "stampFontStyle";
+    
+    public static final String ORCA_MED_USE_API = "orcaMedUseApi";
 
     // preferencesのdefault
     public static final String DEFAULT_LBLPRT_ADDRESS = null;
@@ -146,6 +148,8 @@ public class MiscSettingPanel extends AbstractSettingPanel {
     public static final int DEFAULT_STAMP_FONT_SIZE = 12;
     public static final String DEFAULT_STAMP_FONT_NAME = Font.SANS_SERIF;
     public static final int DEFAULT_STAMP_FONT_STYLE = Font.PLAIN;
+    
+    public static final boolean DEFAULT_ORCA_MED_USE_API = false;
 
     // GUI staff
     private JTextField tf_lblPrtAddress;
@@ -215,6 +219,7 @@ public class MiscSettingPanel extends AbstractSettingPanel {
     private JTextField tf_zebra;
     private JLabel lbl_color;
     
+    private JCheckBox cb_orcaMedUseApi;
     private JRadioButton rb_falcoHl7;
     private JRadioButton rb_wakayamaHl7;
     private JCheckBox cb_sendLaboTest;
@@ -650,6 +655,12 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         JPanel pacsSetting = gbl.getProduct();
 
         // 設定３
+        // orcaMed
+        gbl = new GridBagBuilder("ORCA処方参照");
+        cb_orcaMedUseApi = new JCheckBox("ORCA APIを利用する");
+        gbl.add(cb_orcaMedUseApi, 0, 0, GridBagConstraints.CENTER);
+        JPanel orcaMed = gbl.getProduct();
+        
         // Labo
         gbl = new GridBagBuilder("ラボ");
         row = 0;
@@ -1105,6 +1116,9 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         val = val != null ? val : "";
         tf_falcoOutputPath.setText(val);
         
+        // orcaMed
+        cb_orcaMedUseApi.setSelected(model.orcaMedUseApi);
+        
         // rest
         if (model.useJersey) {
             rb_jersey.setSelected(true);
@@ -1205,6 +1219,9 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         model.falcoFacilityId = tf_falcoFacilityId.getText().trim();
         model.falcoOutputPath = tf_falcoOutputPath.getText().trim();
         
+        // orcaMed
+        model.orcaMedUseApi = cb_orcaMedUseApi.isSelected();
+        
         // rest
         model.useJersey = rb_jersey.isSelected();
         
@@ -1267,6 +1284,7 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         private String hl7Format;
         private String falcoOutputPath;
         private String falcoFacilityId;
+        private boolean orcaMedUseApi;
         
         private boolean useJersey;
         private boolean useWebsocket;
@@ -1339,6 +1357,8 @@ public class MiscSettingPanel extends AbstractSettingPanel {
             falcoFacilityId = Project.getString(Project.SEND_LABTEST_FACILITY_ID, "");
             falcoOutputPath = Project.getString(Project.SEND_LABTEST_PATH, "");
             
+            // orca med
+            orcaMedUseApi = Project.getBoolean(ORCA_MED_USE_API, DEFAULT_ORCA_MED_USE_API);
             // rest
             useJersey = Project.getBoolean(USE_JERSEY, DEFAULT_USE_JERSEY);
             
@@ -1408,6 +1428,9 @@ public class MiscSettingPanel extends AbstractSettingPanel {
             Project.setBoolean(Project.SEND_LABTEST, sendLaboTest);
             Project.setString(Project.SEND_LABTEST_FACILITY_ID, falcoFacilityId);
             Project.setString(Project.SEND_LABTEST_PATH, falcoOutputPath);
+            
+            // orcaMed
+            Project.setBoolean(ORCA_MED_USE_API, orcaMedUseApi);
             
             // rest
             Project.setBoolean(USE_JERSEY, useJersey);
