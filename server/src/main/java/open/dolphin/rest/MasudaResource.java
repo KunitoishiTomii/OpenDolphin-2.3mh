@@ -288,11 +288,12 @@ public class MasudaResource extends AbstractResource {
     @Produces(MEDIATYPE_TEXT_UTF8)
     public Response makeDocumentModelIndex(
             @QueryParam(FROM_DOC_PK) Long fromDocPk, 
-            @QueryParam(MAX_RESULTS) Integer maxResults) {
+            @QueryParam(MAX_RESULTS) Integer maxResults,
+            @QueryParam(TOTAL_COUNT) Long totalCount) {
 
         String fid = getRemoteFacility();
 
-        String ret = masudaServiceBean.makeDocumentModelIndex(fid, fromDocPk, maxResults);
+        String ret = masudaServiceBean.makeDocumentModelIndex(fid, fromDocPk, maxResults, totalCount);
 
         debug(ret);
         return Response.ok(ret).build();
@@ -322,11 +323,13 @@ public class MasudaResource extends AbstractResource {
             @QueryParam(TEXT) String text,
             @QueryParam(FROM_ID) Long fromId,
             @QueryParam(MAX_RESULTS) Integer maxResult,
+            @QueryParam(TOTAL_COUNT) Long totalCount,
             @QueryParam(PC_ONLY) Boolean progressCourseOnly) {
 
         String fid = getRemoteFacility();
 
-        SearchResultModel model = masudaServiceBean.getSearchResult(fid, text, fromId, maxResult, progressCourseOnly);
+        SearchResultModel model = masudaServiceBean.getSearchResult(fid, text, 
+                fromId, maxResult, totalCount, progressCourseOnly);
         
         StreamingOutput so = getJsonOutStream(model);
         
@@ -423,11 +426,12 @@ public class MasudaResource extends AbstractResource {
     @Produces(MEDIATYPE_TEXT_UTF8)
     public Response initSanteiHistory(
             @QueryParam(FROM_ID) Long fromIndex,
-            @QueryParam(MAX_RESULTS) Integer maxResults) {
+            @QueryParam(MAX_RESULTS) Integer maxResults,
+            @QueryParam(TOTAL_COUNT) Long totalCount) {
         
         String fid = getRemoteFacility();
         
-        String ret = masudaServiceBean.initSanteiHistory(fid, fromIndex, maxResults);
+        String ret = masudaServiceBean.initSanteiHistory(fid, fromIndex, maxResults, totalCount);
         
         return Response.ok(ret).build();
     }

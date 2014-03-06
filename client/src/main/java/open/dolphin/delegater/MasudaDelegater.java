@@ -57,8 +57,8 @@ public class MasudaDelegater extends BusinessDelegater {
 
         Response response = getWebTarget()
                 .path(path)
-                .queryParam(FIRST_RESULT, String.valueOf(firstResult))
-                .queryParam(MAX_RESULTS, String.valueOf(maxResults))
+                .queryParam(FIRST_RESULT, firstResult)
+                .queryParam(MAX_RESULTS, maxResults)
                 .request(MEDIATYPE_JSON_UTF8)
                 .get();
 
@@ -386,14 +386,15 @@ public class MasudaDelegater extends BusinessDelegater {
     }
 
     // Hibernate Searchの初期インデックスを作成する
-    public String makeDocumentModelIndex(long fromDocPk, int maxResults) throws Exception {
+    public String makeDocumentModelIndex(long fromDocPk, int maxResults, long totalCount) throws Exception {
         
         String path = RES_BASE +"search/makeIndex";
 
         Response response = getWebTarget()
                 .path(path)
-                .queryParam(FROM_DOC_PK, String.valueOf(fromDocPk))
-                .queryParam(MAX_RESULTS, String.valueOf(maxResults))
+                .queryParam(FROM_DOC_PK, fromDocPk)
+                .queryParam(MAX_RESULTS, maxResults)
+                .queryParam(TOTAL_COUNT, totalCount)
                 .request(MEDIATYPE_TEXT_UTF8)
                 .get();
 
@@ -413,7 +414,7 @@ public class MasudaDelegater extends BusinessDelegater {
         
         Response response = getWebTarget()
                 .path(path)
-                .queryParam(KARTE_ID, String.valueOf(karteId))
+                .queryParam(KARTE_ID, karteId)
                 .queryParam(TEXT, text)
                 .request(MEDIATYPE_JSON_UTF8)
                 .get();
@@ -430,17 +431,18 @@ public class MasudaDelegater extends BusinessDelegater {
     }
 
     // grep方式の全文検索
-    public SearchResultModel getSearchResult(
-            String text, long fromId, int maxResult, boolean progressCourseOnly) throws Exception {
+    public SearchResultModel getSearchResult(String text, long fromId, 
+            int maxResult, long totalCount, boolean progressCourseOnly) throws Exception {
         
         String path = RES_BASE + "search/grep";
 
         Response response = getWebTarget()
                 .path(path)
                 .queryParam(TEXT, text)
-                .queryParam(FROM_ID, String.valueOf(fromId))
-                .queryParam(MAX_RESULTS, String.valueOf(maxResult))
-                .queryParam(PC_ONLY, String.valueOf(progressCourseOnly))
+                .queryParam(FROM_ID, fromId)
+                .queryParam(MAX_RESULTS, maxResult)
+                .queryParam(TOTAL_COUNT, totalCount)
+                .queryParam(PC_ONLY, progressCourseOnly)
                 .request(MEDIATYPE_JSON_UTF8)
                 .get();
 
@@ -486,7 +488,7 @@ public class MasudaDelegater extends BusinessDelegater {
                 .path(path)
                 .queryParam(FROM_DATE, toRestFormat(fromDate))
                 .queryParam(TO_DATE, toRestFormat(toDate))
-                .queryParam(YOYUU, String.valueOf(yoyuu))
+                .queryParam(YOYUU, yoyuu)
                 .request(MEDIATYPE_JSON_UTF8)
                 .get();
 
@@ -561,14 +563,15 @@ public class MasudaDelegater extends BusinessDelegater {
         return ret;
     }
 
-    public String initSanteiHistory(long fromId, int maxResults) throws Exception {
+    public String initSanteiHistory(long fromId, int maxResults, long totalCount) throws Exception {
         
         String path = RES_BASE + "santeiHistory/init";
 
         Response response = getWebTarget()
                 .path(path)
-                .queryParam(FROM_ID, String.valueOf(fromId))
-                .queryParam(MAX_RESULTS, String.valueOf(maxResults))
+                .queryParam(FROM_ID, fromId)
+                .queryParam(MAX_RESULTS, maxResults)
+                .queryParam(TOTAL_COUNT, totalCount)
                 .request(MEDIATYPE_TEXT_UTF8)
                 .get();
 
@@ -617,7 +620,7 @@ public class MasudaDelegater extends BusinessDelegater {
                 .path(path)
                 .queryParam(FROM_DATE, toRestFormat(fromDate))
                 .queryParam(TO_DATE, toRestFormat(toDate))
-                .queryParam(LAST_ONLY, String.valueOf(lastOnly))
+                .queryParam(LAST_ONLY, lastOnly)
                 .request(MEDIATYPE_JSON_UTF8)
                 .get();
 

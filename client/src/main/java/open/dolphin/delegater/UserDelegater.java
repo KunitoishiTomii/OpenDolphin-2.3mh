@@ -186,7 +186,7 @@ public class UserDelegater extends BusinessDelegater {
                 .path(path)
                 .queryParam(FID_UID, fidUid)
                 .queryParam(CLIENT_UUID, clientUUID)
-                .queryParam(FORCE, String.valueOf(force))
+                .queryParam(FORCE, force)
                 .request(MEDIATYPE_TEXT_UTF8)
                 .get();
         

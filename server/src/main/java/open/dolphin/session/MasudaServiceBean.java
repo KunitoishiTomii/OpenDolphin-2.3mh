@@ -303,7 +303,7 @@ public class MasudaServiceBean {
     }
 
     // DocumentModelのHiberbate search用インデックスを作成する
-    public String makeDocumentModelIndex(String fid, long fromDocPk, int maxResults) {
+    public String makeDocumentModelIndex(String fid, long fromDocPk, int maxResults, long modelCount) {
 
         long fPk = getFacilityPk(fid);
         if (fPk == 0) {
@@ -323,12 +323,16 @@ public class MasudaServiceBean {
         }
 
         // 総DocumentModel数を取得。進捗表示に使用
-        long modelCount = (Long)
-                em.createQuery("select count(m) " + fromSql)
-                .setParameter("fPk", fPk)
-                .setParameter("fromPk", 0L)
-                .getSingleResult();
-
+        if (modelCount == 0) {
+            modelCount = (Long)
+                    em.createQuery("select count(m) " + fromSql)
+                    .setParameter("fPk", fPk)
+                    .setParameter("fromPk", 0L)
+                    .getSingleResult();
+        }
+        if (modelCount == 0) {
+            return FINISHED;
+        }
         // idがfromPkより大きいDocumentModelをmaxResultsずつ取得
         List<DocumentModel> models =
                 em.createQuery(fromSql + " order by m.id")
@@ -519,7 +523,8 @@ public class MasudaServiceBean {
     }
 
     // grep方式の全文検索
-    public SearchResultModel getSearchResult(String fid, String searchText, long fromModuleId, int maxResult, boolean progressCourseOnly) {
+    public SearchResultModel getSearchResult(String fid, String searchText, 
+            long fromModuleId, int maxResult, long totalCount, boolean progressCourseOnly) {
 
         final String fromSql = "from ModuleModel m where m.status = 'F' and m.creator.facility.facilityId = :fid";
         final String progressCourse = " and m.moduleInfo.entity = '" + IInfoModel.MODULE_PROGRESS_COURSE + "'";
@@ -532,6 +537,17 @@ public class MasudaServiceBean {
             sql2 = sql2 + progressCourse;
         }
 
+        // 総モジュール数を取得、進捗具合に利用する
+        if (totalCount == 0) {
+            totalCount = (Long)
+                    em.createQuery(sql2)
+                    .setParameter("fid", fid)
+                    .getSingleResult();
+        }
+        if (totalCount == 0) {
+            return null;
+        }
+        
         HashSet<PatientModel> patientModelSet = new HashSet<>();
         HashSet<Long> karteIdSet = new HashSet<>();
 
@@ -600,13 +616,8 @@ public class MasudaServiceBean {
         List<PatientModel> list = new ArrayList<>(patientModelSet);
         setInsuranceAndPvtDate(fid, list);
 
-        // 総モジュール数を取得、進捗具合に利用する
-        long modelCount = (Long)
-                em.createQuery(sql2)
-                .setParameter("fid", fid)
-                .getSingleResult();
         // 結果を返す
-        SearchResultModel ret = new SearchResultModel(toId, modelCount, list);
+        SearchResultModel ret = new SearchResultModel(toId, totalCount, list);
         return ret;
     }
     
@@ -802,7 +813,7 @@ public class MasudaServiceBean {
         return list;
     }
 
-    public String initSanteiHistory(String fid, long fromId, int maxResults) {
+    public String initSanteiHistory(String fid, long fromId, int maxResults, long totalCount) {
         
         final String sql1 = "from ModuleModel m "
                 + "where m.moduleInfo.entity <> '" + IInfoModel.MODULE_PROGRESS_COURSE + "' "
@@ -814,9 +825,11 @@ public class MasudaServiceBean {
                 + "and s.itemIndex = :index";
         
         // 総数を取得する
-        long totalCount = (Long) em.createQuery(sql2)
-                .setParameter("fid", fid)
-                .getSingleResult();
+        if (totalCount == 0) {
+            totalCount = (Long) em.createQuery(sql2)
+                    .setParameter("fid", fid)
+                    .getSingleResult();
+        }
         // 0件ならFINESHEDを返して終了
         if (totalCount == 0) {
             return FINISHED;
