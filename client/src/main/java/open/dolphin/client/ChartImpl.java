@@ -899,7 +899,7 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
     /**
      * ドキュメントタブにプラグインを遅延生成し追加する。
      */
-    public void tabChanged(ChangeEvent e) {
+    private void tabChanged(ChangeEvent e) {
 
         //
         // 選択されたタブ番号に対応するプラグインをテーブルから検索する
