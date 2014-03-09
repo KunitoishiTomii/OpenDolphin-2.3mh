@@ -84,6 +84,21 @@ public final class MasterItem implements java.io.Serializable {
     public String getSrysyuKbn() {
         return getClaimClassCode();
     }
+    // ORCA処方参照用、inputnum, zainum
+    private int inputnum;
+    private int zainum;
+    public void setInputnum(int inputnum) {
+        this.inputnum = inputnum;
+    }
+    public int getInputnum() {
+        return inputnum;
+    }
+    public void setZainum(int zainum) {
+        this.zainum = zainum;
+    }
+    public int getZainum() {
+        return zainum;
+    }
 //masuda$
     
     /**

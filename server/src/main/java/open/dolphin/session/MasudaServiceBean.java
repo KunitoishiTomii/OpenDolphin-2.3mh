@@ -529,14 +529,21 @@ public class MasudaServiceBean {
         final String fromSql = "from ModuleModel m where m.status = 'F' and m.creator.facility.facilityId = :fid";
         final String progressCourse = " and m.moduleInfo.entity = '" + IInfoModel.MODULE_PROGRESS_COURSE + "'";
 
-        String sql1 = fromSql + " and m.id > :fromId order by m.id";
-        String sql2 = "select count(m) " + fromSql;
-
+        StringBuilder sb = new StringBuilder();
+        sb.append(fromSql).append(" and m.id > :fromId");
         if (progressCourseOnly) {
-            sql1 = sql1 + progressCourse;
-            sql2 = sql2 + progressCourse;
+            sb.append(progressCourse);
         }
-
+        sb.append(" order by m.id");
+        final String sql1 = sb.toString();
+        
+        sb= new StringBuilder();
+        sb.append("select count(m) ").append(fromSql);
+        if (progressCourseOnly) {
+            sb.append(progressCourse);
+        }
+        final String sql2 = sb.toString();
+        
         // 総モジュール数を取得、進捗具合に利用する
         if (totalCount == 0) {
             totalCount = (Long)
