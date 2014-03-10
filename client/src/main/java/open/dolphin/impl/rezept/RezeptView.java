@@ -124,7 +124,9 @@ public class RezeptView extends JPanel {
         leftPanel.add(filterPanel);
         leftPanel.add(Box.createVerticalStrut(5));
         
-        tabbedPane = new JTabbedPane(JTabbedPane.BOTTOM);
+        // 2014/03/10 Katou 「入院・入院外」と「国保・社保・高齢」が近くにあった方が操作しやすいので
+        // tabbedPaneの位置をbottomからtopに移動
+        tabbedPane = new JTabbedPane(JTabbedPane.TOP);
         leftPanel.add(tabbedPane);
         
         // rightPanel
