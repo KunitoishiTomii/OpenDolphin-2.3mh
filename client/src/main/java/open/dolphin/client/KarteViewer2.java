@@ -78,8 +78,8 @@ public class KarteViewer2 extends KarteViewer {
         // タイトルを設定する
         setTitle();
 
-        // レンダリングする
-        renderKarte();
+        // レンダリングする→遅延レンダリング
+        //renderKarte();
         
         // モデル表示後にリスナ等を設定する
         ChartMediator mediator = getContext().getChartMediator();

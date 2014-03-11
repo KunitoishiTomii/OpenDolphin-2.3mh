@@ -146,6 +146,17 @@ public final class StampHolder extends AbstractComponentHolder {
         if (getStamp() == null) {
             return;
         }
+
+        setText(createStampHtml());
+        // カルテペインへ展開された時広がるのを防ぐ
+        setMaximumSize(getPreferredSize());
+    }
+
+    public void setMyTextLater() {
+        
+        if (getStamp() == null) {
+            return;
+        }
         
         final String stampHtml = createStampHtml();
 
