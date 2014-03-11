@@ -42,6 +42,9 @@ public abstract class KarteViewer extends AbstractChartDocument {
     // 選択されているかどうかのフラグ
     private boolean selected;
     
+    // レンダリング済みフラグ
+    private boolean rendered;
+    
     // １号用紙か２号用紙
     public static enum MODE {SINGLE, DOUBLE};
 
@@ -148,7 +151,10 @@ public abstract class KarteViewer extends AbstractChartDocument {
     }
     
     protected final void renderKarte() {
-        KarteRenderer_2.getInstance().render(getModel(), getSOAPane(), getPPane());
+        if (!rendered) {
+            KarteRenderer_2.getInstance().render(getModel(), getSOAPane(), getPPane());
+            rendered = true;
+        }
     }
 
     protected final void setKartePanel(KartePanel kartePanel) {
