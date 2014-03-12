@@ -798,7 +798,6 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
                     Future<KarteViewer> future = service.take();
                     KarteViewer viewer = future.get();
                     karteViewerMap.put(viewer.getModel().getId(), viewer);
-                    //lazyKarteRenderer.addKarteViewer(viewer);
                 } catch (ExecutionException | InterruptedException ex) {
                     logger.debug(ex);
                 }
