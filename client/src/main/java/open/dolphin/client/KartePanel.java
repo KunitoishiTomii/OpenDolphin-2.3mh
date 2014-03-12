@@ -64,23 +64,25 @@ public abstract class KartePanel extends Panel2 {
     @Override
     protected void paintComponent(Graphics g) {
 
-        if (karteViewer != null && !karteViewer.isRendered()) {
-            Rectangle viewRect = getViewportRect();
-            if (viewRect != null && getBounds().intersects(viewRect)) {
-                karteViewer.renderKarte();
-                //revalidate();
-            }
+        if (isRenderNow()) {
+            karteViewer.renderKarte();
+            //revalidate();
         }
         super.paintComponent(g);
     }
     
-    private Rectangle getViewportRect() {
-        try {
+    // インバーテッドコンティニアスロール…　ナウ！
+    private boolean isRenderNow() {
+        if (karteViewer != null && !karteViewer.isRendered()) {
             JViewport viewport = karteViewer.getKarteDocumentViewer().getScrollPane().getViewport();
-            return viewport.getViewRect();
-        } catch (NullPointerException ex) {
-            return null;
+            if (viewport != null) {
+                Rectangle viewRect = viewport.getViewRect();
+                if (viewRect != null && getBounds().intersects(viewRect)) {
+                    return true;
+                }
+            }
         }
+        return false;
     }
     
     // ファクトリー
