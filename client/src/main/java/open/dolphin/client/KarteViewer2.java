@@ -30,6 +30,8 @@ public class KarteViewer2 extends KarteViewer {
         }
 
         KartePanel kartePanel = KartePanel.createKartePanel(KartePanel.MODE.DOUBLE_VIEWER, verticalLayout);
+        // 遅延レンダリングのためKartePanelにKarteViewerを登録しておく
+        kartePanel.setKarteViewer(this);
 
         // SOA Pane を生成する
         soaPane = new KartePane();

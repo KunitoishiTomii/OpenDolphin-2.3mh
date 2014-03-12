@@ -18,6 +18,8 @@ public class KarteViewer1 extends KarteViewer {
     private void initialize() {
 
         KartePanel kartePanel = KartePanel.createKartePanel(KartePanel.MODE.SINGLE_VIEWER, false);
+        // 遅延レンダリングのためKartePanelにKarteViewerを登録しておく
+        kartePanel.setKarteViewer(this);
 
         // SOA Pane を生成する
         soaPane = new KartePane();

@@ -9,7 +9,6 @@ import java.util.concurrent.CompletionService;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import javax.swing.*;
-import javax.swing.event.ChangeListener;
 import open.dolphin.delegater.DocumentDelegater;
 import open.dolphin.helper.DBTask;
 import open.dolphin.helper.WindowSupport;
@@ -70,9 +69,6 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
 
     // Common MouseListener
     private final MouseListener mouseListener;
-    
-    // JScrollPaneのViewportリスナ
-    private final LazyKarteRenderer lazyKarteRenderer;
 
     
 //pns^ 表示されているカルテの中身を検索する modified by masuda
@@ -172,7 +168,6 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
         };
         
         karteViewerMap = new HashMap<>();
-        lazyKarteRenderer = new LazyKarteRenderer();
     }
     
     public JScrollPane getScrollPane() {
@@ -207,7 +202,6 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
         }
         
         karteViewerMap.clear();
-        disposeLazyKarteRenderer();
 
         // ScrollerPanelの後片付け
         scrollerPanel.dispose();
@@ -288,9 +282,6 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
 
         this.scroller = scroller;
         docInfoList = selectedHistories;
-        
-        // 遅延レンダリングのためViewportにリスナーを設定する
-        registLazyKarteRenderer();
 
         if (selectedHistories == null || selectedHistories.length == 0) {
             initScrollerPanel();
@@ -370,10 +361,7 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
 
             @Override
             protected void done() {
-                
-                // Viewportの部分だけレンダリングする
-                lazyKarteRenderer.renderKarte(scroller.getViewport().getViewRect());
-                
+
                 // 文書履歴タブに変更
                 getContext().showDocument(0);
                 // 一つ目を選択し、フォーカスを設定する。フォーカスがないとキー移動できない
@@ -473,9 +461,6 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
                 new String[]{"PDF作成", "イメージ印刷", "取消し"},
                 "PDF作成");
         
-        // 未レンダリングものもがあればレンダリングする
-        lazyKarteRenderer.renderRemainedKarte();
-
         if (option == 0) {
             makePDF(cb.isSelected());
         } else if (option == 1) {
@@ -579,16 +564,18 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
             switch (docType) {
                 case IInfoModel.DOCTYPE_S_KARTE:
                 case IInfoModel.DOCTYPE_SUMMARY: {
-                    KarteViewer viwer = KarteViewer.createKarteViewer(KarteViewer.MODE.SINGLE);
-                    viwer.setModel(model);
-                    editorFrame.setKarteViewer(viwer);
+                    KarteViewer viewer = KarteViewer.createKarteViewer(KarteViewer.MODE.SINGLE);
+                    viewer.setKarteDocumentViewer(this);
+                    viewer.setModel(model);
+                    editorFrame.setKarteViewer(viewer);
                     editorFrame.start();
                     break;
                 }
                 case IInfoModel.DOCTYPE_KARTE: {
-                    KarteViewer viwer = KarteViewer.createKarteViewer(KarteViewer.MODE.DOUBLE);
-                    viwer.setModel(model);
-                    editorFrame.setKarteViewer(viwer);
+                    KarteViewer viewer = KarteViewer.createKarteViewer(KarteViewer.MODE.DOUBLE);
+                    viewer.setKarteDocumentViewer(this);
+                    viewer.setModel(model);
+                    editorFrame.setKarteViewer(viewer);
                     editorFrame.start();
                     break;
                 }
@@ -722,13 +709,26 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
     private KarteViewer createKarteViewer(DocInfoModel docInfo) {
 
         // サマリー対応
-        if (docInfo != null) {
-            if (docInfo.getDocType().equals(IInfoModel.DOCTYPE_S_KARTE)
-                    || docInfo.getDocType().equals(IInfoModel.DOCTYPE_SUMMARY)) {
-                return KarteViewer.createKarteViewer(KarteViewer.MODE.SINGLE);
+        KarteViewer karteViewer;
+        
+        if (docInfo != null && docInfo.getDocType() != null) {
+            
+            switch(docInfo.getDocType()) {
+                case IInfoModel.DOCTYPE_S_KARTE:
+                case IInfoModel.DOCTYPE_SUMMARY:
+                    karteViewer = KarteViewer.createKarteViewer(KarteViewer.MODE.SINGLE);
+                    break;
+                default:
+                    karteViewer = KarteViewer.createKarteViewer(KarteViewer.MODE.DOUBLE);
+                    break;
             }
+        } else {
+            karteViewer = KarteViewer.createKarteViewer(KarteViewer.MODE.DOUBLE);
         }
-        return KarteViewer.createKarteViewer(KarteViewer.MODE.DOUBLE);
+        // 遅延レンダリングのためKarteDocumentViewerを登録しておく
+        karteViewer.setKarteDocumentViewer(this);
+        
+        return karteViewer;
     }
 
     /**
@@ -798,7 +798,7 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
                     Future<KarteViewer> future = service.take();
                     KarteViewer viewer = future.get();
                     karteViewerMap.put(viewer.getModel().getId(), viewer);
-                    lazyKarteRenderer.addKarteViewer(viewer);
+                    //lazyKarteRenderer.addKarteViewer(viewer);
                 } catch (ExecutionException | InterruptedException ex) {
                     logger.debug(ex);
                 }
@@ -975,7 +975,6 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
         }
     }
     
-//masuda^
     private boolean canModifyKarte() {
         
         DocumentModel base = selectedKarte.getModel();
@@ -1006,28 +1005,4 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
         }
         return true;
     }
-//masuda$
-    
-    private void registLazyKarteRenderer() {
-        
-        boolean exist = false;
-        for (ChangeListener cl : scroller.getViewport().getChangeListeners()) {
-            if (cl == lazyKarteRenderer) {
-                exist = true;
-                break;
-            }
-        }
-        if (!exist) {
-            scroller.getViewport().addChangeListener(lazyKarteRenderer);
-        }
-    }
-    
-    private void disposeLazyKarteRenderer() {
-        
-        if (scroller != null) {
-            lazyKarteRenderer.clearList();
-            scroller.getViewport().removeChangeListener(lazyKarteRenderer);
-        }
-    }
-    
 }
