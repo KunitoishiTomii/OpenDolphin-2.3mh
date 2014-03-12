@@ -485,7 +485,14 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
 
     // インスペクタに表示されているカルテをまとめて印刷する。
     private void printKarte() {
-
+        
+        // 未レンダリングKarteViewerをレンダリングする
+        for (KarteViewer viewer : karteViewerMap.values()) {
+            if (!viewer.isRendered()) {
+                viewer.renderKarte();
+            }
+        }
+        
         // ブザイクなんだけど、あまり使わない機能なのでこれでヨシとする
         // 背景色が緑だとインクがもったいないので白にする。選択も解除しておく。
         for (DocInfoModel docInfo : docInfoList) {
