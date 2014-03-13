@@ -148,6 +148,10 @@ public class SqlDaoBean extends DaoBean {
     
     private List<String[]> executeStatement2(String sql) {
         
+        // 呼び出し前にエラーをクリア。シングルトン化の影響ｗ
+        errorCode = TT_NO_ERROR;
+        errorMessage = null;
+        
         OrcaSqlModel sqlModel = new OrcaSqlModel();
         sqlModel.setUrl(getURL());
         sqlModel.setSql(sql);
