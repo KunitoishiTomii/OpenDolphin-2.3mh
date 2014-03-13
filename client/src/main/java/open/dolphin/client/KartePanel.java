@@ -71,6 +71,7 @@ public abstract class KartePanel extends Panel2 {
 
         if (!rendered && karteViewer != null) {
             karteViewer.renderComponentsOnViewer();
+            rendered = true;
             //revalidate();
         }
         super.paintComponent(g);
