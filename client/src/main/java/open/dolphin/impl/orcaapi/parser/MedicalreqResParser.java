@@ -21,9 +21,8 @@ public class MedicalreqResParser extends AbstractOrcaApiParser {
     }
     
     public String getMedicalUid() {
-        final String name = "Medical_Uid";
         return xml2 
-                ? getElementText2(name) 
-                : getElementText(name);
+                ? getElementText2(MEDICAL_UID) 
+                : getElementText(MEDICAL_UID);
     }
 }

@@ -18,6 +18,8 @@ public class KarteViewer1 extends KarteViewer {
     private void initialize() {
 
         KartePanel kartePanel = KartePanel.createKartePanel(KartePanel.MODE.SINGLE_VIEWER, false);
+        // 遅延レンダリングのためKartePanelにKarteViewerを登録しておく
+        kartePanel.setKarteViewer(this);
 
         // SOA Pane を生成する
         soaPane = new KartePane();
@@ -58,8 +60,8 @@ public class KarteViewer1 extends KarteViewer {
         // タイトルを設定する
         setTitle();
 
-        // レンダリングする
-        renderKarte();
+        // レンダリングする→遅延レンダリング
+        //renderKarte();
         
         // モデル表示後にリスナ等を設定する
         ChartMediator mediator = getContext().getChartMediator();

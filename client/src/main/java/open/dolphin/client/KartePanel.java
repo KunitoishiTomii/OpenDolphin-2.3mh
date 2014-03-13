@@ -50,7 +50,41 @@ public abstract class KartePanel extends Panel2 {
 
     private JPanel timeStampPanel;
     private JLabel timeStampLabel;
+    
+    // KarteViewerでは遅延レンダリングする
+    private  KarteViewer karteViewer;
 
+    public void setKarteViewer(KarteViewer karteViewer) {
+        this.karteViewer = karteViewer;
+    }
+    public KarteViewer getKarteViewer() {
+        return karteViewer;
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+
+        if (isRenderNow()) {
+            karteViewer.renderKarte();
+            //revalidate();
+        }
+        super.paintComponent(g);
+    }
+    
+    // インバーテッドコンティニアスロール…　ナウ！
+    private boolean isRenderNow() {
+        if (karteViewer != null && !karteViewer.isRendered()) {
+            JViewport viewport = karteViewer.getKarteDocumentViewer().getScrollPane().getViewport();
+            if (viewport != null) {
+                Rectangle viewRect = viewport.getViewRect();
+                if (viewRect != null && getBounds().intersects(viewRect)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
     // ファクトリー
     public static KartePanel createKartePanel(MODE mode, boolean verticalLayout) {
 

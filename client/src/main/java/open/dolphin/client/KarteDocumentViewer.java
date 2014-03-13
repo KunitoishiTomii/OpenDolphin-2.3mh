@@ -19,7 +19,6 @@ import open.dolphin.infomodel.ModuleModel;
 import open.dolphin.infomodel.SchemaModel;
 import open.dolphin.letter.KartePDFMaker;
 import open.dolphin.project.Project;
-//import open.dolphin.util.LapTimer;
 import open.dolphin.util.MultiTaskExecutor;
 import org.apache.log4j.Logger;
 
@@ -53,25 +52,24 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
     private KarteViewer selectedKarte;
     // 表示するscrollar pane
     private JScrollPane scroller;
-
-    // DocumentModel.idとKarteViewerの対応マップ
-    // docInfo.getDocId() (=String)ではなくgetDocPk() (=long)であることに注意
-    private Map<Long, KarteViewer> karteViewerMap;
+    
     // 今選択されているDocInfoModelの配列
     private DocInfoModel[] docInfoList;
-    //private List<DocInfoModel> docInfoList;
-    // ScrollerPaneに入っている、KarteViewerを含んだPanal
-    private KarteScrollerPanel scrollerPanel;
-    
-    private Logger logger;
-    
-    // Common MouseListener
-    private MouseListener mouseListener;
     
     private KarteTask karteTask;
     
-    //private final LapTimer timer = new LapTimer();
+    private Logger logger;
     
+    // DocumentModel.idとKarteViewerの対応マップ
+    // docInfo.getDocId() (=String)ではなくgetDocPk() (=long)であることに注意
+    private final Map<Long, KarteViewer> karteViewerMap;
+    
+    // ScrollerPaneに入っている、KarteViewerを含んだPanal
+    private final KarteScrollerPanel scrollerPanel;
+
+    // Common MouseListener
+    private final MouseListener mouseListener;
+
     
 //pns^ 表示されているカルテの中身を検索する modified by masuda
     private FindAndView findAndView = new FindAndView();
@@ -168,6 +166,8 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
                 }
             }
         };
+        
+        karteViewerMap = new HashMap<>();
     }
     
     public JScrollPane getScrollPane() {
@@ -188,7 +188,6 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
     @Override
     public void start() {
 
-        karteViewerMap = new HashMap<>();
         connect();
         stateMgr = new StateMgr();
         enter();
@@ -203,14 +202,9 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
         }
         
         karteViewerMap.clear();
-        karteViewerMap = null;
 
         // ScrollerPanelの後片付け
         scrollerPanel.dispose();
-        scrollerPanel = null;
-        
-        // mouseListenerも
-        mouseListener = null;
     }
 
     @Override
@@ -324,7 +318,7 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
             karteTask.execute();
         }
     }
-    
+
     private void initScrollerPanel() {
         // 古いのを除去
         scrollerPanel.removeAll();
@@ -361,12 +355,13 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
                         scrollerPanel.add(panel);
                     }
                 }
-
+                
                 return null;
             }
 
             @Override
             protected void done() {
+
                 // 文書履歴タブに変更
                 getContext().showDocument(0);
                 // 一つ目を選択し、フォーカスを設定する。フォーカスがないとキー移動できない
@@ -465,7 +460,7 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
                 null,
                 new String[]{"PDF作成", "イメージ印刷", "取消し"},
                 "PDF作成");
-
+        
         if (option == 0) {
             makePDF(cb.isSelected());
         } else if (option == 1) {
@@ -490,7 +485,14 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
 
     // インスペクタに表示されているカルテをまとめて印刷する。
     private void printKarte() {
-
+        
+        // 未レンダリングKarteViewerをレンダリングする
+        for (KarteViewer viewer : karteViewerMap.values()) {
+            if (!viewer.isRendered()) {
+                viewer.renderKarte();
+            }
+        }
+        
         // ブザイクなんだけど、あまり使わない機能なのでこれでヨシとする
         // 背景色が緑だとインクがもったいないので白にする。選択も解除しておく。
         for (DocInfoModel docInfo : docInfoList) {
@@ -569,16 +571,18 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
             switch (docType) {
                 case IInfoModel.DOCTYPE_S_KARTE:
                 case IInfoModel.DOCTYPE_SUMMARY: {
-                    KarteViewer viwer = KarteViewer.createKarteViewer(KarteViewer.MODE.SINGLE);
-                    viwer.setModel(model);
-                    editorFrame.setKarteViewer(viwer);
+                    KarteViewer viewer = KarteViewer.createKarteViewer(KarteViewer.MODE.SINGLE);
+                    viewer.setKarteDocumentViewer(this);
+                    viewer.setModel(model);
+                    editorFrame.setKarteViewer(viewer);
                     editorFrame.start();
                     break;
                 }
                 case IInfoModel.DOCTYPE_KARTE: {
-                    KarteViewer viwer = KarteViewer.createKarteViewer(KarteViewer.MODE.DOUBLE);
-                    viwer.setModel(model);
-                    editorFrame.setKarteViewer(viwer);
+                    KarteViewer viewer = KarteViewer.createKarteViewer(KarteViewer.MODE.DOUBLE);
+                    viewer.setKarteDocumentViewer(this);
+                    viewer.setModel(model);
+                    editorFrame.setKarteViewer(viewer);
                     editorFrame.start();
                     break;
                 }
@@ -712,13 +716,26 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
     private KarteViewer createKarteViewer(DocInfoModel docInfo) {
 
         // サマリー対応
-        if (docInfo != null) {
-            if (docInfo.getDocType().equals(IInfoModel.DOCTYPE_S_KARTE)
-                    || docInfo.getDocType().equals(IInfoModel.DOCTYPE_SUMMARY)) {
-                return KarteViewer.createKarteViewer(KarteViewer.MODE.SINGLE);
+        KarteViewer karteViewer;
+        
+        if (docInfo != null && docInfo.getDocType() != null) {
+            
+            switch(docInfo.getDocType()) {
+                case IInfoModel.DOCTYPE_S_KARTE:
+                case IInfoModel.DOCTYPE_SUMMARY:
+                    karteViewer = KarteViewer.createKarteViewer(KarteViewer.MODE.SINGLE);
+                    break;
+                default:
+                    karteViewer = KarteViewer.createKarteViewer(KarteViewer.MODE.DOUBLE);
+                    break;
             }
+        } else {
+            karteViewer = KarteViewer.createKarteViewer(KarteViewer.MODE.DOUBLE);
         }
-        return KarteViewer.createKarteViewer(KarteViewer.MODE.DOUBLE);
+        // 遅延レンダリングのためKarteDocumentViewerを登録しておく
+        karteViewer.setKarteDocumentViewer(this);
+        
+        return karteViewer;
     }
 
     /**
@@ -964,7 +981,6 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
         }
     }
     
-//masuda^
     private boolean canModifyKarte() {
         
         DocumentModel base = selectedKarte.getModel();
@@ -995,5 +1011,4 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
         }
         return true;
     }
-//masuda$
 }
