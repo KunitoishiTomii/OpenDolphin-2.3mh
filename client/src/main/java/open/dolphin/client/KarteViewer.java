@@ -7,10 +7,8 @@ import java.awt.print.PageFormat;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.border.Border;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.ElementIterator;
-import javax.swing.text.Position;
 import javax.swing.text.StyleConstants;
 import open.dolphin.infomodel.AdmissionModel;
 import open.dolphin.infomodel.DocInfoModel;
@@ -187,20 +185,9 @@ public abstract class KarteViewer extends AbstractChartDocument {
                 if (comp instanceof StampHolder) {
                     StampHolder sh = (StampHolder) comp;
                     sh.setMyText();
-                    // startPosも後回しにしていたのでここで設定する
-                    try {
-                        Position startP = doc.createPosition(elem.getStartOffset());
-                        sh.setStartPosition(startP);
-                    } catch (BadLocationException ex) {
-                    }
                 } else if (comp instanceof SchemaHolder) {
                     SchemaHolder sh = (SchemaHolder) comp;
                     sh.setMyIcon();
-                    try {
-                        Position startP = doc.createPosition(elem.getStartOffset());
-                        sh.setStartPosition(startP);
-                    } catch (BadLocationException ex) {
-                    }
                 }
             }
         }
