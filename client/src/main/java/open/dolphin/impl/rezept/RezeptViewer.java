@@ -15,6 +15,7 @@ import java.awt.event.WindowEvent;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.EventListener;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -33,6 +34,8 @@ import javax.swing.ListSelectionModel;
 import javax.swing.ProgressMonitor;
 import javax.swing.SwingWorker;
 import javax.swing.WindowConstants;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import open.dolphin.client.BlockGlass;
@@ -756,6 +759,16 @@ public class RezeptViewer {
             }
         }
         
+        // 最上位ペインのstatechange時イベントリスナ
+        view.getTabbedPane().addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e){
+                JTabbedListPane childPane;
+                int             iIndex;
+                childPane = (JTabbedListPane) view.getTabbedPane().getSelectedComponent();
+                childPane.refresh();
+            }
+        });   
         if (!nyuin.isEmpty()) {
             JTabbedPane tabbedPane = createTabbedPane(nyuin, model);
             view.getTabbedPane().add("入院", tabbedPane);
@@ -792,13 +805,13 @@ public class RezeptViewer {
     }
 
     // 審査機関別のJTabbedPaneを作成する
-    private JTabbedPane createTabbedPane(List<IR_Model> list, DrPatientIdModel model) {
+    private JTabbedListPane createTabbedPane(List<IR_Model> list, DrPatientIdModel model) {
 
         String[] columnNames = reTblHelper.getTableModelColumnNames();
         String[] methods = reTblHelper.getTableModelColumnMethods();
         Class[] cls = reTblHelper.getTableModelColumnClasses();
 
-        JTabbedPane tabbedPane = new JTabbedPane();
+        final JTabbedListPane tabbedPane = new JTabbedListPane();
 
         for (IR_Model irModel : list) {
             RE_Panel panel = new RE_Panel();
@@ -865,6 +878,20 @@ public class RezeptViewer {
             panel.getTenField().setText(frmt.format(irModel.getGOModel().getTotalTen()));
             tabbedPane.add(kikanName, panel);
         }
+        tabbedPane.addChangeListener(new ChangeListener() {
+
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                int row;
+                RE_Panel panel = (RE_Panel) tabbedPane.getSelectedComponent();
+                row = panel.getReTable().getSelectedRow();
+                if(row == -1){
+                    row = 0;
+                }
+                panel.getReTable().clearSelection();
+                panel.getReTable().changeSelection(row, 0, false, false);
+            }
+        });
 
         return tabbedPane;
     }
@@ -1139,4 +1166,18 @@ public class RezeptViewer {
             return this;
         }
     }
+    
+    private static class JTabbedListPane extends JTabbedPane {
+        public void refresh(){
+            int row;
+            RE_Panel panel = (RE_Panel) getSelectedComponent();
+            row = panel.getReTable().getSelectedRow();
+            if(row == -1){
+                row = 0;
+            }
+            panel.getReTable().clearSelection();
+            panel.getReTable().changeSelection(row, 0, false, false);
+        }
+    }
+
 }
