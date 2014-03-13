@@ -488,7 +488,7 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
         
         // 未レンダリングKarteViewerをレンダリングする
         for (KarteViewer viewer : karteViewerMap.values()) {
-            viewer.renderComponents();
+            viewer.renderComponentsOnViewer();
         }
         
         // ブザイクなんだけど、あまり使わない機能なのでこれでヨシとする
