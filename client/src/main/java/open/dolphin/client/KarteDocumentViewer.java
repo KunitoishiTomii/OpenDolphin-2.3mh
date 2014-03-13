@@ -488,9 +488,7 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
         
         // 未レンダリングKarteViewerをレンダリングする
         for (KarteViewer viewer : karteViewerMap.values()) {
-            if (!viewer.isRendered()) {
-                viewer.renderKarte();
-            }
+            viewer.renderComponents();
         }
         
         // ブザイクなんだけど、あまり使わない機能なのでこれでヨシとする
@@ -559,35 +557,17 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
             return;
         }
 
-        EditorFrame editorFrame = new EditorFrame();
-        editorFrame.setChart(getContext());
-
         // 表示している文書タイプに応じて Viewer を作成する
         DocumentModel model = selectedKarte.getModel();
-        String docType = model.getDocInfoModel().getDocType();
+        DocInfoModel docInfo = model.getDocInfoModel();
+        KarteViewer viewer = createKarteViewer(docInfo);
+        viewer.setModel(model);
         
-        // サマリー対応
-        if (docType != null) {
-            switch (docType) {
-                case IInfoModel.DOCTYPE_S_KARTE:
-                case IInfoModel.DOCTYPE_SUMMARY: {
-                    KarteViewer viewer = KarteViewer.createKarteViewer(KarteViewer.MODE.SINGLE);
-                    viewer.setKarteDocumentViewer(this);
-                    viewer.setModel(model);
-                    editorFrame.setKarteViewer(viewer);
-                    editorFrame.start();
-                    break;
-                }
-                case IInfoModel.DOCTYPE_KARTE: {
-                    KarteViewer viewer = KarteViewer.createKarteViewer(KarteViewer.MODE.DOUBLE);
-                    viewer.setKarteDocumentViewer(this);
-                    viewer.setModel(model);
-                    editorFrame.setKarteViewer(viewer);
-                    editorFrame.start();
-                    break;
-                }
-            }
-        }
+        // EditorFrameで表示
+        EditorFrame editorFrame = new EditorFrame();
+        editorFrame.setChart(getContext());
+        editorFrame.setKarteViewer(viewer);
+        editorFrame.start();
 //masuda$
     }
 
@@ -698,7 +678,7 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
             viewer.setContext(getContext());
             viewer.setModel(docModel);
 
-            // このコールでモデルのレンダリングが開始される
+            // このコールでモデルの遅延レンダリングが開始される
             viewer.start();
 
             // ダブルクリックされたカルテを別画面で表示する
@@ -732,8 +712,6 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
         } else {
             karteViewer = KarteViewer.createKarteViewer(KarteViewer.MODE.DOUBLE);
         }
-        // 遅延レンダリングのためKarteDocumentViewerを登録しておく
-        karteViewer.setKarteDocumentViewer(this);
         
         return karteViewer;
     }
