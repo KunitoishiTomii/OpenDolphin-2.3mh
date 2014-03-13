@@ -27,11 +27,19 @@ public final class StampHolder extends AbstractComponentHolder {
     private ModuleModel stamp;
 
     public StampHolder(KartePane kartePane, ModuleModel stamp) {
+        this(kartePane, stamp, false);
+    }
+    
+    public StampHolder(KartePane kartePane, ModuleModel stamp, boolean lazy) {
         super(kartePane);
         getFunction().setDeleteAction(StampHolder.this);
         setFont(getHints().getFont());
         setForeground(FOREGROUND);
-        setStamp(stamp);
+        if (lazy) {
+            this.stamp = stamp;
+        } else {
+            setStamp(stamp);
+        }
     }
 
     private StampHolderFunction getFunction() {
@@ -143,6 +151,17 @@ public final class StampHolder extends AbstractComponentHolder {
 
     public void setMyText() {
 
+        if (getStamp() == null) {
+            return;
+        }
+
+        setText(createStampHtml());
+        // カルテペインへ展開された時広がるのを防ぐ
+        setMaximumSize(getPreferredSize());
+    }
+
+    public void setMyTextLater() {
+        
         if (getStamp() == null) {
             return;
         }

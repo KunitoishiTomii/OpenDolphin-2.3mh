@@ -1,11 +1,17 @@
 package open.dolphin.client;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.event.MouseListener;
 import java.awt.print.PageFormat;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.border.Border;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Element;
+import javax.swing.text.ElementIterator;
+import javax.swing.text.Position;
+import javax.swing.text.StyleConstants;
 import open.dolphin.infomodel.AdmissionModel;
 import open.dolphin.infomodel.DocInfoModel;
 import open.dolphin.infomodel.DocumentModel;
@@ -32,6 +38,8 @@ public abstract class KarteViewer extends AbstractChartDocument {
     protected static final Border NOT_SELECTED_BORDER = BorderFactory.createLineBorder(NOT_SELECTED_COLOR);
     // 仮保存中のドキュメントを表す文字
     protected static final String UNDER_TMP_SAVE = " - 仮保存中";
+    
+    private static final String COMPONENT_NAME = StyleConstants.ComponentElementName;
 
     // この view のモデル
     private DocumentModel model;
@@ -57,6 +65,7 @@ public abstract class KarteViewer extends AbstractChartDocument {
     // KarteViewerのJTextPaneにKarteScrollerPanelのActionMapを設定する
     // これをしないとJTextPaneにフォーカスがあるとキーでスクロールできない
     public abstract void setParentActionMap(ActionMap amap);
+
     
     // ファクトリー
     public static KarteViewer createKarteViewer(MODE mode) {
@@ -147,9 +156,54 @@ public abstract class KarteViewer extends AbstractChartDocument {
 //masuda$
     }
     
-    protected final void renderKarte() {
-        KarteRenderer_2.getInstance().render(getModel(), getSOAPane(), getPPane());
+    // StampHolder, SchemaHolder内容設定を後回しにしてレンダリング
+    protected final void renderKarteLazily() {
+        KarteRenderer_2.getInstance().renderLazily(getModel(), getSOAPane(), getPPane());
     }
+    
+    // 後回しにしていたStampHolder, SchemaHolder内容設定
+    public final void renderComponents() {
+        
+        if (kartePanel.isRendered()) {
+            return;
+        }
+
+        try {
+            KarteStyledDocument soaDoc = getSOAPane().getDocument();
+            renderComponents(soaDoc);
+            if (getPPane() != null) {
+                KarteStyledDocument pDoc = getPPane().getDocument();
+                renderComponents(pDoc);
+            }
+
+        } catch (BadLocationException ex) {
+        }
+    }
+    
+    // ComponentHolder内容を設定する
+    private void renderComponents(KarteStyledDocument doc) throws BadLocationException {
+
+        ElementIterator itr = new ElementIterator(doc);
+
+        for (Element elem = itr.first(); elem != null; elem = itr.next()) {
+            if (COMPONENT_NAME.equals(elem.getName())) {
+                Component comp = StyleConstants.getComponent(elem.getAttributes());
+                if (comp instanceof StampHolder) {
+                    StampHolder sh = (StampHolder) comp;
+                    sh.setMyText();
+                    // startPosも後回しにしていたのでここで設定する
+                    Position startP = doc.createPosition(elem.getStartOffset());
+                    sh.setStartPosition(startP);
+                } else if (comp instanceof SchemaHolder) {
+                    SchemaHolder sh = (SchemaHolder) comp;
+                    sh.setMyIcon();
+                    Position startP = doc.createPosition(elem.getStartOffset());
+                    sh.setStartPosition(startP);
+                }
+            }
+        }
+    }
+    
 
     protected final void setKartePanel(KartePanel kartePanel) {
         this.kartePanel = kartePanel;

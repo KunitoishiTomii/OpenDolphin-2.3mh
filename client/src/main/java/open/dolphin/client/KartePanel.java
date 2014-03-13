@@ -50,25 +50,73 @@ public abstract class KartePanel extends Panel2 {
 
     private JPanel timeStampPanel;
     private JLabel timeStampLabel;
+    
+    // KarteViewerでは遅延レンダリングする
+    private  KarteViewer karteViewer;
+    // コンポーネントレンダリング済みフラグ
+    private boolean rendered;
+    
+    private void setKarteViewer(KarteViewer karteViewer) {
+        this.karteViewer = karteViewer;
+    }
+    private void setRendered(boolean rendered) {
+        this.rendered = rendered;
+    }
+    public boolean isRendered() {
+        return rendered;
+    }
+    
+    @Override
+    protected void paintComponent(Graphics g) {
+
+        if (!rendered && karteViewer != null) {
+            karteViewer.renderComponents();
+            //revalidate();
+        }
+        super.paintComponent(g);
+    }
 
     // ファクトリー
     public static KartePanel createKartePanel(MODE mode, boolean verticalLayout) {
+        
+        return createKartePanel(mode, verticalLayout, null);
+    }
+    
+    public static KartePanel createKartePanel(MODE mode, boolean verticalLayout, KarteViewer karteViewer) {
+
+        KartePanel kartePanel;
 
         switch (mode) {
             case SINGLE_VIEWER:
-                return new KartePanel1(false);
+                kartePanel = new KartePanel1(false);
+                break;
             case DOUBLE_VIEWER:
                 if (verticalLayout) {
-                    return new KartePanel2V(false);
+                    kartePanel = new KartePanel2V(false);
+                    break;
                 } else {
-                    return new KartePanel2(false);
+                    kartePanel = new KartePanel2(false);
+                    break;
                 }
             case SINGLE_EDITOR:
-                return new KartePanel1(true);
+                kartePanel = new KartePanel1(true);
+                break;
             case DOUBLE_EDITOR:
-                return new KartePanel2(true);
+                kartePanel = new KartePanel2(true);
+                break;
+            default:
+                return null;
         }
-        return null;
+        
+        if (karteViewer != null) {
+            kartePanel.setKarteViewer(karteViewer);
+            kartePanel.setRendered(false);
+        } else {
+            // KarteViewerでなければlazy renderingしない
+            kartePanel.setRendered(true);
+        }
+
+        return kartePanel;
     }
 
     // 抽象メソッド

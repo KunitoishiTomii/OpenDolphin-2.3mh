@@ -60,7 +60,7 @@ public class SqlOrcaView extends SqlDaoBean {
      * ORCA に登録してある病名を検索する。
      * @return RegisteredDiagnosisModelのリスト
      */
-    public List<RegisteredDiagnosisModel> getOrcaDisease(String patientId, String from, String to, boolean ascend) {
+    public List<RegisteredDiagnosisModel> getOrcaDisease(String patientId, String from, String to, boolean ascend) throws DaoException {
         
         int hospNum = getHospNum();
         long orcaPtId = getOrcaPtID(patientId);
@@ -98,7 +98,7 @@ public class SqlOrcaView extends SqlDaoBean {
      *
      * @return RegisteredDiagnosisModelのリスト
      */
-    public List<RegisteredDiagnosisModel> getActiveOrcaDisease(String patientId, boolean asc) {
+    public List<RegisteredDiagnosisModel> getActiveOrcaDisease(String patientId, boolean asc) throws DaoException {
 
         int hospNum = getHospNum();
         long orcaPtId = getOrcaPtID(patientId);

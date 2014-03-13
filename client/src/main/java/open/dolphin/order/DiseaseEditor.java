@@ -205,9 +205,6 @@ public final class DiseaseEditor extends AbstractStampEditor {
                 blockGlass.block();
                 // 傷病名コードからDiseaseEntryを取得
                 List<DiseaseEntry> result = dao2.getDiseaseEntries(srycdList);
-                if (result == null || !dao2.isNoError()){
-                    throw new Exception(dao2.getErrorMessage());
-                }
                 return result;
             }
 
@@ -323,9 +320,7 @@ public final class DiseaseEditor extends AbstractStampEditor {
                 } else {
                     result = dao.getDiseaseByName(StringTool.hiraganaToKatakana(text), d, b);
                 }
-                if (!dao.isNoError()) {
-                    throw new Exception(dao.getErrorMessage());
-                }
+
                 return result;
             }
 

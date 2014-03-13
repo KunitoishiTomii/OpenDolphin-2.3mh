@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import open.dolphin.dao.DaoException;
 import open.dolphin.dao.SqlMiscDao;
 import open.dolphin.infomodel.DiseaseEntry;
 import open.dolphin.infomodel.TensuMaster;
@@ -34,7 +35,7 @@ public class UkeLoader {
         return reModelCount;
     }
 
-    public List<IR_Model> loadFromOrca(String ym) {
+    public List<IR_Model> loadFromOrca(String ym) throws DaoException {
 
         List<IR_Model> irModelList = new ArrayList<>();
 
@@ -219,7 +220,7 @@ public class UkeLoader {
     }
     
     // マスターを参照して項目名を設定する
-    private void processSYModel(List<IR_Model> irModelList) {
+    private void processSYModel(List<IR_Model> irModelList) throws DaoException {
         
         SqlMiscDao dao = SqlMiscDao.getInstance();
         
@@ -296,7 +297,7 @@ public class UkeLoader {
     }
 
     // マスターを参照して項目名を設定する
-    private void processIRezeItem(List<IR_Model> irModelList) {
+    private void processIRezeItem(List<IR_Model> irModelList) throws DaoException {
 
         // 診療行為・薬剤など
         SqlMiscDao dao = SqlMiscDao.getInstance();

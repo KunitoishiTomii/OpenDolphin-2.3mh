@@ -13,7 +13,6 @@ import javax.swing.table.TableColumn;
 import open.dolphin.client.*;
 import open.dolphin.dao.SqlMasterDao;
 import open.dolphin.dao.SqlMiscDao;
-import open.dolphin.infomodel.BundleDolphin;
 import open.dolphin.infomodel.ClaimConst;
 import open.dolphin.infomodel.ClaimItem;
 import open.dolphin.infomodel.IInfoModel;
@@ -483,9 +482,6 @@ public final class RpEditor extends AbstractStampEditor {
                 
                 List<TensuMaster> result = dao.getTensuMasterByCode(regExp, d);
 
-                if (!dao.isNoError()) {
-                    throw new Exception(dao.getErrorMessage());
-                }
                 return result;
             }
 
@@ -1104,10 +1100,8 @@ public final class RpEditor extends AbstractStampEditor {
                 }
 
                 List<TensuMaster> result = dao2.getTensuMasterList(srycdList);
-                if (!dao2.isNoError()) {
-                    throw new Exception(dao2.getErrorMessage());
-                }
                 return result;
+                
             }
             @Override
             protected void done() {

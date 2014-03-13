@@ -87,19 +87,24 @@ public class KartePanelEditorKit extends StyledEditorKit {
         @Override
         public float getPreferredSpan(int axis) {
             
-            Component comp = getComponent();
-            if (axis == View.X_AXIS && comp instanceof ComponentHolder) {
-                return getComponentHolderSpanX(comp);
+            if (getDocument() instanceof KarteStyledDocument) {
+                Component comp = getComponent();
+                if (axis == View.X_AXIS && comp instanceof ComponentHolder) {
+                    return getComponentHolderSpanX(comp);
+                }
             }
+
             return super.getPreferredSpan(axis);
         }
 
         @Override
         public float getMaximumSpan(int axis) {
             
-            Component comp = getComponent();
-            if (axis == View.X_AXIS && comp instanceof ComponentHolder) {
-                return getComponentHolderSpanX(comp);
+            if (getDocument() instanceof KarteStyledDocument) {
+                Component comp = getComponent();
+                if (axis == View.X_AXIS && comp instanceof ComponentHolder) {
+                    return getComponentHolderSpanX(comp);
+                }
             }
             return super.getMaximumSpan(axis);
         }
@@ -128,7 +133,11 @@ public class KartePanelEditorKit extends StyledEditorKit {
         public void paint(Graphics g, Shape a) {
             
             super.paint(g, a);
-
+            
+            if (!(getDocument() instanceof KarteStyledDocument)) {
+                return;
+            }
+            
             // 編集可の場合は改行文字を表示する
             try {
                 KarteStyledDocument doc = (KarteStyledDocument) getDocument();

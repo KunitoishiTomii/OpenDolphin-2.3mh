@@ -29,7 +29,8 @@ public class KarteViewer2 extends KarteViewer {
             verticalLayout = !vsc && vl;
         }
 
-        KartePanel kartePanel = KartePanel.createKartePanel(KartePanel.MODE.DOUBLE_VIEWER, verticalLayout);
+        // 遅延レンダリング
+        KartePanel kartePanel = KartePanel.createKartePanel(KartePanel.MODE.DOUBLE_VIEWER, verticalLayout, this);
 
         // SOA Pane を生成する
         soaPane = new KartePane();
@@ -78,8 +79,8 @@ public class KarteViewer2 extends KarteViewer {
         // タイトルを設定する
         setTitle();
 
-        // レンダリングする
-        renderKarte();
+        // 怠惰レンダリングする
+        renderKarteLazily();
         
         // モデル表示後にリスナ等を設定する
         ChartMediator mediator = getContext().getChartMediator();

@@ -984,9 +984,6 @@ public abstract class AbstractStampEditor implements StampEditorConst {
                         break;
                 }
 
-                if (!dao.isNoError()) {
-                    throw new Exception(dao.getErrorMessage());
-                }
                 return result;
             }
 
@@ -1020,9 +1017,7 @@ public abstract class AbstractStampEditor implements StampEditorConst {
                     // 検索後は最初の行を表示させる
                     showFirstResult(view.getSearchResultTable());
 
-                } catch (InterruptedException ex) {
-
-                } catch (ExecutionException ex) {
+                } catch (InterruptedException | ExecutionException ex) {
                     alertSearchError(ex.getMessage());
                 }
             }
@@ -1131,9 +1126,7 @@ public abstract class AbstractStampEditor implements StampEditorConst {
                     srycdList.add(mi.getCode());
                 }
                 List<TensuMaster> result = dao2.getTensuMasterList(srycdList);
-                if (!dao2.isNoError()){
-                    throw new Exception();
-                }
+
                 return result;
             }
             @Override

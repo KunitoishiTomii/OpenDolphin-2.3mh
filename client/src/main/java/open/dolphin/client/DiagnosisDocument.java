@@ -1912,11 +1912,8 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
                 List<RegisteredDiagnosisModel> result = activeOnly
                         ? dao.getActiveOrcaDisease(patientId, ascend)
                         : dao.getOrcaDisease(patientId, "00000000", "99999999", ascend);
-                if (dao.isNoError()) {
-                    return result;
-                } else {
-                    throw new Exception(dao.getErrorMessage());
-                }
+
+                return result;
             }
 
             @Override

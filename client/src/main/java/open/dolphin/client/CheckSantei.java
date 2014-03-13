@@ -3,6 +3,7 @@ package open.dolphin.client;
 import java.awt.Toolkit;
 import java.util.*;
 import javax.swing.JOptionPane;
+import open.dolphin.dao.DaoException;
 import open.dolphin.dao.SqlETensuDao;
 import open.dolphin.dao.SqlMiscDao;
 import open.dolphin.dao.SyskanriInfo;
@@ -372,7 +373,7 @@ public class CheckSantei implements ICheckSanteiConst {
     }
 
     // KarteEditorで保存するときに呼ばれる
-    public boolean checkOnSave() {
+    public boolean checkOnSave() throws DaoException {
         
         StringBuilder sb = new StringBuilder();
         
@@ -592,7 +593,7 @@ public class CheckSantei implements ICheckSanteiConst {
     }
 
     // 有効期限と中止項目をチェックする
-    private String checkYukoEndDisconItem() {
+    private String checkYukoEndDisconItem() throws DaoException {
         
         int todayInt = MMLDate.getTodayInt();
 
@@ -706,7 +707,7 @@ public class CheckSantei implements ICheckSanteiConst {
         }
     }
     
-    private void setupCurrentSanteiHistory() {
+    private void setupCurrentSanteiHistory() throws DaoException {
 
         allClaimItems = new HashMap<>();
         hasLabo = false;
@@ -805,7 +806,7 @@ public class CheckSantei implements ICheckSanteiConst {
     }
     
     // 外来管理加算算定可否と腫瘍マーカーの有無を設定する
-    private void setupGairaiKanriAndTumorMarkers() {
+    private void setupGairaiKanriAndTumorMarkers() throws DaoException {
 
         Set<String> srycdList = new HashSet<>();
         for (SanteiHistoryModel shm : currentSanteiList) {
@@ -822,7 +823,7 @@ public class CheckSantei implements ICheckSanteiConst {
 
     
     // 移行病名と病関連区分を設定する
-    private void updateIkouTokutei2(List<RegisteredDiagnosisModel> list) {
+    private void updateIkouTokutei2(List<RegisteredDiagnosisModel> list) throws DaoException {
 
         List<String> srycdList = new ArrayList<>();
         for (RegisteredDiagnosisModel rd : list) {
@@ -837,7 +838,7 @@ public class CheckSantei implements ICheckSanteiConst {
 
         final SqlMiscDao dao = SqlMiscDao.getInstance();
         List<DiseaseEntry> disList = dao.getDiseaseEntries(srycdList);
-        if (disList == null || !dao.isNoError()){
+        if (disList == null || disList.isEmpty()){
             return;
         }
 

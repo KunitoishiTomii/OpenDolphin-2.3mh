@@ -340,9 +340,6 @@ public class LaboTestPanel {
                 }
                 // データベースで検査項目コードに一致するTensuMasterをまとめて取得する。
                 List<TensuMaster> tmResult = dao.getTensuMasterList(srycdList);
-                if (!dao.isNoError()) {
-                    throw new Exception(dao.getErrorMessage());
-                }
                 return tmResult;
             }
 

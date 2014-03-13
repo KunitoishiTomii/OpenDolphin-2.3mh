@@ -60,7 +60,7 @@ public final class SqlMasterDao extends SqlDaoBean {
     private SqlMasterDao() {
     }
 
-    public List<TensuMaster> getTensuMasterByShinku(String shinku, String now) {
+    public List<TensuMaster> getTensuMasterByShinku(String shinku, String now) throws DaoException {
 
         // 結果を格納するリスト
         List<TensuMaster> ret = new ArrayList<>();
@@ -81,7 +81,7 @@ public final class SqlMasterDao extends SqlDaoBean {
         return ret;
     }
 
-    public List<TensuMaster> getTensuMasterByName(String name, String now, boolean partialMatch) {
+    public List<TensuMaster> getTensuMasterByName(String name, String now, boolean partialMatch) throws DaoException {
 
         // 結果を格納するリスト
         List<TensuMaster> ret = new ArrayList<>();
@@ -117,7 +117,7 @@ public final class SqlMasterDao extends SqlDaoBean {
         return ret;
     }
 
-    public List<TensuMaster> getTensuMasterByCode(String regExp, String now) {
+    public List<TensuMaster> getTensuMasterByCode(String regExp, String now) throws DaoException {
 
         // 結果を格納するリスト
         List<TensuMaster> ret = new ArrayList<>();
@@ -138,7 +138,7 @@ public final class SqlMasterDao extends SqlDaoBean {
         return ret;
     }
 
-    public List<TensuMaster> getTensuMasterByTen(String ten, String now) {
+    public List<TensuMaster> getTensuMasterByTen(String ten, String now) throws DaoException {
 
         // 結果を格納するリスト
         List<TensuMaster> ret = new ArrayList<>();
@@ -167,7 +167,7 @@ public final class SqlMasterDao extends SqlDaoBean {
         return ret;
     }
 
-    public List<DiseaseEntry> getDiseaseByName(String name, String now, boolean partialMatch) {
+    public List<DiseaseEntry> getDiseaseByName(String name, String now, boolean partialMatch) throws DaoException {
 
         // 結果を格納するリスト
         List<DiseaseEntry> ret = new ArrayList<>();
@@ -193,7 +193,7 @@ public final class SqlMasterDao extends SqlDaoBean {
         return ret;
     }
     
-    public List<DiseaseEntry> getDiseaseByCode(String code, String now, boolean partialMatch) {
+    public List<DiseaseEntry> getDiseaseByCode(String code, String now, boolean partialMatch) throws DaoException {
 
         // 結果を格納するリスト
         List<DiseaseEntry> ret = new ArrayList<>();

@@ -25,6 +25,7 @@ import javax.swing.WindowConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import open.dolphin.client.ClientContext;
+import open.dolphin.dao.DaoException;
 import open.dolphin.dao.SqlMiscDao;
 import open.dolphin.delegater.MasudaDelegater;
 import open.dolphin.helper.ComponentMemory;
@@ -202,7 +203,10 @@ public class IndicationEditor {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                referOrca();
+                try {
+                    referOrca();
+                } catch (DaoException ex) {
+                }
             }
         });
         // delete
@@ -282,7 +286,7 @@ public class IndicationEditor {
     }
     
     // ORCAからインポート
-    private void referOrca() {
+    private void referOrca() throws DaoException {
         
         // ORCAを参照
         SqlMiscDao dao = SqlMiscDao.getInstance();

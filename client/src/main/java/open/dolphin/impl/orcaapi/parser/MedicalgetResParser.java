@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import open.dolphin.dao.DaoException;
 import open.dolphin.dao.SqlMiscDao;
 import open.dolphin.infomodel.ClaimConst;
 import open.dolphin.infomodel.TensuMaster;
@@ -35,7 +36,7 @@ public class MedicalgetResParser extends AbstractOrcaApiParser {
         
         List<String> ret = new ArrayList<>();
 
-        Iterator<Element> itr = doc.getDescendants(new ElementFilter("Perform_Date"));
+        Iterator<Element> itr = doc.getDescendants(new ElementFilter(PERFORM_DATE));
         while (itr.hasNext()) {
             Element elm = itr.next();
             ret.add(elm.getText());
@@ -44,29 +45,29 @@ public class MedicalgetResParser extends AbstractOrcaApiParser {
         return ret;
     }
     
-    public List<MasterItem> getMedMasterItem() {
+    public List<MasterItem> getMedMasterItem() throws DaoException {
         
         final String ADMIN_MARK = "[用法] ";
         
         List<MasterItem> list = new ArrayList();
         Set<String> srycdSet = new HashSet<>();
         
-        Iterator<Element> itr = doc.getDescendants(new ElementFilter("Medical_Information_child"));
+        Iterator<Element> itr = doc.getDescendants(new ElementFilter(MEDICAL_INFORMATION_CHILD));
         while (itr.hasNext()) {
             Element elem = itr.next();
-            String classCode = elem.getChildText("Medical_Class");
+            String classCode = elem.getChildText(MEDICAL_CLASS);
             // 薬剤の場合
             if (classCode != null && classCode.matches("2[1239].")) {
                 
-                Element info= elem.getChild("Medication_info");
+                Element info= elem.getChild(MEDICATION_INFO);
                 List<Element> children = info.getChildren();
                 boolean hasAdmin = false;
-                String bundleNumber = elem.getChildText("Medical_Class_Number");
+                String bundleNumber = elem.getChildText(MEDICAL_CLASS_NUMBER);
                 
                 for (Element child : children) {
-                    String srycd = child.getChildText("Medication_Code");
-                    String name = child.getChildText("Medication_Name");
-                    String num = child.getChildText("Medication_Number");
+                    String srycd = child.getChildText(MEDICATION_CODE);
+                    String name = child.getChildText(MEDICATION_NAME);
+                    String num = child.getChildText(MEDICATION_NUMBER);
                     MasterItem mi = new MasterItem();
                     mi.setCode(srycd);
                     mi.setName(name);
