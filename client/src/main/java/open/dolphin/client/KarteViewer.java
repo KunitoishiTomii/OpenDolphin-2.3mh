@@ -7,10 +7,8 @@ import java.awt.print.PageFormat;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.border.Border;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.ElementIterator;
-import javax.swing.text.Position;
 import javax.swing.text.StyleConstants;
 import open.dolphin.infomodel.AdmissionModel;
 import open.dolphin.infomodel.DocInfoModel;
@@ -162,26 +160,22 @@ public abstract class KarteViewer extends AbstractChartDocument {
     }
     
     // 後回しにしていたStampHolder, SchemaHolder内容設定
-    public final void renderComponents() {
+    public final void renderComponentsOnViewer() {
         
         if (kartePanel.isRendered()) {
             return;
         }
 
-        try {
-            KarteStyledDocument soaDoc = getSOAPane().getDocument();
-            renderComponents(soaDoc);
-            if (getPPane() != null) {
-                KarteStyledDocument pDoc = getPPane().getDocument();
-                renderComponents(pDoc);
-            }
-
-        } catch (BadLocationException ex) {
+        KarteStyledDocument soaDoc = getSOAPane().getDocument();
+        renderComponents(soaDoc);
+        if (getPPane() != null) {
+            KarteStyledDocument pDoc = getPPane().getDocument();
+            renderComponents(pDoc);
         }
     }
     
     // ComponentHolder内容を設定する
-    private void renderComponents(KarteStyledDocument doc) throws BadLocationException {
+    private void renderComponents(KarteStyledDocument doc) { //throws BadLocationException {
 
         ElementIterator itr = new ElementIterator(doc);
 
@@ -191,14 +185,14 @@ public abstract class KarteViewer extends AbstractChartDocument {
                 if (comp instanceof StampHolder) {
                     StampHolder sh = (StampHolder) comp;
                     sh.setMyText();
-                    // startPosも後回しにしていたのでここで設定する
-                    Position startP = doc.createPosition(elem.getStartOffset());
-                    sh.setStartPosition(startP);
+                    // startPosも後回しにしていたのでここで設定する→KarteViewerでは編集しないので不要
+                    //Position startP = doc.createPosition(elem.getStartOffset());
+                    //sh.setStartPosition(startP);
                 } else if (comp instanceof SchemaHolder) {
                     SchemaHolder sh = (SchemaHolder) comp;
                     sh.setMyIcon();
-                    Position startP = doc.createPosition(elem.getStartOffset());
-                    sh.setStartPosition(startP);
+                    //Position startP = doc.createPosition(elem.getStartOffset());
+                    //sh.setStartPosition(startP);
                 }
             }
         }

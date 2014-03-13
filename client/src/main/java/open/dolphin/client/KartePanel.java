@@ -70,7 +70,8 @@ public abstract class KartePanel extends Panel2 {
     protected void paintComponent(Graphics g) {
 
         if (!rendered && karteViewer != null) {
-            karteViewer.renderComponents();
+            karteViewer.renderComponentsOnViewer();
+            rendered = true;
             //revalidate();
         }
         super.paintComponent(g);
