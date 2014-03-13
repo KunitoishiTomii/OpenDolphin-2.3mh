@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import javax.swing.JOptionPane;
 import open.dolphin.delegater.OrcaDelegater;
 import open.dolphin.infomodel.DiseaseEntry;
 import open.dolphin.infomodel.OrcaSqlModel;
@@ -112,7 +111,7 @@ public class SqlDaoBean extends DaoBean {
         return client;
     }
     
-    protected List<String[]> executeStatement(String sql) {
+    protected List<String[]> executeStatement(String sql) throws DaoException {
         
         if (isClient()) {
             return executeStatement1(sql);
@@ -120,7 +119,7 @@ public class SqlDaoBean extends DaoBean {
         return executeStatement2(sql);
     }
     
-    private List<String[]> executeStatement1(String sql) {
+    private List<String[]> executeStatement1(String sql) throws DaoException {
 
         List<String[]> valuesList = new ArrayList<>();
 
@@ -139,23 +138,17 @@ public class SqlDaoBean extends DaoBean {
             }
 
         } catch (Exception ex) {
-            //ex.printStackTrace(System.err);
             processError(ex);
         }
 
         return valuesList;
     }
     
-    private List<String[]> executeStatement2(String sql) {
-        
-        // 呼び出し前にエラーをクリア。シングルトン化の影響ｗ
-        errorCode = TT_NO_ERROR;
-        errorMessage = null;
-        
+    private List<String[]> executeStatement2(String sql) throws DaoException {
+
         OrcaSqlModel sqlModel = new OrcaSqlModel();
         sqlModel.setUrl(getURL());
         sqlModel.setSql(sql);
-
         try {
             OrcaSqlModel result = OrcaDelegater.getInstance().executeQuery(sqlModel);
             if (result != null) {
@@ -167,26 +160,22 @@ public class SqlDaoBean extends DaoBean {
                 }
             }
         } catch (Exception ex) {
+            processError(ex);
         }
-
         return Collections.emptyList();
+
     }
 
-    protected List<String[]> executePreparedStatement(String sql, Object[] params) {
-        
-        try {
-            String sql2 = createSql(sql, params);
-            if (isClient()) {
-                return executeStatement1(sql2);
-            }
-            return executeStatement2(sql2);
-        } catch (SQLException ex) {
+    protected List<String[]> executePreparedStatement(String sql, Object[] params) throws DaoException {
+
+        String sql2 = createSql(sql, params);
+        if (isClient()) {
+            return executeStatement1(sql2);
         }
-        
-        return Collections.emptyList();
+        return executeStatement2(sql2);
     }
     
-    private String createSql(String sql, Object[] params) throws SQLException {
+    private String createSql(String sql, Object[] params) throws DaoException {
         
         int index = 0;
         StringBuilder sb = new StringBuilder();
@@ -208,11 +197,10 @@ public class SqlDaoBean extends DaoBean {
                 }
             }
         } catch (Exception ex) {
-            throw new SQLException(ex.getMessage());
+            throw new DaoException(ex);
         }
-
         if (index != params.length) {
-            throw new SQLException("Illegal parameter count.");
+            throw new DaoException("Illegal parameter count.");
         }
 
         return sb.toString();
@@ -240,7 +228,7 @@ public class SqlDaoBean extends DaoBean {
     }
 
     // ORCAのptidを取得する
-    protected final long getOrcaPtID(String patientId){
+    protected final long getOrcaPtID(String patientId) throws DaoException {
 
         long ptid = 0;
         int hospNum = getHospNum();
@@ -259,37 +247,23 @@ public class SqlDaoBean extends DaoBean {
         return ptid;
     }
 
-    private Connection getConnection() throws Exception {
-        Connection con;
-        try {
-            if (false) {
-                con = DriverManager.getConnection(getURL(), getUser(), getPasswd());
-            } else {
-                con = getConnectionFromPool();
-            }
-        } catch (Exception ex) {
-            processError(ex);
-            String msg = getErrorMessage();
-            String title = "ORCA接続";
-            JOptionPane.showMessageDialog(null, msg, title, JOptionPane.WARNING_MESSAGE);
-            throw ex;
-        }
-        return con;
+    private Connection getConnection() throws SQLException {
+        
+        //return DriverManager.getConnection(getURL(), getUser(), getPasswd());
+        return getConnectionFromPool();
     }
     
-    private Connection getConnectionFromPool() throws Exception {
+    private Connection getConnectionFromPool() throws SQLException{
         
         if (dataSource == null) {
             setupDataSource();
         }
-        // 呼び出し前にエラーをクリア。シングルトン化の影響ｗ
-        errorCode = TT_NO_ERROR;
-        errorMessage = null;
         
         return dataSource.getConnection();
     }
     
     private void setupDataSource() {
+        
         PoolProperties p = new PoolProperties();
         p.setDriverClassName(getDriver());
         p.setUrl(getURL());

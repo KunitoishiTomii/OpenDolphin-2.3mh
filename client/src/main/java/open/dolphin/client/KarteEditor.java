@@ -16,6 +16,7 @@ import javax.swing.event.UndoableEditListener;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
+import open.dolphin.dao.DaoException;
 import open.dolphin.infomodel.AdmissionModel;
 import open.dolphin.infomodel.DocInfoModel;
 import open.dolphin.infomodel.DocumentModel;
@@ -601,9 +602,12 @@ public class KarteEditor extends AbstractChartDocument implements IInfoModel,
         if (!stateMgr.isDirty()) {
             return;
         }
-
         // 薬剤相互作用チェックなど
-        if (!isKarteCheckOK()) {
+        try {
+            if (!isKarteCheckOK()) {
+                return;
+            }
+        } catch (DaoException ex) {
             return;
         }
         
@@ -776,7 +780,7 @@ public class KarteEditor extends AbstractChartDocument implements IInfoModel,
     }
 
     // カルテ内容をチェックする
-    private boolean isKarteCheckOK() {
+    private boolean isKarteCheckOK() throws DaoException {
 
         if (getMode() == DOUBLE_MODE) {
 

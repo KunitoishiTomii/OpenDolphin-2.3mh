@@ -1,28 +1,21 @@
 package open.dolphin.dao;
 
+import javax.swing.JOptionPane;
 import open.dolphin.client.ClientContext;
 import org.apache.log4j.Logger;
 
 /**
  * DaoBean
  *
- * @author  Kazushi Minagawa
+ * @author Kazushi Minagawa
+ * @author modified by masuda, Masuda Naika
  */
 public class DaoBean {
-    
-    public static final int TT_NONE              = 10;
-    public static final int TT_NO_ERROR          =  0;
-    public static final int TT_CONNECTION_ERROR  = -1;
-    public static final int TT_DATABASE_ERROR    = -2;
-    public static final int TT_UNKNOWN_ERROR     = -3;
     
     protected String host;
     protected int port;
     protected String user;
     protected String passwd;
-    
-    protected int errorCode;
-    protected String errorMessage;
     
     protected Logger logger;
     
@@ -65,57 +58,43 @@ public class DaoBean {
         this.passwd = passwd;
     }
     
-    public boolean isNoError() {
-        return errorCode == TT_NO_ERROR;
-    }
-    
-    public int getErrorCode() {
-        return errorCode;
-    }
-    
-    public void setErrorCode(int errorCode) {
-        this.errorCode = errorCode;
-    }
-    
-    public String getErrorMessage() {
-        return errorMessage;
-    }
-    
-    public void setErrorMessage(String errorMessage) {
-        this.errorMessage = errorMessage;
-    }
-    
     /**
      * 例外を解析しエラーコードとエラーメッセージを設定する。
      *
      * @param e Exception
      */
-    protected void processError(Exception e) {
-        
+    protected void processError(Exception e) throws DaoException {
+
         logger.warn(e);
-        
-        StringBuilder sb  = new StringBuilder();
-        
+
+        DaoException ex = new DaoException(e);
+        StringBuilder sb = new StringBuilder();
+
         if (e instanceof org.postgresql.util.PSQLException) {
-            setErrorCode(TT_CONNECTION_ERROR);
             sb.append("サーバに接続できません。ネットワーク環境をお確かめください。");
             sb.append("\n");
             sb.append(appenExceptionInfo(e));
-            setErrorMessage(sb.toString());
-            
+            ex.setErrorCode(DaoException.TT_CONNECTION_ERROR);
+            ex.setErrorMessage(sb.toString());
         } else if (e instanceof java.sql.SQLException) {
-            setErrorCode(TT_DATABASE_ERROR);
             sb.append("データベースアクセスエラー");
             sb.append("\n");
             sb.append(appenExceptionInfo(e));
-            setErrorMessage(sb.toString());
+            ex.setErrorCode(DaoException.TT_DATABASE_ERROR);
+            ex.setErrorMessage(sb.toString());
         } else {
-            setErrorCode(TT_UNKNOWN_ERROR);
             sb.append("アプリケーションエラー");
             sb.append("\n");
             sb.append(appenExceptionInfo(e));
-            setErrorMessage(sb.toString());
+            ex.setErrorCode(DaoException.TT_UNKNOWN_ERROR);
+            ex.setErrorMessage(sb.toString());
         }
+
+        String msg = ex.getErrorMessage();
+        String title = "ORCA接続";
+        JOptionPane.showMessageDialog(null, msg, title, JOptionPane.WARNING_MESSAGE);
+        
+        throw ex;
     }
     
     /**

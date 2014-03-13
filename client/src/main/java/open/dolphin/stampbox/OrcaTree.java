@@ -121,11 +121,7 @@ public class OrcaTree extends StampTree {
             protected List<OrcaInputCd> doInBackground() throws Exception {
                 SqlOrcaSetDao dao = SqlOrcaSetDao.getInstance();
                 List<OrcaInputCd> result = dao.getOrcaInputSet();
-                if (dao.isNoError()) {
-                    return result;
-                } else {
-                    throw new Exception(dao.getErrorMessage());
-                }
+                return result;
             }
 
             @Override

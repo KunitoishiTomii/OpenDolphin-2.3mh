@@ -49,7 +49,7 @@ public class SqlOrcaSetDao extends SqlDaoBean {
      * ORCA の入力セットコード（約束処方、診療セット）を返す。
      * @return 入力セットコード(OrcaInputCd)の昇順リスト
      */
-    public List<OrcaInputCd> getOrcaInputSet() {
+    public List<OrcaInputCd> getOrcaInputSet() throws DaoException {
          
         debug("getOrcaInputSet()");
         List<OrcaInputCd> collection = new ArrayList<>();
@@ -146,7 +146,7 @@ public class SqlOrcaSetDao extends SqlDaoBean {
      * @param inputSetInfo 入力セットの StampInfo
      * @return 入力セットのStampリスト
      */
-    public List<ModuleModel> getStamp(ModuleInfoBean inputSetInfo) {
+    public List<ModuleModel> getStamp(ModuleInfoBean inputSetInfo) throws DaoException {
 
         String setCd = inputSetInfo.getStampId(); // stampId=setCd; セットコード
         String stampName = inputSetInfo.getStampName();

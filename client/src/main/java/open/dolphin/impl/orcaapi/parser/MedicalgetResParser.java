@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import open.dolphin.dao.DaoException;
 import open.dolphin.dao.SqlMiscDao;
 import open.dolphin.infomodel.ClaimConst;
 import open.dolphin.infomodel.TensuMaster;
@@ -44,7 +45,7 @@ public class MedicalgetResParser extends AbstractOrcaApiParser {
         return ret;
     }
     
-    public List<MasterItem> getMedMasterItem() {
+    public List<MasterItem> getMedMasterItem() throws DaoException {
         
         final String ADMIN_MARK = "[用法] ";
         

@@ -27,6 +27,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import open.dolphin.client.ClientContext;
+import open.dolphin.dao.DaoException;
 import open.dolphin.dao.SqlMiscDao;
 import open.dolphin.delegater.MasudaDelegater;
 import open.dolphin.helper.ComponentMemory;
@@ -193,7 +194,10 @@ public class AllIndicationEditor {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                referOrca();
+                try {
+                    referOrca();
+                } catch (DaoException ex) {
+                }
             }
         });
         // delete
@@ -269,7 +273,7 @@ public class AllIndicationEditor {
     }
     
     // ORCAからインポート
-    private void referOrca() {
+    private void referOrca() throws DaoException {
 
         if (currentModel == null) {
             return;
@@ -424,7 +428,7 @@ public class AllIndicationEditor {
         }
     }
 
-    private void setMasterName(List<IndicationModel> list) {
+    private void setMasterName(List<IndicationModel> list) throws DaoException {
         
         Map<String, IndicationModel> map = new HashMap<>();
         for (IndicationModel model : list) {
