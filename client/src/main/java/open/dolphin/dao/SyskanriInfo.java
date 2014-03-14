@@ -45,12 +45,15 @@ public class SyskanriInfo extends SqlDaoBean {
     
     public static SyskanriInfo getInstance() {
         if (!initialized) {
-            instance.initialize();
+            try {
+                instance.initialize();
+            } catch (DaoException ex) {
+            }
         }
         return instance;
     }
     
-    private void initialize() {
+    private void initialize() throws DaoException {
         syskanri1006 = new ArrayList<>();
         deptCodeDescMap = new HashMap<>();
         staffCodeNameMap = new HashMap<>();
@@ -115,7 +118,7 @@ public class SyskanriInfo extends SqlDaoBean {
 //============================================================================//
     
     // ORCAのデータベースバージョンとhospNumを取得する
-    private boolean setHospNum() {
+    private boolean setHospNum() throws DaoException {
         
         boolean success = true;
         hospNum = 1;
@@ -153,7 +156,7 @@ public class SyskanriInfo extends SqlDaoBean {
     }
     
     // 施設情報フラグ情報を取得する
-    private boolean setSyskanri1006() {
+    private boolean setSyskanri1006() throws DaoException {
 
         final String sql = "select kbncd, kanritbl from tbl_syskanri where kanricd = '1006' order by kbncd";
         boolean success = true;
@@ -176,7 +179,7 @@ public class SyskanriInfo extends SqlDaoBean {
     }
 
     // kanricd 1001情報を取得。今は病床数のみ
-    private boolean getSyskanri1001() {
+    private boolean getSyskanri1001() throws DaoException {
         
         boolean success = true;
         final String kanricd = "1001";
@@ -206,7 +209,7 @@ public class SyskanriInfo extends SqlDaoBean {
     }
     
     // kanricd 1005情報を取得。科目IDと科目名の対応
-    private boolean getSyskanri1005() {
+    private boolean getSyskanri1005() throws DaoException {
         
         boolean success = true;
         final String kanricd = "1005";
@@ -242,7 +245,7 @@ public class SyskanriInfo extends SqlDaoBean {
     }
     
     // ORCAの職員情報を取得する
-    private boolean getSyskanri1010() {
+    private boolean getSyskanri1010() throws DaoException {
         
         boolean success = true;
         final String kanricd = "1010";
@@ -281,7 +284,7 @@ public class SyskanriInfo extends SqlDaoBean {
     }
     
     // 管理テーブル情報を取得する
-    private List<KanriTblModel> getKanriTblModel(String kanricd) {
+    private List<KanriTblModel> getKanriTblModel(String kanricd) throws DaoException {
         
         final String sql = "select kbncd, kanritbl from tbl_syskanri where kanricd = ?";
         List<KanriTblModel> ret = new ArrayList<>();

@@ -340,13 +340,13 @@ public abstract class AbstractStampEditor implements StampEditorConst {
             return TT_CODE_SEARCH;
         }
 
-        // ３文字以上 2013/11/16 katou 検索開始のトリガを入力３文字目に変更（要望反映）
-        if ((!textIsCode) && test.length() >= 3) {
+        // ２文字以上
+        if (!textIsCode && test.length() > 1) {
             return TT_LETTER_SEARCH;
         }
 
-        // １文字でreturn確定 2013/11/16 katou 検索開始のトリガを入力３文字目に変更（要望反映）
-        if ((!textIsCode) && hitReturn) {
+        // １文字でreturn確定
+        if (!textIsCode && hitReturn) {
             return TT_LETTER_SEARCH;
         }
 
@@ -984,9 +984,6 @@ public abstract class AbstractStampEditor implements StampEditorConst {
                         break;
                 }
 
-                if (!dao.isNoError()) {
-                    throw new Exception(dao.getErrorMessage());
-                }
                 return result;
             }
 
@@ -1020,9 +1017,7 @@ public abstract class AbstractStampEditor implements StampEditorConst {
                     // 検索後は最初の行を表示させる
                     showFirstResult(view.getSearchResultTable());
 
-                } catch (InterruptedException ex) {
-
-                } catch (ExecutionException ex) {
+                } catch (InterruptedException | ExecutionException ex) {
                     alertSearchError(ex.getMessage());
                 }
             }
@@ -1131,9 +1126,7 @@ public abstract class AbstractStampEditor implements StampEditorConst {
                     srycdList.add(mi.getCode());
                 }
                 List<TensuMaster> result = dao2.getTensuMasterList(srycdList);
-                if (!dao2.isNoError()){
-                    throw new Exception();
-                }
+
                 return result;
             }
             @Override

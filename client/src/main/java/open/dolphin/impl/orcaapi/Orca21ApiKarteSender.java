@@ -9,6 +9,7 @@ import open.dolphin.client.KarteSenderResult;
 import open.dolphin.dao.SqlMiscDao;
 import open.dolphin.project.Project;
 import open.dolphin.common.util.ZenkakuUtils;
+import open.dolphin.dao.DaoException;
 import open.dolphin.impl.orcaapi.model.MedicalModModel;
 import open.dolphin.infomodel.AdmissionModel;
 import open.dolphin.infomodel.ClaimBundle;
@@ -108,7 +109,13 @@ public class Orca21ApiKarteSender implements IKarteSender {
         // 入院カルテの場合はadmitFlagを立てる
         AdmissionModel admission = sendModel.getDocInfoModel().getAdmissionModel();
         boolean admissionFlg = (admission != null);
-        List<ClaimBundle> cbList = getClaimBundleList(sendModel.getModules(), admissionFlg);
+        List<ClaimBundle> cbList;
+        try {
+            cbList = getClaimBundleList(sendModel.getModules(), admissionFlg);
+        } catch (DaoException ex) {
+            fireResult(new KarteSenderResult(ORCA_API, KarteSenderResult.ERROR, "ORCA接続", this));
+            return;
+        }
         
         MedicalModModel modModel = new MedicalModModel();
         modModel.setContext(context);
@@ -124,7 +131,7 @@ public class Orca21ApiKarteSender implements IKarteSender {
         fireResult(result);
     }
 
-    private List<ClaimBundle> getClaimBundleList(List<ModuleModel> modules_src, boolean admission){
+    private List<ClaimBundle> getClaimBundleList(List<ModuleModel> modules_src, boolean admission) throws DaoException{
         
         // 保存する KarteModel の全モジュールをチェックしClaimBundleならヘルパーに登録
         // Orcaで受信できないような大きなClaimBundleを分割する
@@ -226,7 +233,7 @@ public class Orca21ApiKarteSender implements IKarteSender {
     }
 
     // 包括対象検査区分分ごとに分類する
-    private List<ClaimBundle> divideBundleByHokatsuKbn(ClaimBundle cb) {
+    private List<ClaimBundle> divideBundleByHokatsuKbn(ClaimBundle cb) throws DaoException {
 
         // srycdを列挙する
         List<String> srycds = new ArrayList<>();

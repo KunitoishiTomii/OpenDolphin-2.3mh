@@ -23,19 +23,31 @@ public final class SchemaHolder extends AbstractComponentHolder {
     private SchemaModel schema;
 
     public SchemaHolder(KartePane kartePane, SchemaModel schema) {
+        this(kartePane, schema, false);
+    }
+    
+    public SchemaHolder(KartePane kartePane, SchemaModel schema, boolean lazy) {
         super(kartePane);
         function = SchemaHolderFunction.getInstance();
         function.setDeleteAction(SchemaHolder.this);
         this.schema = schema;
-        setImageIcon(schema.getIcon());
+        if (!lazy) {
+            setImageIcon(schema.getIcon());
+        }
+    }
+    
+    public void setMyIcon() {
+        Dimension d = new Dimension(ICON_SIZE, ICON_SIZE);
+        ImageIcon adjusted = function.getAdjustedImage(schema.getIcon(), d);
+        setIcon(adjusted);
     }
     
     private void setImageIcon(final ImageIcon icon) {
         Dimension d = new Dimension(ICON_SIZE, ICON_SIZE);
         final ImageIcon adjusted = function.getAdjustedImage(icon, d);
-        
+
         // こっちもinvokeLaterにしてみる
-        SwingUtilities.invokeLater(new Runnable(){
+        SwingUtilities.invokeLater(new Runnable() {
 
             @Override
             public void run() {

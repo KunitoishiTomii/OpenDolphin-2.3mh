@@ -40,7 +40,7 @@ public final class SqlMiscDao extends SqlDaoBean {
     }
 
     // 検査等実施判断グループ区分を調べる
-    public Map<String, Integer> getHokatsuKbnMap(List<String> srycds) {
+    public Map<String, Integer> getHokatsuKbnMap(List<String> srycds) throws DaoException {
 
         List<String> srycdsToGet = new ArrayList<>();
         for (String srycd : srycds) {
@@ -73,7 +73,7 @@ public final class SqlMiscDao extends SqlDaoBean {
     }
 
     // 入院中の患者を検索し入院モデルを作成する
-    public List<AdmissionModel> getInHospitalPatients(Date date) {
+    public List<AdmissionModel> getInHospitalPatients(Date date) throws DaoException {
 
         final String sql = "select TP.ptnum, TN.brmnum, TN.nyuinka, TN.nyuinymd , TN.drcd1 "
                 + "from tbl_ptnyuinrrk TN inner join tbl_ptnum TP on TP.ptid = TN.ptid "
@@ -142,7 +142,8 @@ public final class SqlMiscDao extends SqlDaoBean {
         return SyskanriInfo.getInstance().getOrcaDeptDesc(code.trim());
     }
 
-    public List<DrugInteractionModel> checkInteraction(Collection<String> src1, Collection<String> src2) {
+    public List<DrugInteractionModel> checkInteraction(Collection<String> src1, 
+            Collection<String> src2) throws DaoException {
         // 引数はdrugcdの配列ｘ２
 
         if (src1 == null || src1.isEmpty() || src2 == null || src2.isEmpty()) {
@@ -270,7 +271,7 @@ public final class SqlMiscDao extends SqlDaoBean {
         return ret;
     }
 
-    private List<ZoroBrandPair> getZoroBrandPair(Collection codes) {
+    private List<ZoroBrandPair> getZoroBrandPair(Collection codes) throws DaoException {
 
         List<ZoroBrandPair> ret = new ArrayList<>();
 
@@ -325,7 +326,7 @@ public final class SqlMiscDao extends SqlDaoBean {
     }
 
     // srycdからgairaiKanriKbnの有無をチェックする。算定チェックに利用
-    public boolean hasGairaiKanriKbn(Collection<String> srycdList) {
+    public boolean hasGairaiKanriKbn(Collection<String> srycdList) throws DaoException {
 
         if (srycdList == null || srycdList.isEmpty()) {
             return false;
@@ -348,7 +349,7 @@ public final class SqlMiscDao extends SqlDaoBean {
     }
 
     // srycdから腫瘍マーカー検査の有無をチェックする。算定チェックに利用
-    public boolean hasTumorMarkers(Collection<String> srycdList) {
+    public boolean hasTumorMarkers(Collection<String> srycdList) throws DaoException {
 
         if (srycdList == null || srycdList.isEmpty()) {
             return false;
@@ -420,7 +421,7 @@ public final class SqlMiscDao extends SqlDaoBean {
      }
      */
     // srycdからTensuMasterをまとめて取得。LaboTestPanel, BaseEditor, RpEditor, ImportOrcaMedicine, CheckSanteiで利用
-    public List<TensuMaster> getTensuMasterList(Collection<String> srycdList) {
+    public List<TensuMaster> getTensuMasterList(Collection<String> srycdList) throws DaoException {
 
         if (srycdList == null || srycdList.isEmpty()) {
             return Collections.emptyList();
@@ -471,7 +472,7 @@ public final class SqlMiscDao extends SqlDaoBean {
     }
 
     // 傷病名コードからまとめてDiseaseEntryを取得
-    public List<DiseaseEntry> getDiseaseEntries(Collection<String> srycdList) {
+    public List<DiseaseEntry> getDiseaseEntries(Collection<String> srycdList) throws DaoException {
 
         if (srycdList == null || srycdList.isEmpty()) {
             return Collections.emptyList();
@@ -503,7 +504,7 @@ public final class SqlMiscDao extends SqlDaoBean {
     }
 
     // 患者の処方をORCAから取り出してMasterItemのリストとして返す
-    public List<MasterItem> getMedMasterItemFromOrca(String patientId, String visitYMD) {
+    public List<MasterItem> getMedMasterItemFromOrca(String patientId, String visitYMD) throws DaoException {
         
         final String ADMIN_MARK = "[用法] ";
 
@@ -649,7 +650,7 @@ public final class SqlMiscDao extends SqlDaoBean {
         return list;
     }
     
-    private void processComment(long ptid, MasterItem mi) {
+    private void processComment(long ptid, MasterItem mi) throws DaoException {
 
         int zainum = mi.getZainum();
         int inputnum = mi.getInputnum();    // inputnum = rennum
@@ -696,7 +697,8 @@ public final class SqlMiscDao extends SqlDaoBean {
     }
 
     // 期間内の受診日を取得する。返り値は"YYYYMMDD"形式の文字列リスト
-    public List<String> getOrcaVisit(String patientId, String startDate, String endDate, boolean desc, String search) {
+    public List<String> getOrcaVisit(String patientId, String startDate, String endDate, 
+            boolean desc, String search) throws DaoException {
 
         List<String> orcaVisit = new ArrayList<>();
         long ptid = getOrcaPtID(patientId);
@@ -733,7 +735,7 @@ public final class SqlMiscDao extends SqlDaoBean {
         return orcaVisit;
     }
 
-    public long getTableRowCount(String tableName) {
+    public long getTableRowCount(String tableName) throws DaoException {
 
         long count = 0;
 
@@ -748,7 +750,7 @@ public final class SqlMiscDao extends SqlDaoBean {
         return count;
     }
 
-    public List<String[]> getRecedenCsv(String ym, String nyugaikbn, int teisyutusaki) {
+    public List<String[]> getRecedenCsv(String ym, String nyugaikbn, int teisyutusaki) throws DaoException {
 
         final String sql = "select recedata, totalten from tbl_receden"
                 + " where sryym = ? and nyugaikbn = ? and teisyutusaki = ? and hospnum = ?"
@@ -766,7 +768,7 @@ public final class SqlMiscDao extends SqlDaoBean {
         return valuesList;
     }
 
-    public IndicationModel getTekiouByomei(String srycd) {
+    public IndicationModel getTekiouByomei(String srycd) throws DaoException {
 
         final String sql1 = "select byomei from tbl_tekioubyomei"
                 + " where srycd = ? order by rennum";

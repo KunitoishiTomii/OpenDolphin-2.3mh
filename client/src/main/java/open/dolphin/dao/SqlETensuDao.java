@@ -1,6 +1,5 @@
 package open.dolphin.dao;
 
-import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.*;
@@ -74,7 +73,7 @@ public class SqlETensuDao extends SqlDaoBean {
     private SqlETensuDao() {
     }
     
-    public List<ETensuModel1> getETensu1List(long offset, int limit) {
+    public List<ETensuModel1> getETensu1List(long offset, int limit) throws DaoException {
         
         // 結果を格納するリスト
         List<ETensuModel1> ret = new ArrayList<>();
@@ -93,7 +92,7 @@ public class SqlETensuDao extends SqlDaoBean {
         return ret;
     }
     
-    public List<ETensuModel1> getETensuModel1(Date date, Collection<String> srycds) {
+    public List<ETensuModel1> getETensuModel1(Date date, Collection<String> srycds) throws DaoException {
         
         if (srycds == null || srycds.isEmpty()) {
             return Collections.emptyList();
@@ -120,7 +119,8 @@ public class SqlETensuDao extends SqlDaoBean {
         return list;
     }
     
-    public List<ETensuModel2> getETensuModel2(Date date, Collection<String> h_groups, Collection<String> srycds) {
+    public List<ETensuModel2> getETensuModel2(Date date, Collection<String> h_groups, 
+            Collection<String> srycds) throws DaoException {
         
         if (h_groups == null || h_groups.isEmpty() || srycds == null || srycds.isEmpty()) {
             return Collections.emptyList();
@@ -148,7 +148,8 @@ public class SqlETensuDao extends SqlDaoBean {
         return list;
     }
     
-    public List<ETensuModel3> getETensuModel3(int tableNumber, Date date, Collection<String> srycds1, Collection<String> srycds2) {
+    public List<ETensuModel3> getETensuModel3(int tableNumber, Date date, 
+            Collection<String> srycds1, Collection<String> srycds2) throws DaoException {
         
         if (srycds1 == null || srycds1.isEmpty() || srycds2 == null || srycds2.isEmpty()) {
             return Collections.emptyList();
@@ -191,7 +192,7 @@ public class SqlETensuDao extends SqlDaoBean {
         return list;
     }
     
-    public List<ETensuModel5> getETensuModel5(Date date, Collection<String> srycds) {
+    public List<ETensuModel5> getETensuModel5(Date date, Collection<String> srycds) throws DaoException {
         
         if (srycds == null || srycds.isEmpty()) {
             return Collections.emptyList();
@@ -319,16 +320,13 @@ public class SqlETensuDao extends SqlDaoBean {
         return model;
     }
 
-    public long getETensu1RowCount() {
+    public long getETensu1RowCount() throws DaoException {
         String condition = "et" + WHERE_ETENSU_RELATED;
         return getTableRowCount(TBL_ETENSU_1, condition);
     }
             
-    private long getTableRowCount(String tableName, String condition) {
+    private long getTableRowCount(String tableName, String condition) throws DaoException {
 
-        Connection con = null;
-        Statement st = null;
-        
         long count = 0;
 
         String sql = "select count(*) from " + tableName + " " + condition;

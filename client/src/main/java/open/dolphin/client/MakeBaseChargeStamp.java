@@ -12,6 +12,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import javax.swing.*;
+import open.dolphin.dao.DaoException;
 import open.dolphin.dao.SqlMiscDao;
 import open.dolphin.helper.ComponentMemory;
 import open.dolphin.infomodel.BundleDolphin;
@@ -96,14 +97,20 @@ public class MakeBaseChargeStamp extends CheckSantei {
     
     // EditorFrameのwizardボタンを押したときはここから入る
     public final void enter(KarteEditor editor) {
-        start(editor, null);
+        try {
+            start(editor, null);
+        } catch (DaoException ex) {
+        }
     }
 
     // KartePaneのStampHolderをクリックしたときはここから入る
     public final void enter2(StampHolder sh){
-        Chart chart = sh.getKartePane().getParent().getContext();
-        KarteEditor editor = chart.getKarteEditor();
-        start(editor, sh);
+        try {
+            Chart chart = sh.getKartePane().getParent().getContext();
+            KarteEditor editor = chart.getKarteEditor();
+            start(editor, sh);
+        } catch (DaoException ex) {
+        }
     }
 
     public void exit() {
@@ -121,7 +128,7 @@ public class MakeBaseChargeStamp extends CheckSantei {
         return isModified;
     }
 
-    private synchronized boolean prepareClaimItemMap(){
+    private synchronized boolean prepareClaimItemMap() throws DaoException{
 
         if (claimItemMap != null){
             return true;
@@ -207,9 +214,7 @@ public class MakeBaseChargeStamp extends CheckSantei {
         // ORCAにマスターを問い合わせるようにした
         final SqlMiscDao dao = SqlMiscDao.getInstance();
         List<TensuMaster> list = dao.getTensuMasterList(srycdList);
-        if (!dao.isNoError()) {
-            return false;
-        }
+
         claimItemMap = new HashMap<>();
         for (TensuMaster tm : list){
             claimItemMap.put(Integer.valueOf(tm.getSrycd()), tensuMasterToClaimItem(tm));
@@ -217,7 +222,7 @@ public class MakeBaseChargeStamp extends CheckSantei {
         return true;
     }
 
-    private void start(KarteEditor editor, StampHolder sh) {
+    private void start(KarteEditor editor, StampHolder sh) throws DaoException {
         
         docInfo = editor.getModel().getDocInfoModel();
 
@@ -226,14 +231,7 @@ public class MakeBaseChargeStamp extends CheckSantei {
         
         KartePane kp = editor.getPPane();
 
-        boolean failed = prepareClaimItemMap();
-        if (!failed) {
-            String title = ClientContext.getFrameTitle("基本料");
-            JFrame frame = (context != null) ? context.getFrame() : null;
-            JOptionPane.showMessageDialog(frame, "ORCAとの接続を確認してください。",
-                    title, JOptionPane.ERROR_MESSAGE);
-            return;
-        }
+        prepareClaimItemMap();
 
         // KartePaneからModuleModelを取得する
         KarteStyledDocument doc = (KarteStyledDocument) kp.getTextPane().getDocument();

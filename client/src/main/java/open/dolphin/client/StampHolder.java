@@ -27,11 +27,19 @@ public final class StampHolder extends AbstractComponentHolder {
     private ModuleModel stamp;
 
     public StampHolder(KartePane kartePane, ModuleModel stamp) {
+        this(kartePane, stamp, false);
+    }
+    
+    public StampHolder(KartePane kartePane, ModuleModel stamp, boolean lazy) {
         super(kartePane);
         getFunction().setDeleteAction(StampHolder.this);
         setFont(getHints().getFont());
         setForeground(FOREGROUND);
-        setStamp(stamp);
+        if (lazy) {
+            this.stamp = stamp;
+        } else {
+            setStamp(stamp);
+        }
     }
 
     private StampHolderFunction getFunction() {

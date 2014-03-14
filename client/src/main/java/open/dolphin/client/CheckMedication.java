@@ -6,6 +6,7 @@ import javax.swing.JOptionPane;
 import open.dolphin.dao.SqlMiscDao;
 import open.dolphin.delegater.MasudaDelegater;
 import open.dolphin.common.util.ZenkakuUtils;
+import open.dolphin.dao.DaoException;
 import open.dolphin.infomodel.BundleDolphin;
 import open.dolphin.infomodel.BundleMed;
 import open.dolphin.infomodel.ClaimConst;
@@ -36,7 +37,7 @@ public class CheckMedication {
     private static final int DAY_LIMIT = 14;
 
     
-    public boolean checkStart(Chart context, List<ModuleModel> stamps) {
+    public boolean checkStart(Chart context, List<ModuleModel> stamps) throws DaoException {
         
         moduleList = stamps;
         makeDrugList();
@@ -221,7 +222,7 @@ public class CheckMedication {
         return formatMsg(sb.toString());
     }
 
-    private String checkInteraction() {
+    private String checkInteraction() throws DaoException {
 
         // おのおのをsql投げるのではなくてまとめてsql投げるようにした。
         // パフォーマンス良くなるはず。
@@ -236,9 +237,7 @@ public class CheckMedication {
 
         final SqlMiscDao dao = SqlMiscDao.getInstance();
         List<DrugInteractionModel> list = dao.checkInteraction(codes, codes);
-        if (!dao.isNoError()) {
-            return null;
-        }
+
         if (list != null && !list.isEmpty()){
             for (DrugInteractionModel model : list){
                 sb.append("＜併用禁忌＞\n");
