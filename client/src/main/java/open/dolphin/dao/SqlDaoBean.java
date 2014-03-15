@@ -168,11 +168,63 @@ public class SqlDaoBean extends DaoBean {
 
     protected List<String[]> executePreparedStatement(String sql, Object[] params) throws DaoException {
 
-        String sql2 = createSql(sql, params);
         if (isClient()) {
-            return executeStatement1(sql2);
+            return executePreparedStatement1(sql, params);
+        } else {
+            return executePreparedStatement2(sql, params);
         }
-        return executeStatement2(sql2);
+    }
+    
+    private List<String[]> executePreparedStatement1(String sql, Object[] params) throws DaoException {
+        
+        List<String[]> valuesList = new ArrayList<>();
+
+        try (Connection con = getConnection();
+                PreparedStatement ps = con.prepareStatement(sql)) {
+
+            for (int i = 0; i < params.length; ++i) {
+                ps.setObject(i + 1, params[i]);
+            }
+
+            try (ResultSet rs = ps.executeQuery()) {
+                int columnCount = rs.getMetaData().getColumnCount();
+                while (rs.next()) {
+                    final String[] values = new String[columnCount];
+                    for (int i = 0; i < columnCount; ++i) {
+                        values[i] = String.valueOf(rs.getObject(i + 1));
+                    }
+                    valuesList.add(values);
+                }
+            }
+        } catch (Exception ex) {
+            processError(ex);
+        }
+        
+        return valuesList;
+    }
+    
+    private List<String[]> executePreparedStatement2(String sql, Object[] params) throws DaoException {
+
+        OrcaSqlModel sqlModel = new OrcaSqlModel();
+        sqlModel.setUrl(getURL());
+        sqlModel.setSql(sql);
+        sqlModel.setParams(params);
+        
+        try {
+            OrcaSqlModel result = OrcaDelegater.getInstance().executeQuery(sqlModel);
+            if (result != null) {
+                String errMsg = result.getErrorMessage();
+                if (errMsg != null) {
+                    processError(new SQLException(result.getErrorMessage()));
+                } else {
+                    return result.getValuesList();
+                }
+            }
+        } catch (Exception ex) {
+            processError(ex);
+        }
+        
+        return Collections.emptyList();
     }
     
     private String createSql(String sql, Object[] params) throws DaoException {
