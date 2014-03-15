@@ -109,8 +109,9 @@ public class OrcaService {
                 PreparedStatement ps = con.prepareStatement(sqlModel.getSql())) {
 
             Object[] params = sqlModel.getParams();
+            int[] paramTypes = sqlModel.getParamTypes();
             for (int i = 0; i < params.length; ++i) {
-                ps.setObject(i + 1, params[i]);
+                ps.setObject(i + 1, params[i], paramTypes[i]);
             }
 
             try (ResultSet rs = ps.executeQuery()) {
