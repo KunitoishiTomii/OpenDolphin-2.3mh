@@ -11,6 +11,7 @@ public class OrcaSqlModel implements Serializable {
     
     private String url;
     private String sql;
+    private Object[] params;
     private List<String[]> valuesList;
     private String errorMsg;
     
@@ -23,6 +24,14 @@ public class OrcaSqlModel implements Serializable {
     public void setSql(String sql) {
         this.sql = sql;
     }
+    
+    public void setParams(Object[] params) {
+        this.params = params;
+    }
+    public Object[] getParams() {
+        return params;
+    }
+    
     public void setValuesList(List<String[]> list) {
         valuesList = list;
     }
