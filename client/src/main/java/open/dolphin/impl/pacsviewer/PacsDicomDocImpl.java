@@ -48,13 +48,17 @@ public class PacsDicomDocImpl extends AbstractChartDocument implements PropertyC
     private static final String TITLE = "PACS";
     private static final ImageIcon ICON_WEASIS_S = ClientContext.getImageIcon("weasis_s.png");
     private static final ImageIcon ICON_WEASIS_P = ClientContext.getImageIcon("weasis_p.png");
-
+    private static final ImageIcon ICON_OSIRIX_S = ClientContext.getImageIcon("OsiriXLogo_s.png");
+    private static final ImageIcon ICON_OSIRIX_P = ClientContext.getImageIcon("OsiriXLogo_p.png");
+    
     private JPanel panel;
     private JButton retrieveBtn;
     private JButton viewBtn;
     private JButton searchBtn;
     private JButton weasisStudyBtn;
     private JButton weasisPatientBtn;
+    private JButton osirixStudyBtn;
+    private JButton osirixPatientBtn;
     private JTable listTable;
     private JLabel statusLabel;
 
@@ -84,6 +88,7 @@ public class PacsDicomDocImpl extends AbstractChartDocument implements PropertyC
     private ExecutorService executor;
     
     private String weasisAddr;
+    private String osirixAddr;
     
 
     public PacsDicomDocImpl() {
@@ -100,6 +105,12 @@ public class PacsDicomDocImpl extends AbstractChartDocument implements PropertyC
             }
             sb.append("weasis-pacs-connector/viewer.jnlp?");
             weasisAddr = sb.toString();
+        }
+        
+        // Osirixの設定
+        addr = Project.getString(MiscSettingPanel.PACS_OSIRIX_ADDRESS, MiscSettingPanel.DEFAULT_PACS_OSIRIX_ADDRESS);
+        if (addr != null && !addr.isEmpty()) {
+            osirixAddr = addr;
         }
     }
 
@@ -176,6 +187,13 @@ public class PacsDicomDocImpl extends AbstractChartDocument implements PropertyC
         weasisPatientBtn = new JButton();
         weasisPatientBtn.setIcon(ICON_WEASIS_P);
         weasisPatientBtn.setToolTipText("この患者をWEASISで開きます");
+        osirixStudyBtn = new JButton();
+        osirixStudyBtn.setIcon(ICON_OSIRIX_S);
+        osirixStudyBtn.setToolTipText("選択中のstudyをOsirixで開きます");
+        osirixPatientBtn = new JButton();
+        osirixPatientBtn.setIcon(ICON_OSIRIX_P);
+        osirixPatientBtn.setToolTipText("この患者をOsirixで開きます");
+        
         
         JPanel panel2 = new JPanel();
         panel2.setLayout(new BoxLayout(panel2, BoxLayout.Y_AXIS));
@@ -185,6 +203,8 @@ public class PacsDicomDocImpl extends AbstractChartDocument implements PropertyC
         panel2.add(Box.createVerticalStrut(10));
         panel2.add(weasisStudyBtn);
         panel2.add(weasisPatientBtn);
+        panel2.add(osirixStudyBtn);
+        panel2.add(osirixPatientBtn);
         panel1.add(panel2, BorderLayout.EAST);
         panel1.setPreferredSize(new Dimension(0, 300));
         panel.add(panel1);
@@ -247,9 +267,28 @@ public class PacsDicomDocImpl extends AbstractChartDocument implements PropertyC
                 openWeasisByPatientId();
             }
         });
+        // Osirixボタン
+        osirixStudyBtn.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                openOsirixByStudyUID();
+            }
+        });
+        osirixPatientBtn.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                openOsirixByPatientId();
+            }
+        });
         if (weasisAddr == null) {
             weasisStudyBtn.setEnabled(false);
             weasisPatientBtn.setEnabled(false);
+        }
+        if (osirixAddr == null) {
+            osirixStudyBtn.setEnabled(false);
+            osirixPatientBtn.setEnabled(false);
         }
         
         //列の入れ替えを禁止
@@ -446,6 +485,27 @@ public class PacsDicomDocImpl extends AbstractChartDocument implements PropertyC
                     //ex.printStackTrace(System.err);
                 }
             }
+        }
+    }
+    
+    // Osirixで開く
+    private void openOsirixByStudyUID() {
+
+        if (currentDicomObject == null) {
+            return;
+        }
+        try {
+            String studyUID = currentDicomObject.getString(Tag.StudyInstanceUID);
+            OsirixXmlRpcClient.getInstance().openByStudyUID(studyUID);
+        } catch (Exception ex) {
+        }
+    }
+
+    private void openOsirixByPatientId() {
+        try {
+            String patientId = getContext().getPatient().getPatientId();
+            OsirixXmlRpcClient.getInstance().openByPatientId(patientId);
+        } catch (Exception ex) {
         }
     }
 
