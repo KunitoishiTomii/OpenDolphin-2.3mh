@@ -6,40 +6,40 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import static open.dolphin.impl.orcaapi.IOrcaApi.UTF8;
 import open.dolphin.project.Project;
 import open.dolphin.setting.MiscSettingPanel;
 import org.glassfish.jersey.client.JerseyClientBuilder;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 
 /**
- *
+ * OsiriXをXML-RPCで開く
+ * 
  * @author masuda, Masuda Naika
  */
 public class OsirixXmlRpcClient {
-    
+
     private static final boolean DEBUG = false;
-    
+
     public static final MediaType MEDIATYPE_XML_UTF8
-            = MediaType.APPLICATION_JSON_TYPE.withCharset(UTF8);
-    
+            = MediaType.APPLICATION_JSON_TYPE.withCharset("UTF-8");
+
     private static final OsirixXmlRpcClient instance;
-    
+
     static {
         instance = new OsirixXmlRpcClient();
     }
-    
+
     private Client client;
     private WebTarget webTarget;
 
     private OsirixXmlRpcClient() {
         setupClient();
     }
-    
+
     public static OsirixXmlRpcClient getInstance() {
         return instance;
     }
-    
+
     public final void setupClient() {
 
         boolean useJersey = Project.getBoolean(MiscSettingPanel.USE_JERSEY, MiscSettingPanel.DEFAULT_USE_JERSEY);
@@ -50,7 +50,7 @@ public class OsirixXmlRpcClient {
         }
         setupWebTarget();
     }
-    
+
     public final void setupWebTarget() {
         URI uri = URI.create(Project.getString(MiscSettingPanel.PACS_OSIRIX_ADDRESS));
         webTarget = client.target(uri);
@@ -59,7 +59,7 @@ public class OsirixXmlRpcClient {
     public void openByPatientId(String patientId) throws Exception {
 
         final String xml = createRpcXml("DisplayStudy", "patientID", patientId);
-        
+
         final Entity entity = toXmlEntity(xml);
 
         Response response = webTarget
@@ -68,16 +68,16 @@ public class OsirixXmlRpcClient {
 
         int status = checkHttpStatus(response);
         String resXml = response.readEntity(String.class);
-        
+
         debug(status, resXml);
 
         response.close();
     }
-    
+
     public void openByStudyUID(String studyUID) throws Exception {
-        
+
         final String xml = createRpcXml("DisplayStudy", "studyInstanceUID", studyUID);
-        
+
         final Entity entity = toXmlEntity(xml);
 
         Response response = webTarget
@@ -86,9 +86,9 @@ public class OsirixXmlRpcClient {
 
         int status = checkHttpStatus(response);
         String resXml = response.readEntity(String.class);
-        
+
         debug(status, resXml);
-        
+
         response.close();
     }
 
@@ -105,9 +105,9 @@ public class OsirixXmlRpcClient {
     private Entity toXmlEntity(String xml) {
         return Entity.entity(xml, MEDIATYPE_XML_UTF8);
     }
-    
+
     private String createRpcXml(String methodName, String paramName, String value) {
-        
+
         StringBuilder sb = new StringBuilder();
         sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
         sb.append("<methodCall><methodName>").append(methodName).append("</methodName>");
@@ -122,13 +122,12 @@ public class OsirixXmlRpcClient {
         sb.append("</param>");
         sb.append("</params>");
         sb.append("</methodCall>");
-        
+
         return sb.toString();
-                
     }
-    
+
     private void debug(int status, String entity) {
-        
+
         if (DEBUG) {
             StringBuilder sb = new StringBuilder();
             sb.append("HTTP status = ").append(status);
