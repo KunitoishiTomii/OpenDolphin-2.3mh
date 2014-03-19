@@ -34,7 +34,7 @@ public class OrcaApiClient implements IOrcaApi {
         return instance;
     }
     
-    final public void setup() {
+    public final void setup() {
 
         StringBuilder sb = new StringBuilder();
         sb.append("http://");

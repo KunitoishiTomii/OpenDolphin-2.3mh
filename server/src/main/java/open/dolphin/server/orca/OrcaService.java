@@ -1,6 +1,7 @@
 package open.dolphin.server.orca;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -63,8 +64,14 @@ public class OrcaService {
     }
     
     public OrcaSqlModel executeSql(OrcaSqlModel sqlModel) {
-
-        executeStatement(sqlModel);
+        
+        Object[] params = sqlModel.getParams();
+        
+        if (params != null) {
+            executePreparedStatement(sqlModel);
+        } else {
+            executeStatement(sqlModel);
+        }
 
         return sqlModel;
     }
@@ -93,7 +100,36 @@ public class OrcaService {
 
         sqlModel.setValuesList(valuesList);
     }
+    
+    private void executePreparedStatement(OrcaSqlModel sqlModel) {
+        
+        List<String[]> valuesList = new ArrayList<>();
 
+        try (Connection con = getConnection(sqlModel.getUrl());
+                PreparedStatement ps = con.prepareStatement(sqlModel.getSql())) {
+
+            Object[] params = sqlModel.getParams();
+            for (int i = 0; i < params.length; ++i) {
+                ps.setObject(i + 1, params[i]);
+            }
+
+            try (ResultSet rs = ps.executeQuery()) {
+                int columnCount = rs.getMetaData().getColumnCount();
+                while (rs.next()) {
+                    final String[] values = new String[columnCount];
+                    for (int i = 0; i < columnCount; ++i) {
+                        values[i] = String.valueOf(rs.getObject(i + 1));
+                    }
+                    valuesList.add(values);
+                }
+            }
+        } catch (Exception ex) {
+            sqlModel.setErrorMessage(ex.getMessage());
+        }
+        
+        sqlModel.setValuesList(valuesList);
+    }
+    
     private Connection getConnection(String url) 
             throws ClassNotFoundException, SQLException, NullPointerException {
         DataSource ds = getDataSource(url, user, passwd);

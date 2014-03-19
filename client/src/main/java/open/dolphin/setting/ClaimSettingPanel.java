@@ -166,8 +166,8 @@ public class ClaimSettingPanel extends AbstractSettingPanel {
         gbl = new GridBagBuilder("ORCA通信情報");
         label = new JLabel("レセコンとの接続:");
         ButtonGroup bg3 = new ButtonGroup();
-        claimConnectionIsClient = GUIFactory.createRadioButton("クライアント", null, bg3);
-        claimConnectionIsServer = GUIFactory.createRadioButton("サーバー経由", null, bg3);
+        claimConnectionIsClient = GUIFactory.createRadioButton("院内から", null, bg3);
+        claimConnectionIsServer = GUIFactory.createRadioButton("院外から", null, bg3);
         JPanel conPanel = GUIFactory.createRadioPanel(new JRadioButton[] {claimConnectionIsClient, claimConnectionIsServer});
         gbl.add(label, 0, row, GridBagConstraints.EAST);
         gbl.add(conPanel, 1, row, GridBagConstraints.CENTER);

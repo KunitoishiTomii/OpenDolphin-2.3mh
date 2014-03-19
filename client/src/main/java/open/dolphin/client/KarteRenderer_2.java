@@ -221,10 +221,8 @@ public class KarteRenderer_2 {
             
             // DocumentをElementSpecListで一括作成する
             doc.createDocument(specList);
-            // ComponentHolderのPositionを設定する。lazyの場合は後回し
-            if (!lazy) {
-                doc.setComponentPositions();
-            }
+            // ComponentHolderのPositionを設定する
+            doc.setComponentPositions();
             // レンダリング後はdefault styleに戻す
             doc.setDefaultStyle();
 

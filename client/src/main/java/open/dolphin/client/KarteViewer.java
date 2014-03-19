@@ -185,14 +185,9 @@ public abstract class KarteViewer extends AbstractChartDocument {
                 if (comp instanceof StampHolder) {
                     StampHolder sh = (StampHolder) comp;
                     sh.setMyText();
-                    // startPosも後回しにしていたのでここで設定する→KarteViewerでは編集しないので不要
-                    //Position startP = doc.createPosition(elem.getStartOffset());
-                    //sh.setStartPosition(startP);
                 } else if (comp instanceof SchemaHolder) {
                     SchemaHolder sh = (SchemaHolder) comp;
                     sh.setMyIcon();
-                    //Position startP = doc.createPosition(elem.getStartOffset());
-                    //sh.setStartPosition(startP);
                 }
             }
         }
