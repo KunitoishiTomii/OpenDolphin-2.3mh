@@ -111,7 +111,7 @@ public class MedicalgetResParser extends AbstractOrcaApiParser {
             if (srycd.startsWith("84") || srycd.startsWith("0084")) {
                 // 84コメントコード
                 reconstruct84Item(mi, tm);
-            } else if (srycd.startsWith("8") || srycd.startsWith("008")) {
+            } else if (srycd.matches(ClaimConst.REGEXP_COMMENT_MED)) {
                 // コメントコード
                 mi.setClassCode(ClaimConst.OTHER);
                 mi.setUnit(tm.getTaniname());

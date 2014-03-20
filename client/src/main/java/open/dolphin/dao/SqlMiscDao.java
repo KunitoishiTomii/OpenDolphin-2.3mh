@@ -620,7 +620,7 @@ public final class SqlMiscDao extends SqlDaoBean {
             TensuMaster tm = tensuMasterMap.get(srycd);
             mi.setDataKbn(tm.getDataKbn());
 
-            if (srycd.startsWith("8") || srycd.startsWith("008")) {
+            if (srycd.matches(ClaimConst.REGEXP_COMMENT_MED)) {
                 // コメントコード
                 mi.setClassCode(ClaimConst.OTHER);
                 mi.setUnit(tm.getTaniname());
