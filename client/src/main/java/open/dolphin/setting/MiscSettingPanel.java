@@ -371,7 +371,7 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         gbl.add(label, 1, row, GridBagConstraints.WEST);
 
         row++;
-        label = new JLabel("基本料スタンプ機能を使用する");
+        label = new JLabel("カルテ保存時内科向け算定チェックする");
         cb_Santei = new JCheckBox();
         gbl.add(cb_Santei, 0, row, GridBagConstraints.EAST);
         gbl.add(label, 1, row, GridBagConstraints.WEST);
