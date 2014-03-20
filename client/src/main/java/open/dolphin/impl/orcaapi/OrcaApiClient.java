@@ -27,15 +27,27 @@ public class OrcaApiClient implements IOrcaApi {
     }
     
     private OrcaApiClient() {
-        setup();
+        setupClient();
     }
     
     public static OrcaApiClient getInstance() {
         return instance;
     }
     
-    public final void setup() {
+    private void setupClient() {
 
+        boolean useJersey = Project.getBoolean(MiscSettingPanel.USE_JERSEY, MiscSettingPanel.DEFAULT_USE_JERSEY);
+        
+        if (useJersey) {
+            client = new JerseyClientBuilder().build();
+        } else {
+            client = new ResteasyClientBuilder().build();
+        }
+        setupWebTarget(useJersey);
+    }
+    
+    private void setupWebTarget(boolean useJersey) {
+        
         StringBuilder sb = new StringBuilder();
         sb.append("http://");
         sb.append(Project.getString(Project.CLAIM_ADDRESS));
@@ -43,20 +55,15 @@ public class OrcaApiClient implements IOrcaApi {
         URI uri = URI.create(sb.toString());
         String username = Project.getString(Project.ORCA_USER_ID);
         String password = Project.getString(Project.ORCA_USER_PASSWORD);
-        
-        boolean useJersey = Project.getBoolean(MiscSettingPanel.USE_JERSEY, MiscSettingPanel.DEFAULT_USE_JERSEY);
-        
+
+        webTarget = client.target(uri);
         if (useJersey) {
-            client = new JerseyClientBuilder().build();
-            webTarget = client.target(uri);
             webTarget.register(HttpAuthenticationFeature.basic(username, password));
         } else {
-            client = new ResteasyClientBuilder().build();
-            webTarget = client.target(uri);
             webTarget.register(new BasicAuthentication(username, password));
         }
     }
-    
+
     public WebTarget getWebTarget() {
         return webTarget;
     }

@@ -1,6 +1,7 @@
 package open.dolphin.impl.pacsviewer;
 
 import java.net.URI;
+import javax.swing.SwingWorker;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
@@ -31,6 +32,7 @@ public class OsirixXmlRpcClient {
 
     private Client client;
     private WebTarget webTarget;
+    private String currentUrl;
 
     private OsirixXmlRpcClient() {
         setupClient();
@@ -40,7 +42,7 @@ public class OsirixXmlRpcClient {
         return instance;
     }
 
-    public final void setupClient() {
+    private void setupClient() {
 
         boolean useJersey = Project.getBoolean(MiscSettingPanel.USE_JERSEY, MiscSettingPanel.DEFAULT_USE_JERSEY);
         if (useJersey) {
@@ -52,44 +54,51 @@ public class OsirixXmlRpcClient {
     }
 
     public final void setupWebTarget() {
-        URI uri = URI.create(Project.getString(MiscSettingPanel.PACS_OSIRIX_ADDRESS));
-        webTarget = client.target(uri);
+        
+        String url = Project.getString(MiscSettingPanel.PACS_OSIRIX_ADDRESS);
+        if (currentUrl == null || !currentUrl.equals(url)) {
+            currentUrl = url;
+            URI uri = URI.create(currentUrl);
+            webTarget = client.target(uri);
+        }
     }
 
-    public void openByPatientId(String patientId) throws Exception {
+    public void openByPatientId(String patientId) {
 
         final String xml = createRpcXml("DisplayStudy", "patientID", patientId);
-
-        final Entity entity = toXmlEntity(xml);
-
-        Response response = webTarget
-                .request(MEDIATYPE_XML_UTF8)
-                .post(entity);
-
-        int status = checkHttpStatus(response);
-        String resXml = response.readEntity(String.class);
-
-        debug(status, resXml);
-
-        response.close();
+        sendRpcXml(xml);
     }
 
-    public void openByStudyUID(String studyUID) throws Exception {
+    public void openByStudyUID(String studyUID) {
 
         final String xml = createRpcXml("DisplayStudy", "studyInstanceUID", studyUID);
+        sendRpcXml(xml);
+    }
+    
+    private void sendRpcXml(final String xml) {
 
-        final Entity entity = toXmlEntity(xml);
+        SwingWorker worker = new SwingWorker<Void, Void>() {
 
-        Response response = webTarget
-                .request(MEDIATYPE_XML_UTF8)
-                .post(entity);
+            @Override
+            protected Void doInBackground() throws Exception {
+                
+                final Entity entity = toXmlEntity(xml);
 
-        int status = checkHttpStatus(response);
-        String resXml = response.readEntity(String.class);
+                Response response = webTarget
+                        .request(MEDIATYPE_XML_UTF8)
+                        .post(entity);
 
-        debug(status, resXml);
+                int status = checkHttpStatus(response);
+                String resXml = response.readEntity(String.class);
 
-        response.close();
+                debug(status, resXml);
+
+                response.close();
+                return null;
+            }
+        };
+        
+        worker.execute();
     }
 
     private int checkHttpStatus(Response response) throws Exception {
