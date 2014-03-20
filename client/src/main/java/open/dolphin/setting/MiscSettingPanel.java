@@ -587,6 +587,9 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         tf_pacsLocalAE = GUIFactory.createTextField(15, null, null, null);
         tf_weasis = GUIFactory.createTextField(15, null, null, null);
         tf_osirix = GUIFactory.createTextField(15, null, null, null);
+        // tooltip
+        tf_weasis.setToolTipText("http://{weasisのIP]:{port}");
+        tf_osirix.setToolTipText("http://{osirixのIP]:{port}");
 
         row = 0;
         label = new JLabel("PACS接続機能を利用する");
