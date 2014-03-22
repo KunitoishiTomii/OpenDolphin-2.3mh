@@ -14,7 +14,7 @@ import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 
 /**
  * OsiriXをXML-RPCで開く
- * 
+ *
  * @author masuda, Masuda Naika
  */
 public class OsirixXmlRpcClient {
@@ -54,7 +54,7 @@ public class OsirixXmlRpcClient {
     }
 
     public final void setupWebTarget() {
-        
+
         String url = Project.getString(MiscSettingPanel.PACS_OSIRIX_ADDRESS);
         if (currentUrl == null || !currentUrl.equals(url)) {
             currentUrl = url;
@@ -65,23 +65,83 @@ public class OsirixXmlRpcClient {
 
     public void openByPatientId(String patientId) {
 
-        final String xml = createRpcXml("DisplayStudy", "patientID", patientId);
-        sendRpcXml(xml);
+        //if (currentUrl != null && currentUrl.startsWith("osirix:")) {
+        //    openByPatientId_OsirixUrl(patientId);
+        //} else {
+            final String xml = createRpcXml("DisplayStudy", "patientID", patientId);
+            sendRpcXml(xml);
+        //}
     }
 
     public void openByStudyUID(String studyUID) {
 
-        final String xml = createRpcXml("DisplayStudy", "studyInstanceUID", studyUID);
-        sendRpcXml(xml);
+        //if (currentUrl != null && currentUrl.startsWith("osirix:")) {
+        //    openByStudyUID_OsirixUrl(studyUID);
+        //} else {
+            final String xml = createRpcXml("DisplayStudy", "studyInstanceUID", studyUID);
+            sendRpcXml(xml);
+        //}
     }
-    
+
+    private void openByPatientId_OsirixUrl(final String patientId) {
+        
+        SwingWorker worker = new SwingWorker<Void, Void>() {
+
+            @Override
+            protected Void doInBackground() throws Exception {
+
+                Response response = webTarget
+                        .queryParam("methodName", "displayStudy")
+                        .queryParam("PatientID", patientId)
+                        .request(MEDIATYPE_XML_UTF8)
+                        .get();
+
+                int status = checkHttpStatus(response);
+                String resXml = response.readEntity(String.class);
+
+                debug(status, resXml);
+
+                response.close();
+                return null;
+            }
+        };
+
+        worker.execute();
+    }
+
+    private void openByStudyUID_OsirixUrl(final String studyUID) {
+
+        SwingWorker worker = new SwingWorker<Void, Void>() {
+
+            @Override
+            protected Void doInBackground() throws Exception {
+
+                Response response = webTarget
+                        .queryParam("methodName", "displayStudy")
+                        .queryParam("PatientID", studyUID)
+                        .request(MEDIATYPE_XML_UTF8)
+                        .get();
+
+                int status = checkHttpStatus(response);
+                String resXml = response.readEntity(String.class);
+
+                debug(status, resXml);
+
+                response.close();
+                return null;
+            }
+        };
+
+        worker.execute();
+    }
+
     private void sendRpcXml(final String xml) {
 
         SwingWorker worker = new SwingWorker<Void, Void>() {
 
             @Override
             protected Void doInBackground() throws Exception {
-                
+
                 final Entity entity = toXmlEntity(xml);
 
                 Response response = webTarget
@@ -97,7 +157,7 @@ public class OsirixXmlRpcClient {
                 return null;
             }
         };
-        
+
         worker.execute();
     }
 
