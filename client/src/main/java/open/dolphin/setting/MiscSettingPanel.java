@@ -67,6 +67,7 @@ public class MiscSettingPanel extends AbstractSettingPanel {
     public static final String PACS_LOCAL_AE = "pacsClientAE";
     public static final String PACS_USE_SUFFIXSEARCH = "pacsUseSuffixSearch";
     public static final String PACS_WEASIS_ADDRESS = "weasisAddress";
+    public static final String PACS_OSIRIX_ADDRESS = "osirixAddress";
     
     //public static final String USE_JMS = "useJms";
     public static final String RP_OUT = "rp.out";
@@ -126,6 +127,7 @@ public class MiscSettingPanel extends AbstractSettingPanel {
     public static final String DEFAULT_PACS_LOCAL_AE = "Dolphin1";
     public static final int DEFAULT_PACS_LOCAL_PORT = 8104;
     public static final String DEFAULT_PACS_WEASIS_ADDRESS = ""; // "http://localhost:8080"
+    public static final String DEFAULT_PACS_OSIRIX_ADDRESS = "";
     public static final boolean DEFAULT_USE_JMS = false;
 
     public static final int DEFAULT_KARTE_SCROLL = 0;
@@ -213,6 +215,7 @@ public class MiscSettingPanel extends AbstractSettingPanel {
     private JLabel lbl_localHost;
     private JLabel lbl_localPort;
     private JLabel lbl_localAE;
+    private JTextField tf_osirix;
     
     private JTextField tf_zebra;
     private JLabel lbl_color;
@@ -368,7 +371,7 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         gbl.add(label, 1, row, GridBagConstraints.WEST);
 
         row++;
-        label = new JLabel("基本料スタンプ機能を使用する");
+        label = new JLabel("カルテ保存時内科向け算定チェックする");
         cb_Santei = new JCheckBox();
         gbl.add(cb_Santei, 0, row, GridBagConstraints.EAST);
         gbl.add(label, 1, row, GridBagConstraints.WEST);
@@ -583,6 +586,10 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         tf_pacsLocalPort = GUIFactory.createTextField(5, null, null, null);
         tf_pacsLocalAE = GUIFactory.createTextField(15, null, null, null);
         tf_weasis = GUIFactory.createTextField(15, null, null, null);
+        tf_osirix = GUIFactory.createTextField(15, null, null, null);
+        // tooltip
+        tf_weasis.setToolTipText("http://{weasisのIP]:{port}");
+        tf_osirix.setToolTipText("http://{osirixのIP]:{port}");
 
         row = 0;
         label = new JLabel("PACS接続機能を利用する");
@@ -640,6 +647,13 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         gbl.add(lbl_weasis, 0, row, GridBagConstraints.EAST);
         gbl.add(tf_weasis, 1, row, GridBagConstraints.WEST);
         JPanel weasis = gbl.getProduct();
+        
+        gbl = new GridBagBuilder("Osirix設定");
+        row = 0;
+        JLabel lbl_osirix = new JLabel("Osirix XML-RPC URL:");
+        gbl.add(lbl_osirix, 0, row, GridBagConstraints.EAST);
+        gbl.add(tf_osirix, 1, row, GridBagConstraints.WEST);
+        JPanel osirix = gbl.getProduct();
     
         // 全体レイアウト
         gbl = new GridBagBuilder();
@@ -647,6 +661,7 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         gbl.add(client, 0, 1, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
         gbl.add(search, 0, 2, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
         gbl.add(weasis, 0, 3, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
+        gbl.add(osirix, 0, 4, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
         JPanel pacsSetting = gbl.getProduct();
 
         // 設定３
@@ -1072,6 +1087,9 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         val = String.valueOf(model.weasisAddress);
         val = val != null ? val : "";
         tf_weasis.setText(val);
+        val = String.valueOf(model.osirixAddress);
+        val = val != null ? val : "";
+        tf_osirix.setText(val);
 
         // 色
         val = String.valueOf(model.zebraColor);
@@ -1177,6 +1195,7 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         model.localAE = tf_pacsLocalAE.getText().trim();
         model.localPort = Integer.valueOf(tf_pacsLocalPort.getText());
         model.weasisAddress = tf_weasis.getText().trim();
+        model.osirixAddress = tf_osirix.getText().trim();
 
         // Chart stateをサーバーと同期
         //model.useJms = cb_useJms.isSelected();
@@ -1247,6 +1266,7 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         private int localPort;
         private String localAE;
         private String weasisAddress;
+        private String osirixAddress;
         
         private String zebraColor;
         
@@ -1313,6 +1333,7 @@ public class MiscSettingPanel extends AbstractSettingPanel {
             localPort = Project.getInt(PACS_LOCAL_PORT, DEFAULT_PACS_LOCAL_PORT);
             localAE = Project.getString(PACS_LOCAL_AE, DEFAULT_PACS_LOCAL_AE);
             weasisAddress = Project.getString(PACS_WEASIS_ADDRESS, DEFAULT_PACS_WEASIS_ADDRESS);
+            osirixAddress = Project.getString(PACS_OSIRIX_ADDRESS, DEFAULT_PACS_OSIRIX_ADDRESS);
 
             // Chart stateをサーバーと同期
             //useJms = Project.getBoolean(RP_OUT, DEFAULT_USE_JMS);
@@ -1382,6 +1403,7 @@ public class MiscSettingPanel extends AbstractSettingPanel {
             Project.setBoolean(USE_PACS ,usePacs);
             Project.setBoolean(PACS_USE_SUFFIXSEARCH, useSuffixSearch);
             Project.setString(PACS_WEASIS_ADDRESS, weasisAddress);
+            Project.setString(PACS_OSIRIX_ADDRESS, osirixAddress);
 
             // Chart stateをサーバーと同期
             //Project.setBoolean(USE_JMS, useJms);
