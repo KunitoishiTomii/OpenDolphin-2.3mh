@@ -641,27 +641,21 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         gbl.add(cb_SuffixSearch, 0, row, GridBagConstraints.EAST);
         JPanel search = gbl.getProduct();
         
-        gbl = new GridBagBuilder("Weasis設定");
-        row = 0;
+        gbl = new GridBagBuilder("Pacs viewer設定");
         JLabel lbl_weasis = new JLabel("Weasisアドレス:");
-        gbl.add(lbl_weasis, 0, row, GridBagConstraints.EAST);
-        gbl.add(tf_weasis, 1, row, GridBagConstraints.WEST);
-        JPanel weasis = gbl.getProduct();
-        
-        gbl = new GridBagBuilder("Osirix設定");
-        row = 0;
+        gbl.add(lbl_weasis, 0, 0, GridBagConstraints.EAST);
+        gbl.add(tf_weasis, 1, 0, GridBagConstraints.WEST);
         JLabel lbl_osirix = new JLabel("Osirix XML-RPC URL:");
-        gbl.add(lbl_osirix, 0, row, GridBagConstraints.EAST);
-        gbl.add(tf_osirix, 1, row, GridBagConstraints.WEST);
-        JPanel osirix = gbl.getProduct();
+        gbl.add(lbl_osirix, 0, 1, GridBagConstraints.EAST);
+        gbl.add(tf_osirix, 1, 1, GridBagConstraints.WEST);
+        JPanel pacsViewer = gbl.getProduct();
     
         // 全体レイアウト
         gbl = new GridBagBuilder();
         gbl.add(server, 0, 0, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
         gbl.add(client, 0, 1, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
         gbl.add(search, 0, 2, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
-        gbl.add(weasis, 0, 3, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
-        gbl.add(osirix, 0, 4, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
+        gbl.add(pacsViewer, 0, 3, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
         JPanel pacsSetting = gbl.getProduct();
 
         // 設定３
