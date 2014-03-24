@@ -104,11 +104,11 @@ public interface ICheckSanteiConst {
     public static final int srycd_TokuiSoukanIn3 =   114019210; // 特医総管（機能強化した在支診等）（病床あり）（処方せんなし）
     public static final int srycd_TokuiSoukanEx4 =   114019310; // 特医総管（機能強化した在支診等）（病床なし）（処方せんあり）
     public static final int srycd_TokuiSoukanIn4 =   114019410; // 特医総管（機能強化した在支診等）（病床なし）（処方せんなし）
-
+    
     // 在宅患者訪問診療料
-    public static final int srycd_HoumonShinsatsu_hidouitsu         = 114001110; // 在宅患者訪問診療料（同一建物居住者以外）
-    public static final int srycd_HoumonShinsatsu_douitsu_hitokutei = 114012910; // 在宅患者訪問診療料（同一建物居住者）（特定施設等以外入居者）
-    public static final int srycd_HoumonShinsatsu_douitsu_tokutei   = 114018010; // 在宅患者訪問診療料（同一建物居住者）（特定施設等入居者）
+    public static final int srycd_HoumonShinsatsu_hidouitsu         = 114001110; // 在宅患者訪問診療料１（同一建物居住者以外）
+    public static final int srycd_HoumonShinsatsu_douitsu_hitokutei = 114012910; // 在宅患者訪問診療料２（同一建物居住者）（特定施設等以外入居者）
+    public static final int srycd_HoumonShinsatsu_douitsu_tokutei   = 114018010; // 在宅患者訪問診療料２（同一建物居住者）（特定施設等入居者）
     
     public static final int srycd_ZaitakuSoukiKasan      = 114016070; // 在宅移行早期加算
     public static final int srycd_JuushoushaKasan        = 114012570; // 重症者加算
@@ -121,6 +121,69 @@ public interface ICheckSanteiConst {
     public static final int srycd_Shinya_Comment        = 840000031;    // 深夜　　　月　　日　　時　　分
     public static final int srycd_JikanDayHrMin_Comment = 840000115;   // 日　　時　　分
 
+    // 2014
+    public static final int srycd_ChiikiHoukatuKasan            = 112017270;   // 地域包括診療加算
+    public static final int srycd_ChiikiHoukatuShinryo          = 113015810;   // 地域包括診療料
+    public static final int srycd_ChiikiHoukatuShinryo_jikangai = 113016270;   // 地域包括診療料（時間外）加算
+    public static final int srycd_ChiikiHoukatuShinryo_kyujitsu = 113016370;   // 地域包括診療料（休日）加算
+    public static final int srycd_ChiikiHoukatShinryo_shinya    = 113016470;   // 地域包括診療料（深夜）加算
+    public static final int srycd_ChiikiHoukatu_nyuyouji_jikangai = 113016570; // 地域包括診療料（乳幼児時間外）加算
+    public static final int srycd_ChiikiHoukatu_nyuyouji_kyujitsu = 113016670; // 地域包括診療料（乳幼児休日）加算
+    public static final int srycd_ChiikiHoukatu_nyuyouji_shinya = 113016770;   // 地域包括診療料（乳幼児深夜）加算
+    public static final int srycd_ChiikiHoukatu_jikangai_tokurei = 113016870;  // 地域包括診療料（時間外特例医療機関）加算
+    public static final int srycd_ChiikiHoukatu_nyuyouji_jikangai_tokurei = 113016970; // 地域包括診療料（乳幼児時間外特例医療機関）加算
+    public static final int srycd_Pediatrics_ChiikiHoukatu_yakan = 113017070;   // 小児科地域包括診療料（乳幼児夜間）加算（６歳未満）
+    public static final int srycd_Pediatrics_ChiikiHoukatu_kyujitsu = 113015810; // 小児科地域包括診療料（乳幼児休日）加算（６歳未満）
+    public static final int srycd_Pediatrics_ChiikiHoukatu_shinya= 113017270; // 小児科地域包括診療料（乳幼児深夜）加算（６歳未満）
+    public static final int srycd_Pediatrics_ChiikiHoukatu_yakan_souchou = 113017370; // 地域包括診療料（夜間・早朝等）加算
+    
+    public static final int srycd_ZaitakuRyouyouJissekiKasan = 114023070; // 在宅療養実績加算（在宅患者訪問診療料）
+    
+    // 在医総管・特医総管
+    // 1: 在支診等以外
+    // 2: 在支診等
+    // 3: 機能強化した在支診等、病床あり
+    // 4: 機能強化した在支診等、病床なし
+    public static final int srycd_ZaiiSoukanEx1_OTHER = 114024310; //在医総管（在支診等以外）（処方せんあり・同一建物居住者以外）
+    public static final int srycd_ZaiiSoukanEx1_SAME  = 114024410; //在医総管（在支診等以外）（処方せんあり・同一建物居住者）
+    public static final int srycd_ZaiiSoukanIn1_OTHER = 114024510; //在医総管（在支診等以外）（処方せんなし・同一建物居住者以外）
+    public static final int srycd_ZaiiSoukanIn1_SAME  = 114024610; //在医総管（在支診等以外）（処方せんなし・同一建物居住者）
+    public static final int srycd_ZaiiSoukanEx2_OTHER = 114023910; //在医総管（在支診等）（処方せんあり・同一建物居住者以外）
+    public static final int srycd_ZaiiSoukanEx2_SAME  = 114024010; //在医総管（在支診等）（処方せんあり・同一建物居住者）
+    public static final int srycd_ZaiiSoukanIn2_OTHER = 114024110; //在医総管（在支診等）（処方せんなし・同一建物居住者以外）
+    public static final int srycd_ZaiiSoukanIn2_SAME  = 114024210; //在医総管（在支診等）（処方せんなし・同一建物居住者）
+    public static final int srycd_ZaiiSoukanEx3_OTHER = 114023110; //在医総管（機能強化在支診等）（病床有・処方せん有・同一建物以外）
+    public static final int srycd_ZaiiSoukanEx3_SAME  = 114023210; //在医総管（機能強化在支診等）（病床有・処方せん有・同一建物居住）
+    public static final int srycd_ZaiiSoukanIn3_OTHER = 114023310; //在医総管（機能強化在支診等）（病床有・処方せん無・同一建物以外）
+    public static final int srycd_ZaiiSoukanIn3_SAME  = 114023410; //在医総管（機能強化在支診等）（病床有・処方せん無・同一建物居住）
+    public static final int srycd_ZaiiSoukanEx4_OTHER = 114023510; //在医総管（機能強化在支診等）（病床無・処方せん有・同一建物以外）
+    public static final int srycd_ZaiiSoukanEx4_SAME  = 114023610; //在医総管（機能強化在支診等）（病床無・処方せん有・同一建物居住）
+    public static final int srycd_ZaiiSoukanIn4_OTHER = 114023710; //在医総管（機能強化在支診等）（病床無・処方せん無・同一建物以外）
+    public static final int srycd_ZaiiSoukanIn4_SAME  = 114023810; //在医総管（機能強化在支診等）（病床無・処方せん無・同一建物居住）
+
+    public static final int srycd_ZaiiSoukan_Jisseki2_OTHER = 114024770; //在宅療養実績加算（在医総管（在支診等））（同一建物居住者以外）
+    public static final int srycd_ZaiiSoukan_Jisseki2_SAME  = 114024870; //在宅療養実績加算（在医総管（在支診等））（同一建物居住者）
+
+    public static final int srycd_TokuiSoukanEx1_OTHER = 114026110; //特医総管（在支診等以外）（処方せんあり・同一建物居住者以外）
+    public static final int srycd_TokuiSoukanEx1_SAME  = 114026210; //特医総管（在支診等以外）（処方せんあり・同一建物居住者）
+    public static final int srycd_TokuiSoukanIn1_OTHER = 114026310; //特医総管（在支診等以外）（処方せんなし・同一建物居住者以外）
+    public static final int srycd_TokuiSoukanIn1_SAME  = 114026410; //特医総管（在支診等以外）（処方せんなし・同一建物居住者）
+    public static final int srycd_TokuiSoukanEx2_OTHER = 114025710; //特医総管（在支診等）（処方せんあり・同一建物居住者以外）
+    public static final int srycd_TokuiSoukanEx2_SAME  = 114025810; //特医総管（在支診等）（処方せんあり・同一建物居住者）
+    public static final int srycd_TokuiSoukanIn2_OTHER = 114025910; //特医総管（在支診等）（処方せんなし・同一建物居住者以外）
+    public static final int srycd_TokuiSoukanIn2_SAME  = 114026010; //特医総管（在支診等）（処方せんなし・同一建物居住者）
+    public static final int srycd_TokuiSoukanEx3_OTHER = 114024910; //特医総管（機能強化在支診等）（病床有・処方せん有・同一建物以外）
+    public static final int srycd_TokuiSoukanEx3_SAME  = 114025010; //特医総管（機能強化在支診等）（病床有・処方せん有・同一建物居住）
+    public static final int srycd_TokuiSoukanIn3_OTHER = 114025110; //特医総管（機能強化在支診等）（病床有・処方せん無・同一建物以外）
+    public static final int srycd_TokuiSoukanIn3_SAME  = 114025210; //特医総管（機能強化在支診等）（病床有・処方せん無・同一建物居住）
+    public static final int srycd_TokuiSoukanEx4_OTHER = 114025310; //特医総管（機能強化在支診等）（病床無・処方せん有・同一建物以外）
+    public static final int srycd_TokuiSoukanEx4_SAME  = 114025410; //特医総管（機能強化在支診等）（病床無・処方せん有・同一建物居住）
+    public static final int srycd_TokuiSoukanIn4_OTHER = 114025510; //特医総管（機能強化在支診等）（病床無・処方せん無・同一建物以外）
+    public static final int srycd_TokuiSoukanIn4_SAME  = 114025610; //特医総管（機能強化在支診等）（病床無・処方せん無・同一建物居住）
+
+    public static final int srycd_TokuiSoukan_Jisseki2_OTHER = 114026570; //在宅療養実績加算（特医総管（在支診等））（同一建物居住者以外）
+    public static final int srycd_TokuiSoukan_Jisseki2_SAME  = 114026670; //在宅療養実績加算（特医総管（在支診等））（同一建物居住者）
+    
     // 施設基準
     public enum Shienshin {
         NON_SHIENSHIN, SHIENSHIN,
@@ -149,6 +212,12 @@ public interface ICheckSanteiConst {
     
     public static final int sk1006_zaiiSoukan          = 721;    // 0721:在宅時医学総合管理料及び特定施設入居時等医学総合管理料
     
+    // 2014
+    public static final int sk1006_chiikiHoukatsuKasan = 3195;  // 3195:地域包括診療加算
+    public static final int sk1006_chiikiHoukatuShinryo = 3339; // 3339:地域包括診療料
+    public static final int sk1006_zaitakuRyouyouJisseki_clinic = 3340;   // 3340:在宅療養実績加算（診療所）
+    public static final int sk1006_zaitakuRyouyouJisseki_hospital = 3341; // 3341:在宅療養実績加算（病院）
+    
     public static final int[] srycd_ZaitakuKanri = {
         srycd_ZaiiSoukanEx1,
         srycd_ZaiiSoukanIn1,
@@ -166,6 +235,44 @@ public interface ICheckSanteiConst {
         srycd_TokuiSoukanIn3,
         srycd_TokuiSoukanEx4,
         srycd_TokuiSoukanIn4,
+        
+        // 2014
+        srycd_ZaiiSoukanEx1_OTHER,
+        srycd_ZaiiSoukanEx1_SAME,
+        srycd_ZaiiSoukanIn1_OTHER,
+        srycd_ZaiiSoukanIn1_SAME,
+        srycd_ZaiiSoukanEx2_OTHER,
+        srycd_ZaiiSoukanEx2_SAME,
+        srycd_ZaiiSoukanIn2_OTHER,
+        srycd_ZaiiSoukanIn2_SAME,
+        srycd_ZaiiSoukanEx3_OTHER,
+        srycd_ZaiiSoukanEx3_SAME,
+        srycd_ZaiiSoukanIn3_OTHER,
+        srycd_ZaiiSoukanIn3_SAME,
+        srycd_ZaiiSoukanEx4_OTHER,
+        srycd_ZaiiSoukanEx4_SAME,
+        srycd_ZaiiSoukanIn4_OTHER,
+        srycd_ZaiiSoukanIn4_SAME,
+        //srycd_ZaiiSoukan_Jisseki2_OTHER,
+        //srycd_ZaiiSoukan_Jisseki2_SAME,
+        srycd_TokuiSoukanEx1_OTHER,
+        srycd_TokuiSoukanEx1_SAME,
+        srycd_TokuiSoukanIn1_OTHER,
+        srycd_TokuiSoukanIn1_SAME,
+        srycd_TokuiSoukanEx2_OTHER,
+        srycd_TokuiSoukanEx2_SAME,
+        srycd_TokuiSoukanIn2_OTHER,
+        srycd_TokuiSoukanIn2_SAME,
+        srycd_TokuiSoukanEx3_OTHER,
+        srycd_TokuiSoukanEx3_SAME,
+        srycd_TokuiSoukanIn3_OTHER,
+        srycd_TokuiSoukanIn3_SAME,
+        srycd_TokuiSoukanEx4_OTHER,
+        srycd_TokuiSoukanEx4_SAME,
+        srycd_TokuiSoukanIn4_OTHER,
+        srycd_TokuiSoukanIn4_SAME,
+        //srycd_TokuiSoukan_Jisseki2_OTHER,
+        //srycd_TokuiSoukan_Jisseki2_SAME
     };
 
     // 特定疾患などの最大数／月

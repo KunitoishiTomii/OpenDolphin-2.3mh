@@ -9,6 +9,7 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import javax.swing.*;
@@ -210,7 +211,45 @@ public class MakeBaseChargeStamp extends CheckSantei {
         srycdList.add(srycdFrmt.format(srycd_Kyujitsu_Comment));
         srycdList.add(srycdFrmt.format(srycd_Shinya_Comment));
         srycdList.add(srycdFrmt.format(srycd_JikanDayHrMin_Comment));
-
+        
+        // 2014
+        srycdList.add(srycdFrmt.format(srycd_ZaiiSoukanEx1_OTHER));
+        srycdList.add(srycdFrmt.format(srycd_ZaiiSoukanEx1_SAME));
+        srycdList.add(srycdFrmt.format(srycd_ZaiiSoukanIn1_OTHER));
+        srycdList.add(srycdFrmt.format(srycd_ZaiiSoukanIn1_SAME));
+        srycdList.add(srycdFrmt.format(srycd_ZaiiSoukanEx2_OTHER));
+        srycdList.add(srycdFrmt.format(srycd_ZaiiSoukanEx2_SAME));
+        srycdList.add(srycdFrmt.format(srycd_ZaiiSoukanIn2_OTHER));
+        srycdList.add(srycdFrmt.format(srycd_ZaiiSoukanIn2_SAME));
+        srycdList.add(srycdFrmt.format(srycd_ZaiiSoukanEx3_OTHER));
+        srycdList.add(srycdFrmt.format(srycd_ZaiiSoukanEx3_SAME));
+        srycdList.add(srycdFrmt.format(srycd_ZaiiSoukanIn3_OTHER));
+        srycdList.add(srycdFrmt.format(srycd_ZaiiSoukanIn3_SAME));
+        srycdList.add(srycdFrmt.format(srycd_ZaiiSoukanEx4_OTHER));
+        srycdList.add(srycdFrmt.format(srycd_ZaiiSoukanEx4_SAME));
+        srycdList.add(srycdFrmt.format(srycd_ZaiiSoukanIn4_OTHER));
+        srycdList.add(srycdFrmt.format(srycd_ZaiiSoukanIn4_SAME));
+        //srycdList.add(srycdFrmt.format(srycd_ZaiiSoukan_Jisseki2_OTHER));
+        //srycdList.add(srycdFrmt.format(srycd_ZaiiSoukan_Jisseki2_SAME));
+        srycdList.add(srycdFrmt.format(srycd_TokuiSoukanEx1_OTHER));
+        srycdList.add(srycdFrmt.format(srycd_TokuiSoukanEx1_SAME));
+        srycdList.add(srycdFrmt.format(srycd_TokuiSoukanIn1_OTHER));
+        srycdList.add(srycdFrmt.format(srycd_TokuiSoukanIn1_SAME));
+        srycdList.add(srycdFrmt.format(srycd_TokuiSoukanEx2_OTHER));
+        srycdList.add(srycdFrmt.format(srycd_TokuiSoukanEx2_SAME));
+        srycdList.add(srycdFrmt.format(srycd_TokuiSoukanIn2_OTHER));
+        srycdList.add(srycdFrmt.format(srycd_TokuiSoukanIn2_SAME));
+        srycdList.add(srycdFrmt.format(srycd_TokuiSoukanEx3_OTHER));
+        srycdList.add(srycdFrmt.format(srycd_TokuiSoukanEx3_SAME));
+        srycdList.add(srycdFrmt.format(srycd_TokuiSoukanIn3_OTHER));
+        srycdList.add(srycdFrmt.format(srycd_TokuiSoukanIn3_SAME));
+        srycdList.add(srycdFrmt.format(srycd_TokuiSoukanEx4_OTHER));
+        srycdList.add(srycdFrmt.format(srycd_TokuiSoukanEx4_SAME));
+        srycdList.add(srycdFrmt.format(srycd_TokuiSoukanIn4_OTHER));
+        srycdList.add(srycdFrmt.format(srycd_TokuiSoukanIn4_SAME));
+        //srycdList.add(srycdFrmt.format(srycd_TokuiSoukan_Jisseki2_OTHER));
+        //srycdList.add(srycdFrmt.format(srycd_TokuiSoukan_Jisseki2_SAME));
+        
         // ORCAにマスターを問い合わせるようにした
         final SqlMiscDao dao = SqlMiscDao.getInstance();
         List<TensuMaster> list = dao.getTensuMasterList(srycdList);
@@ -476,6 +515,80 @@ public class MakeBaseChargeStamp extends CheckSantei {
                     break;
                 case srycd_HoumounShinsatsuJikan:
                     setOushinJikanCombo(item);
+                    break;
+                    
+                //2014
+                case srycd_ZaiiSoukanIn1_OTHER:
+                case srycd_ZaiiSoukanIn2_OTHER:
+                case srycd_ZaiiSoukanIn3_OTHER:
+                case srycd_ZaiiSoukanIn4_OTHER:
+                    cb_zaitakuKanri.setSelected(true);
+                    cb_nursingHome.setSelected(false);
+                    rb_inMed.setSelected(true);
+                    cb_douitsu.setSelected(false);
+                    break;
+                case srycd_ZaiiSoukanIn1_SAME:
+                case srycd_ZaiiSoukanIn2_SAME:
+                case srycd_ZaiiSoukanIn3_SAME:
+                case srycd_ZaiiSoukanIn4_SAME:
+                    cb_zaitakuKanri.setSelected(true);
+                    cb_nursingHome.setSelected(false);
+                    rb_inMed.setSelected(true);
+                    cb_douitsu.setSelected(true);
+                    break;
+                case srycd_TokuiSoukanIn1_OTHER:
+                case srycd_TokuiSoukanIn2_OTHER:
+                case srycd_TokuiSoukanIn3_OTHER:
+                case srycd_TokuiSoukanIn4_OTHER:
+                    cb_zaitakuKanri.setSelected(true);
+                    cb_nursingHome.setSelected(true);
+                    rb_inMed.setSelected(true);
+                    cb_douitsu.setSelected(false);
+                    break;
+                case srycd_TokuiSoukanIn1_SAME:
+                case srycd_TokuiSoukanIn2_SAME:
+                case srycd_TokuiSoukanIn3_SAME:
+                case srycd_TokuiSoukanIn4_SAME:
+                    cb_zaitakuKanri.setSelected(true);
+                    cb_nursingHome.setSelected(true);
+                    rb_inMed.setSelected(true);
+                    cb_douitsu.setSelected(true);
+                    break;
+                case srycd_ZaiiSoukanEx1_OTHER:
+                case srycd_ZaiiSoukanEx2_OTHER:
+                case srycd_ZaiiSoukanEx3_OTHER:
+                case srycd_ZaiiSoukanEx4_OTHER:
+                    cb_zaitakuKanri.setSelected(true);
+                    cb_nursingHome.setSelected(false);
+                    rb_inMed.setSelected(true);
+                    cb_douitsu.setSelected(false);
+                    break;
+                case srycd_ZaiiSoukanEx1_SAME:
+                case srycd_ZaiiSoukanEx2_SAME:
+                case srycd_ZaiiSoukanEx3_SAME:
+                case srycd_ZaiiSoukanEx4_SAME:
+                    cb_zaitakuKanri.setSelected(true);
+                    cb_nursingHome.setSelected(false);
+                    rb_inMed.setSelected(true);
+                    cb_douitsu.setSelected(true);
+                    break;
+                case srycd_TokuiSoukanEx1_OTHER:
+                case srycd_TokuiSoukanEx2_OTHER:
+                case srycd_TokuiSoukanEx3_OTHER:
+                case srycd_TokuiSoukanEx4_OTHER:
+                    cb_zaitakuKanri.setSelected(true);
+                    cb_nursingHome.setSelected(true);
+                    rb_exMed.setSelected(true);
+                    cb_douitsu.setSelected(false);
+                    break;
+                case srycd_TokuiSoukanEx1_SAME:
+                case srycd_TokuiSoukanEx2_SAME:
+                case srycd_TokuiSoukanEx3_SAME:
+                case srycd_TokuiSoukanEx4_SAME:
+                    cb_zaitakuKanri.setSelected(true);
+                    cb_nursingHome.setSelected(true);
+                    rb_exMed.setSelected(true);
+                    cb_douitsu.setSelected(true);
                     break;
             }
         }
@@ -805,62 +918,180 @@ public class MakeBaseChargeStamp extends CheckSantei {
             
             boolean rbInMed = rb_inMed.isSelected();
             
-            switch (zaitakuShien) {
-                case SHIENSHIN:
-                    if (!cb_nursingHome.isSelected()) {
-                        SrycdNumberPair pair = rbInMed
-                                ? new SrycdNumberPair(srycd_ZaiiSoukanIn2)
-                                : new SrycdNumberPair(srycd_ZaiiSoukanEx2);
-                        srycdList.add(pair);
-                    } else {
-                        SrycdNumberPair pair = rbInMed
-                                ? new SrycdNumberPair(srycd_TokuiSoukanIn2)
-                                : new SrycdNumberPair(srycd_TokuiSoukanEx2);
-                        srycdList.add(pair);
-                    }
-                    break;
-                case KYOKA_RENKEI_WITH_BED:
-                case KYOKA_TANDOKU_WITH_BED:
-                    if (!cb_nursingHome.isSelected()) {
-                        SrycdNumberPair pair = rbInMed
-                                ? new SrycdNumberPair(srycd_ZaiiSoukanIn3)
-                                : new SrycdNumberPair(srycd_ZaiiSoukanEx3);
-                        srycdList.add(pair);
-                    } else {
-                        SrycdNumberPair pair = rbInMed
-                                ? new SrycdNumberPair(srycd_TokuiSoukanIn3)
-                                : new SrycdNumberPair(srycd_TokuiSoukanEx3);
-                        srycdList.add(pair);
-                    }
-                    break;
-                case KYOKA_RENKEI_WO_BED:
-                case KYOKA_TANDOKU_WO_BED:
-                    if (!cb_nursingHome.isSelected()) {
-                        SrycdNumberPair pair = rbInMed
-                                ? new SrycdNumberPair(srycd_ZaiiSoukanIn4)
-                                : new SrycdNumberPair(srycd_ZaiiSoukanEx4);
-                        srycdList.add(pair);
-                    } else {
-                        SrycdNumberPair pair = rbInMed
-                                ? new SrycdNumberPair(srycd_TokuiSoukanIn4)
-                                : new SrycdNumberPair(srycd_TokuiSoukanEx4);
-                        srycdList.add(pair);
-                    }
-                    break;
-                case NON_SHIENSHIN:
-                default:
-                    if (!cb_nursingHome.isSelected()) {
-                        SrycdNumberPair pair = rbInMed
-                                ? new SrycdNumberPair(srycd_ZaiiSoukanIn1)
-                                : new SrycdNumberPair(srycd_ZaiiSoukanEx1);
-                        srycdList.add(pair);
-                    } else {
-                        SrycdNumberPair pair = rbInMed
-                                ? new SrycdNumberPair(srycd_TokuiSoukanIn1)
-                                : new SrycdNumberPair(srycd_TokuiSoukanEx1);
-                        srycdList.add(pair);
-                    }
-                    break;
+            if (isBefore20140401()) {
+                
+                switch (zaitakuShien) {
+                    case SHIENSHIN:
+                        if (!cb_nursingHome.isSelected()) {
+                            SrycdNumberPair pair = rbInMed
+                                    ? new SrycdNumberPair(srycd_ZaiiSoukanIn2)
+                                    : new SrycdNumberPair(srycd_ZaiiSoukanEx2);
+                            srycdList.add(pair);
+                        } else {
+                            SrycdNumberPair pair = rbInMed
+                                    ? new SrycdNumberPair(srycd_TokuiSoukanIn2)
+                                    : new SrycdNumberPair(srycd_TokuiSoukanEx2);
+                            srycdList.add(pair);
+                        }
+                        break;
+                    case KYOKA_RENKEI_WITH_BED:
+                    case KYOKA_TANDOKU_WITH_BED:
+                        if (!cb_nursingHome.isSelected()) {
+                            SrycdNumberPair pair = rbInMed
+                                    ? new SrycdNumberPair(srycd_ZaiiSoukanIn3)
+                                    : new SrycdNumberPair(srycd_ZaiiSoukanEx3);
+                            srycdList.add(pair);
+                        } else {
+                            SrycdNumberPair pair = rbInMed
+                                    ? new SrycdNumberPair(srycd_TokuiSoukanIn3)
+                                    : new SrycdNumberPair(srycd_TokuiSoukanEx3);
+                            srycdList.add(pair);
+                        }
+                        break;
+                    case KYOKA_RENKEI_WO_BED:
+                    case KYOKA_TANDOKU_WO_BED:
+                        if (!cb_nursingHome.isSelected()) {
+                            SrycdNumberPair pair = rbInMed
+                                    ? new SrycdNumberPair(srycd_ZaiiSoukanIn4)
+                                    : new SrycdNumberPair(srycd_ZaiiSoukanEx4);
+                            srycdList.add(pair);
+                        } else {
+                            SrycdNumberPair pair = rbInMed
+                                    ? new SrycdNumberPair(srycd_TokuiSoukanIn4)
+                                    : new SrycdNumberPair(srycd_TokuiSoukanEx4);
+                            srycdList.add(pair);
+                        }
+                        break;
+                    case NON_SHIENSHIN:
+                    default:
+                        if (!cb_nursingHome.isSelected()) {
+                            SrycdNumberPair pair = rbInMed
+                                    ? new SrycdNumberPair(srycd_ZaiiSoukanIn1)
+                                    : new SrycdNumberPair(srycd_ZaiiSoukanEx1);
+                            srycdList.add(pair);
+                        } else {
+                            SrycdNumberPair pair = rbInMed
+                                    ? new SrycdNumberPair(srycd_TokuiSoukanIn1)
+                                    : new SrycdNumberPair(srycd_TokuiSoukanEx1);
+                            srycdList.add(pair);
+                        }
+                        break;
+                }
+            } else {
+                // 2014/04/01以降
+                switch (zaitakuShien) {
+                    case SHIENSHIN:
+                        if (cb_douitsu.isSelected()) {
+                            if (!cb_nursingHome.isSelected()) {
+                                SrycdNumberPair pair = rbInMed
+                                        ? new SrycdNumberPair(srycd_ZaiiSoukanIn2_SAME)
+                                        : new SrycdNumberPair(srycd_ZaiiSoukanEx2_SAME);
+                                srycdList.add(pair);
+                            } else {
+                                SrycdNumberPair pair = rbInMed
+                                        ? new SrycdNumberPair(srycd_TokuiSoukanIn2_SAME)
+                                        : new SrycdNumberPair(srycd_TokuiSoukanEx2_SAME);
+                                srycdList.add(pair);
+                            }
+                        } else {
+                            if (!cb_nursingHome.isSelected()) {
+                                SrycdNumberPair pair = rbInMed
+                                        ? new SrycdNumberPair(srycd_ZaiiSoukanIn2_OTHER)
+                                        : new SrycdNumberPair(srycd_ZaiiSoukanEx2_OTHER);
+                                srycdList.add(pair);
+                            } else {
+                                SrycdNumberPair pair = rbInMed
+                                        ? new SrycdNumberPair(srycd_TokuiSoukanIn2_OTHER)
+                                        : new SrycdNumberPair(srycd_TokuiSoukanEx2_OTHER);
+                                srycdList.add(pair);
+                            }
+                        }
+                        break;
+                    case KYOKA_RENKEI_WITH_BED:
+                    case KYOKA_TANDOKU_WITH_BED:
+                        if (cb_douitsu.isSelected()) {
+                            if (!cb_nursingHome.isSelected()) {
+                                SrycdNumberPair pair = rbInMed
+                                        ? new SrycdNumberPair(srycd_ZaiiSoukanIn3_SAME)
+                                        : new SrycdNumberPair(srycd_ZaiiSoukanEx3_SAME);
+                                srycdList.add(pair);
+                            } else {
+                                SrycdNumberPair pair = rbInMed
+                                        ? new SrycdNumberPair(srycd_TokuiSoukanIn3_SAME)
+                                        : new SrycdNumberPair(srycd_TokuiSoukanEx3_SAME);
+                                srycdList.add(pair);
+                            }
+                        } else {
+                            if (!cb_nursingHome.isSelected()) {
+                                SrycdNumberPair pair = rbInMed
+                                        ? new SrycdNumberPair(srycd_ZaiiSoukanIn3_OTHER)
+                                        : new SrycdNumberPair(srycd_ZaiiSoukanEx3_OTHER);
+                                srycdList.add(pair);
+                            } else {
+                                SrycdNumberPair pair = rbInMed
+                                        ? new SrycdNumberPair(srycd_TokuiSoukanIn3_OTHER)
+                                        : new SrycdNumberPair(srycd_TokuiSoukanEx3_OTHER);
+                                srycdList.add(pair);
+                            }
+                        }
+                        break;
+                    case KYOKA_RENKEI_WO_BED:
+                    case KYOKA_TANDOKU_WO_BED:
+                        if (cb_douitsu.isSelected()) {
+                            if (!cb_nursingHome.isSelected()) {
+                                SrycdNumberPair pair = rbInMed
+                                        ? new SrycdNumberPair(srycd_ZaiiSoukanIn4_SAME)
+                                        : new SrycdNumberPair(srycd_ZaiiSoukanEx4_SAME);
+                                srycdList.add(pair);
+                            } else {
+                                SrycdNumberPair pair = rbInMed
+                                        ? new SrycdNumberPair(srycd_TokuiSoukanIn4_SAME)
+                                        : new SrycdNumberPair(srycd_TokuiSoukanEx4_SAME);
+                                srycdList.add(pair);
+                            }
+                        } else {
+                            if (!cb_nursingHome.isSelected()) {
+                                SrycdNumberPair pair = rbInMed
+                                        ? new SrycdNumberPair(srycd_ZaiiSoukanIn4_OTHER)
+                                        : new SrycdNumberPair(srycd_ZaiiSoukanEx4_OTHER);
+                                srycdList.add(pair);
+                            } else {
+                                SrycdNumberPair pair = rbInMed
+                                        ? new SrycdNumberPair(srycd_TokuiSoukanIn4_OTHER)
+                                        : new SrycdNumberPair(srycd_TokuiSoukanEx4_OTHER);
+                                srycdList.add(pair);
+                            }
+                        }
+                        break;
+                    case NON_SHIENSHIN:
+                    default:
+                        if (cb_douitsu.isSelected()) {
+                            if (!cb_nursingHome.isSelected()) {
+                                SrycdNumberPair pair = rbInMed
+                                        ? new SrycdNumberPair(srycd_ZaiiSoukanIn1_SAME)
+                                        : new SrycdNumberPair(srycd_ZaiiSoukanEx1_SAME);
+                                srycdList.add(pair);
+                            } else {
+                                SrycdNumberPair pair = rbInMed
+                                        ? new SrycdNumberPair(srycd_TokuiSoukanIn1_SAME)
+                                        : new SrycdNumberPair(srycd_TokuiSoukanEx1_SAME);
+                                srycdList.add(pair);
+                            }
+                        } else {
+                            if (!cb_nursingHome.isSelected()) {
+                                SrycdNumberPair pair = rbInMed
+                                        ? new SrycdNumberPair(srycd_ZaiiSoukanIn1_OTHER)
+                                        : new SrycdNumberPair(srycd_ZaiiSoukanEx1_OTHER);
+                                srycdList.add(pair);
+                            } else {
+                                SrycdNumberPair pair = rbInMed
+                                        ? new SrycdNumberPair(srycd_TokuiSoukanIn1_OTHER)
+                                        : new SrycdNumberPair(srycd_TokuiSoukanEx1_OTHER);
+                                srycdList.add(pair);
+                            }
+                        }
+                        break;
+                }
             }
 
             // 在宅移行早期加算
@@ -1464,5 +1695,12 @@ public class MakeBaseChargeStamp extends CheckSantei {
         private String getNumber() {
             return number;
         }
+    }
+    
+    private boolean isBefore20140401() {
+        GregorianCalendar gc = new GregorianCalendar();
+        gc.set(2014, 3, 1);
+        Date now = new Date();
+        return now.before(gc.getTime());
     }
 }
