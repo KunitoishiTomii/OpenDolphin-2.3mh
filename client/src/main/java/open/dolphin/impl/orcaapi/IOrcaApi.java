@@ -73,7 +73,7 @@ public interface IOrcaApi {
     public static final String MEDICAL_CLASS = "Medical_Class";
     public static final String MEDICAL_CLASS_NAME = "Medical_Class_Name";
     public static final String MEDICAL_CLASS_NUMBER = "Medical_Class_Number";
-    public static final String MEDICATION_INFO = "Medication_Info";
+    public static final String MEDICATION_INFO = "Medication_info";
     public static final String MEDICATION_INFO_CHILD = MEDICATION_INFO + _CHILD;
     public static final String MEDICATION_CODE = "Medication_Code";
     public static final String MEDICATION_NAME = "Medication_Name";

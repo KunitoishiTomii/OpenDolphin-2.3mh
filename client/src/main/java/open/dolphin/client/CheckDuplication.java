@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JOptionPane;
 import open.dolphin.infomodel.ClaimBundle;
+import open.dolphin.infomodel.ClaimConst;
 import open.dolphin.infomodel.ClaimItem;
 import open.dolphin.infomodel.ModuleModel;
 
@@ -18,8 +19,6 @@ public class CheckDuplication {
     // 除外する診療行為コード
     private static final String SRYCD_INJECTION = "130";
     private static final String SRYCD_ADMIN = "001000";
-    private static final String SRYCD_COMMENT1 = "8";
-    private static final String SRYCD_COMMENT2 = "008";
     
     
     public boolean checkStart(Chart context, List<ModuleModel> stamps) {
@@ -32,8 +31,7 @@ public class CheckDuplication {
                 String srycd = ci.getCode();
                 if (!srycd.startsWith(SRYCD_INJECTION) 
                         && !srycd.startsWith(SRYCD_ADMIN)
-                        && !srycd.startsWith(SRYCD_COMMENT1)
-                        && !srycd.startsWith(SRYCD_COMMENT2)) {
+                        && !srycd.matches(ClaimConst.REGEXP_COMMENT_MED)) {
                     claimItems.add(ci);
                 }
             }
