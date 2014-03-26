@@ -1,6 +1,7 @@
 package open.dolphin.client;
 
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import javax.swing.ImageIcon;
@@ -32,28 +33,8 @@ public final class SchemaHolder extends AbstractComponentHolder {
         function.setDeleteAction(SchemaHolder.this);
         this.schema = schema;
         if (!lazy) {
-            setImageIcon(schema.getIcon());
+            setImageIcon();
         }
-    }
-    
-    public void setMyIcon() {
-        Dimension d = new Dimension(ICON_SIZE, ICON_SIZE);
-        ImageIcon adjusted = function.getAdjustedImage(schema.getIcon(), d);
-        setIcon(adjusted);
-    }
-    
-    private void setImageIcon(final ImageIcon icon) {
-        Dimension d = new Dimension(ICON_SIZE, ICON_SIZE);
-        final ImageIcon adjusted = function.getAdjustedImage(icon, d);
-
-        // こっちもinvokeLaterにしてみる
-        SwingUtilities.invokeLater(new Runnable() {
-
-            @Override
-            public void run() {
-                setIcon(adjusted);
-            }
-        });
     }
     
     public SchemaModel getSchema() {
@@ -86,13 +67,7 @@ public final class SchemaHolder extends AbstractComponentHolder {
                 return;
             }
             schema = newSchema;
-            SwingUtilities.invokeLater(new Runnable() {
-
-                @Override
-                public void run() {
-                    setImageIcon(schema.getIcon());
-                }
-            });
+            setImageIconLater();
             kartePane.setDirty(true);
         }
     }
@@ -100,5 +75,32 @@ public final class SchemaHolder extends AbstractComponentHolder {
     @Override
     public String getAttributeName() {
         return ATTRIBUTE_NAME;
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        
+        if (getIcon() ==  null) {
+            setImageIcon();
+        }
+        super.paintComponent(g);
+    }
+    
+    private void setImageIcon() {
+        Dimension d = new Dimension(ICON_SIZE, ICON_SIZE);
+        ImageIcon adjusted = function.getAdjustedImage(schema.getIcon(), d);
+        setIcon(adjusted);
+    }
+
+    public void setImageIconLater() {
+
+        // こっちもinvokeLaterにしてみる
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                setImageIcon();
+            }
+        });
     }
 }

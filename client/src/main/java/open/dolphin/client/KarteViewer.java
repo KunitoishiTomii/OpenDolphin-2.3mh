@@ -1,14 +1,11 @@
 package open.dolphin.client;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.event.MouseListener;
 import java.awt.print.PageFormat;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.border.Border;
-import javax.swing.text.Element;
-import javax.swing.text.ElementIterator;
 import javax.swing.text.StyleConstants;
 import open.dolphin.infomodel.AdmissionModel;
 import open.dolphin.infomodel.DocInfoModel;
@@ -158,41 +155,6 @@ public abstract class KarteViewer extends AbstractChartDocument {
     protected final void renderKarteLazily() {
         KarteRenderer_2.getInstance().renderLazily(getModel(), getSOAPane(), getPPane());
     }
-    
-    // 後回しにしていたStampHolder, SchemaHolder内容設定
-    public final void renderComponentsOnViewer() {
-        
-        if (kartePanel.isRendered()) {
-            return;
-        }
-
-        KarteStyledDocument soaDoc = getSOAPane().getDocument();
-        renderComponents(soaDoc);
-        if (getPPane() != null) {
-            KarteStyledDocument pDoc = getPPane().getDocument();
-            renderComponents(pDoc);
-        }
-    }
-    
-    // ComponentHolder内容を設定する
-    private void renderComponents(KarteStyledDocument doc) { //throws BadLocationException {
-
-        ElementIterator itr = new ElementIterator(doc);
-
-        for (Element elem = itr.first(); elem != null; elem = itr.next()) {
-            if (COMPONENT_NAME.equals(elem.getName())) {
-                Component comp = StyleConstants.getComponent(elem.getAttributes());
-                if (comp instanceof StampHolder) {
-                    StampHolder sh = (StampHolder) comp;
-                    sh.setMyText();
-                } else if (comp instanceof SchemaHolder) {
-                    SchemaHolder sh = (SchemaHolder) comp;
-                    sh.setMyIcon();
-                }
-            }
-        }
-    }
-    
 
     protected final void setKartePanel(KartePanel kartePanel) {
         this.kartePanel = kartePanel;
