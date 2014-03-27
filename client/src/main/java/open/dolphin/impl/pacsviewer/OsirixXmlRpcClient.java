@@ -14,7 +14,7 @@ import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 
 /**
  * OsiriXをXML-RPCで開く
- * 
+ *
  * @author masuda, Masuda Naika
  */
 public class OsirixXmlRpcClient {
@@ -54,7 +54,7 @@ public class OsirixXmlRpcClient {
     }
 
     public final void setupWebTarget() {
-        
+
         String url = Project.getString(MiscSettingPanel.PACS_OSIRIX_ADDRESS);
         if (currentUrl == null || !currentUrl.equals(url)) {
             currentUrl = url;
@@ -65,23 +65,23 @@ public class OsirixXmlRpcClient {
 
     public void openByPatientId(String patientId) {
 
-        final String xml = createRpcXml("DisplayStudy", "patientID", patientId);
+        String xml = createRpcXml("DisplayStudy", "patientID", patientId);
         sendRpcXml(xml);
     }
 
     public void openByStudyUID(String studyUID) {
 
-        final String xml = createRpcXml("DisplayStudy", "studyInstanceUID", studyUID);
+        String xml = createRpcXml("DisplayStudy", "studyInstanceUID", studyUID);
         sendRpcXml(xml);
     }
-    
+
     private void sendRpcXml(final String xml) {
 
         SwingWorker worker = new SwingWorker<Void, Void>() {
 
             @Override
             protected Void doInBackground() throws Exception {
-                
+
                 final Entity entity = toXmlEntity(xml);
 
                 Response response = webTarget
@@ -97,7 +97,7 @@ public class OsirixXmlRpcClient {
                 return null;
             }
         };
-        
+
         worker.execute();
     }
 

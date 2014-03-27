@@ -54,6 +54,11 @@ public final class StampHolder extends AbstractComponentHolder {
     //　見栄えが悪いので線を追加描画する
     @Override
     protected void paintComponent(Graphics g) {
+        
+        if (getText().isEmpty()) {  // JLabel.textの初期値は""である
+            setMyText();
+        }
+        
         super.paintComponent(g);
         Color c = g.getColor();
         g.setColor(LBL_COLOR);
@@ -149,7 +154,7 @@ public final class StampHolder extends AbstractComponentHolder {
         return renderer.getStampHtml(true);
     }
 
-    public void setMyText() {
+    private void setMyText() {
 
         if (getStamp() == null) {
             return;

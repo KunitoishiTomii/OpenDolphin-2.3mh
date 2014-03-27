@@ -51,31 +51,6 @@ public abstract class KartePanel extends Panel2 {
     private JPanel timeStampPanel;
     private JLabel timeStampLabel;
     
-    // KarteViewerでは遅延レンダリングする
-    private  KarteViewer karteViewer;
-    // コンポーネントレンダリング済みフラグ
-    private boolean rendered;
-    
-    private void setKarteViewer(KarteViewer karteViewer) {
-        this.karteViewer = karteViewer;
-    }
-    private void setRendered(boolean rendered) {
-        this.rendered = rendered;
-    }
-    public boolean isRendered() {
-        return rendered;
-    }
-    
-    @Override
-    protected void paintComponent(Graphics g) {
-
-        if (!rendered && karteViewer != null) {
-            karteViewer.renderComponentsOnViewer();
-            rendered = true;
-            //revalidate();
-        }
-        super.paintComponent(g);
-    }
 
     // ファクトリー
     public static KartePanel createKartePanel(MODE mode, boolean verticalLayout) {
@@ -107,14 +82,6 @@ public abstract class KartePanel extends Panel2 {
                 break;
             default:
                 return null;
-        }
-        
-        if (karteViewer != null) {
-            kartePanel.setKarteViewer(karteViewer);
-            kartePanel.setRendered(false);
-        } else {
-            // KarteViewerでなければlazy renderingしない
-            kartePanel.setRendered(true);
         }
 
         return kartePanel;

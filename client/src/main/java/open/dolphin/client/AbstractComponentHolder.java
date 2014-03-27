@@ -34,8 +34,8 @@ public abstract class AbstractComponentHolder extends JLabel
     private Position startPosition;
     private boolean selected;
     protected final KartePane kartePane;
-
     
+
     public AbstractComponentHolder(KartePane kartePane) {
         
         this.kartePane = kartePane;
