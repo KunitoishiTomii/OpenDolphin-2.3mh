@@ -1,6 +1,5 @@
 package open.dolphin.tr;
 
-import java.awt.HeadlessException;
 import java.awt.Toolkit;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
@@ -109,7 +108,7 @@ public class PTransferHandler extends AbstractKarteTransferHandler {
             return false;
         }
         
-        if (tc.isEditable() && hasFlavor(support)) {
+        if (tc.isEditable() && hasFlavor(support.getTransferable())) {
             return true;
         }
         
@@ -119,18 +118,18 @@ public class PTransferHandler extends AbstractKarteTransferHandler {
     /**
      * Flavorリストのなかに受け入れられものがあるかどうかを返す。
      */
-    private boolean hasFlavor(TransferSupport support) {
+    private boolean hasFlavor(Transferable tr) {
 
         // String OK
-        if (support.isDataFlavorSupported(DataFlavor.stringFlavor)) {
+        if (tr.isDataFlavorSupported(DataFlavor.stringFlavor)) {
             return true;
         }
         // StampTreeNode(FromStampTree) OK
-        if (support.isDataFlavorSupported(LocalStampTreeNodeTransferable.localStampTreeNodeFlavor)) {
+        if (tr.isDataFlavorSupported(LocalStampTreeNodeTransferable.localStampTreeNodeFlavor)) {
             return true;
         }
         // OrderStamp List OK
-        if (support.isDataFlavorSupported(OrderListTransferable.orderListFlavor)) {
+        if (tr.isDataFlavorSupported(OrderListTransferable.orderListFlavor)) {
             return true;
         }
 
@@ -230,12 +229,14 @@ public class PTransferHandler extends AbstractKarteTransferHandler {
 //masuda$
             // pPaneにスタンプを挿入する
             for (ModuleModel stamp : stamps) {
+                // roleをpにする。サマリーからコピーした場合はROLE_SOAであるため
+                stamp.getModuleInfoBean().setStampRole(IInfoModel.ROLE_P);
                 kartePane.stamp(stamp);
             }
 
             return true;
 
-        } catch (HeadlessException | UnsupportedFlavorException | IOException e) {
+        } catch (UnsupportedFlavorException | IOException e) {
             e.printStackTrace(System.err);
         }
         return false;
@@ -245,16 +246,12 @@ public class PTransferHandler extends AbstractKarteTransferHandler {
         if (!pPane.getTextPane().isEditable()) {
             return false;
         }
-        Transferable t = Toolkit.getDefaultToolkit().getSystemClipboard().getContents(null);
-        if (t == null) {
+        Transferable tr = Toolkit.getDefaultToolkit().getSystemClipboard().getContents(null);
+        if (tr == null) {
             return false;
         }
-        if (t.isDataFlavorSupported(DataFlavor.stringFlavor) ||
-            t.isDataFlavorSupported(OrderListTransferable.orderListFlavor) ||
-            t.isDataFlavorSupported(LocalStampTreeNodeTransferable.localStampTreeNodeFlavor)) {
-            return true;
-        }
-        return false;
+        
+        return hasFlavor(tr);
     }
 
     @Override
