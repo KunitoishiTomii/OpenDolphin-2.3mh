@@ -57,6 +57,9 @@ public class ExpandState extends AbstractState {
 //        g2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_NORMALIZE);
 
         g2d.drawImage(image, 0, 0, width, height, null);
+//masuda^
+        g2d.dispose();
+//masuda$
         return scaledImage;
     }
 

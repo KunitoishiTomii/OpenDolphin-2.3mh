@@ -544,6 +544,10 @@ public class KartePDFMaker extends AbstractPDFMaker {
                         ModuleModel stamp = modules.get(index);
                         StampTableMaker maker = new StampTableMaker();
                         pTable = maker.createTable(stamp);
+                        // サマリーの場合スタンプが広がりすぎないようにする
+                        if (karteTable.getColumnCount() == 1) {
+                            pTable.setWidthPercentage(50);
+                        }
                         break;
                     }
                     case SCHEMA_HOLDER: {

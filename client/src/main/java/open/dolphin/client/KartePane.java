@@ -417,7 +417,7 @@ public class KartePane implements MouseListener, CaretListener, PropertyChangeLi
 
         return contextMenu;
     }
-
+    
     private void mabeShowPopup(final MouseEvent e) {
         if (e.isPopupTrigger()) {
 //masuda^   textPaneにフォーカスを当ててからにする

@@ -17,6 +17,9 @@ public class ShapeIconMaker {
         Graphics2D g2 = image.createGraphics();
         g2.setPaint(color);
         g2.fill(rect);
+//masuda^
+        g2.dispose();
+//masuda$
         return new ImageIcon(image);
     }
     
@@ -26,6 +29,9 @@ public class ShapeIconMaker {
         Graphics2D g2 = image.createGraphics();
         g2.setPaint(color);
         g2.fill(rect);
+//masuda^
+        g2.dispose();
+//masuda$
         return new ImageIcon(image);
     }
 

@@ -906,7 +906,11 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
         //
         int index = tabbedPane.getSelectedIndex();
         ChartDocument plugin = providers.get(index);
-
+        
+        if (plugin == null) {
+            return;
+        }
+        
         if (plugin.getContext() == null) {
             //
             // まだ生成されていないプラグインを生成する

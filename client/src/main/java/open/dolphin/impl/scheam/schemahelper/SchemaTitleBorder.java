@@ -17,7 +17,10 @@ public class SchemaTitleBorder extends AbstractBorder {
 
     @Override
     public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
-        Graphics2D g2d = (Graphics2D) g.create();
+//masuda^
+        //Graphics2D g2d = (Graphics2D) g.create();
+        Graphics2D g2d = (Graphics2D) g;
+//masuda$
 
         // ImageIcon って便利
         ImageIcon icon = new ImageIcon(SchemaEditorImpl.class.getResource(ICON16));

@@ -161,6 +161,10 @@ public class SchemaEditorImpl implements SchemaEditor {
 
         g2.drawImage(baseImage, null, 0, 0);
         for (DrawingHolder d : drawingList) d.draw(g2);
+//masuda^
+        g2.dispose();
+//masuda$
+        
         return result;
     }
 
