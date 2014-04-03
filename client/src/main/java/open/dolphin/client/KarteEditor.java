@@ -30,6 +30,7 @@ import open.dolphin.project.Project;
 import open.dolphin.setting.MiscSettingPanel;
 import open.dolphin.tr.PTransferHandler;
 import open.dolphin.tr.SOATransferHandler;
+import open.dolphin.tr.SummaryTransferHandler;
 import open.dolphin.util.MMLDate;
 
 /**
@@ -387,7 +388,14 @@ public class KarteEditor extends AbstractChartDocument implements IInfoModel,
         soaPane.setTextPane(kartePanel.getSoaTextPane());
         soaPane.setParent(this);
         soaPane.setRole(ROLE_SOA);
-        soaPane.getTextPane().setTransferHandler(SOATransferHandler.getInstance());
+        
+//masuda^   サマリーの場合はSummaryTransferHandlerにする
+        if (model != null && IInfoModel.DOCTYPE_SUMMARY.equals(model.getDocInfoModel().getDocType())) {
+            soaPane.getTextPane().setTransferHandler(SummaryTransferHandler.getInstance());
+        } else {
+            soaPane.getTextPane().setTransferHandler(SOATransferHandler.getInstance());
+        }
+//masuda$
 
         if (model != null) {
             // Schema 画像にファイル名を付けるのために必要
@@ -711,15 +719,20 @@ public class KarteEditor extends AbstractChartDocument implements IInfoModel,
             params.setPrintCount(numPrint);
 
             //-----------------------------
-            // Single Mode の時は送信なし
-            //-----------------------------
-            params.setSendEnabled(getMode() != SINGLE_MODE);
-
-            //-----------------------------
             // CLAIM 送信
             // 保存ダイアログで変更する事が可能
             //-----------------------------
             params.setSendClaim(sendClaim);
+            
+            //-----------------------------
+            // Single Mode の時は送信なし
+            //-----------------------------
+            if (getMode() == SINGLE_MODE) {
+                params.setSendEnabled(false);
+                params.setSendClaim(false);
+            } else {
+                params.setSendEnabled(true);
+            }
 
             //-----------------------------
             // Labtest 送信
@@ -774,6 +787,16 @@ public class KarteEditor extends AbstractChartDocument implements IInfoModel,
 
             // MML
             params.setSendMML(sendMML);
+            
+            //-----------------------------
+            // Single Mode の時は送信なし
+            //-----------------------------
+            if (getMode() == SINGLE_MODE) {
+                params.setSendEnabled(false);
+                params.setSendClaim(false);
+            } else {
+                params.setSendEnabled(true);
+            }
         }
 
         return params;
@@ -802,6 +825,12 @@ public class KarteEditor extends AbstractChartDocument implements IInfoModel,
             // 診療行為重複チェック
             CheckDuplication cd = new CheckDuplication();
             if (cd.checkStart(context, stamps)) {
+                return false;
+            }
+            
+            // 有効期限チェック
+            CheckExpiration ce = new CheckExpiration();
+            if (ce.checkStart(context, stamps)) {
                 return false;
             }
 
