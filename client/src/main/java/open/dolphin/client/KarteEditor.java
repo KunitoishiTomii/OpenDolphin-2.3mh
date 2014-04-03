@@ -827,6 +827,12 @@ public class KarteEditor extends AbstractChartDocument implements IInfoModel,
             if (cd.checkStart(context, stamps)) {
                 return false;
             }
+            
+            // 有効期限チェック
+            CheckExpiration ce = new CheckExpiration();
+            if (ce.checkStart(context, stamps)) {
+                return false;
+            }
 
             // 入院の場合の追加チェック
             if (inHospital) {

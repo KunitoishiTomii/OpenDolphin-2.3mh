@@ -31,7 +31,7 @@
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-core</artifactId>
-            <version>4.2.10.Final</version>
+            <version>4.2.11.Final</version>
         </dependency>
         <dependency>
             <groupId>log4j</groupId>
@@ -51,7 +51,7 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>9.3-1100-jdbc41</version>
+            <version>9.3-1101-jdbc41</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.core</groupId>
@@ -61,7 +61,7 @@
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-client</artifactId>
-            <version>3.0.6.Final</version>
+            <version>3.0.7.Final</version>
         </dependency>
         <dependency>
             <groupId>commons-codec</groupId>
@@ -107,7 +107,7 @@
         <dependency>
             <groupId>org.apache.tomcat</groupId>
             <artifactId>tomcat-jdbc</artifactId>
-            <version>7.0.52</version>
+            <version>7.0.53</version>
         </dependency>
         <dependency>
             <groupId>com.jgoodies</groupId>
