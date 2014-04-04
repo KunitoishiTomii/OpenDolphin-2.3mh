@@ -7,9 +7,18 @@
         <properties>
             <!-- 旧Hibernateとの互換性のため hibernate.id.new_generator_mappings = falseにしておく -->
             <property name="hibernate.id.new_generator_mappings" value="false"/>
+<!--
             <property name="hibernate.search.default.indexBase" value="${lucene.index.base}"/>
             <property name="hibernate.search.default.directory_provider" value="filesystem"/>
             <property name="hibernate.search.default.locking_strategy" value="single"/>
+-->
+            <property name="hibernate.search.infinispan.cachemanager_jndiname" value="java:jboss/infinispan/hibernateSearch"/>
+            <property name="hibernate.search.default.directory_provider" value="infinispan"/>
+            <property name="hibernate.search.default.data_cachename" value="LuceneIndexesData" />  
+            <property name="hibernate.search.default.metadata_cachename" value="LuceneIndexesMetadata" />
+            <property name="hibernate.search.default.locking_cachename" value="LuceneIndexesLocking" />
+            <property name="hibernate.search.default.exclusive_index_use" value="false"/>
+
             <property name="hibernate.search.lucene_version" value="LUCENE_36"/>
             <property name="hibernate.search.default.optimizer.operation_limit.max" value="1000"/>
             <property name="hibernate.search.default.optimizer.transaction_limit.max" value="100"/>

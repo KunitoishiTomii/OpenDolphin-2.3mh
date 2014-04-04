@@ -281,6 +281,19 @@
                     <eviction strategy="NONE"/>
                 </local-cache>
             </cache-container>
+<!-- Add hibernate-search-infinispan start -->
+            <cache-container name="hibernateSearch" default-cache="LuceneIndexesData" jndi-name="java:jboss/infinispan/hibernateSearch" start="EAGER">
+                <local-cache name="LuceneIndexesData" batching="true">
+                    <file-store passivation="false" purge="false"/>
+                </local-cache>
+                <local-cache name="LuceneIndexesMetadata" batching="true">
+                    <file-store passivation="false" purge="false" preload="true"/>
+                </local-cache>
+                <local-cache name="LuceneIndexesLocking" batching="true">
+                    <file-store passivation="false" purge="false"/>
+                </local-cache>
+            </cache-container>
+<!-- Add hibernate-search-infinispan end   -->
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:jaxrs:1.0"/>
         <subsystem xmlns="urn:jboss:domain:jca:2.0">
