@@ -31,7 +31,7 @@
         <dependency>
             <groupId>org.glassfish.tyrus.bundles</groupId>
             <artifactId>tyrus-standalone-client</artifactId>
-            <version>1.4</version>
+            <version>1.5</version>
         </dependency>
         <dependency>
             <groupId>org.hibernate</groupId>
@@ -46,7 +46,7 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
-            <version>1.7.5</version>
+            <version>1.7.6</version>
         </dependency>
         <dependency>
             <groupId>org.apache.velocity</groupId>
@@ -125,7 +125,7 @@
            <version>1.6.10</version>
          </dependency>
 
-<!-- 以下�?自�?��ローカルリポジトリに追�?���?-->
+<!-- 以下は自分でローカルリポジトリに追加する -->
         <dependency>
             <groupId>com.lowagie</groupId>
             <artifactId>iTextAsian</artifactId>
