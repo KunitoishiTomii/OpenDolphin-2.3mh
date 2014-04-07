@@ -13,6 +13,7 @@ import open.dolphin.dao.DaoException;
 import open.dolphin.dao.SqlMiscDao;
 import open.dolphin.infomodel.DiseaseEntry;
 import open.dolphin.infomodel.TensuMaster;
+import open.dolphin.project.Project;
 
 /**
  * UkeLoader
@@ -26,9 +27,6 @@ public class UkeLoader {
     //private static final String ENCODING = "SJIS";
     private Set<String> itemSrycdSet;
     private int reModelCount;
-    
-    // カナ順でソートするか
-    private static final boolean SORT_BY_KANA = false;
     
     public Set<String> getItemSrycdSet() {
         return itemSrycdSet;
@@ -123,7 +121,8 @@ public class UkeLoader {
         private void complete() {
             setLaboInclusive();
             // ソートする
-            if (SORT_BY_KANA) {
+            boolean kanaOrder = Project.getBoolean(RezeptViewer.REZETEN_KANA_ORDER, false);
+            if (kanaOrder) {
                 sortByKana();
             } else {
                 sortById();
