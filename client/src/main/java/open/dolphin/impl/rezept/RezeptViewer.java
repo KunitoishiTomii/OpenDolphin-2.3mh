@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.ImageIcon;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JMenuItem;
@@ -91,6 +92,8 @@ public class RezeptViewer {
     private static final ImageIcon INFO_ICON = ClientContext.getImageIconAlias("icon_info_small");
     private static final ImageIcon WARN_ICON = ClientContext.getImageIconAlias("icon_warn_small");
     private static final ImageIcon ERROR_ICON = ClientContext.getImageIconAlias("icon_error_small");
+    
+    public static final String REZETEN_KANA_ORDER = "rezetenKanaOrder";
     
     private final Class[] FILTER_CLASSES= {BasicFilter.class, DiagnosisFilter.class};
     
@@ -609,6 +612,7 @@ public class RezeptViewer {
                 public void actionPerformed(ActionEvent e) {
                     String ym = e.getActionCommand();
                     loadFromOrca(ym);
+                    //loadFromOrca("201312");
                 }
             };
 
@@ -617,6 +621,18 @@ public class RezeptViewer {
             item2.addActionListener(listener);
             
         } else {
+            final JCheckBoxMenuItem checkItem = new JCheckBoxMenuItem("カナ順");
+            boolean kanaOrder = Project.getBoolean(REZETEN_KANA_ORDER, false);
+            checkItem.setSelected(kanaOrder);
+            checkItem.addActionListener(new ActionListener(){
+
+                @Override
+                public void actionPerformed(ActionEvent ae) {
+                    Project.setBoolean(REZETEN_KANA_ORDER, checkItem.isSelected());
+                }
+            });
+            pMenu.add(checkItem);
+            
             JMenuItem item2 = new JMenuItem("適応症編集");
             item2.addActionListener(new ActionListener(){
 

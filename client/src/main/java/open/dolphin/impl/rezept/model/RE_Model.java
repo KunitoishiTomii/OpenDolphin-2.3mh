@@ -36,6 +36,8 @@ public class RE_Model implements IRezeModel {
     
     private List<CheckResult> checkResults;
     
+    private String kanaName;
+    
     private IR_Model irModel;
     
     public RE_Model() {
@@ -129,6 +131,12 @@ public class RE_Model implements IRezeModel {
     }
     public void addSYModel(SY_Model model) {
         syModelList.add(model);
+    }
+    public String getKanaName() {
+        return kanaName;
+    }
+    public void setKanaName(String kanaName) {
+        this.kanaName = kanaName;
     }
     
     @Override
