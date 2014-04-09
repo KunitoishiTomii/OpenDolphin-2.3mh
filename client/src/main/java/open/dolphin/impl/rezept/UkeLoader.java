@@ -13,6 +13,7 @@ import open.dolphin.dao.DaoException;
 import open.dolphin.dao.SqlMiscDao;
 import open.dolphin.infomodel.DiseaseEntry;
 import open.dolphin.infomodel.TensuMaster;
+import open.dolphin.project.Project;
 
 /**
  * UkeLoader
@@ -86,9 +87,6 @@ public class UkeLoader {
             return null;
         }
 
-        // patient id順にソート
-        sortByPatientId(irModelList);
-
         // 傷病名・点数マスタを参照して名称をセットする
         processSYModel(irModelList);
         processIRezeItem(irModelList);
@@ -101,11 +99,13 @@ public class UkeLoader {
         private int totalTen;
         private IR_Model irModel;
         private int reModelCount;
+        private final Set<String> ptIds; 
         
         private final List<SI_Model> siModels;
         
         private LineParser() {
             siModels = new ArrayList<>();
+            ptIds = new HashSet<>();
         }
 
         private void setIrModel(IR_Model irModel) {
@@ -120,6 +120,14 @@ public class UkeLoader {
         
         private void complete() {
             setLaboInclusive();
+            // ソートする
+            boolean kanaOrder = Project.getBoolean(RezeptViewer.REZETEN_KANA_ORDER, false);
+            if (kanaOrder) {
+                sortByKana();
+            } else {
+                sortById();
+            }
+
         }
         private void setLaboInclusive() {
             if (siModels.size() >= 10) {
@@ -130,6 +138,29 @@ public class UkeLoader {
                 }
             }
             siModels.clear();
+        }
+        
+        // 内輪で喧嘩してんじゃねーよ！
+        private void sortByKana() {
+            
+            if (ptIds.isEmpty()) {
+                return;
+            }
+            try {
+                Map<String, String> ptIdKanaMap = SqlMiscDao.getInstance().getPtKanaName(ptIds);
+                List<RE_Model> reModelList = irModel.getReModelList();
+                for (RE_Model reModel : reModelList) {
+                    String kanaName = ptIdKanaMap.get(reModel.getPatientId());
+                    reModel.setKanaName(kanaName);
+                }
+                Collections.sort(reModelList, new RE_ModelKanaNameComparator());
+            } catch (DaoException | NullPointerException ex) {
+            }
+        }
+        
+        private void sortById() {
+            List<RE_Model> reModelList = irModel.getReModelList();
+            Collections.sort(reModelList, new RE_ModelComparator());
         }
 
         private void parseLine(String[] data) {
@@ -154,6 +185,7 @@ public class UkeLoader {
                     //hasHO = false;
                     reModelCount++;
                     totalTen += Integer.parseInt(data[1]);
+                    ptIds.add(reModel.getPatientId());
                     break;
                 case "HO":
                     HO_Model hoModel = new HO_Model();
@@ -209,13 +241,6 @@ public class UkeLoader {
                 default:
                     break;
             }
-        }
-    }
-    
-    private void sortByPatientId(List<IR_Model> irModelList) {
-        for (IR_Model irModel : irModelList) {
-            List<RE_Model> reModels = irModel.getReModelList();
-            Collections.sort(reModels, new RE_ModelComparator());
         }
     }
     
@@ -435,5 +460,13 @@ public class UkeLoader {
             return pId1.compareTo(pId2);
         }
     }
+    private static class RE_ModelKanaNameComparator implements Comparator {
 
+        @Override
+        public int compare(Object o1, Object o2) {
+            String pKana1 = ((RE_Model) o1).getKanaName();
+            String pKana2 = ((RE_Model) o2).getKanaName();
+            return pKana1.compareTo(pKana2);
+        }
+    }
 }

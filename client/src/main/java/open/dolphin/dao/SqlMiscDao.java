@@ -857,4 +857,24 @@ public final class SqlMiscDao extends SqlDaoBean {
 
         return same;
     }
+    
+    // もっと自由にDolphinを！
+    public Map<String, String> getPtKanaName(Collection<String> ptIds) throws DaoException {
+        
+        StringBuilder sb = new StringBuilder();
+        sb.append("select num.ptnum, inf.kananame from tbl_ptnum num, tbl_ptinf inf ");
+        sb.append("where num.ptid = inf.ptid and num.ptnum in (");
+        sb.append(getCodes(ptIds)).append(") ");
+        sb.append("and num.hospnum =").append(String.valueOf(getHospNum()));
+        final String sql = sb.toString();
+        
+        List<String[]> valuesList = executeStatement(sql);
+        Map<String, String> ptIdKanaMap = new HashMap<>();
+        
+        for (String[] values : valuesList) {
+            ptIdKanaMap.put(values[0].trim(), values[1].trim());
+        }
+        
+        return ptIdKanaMap;
+    }
 }
