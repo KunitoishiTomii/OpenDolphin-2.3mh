@@ -479,13 +479,18 @@ public class PacsDicomDocImpl extends AbstractChartDocument implements PropertyC
         sb.append(param);
         String url = sb.toString();
 
-        if (Desktop.isDesktopSupported()) {
-            Desktop desktop = Desktop.getDesktop();
-            if (desktop.isSupported(Desktop.Action.BROWSE)) {
-                try {
-                    desktop.browse(new URI(url));
-                } catch (IOException | URISyntaxException ex) {
-                    //ex.printStackTrace(System.err);
+        try {
+            ProcessBuilder pb = new ProcessBuilder("javaws", url);
+            pb.start();
+        } catch (IOException e) {
+            if (Desktop.isDesktopSupported()) {
+                Desktop desktop = Desktop.getDesktop();
+                if (desktop.isSupported(Desktop.Action.BROWSE)) {
+                    try {
+                        desktop.browse(new URI(url));
+                    } catch (IOException | URISyntaxException ex) {
+                        //ex.printStackTrace(System.err);
+                    }
                 }
             }
         }
