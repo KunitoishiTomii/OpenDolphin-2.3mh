@@ -61,7 +61,6 @@ public class PacsDicomDocImpl extends AbstractChartDocument implements PropertyC
     private JLabel statusLabel;
 
     private DicomObject currentDicomObject;
-    private boolean useSuffixSearch;
 
     private ListTableModel<ListDicomObject> listTableModel;
     
@@ -359,7 +358,7 @@ public class PacsDicomDocImpl extends AbstractChartDocument implements PropertyC
         // 問合わせ
         statusLabel.setText("Start querying.");
         listTableModel.clear();
-        useSuffixSearch = Project.getBoolean(MiscSettingPanel.PACS_USE_SUFFIXSEARCH, MiscSettingPanel.DEFAULT_PACS_SUFFIX_SEARCH);
+        final boolean useSuffixSearch = Project.getBoolean(MiscSettingPanel.PACS_USE_SUFFIXSEARCH, MiscSettingPanel.DEFAULT_PACS_SUFFIX_SEARCH);
 
         SwingWorker worker = new SwingWorker<List<DicomObject>, Void>() {
 
@@ -460,10 +459,14 @@ public class PacsDicomDocImpl extends AbstractChartDocument implements PropertyC
     }
     
     private void openWeasisByPatientId() {
+        boolean useSuffixSearch = Project.getBoolean(MiscSettingPanel.PACS_USE_SUFFIXSEARCH, MiscSettingPanel.DEFAULT_PACS_SUFFIX_SEARCH);
         String patientId = getContext().getPatient().getPatientId();
         StringBuilder sb = new StringBuilder();
         sb.append("patientID=");
-        sb.append("*").append(patientId);
+        if (useSuffixSearch) {
+            sb.append("*");
+        }
+        sb.append(patientId);
         String param = sb.toString();
         openWeasis(param);
     }
