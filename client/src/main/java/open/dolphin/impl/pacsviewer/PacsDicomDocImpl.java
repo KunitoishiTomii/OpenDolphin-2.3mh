@@ -463,7 +463,7 @@ public class PacsDicomDocImpl extends AbstractChartDocument implements PropertyC
         String patientId = getContext().getPatient().getPatientId();
         StringBuilder sb = new StringBuilder();
         sb.append("patientID=");
-        sb.append(patientId);
+        sb.append("*").append(patientId);
         String param = sb.toString();
         openWeasis(param);
     }
