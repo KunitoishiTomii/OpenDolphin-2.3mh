@@ -83,6 +83,8 @@ public class MakeBaseChargeStamp extends CheckSantei {
     private JRadioButton rb_houmonShinsatsu;
     private JCheckBox cb_douitsu;
     private JLabel lbl_shienshin;
+    private JLabel lbl_chiikiHoukatsuKasan;
+    private JCheckBox cb_chiikiHoukatsuKasan;
     
     // 往診診察時間コンボボックス
     private static final String[] timeItem = new String[]{
@@ -249,6 +251,7 @@ public class MakeBaseChargeStamp extends CheckSantei {
         srycdList.add(srycdFrmt.format(srycd_TokuiSoukanIn4_SAME));
         //srycdList.add(srycdFrmt.format(srycd_TokuiSoukan_Jisseki2_OTHER));
         //srycdList.add(srycdFrmt.format(srycd_TokuiSoukan_Jisseki2_SAME));
+        srycdList.add(srycdFrmt.format(srycd_ChiikiHoukatuKasan));
         
         // ORCAにマスターを問い合わせるようにした
         final SqlMiscDao dao = SqlMiscDao.getInstance();
@@ -590,6 +593,9 @@ public class MakeBaseChargeStamp extends CheckSantei {
                     rb_exMed.setSelected(true);
                     cb_douitsu.setSelected(true);
                     break;
+                case srycd_ChiikiHoukatuKasan:
+                    cb_chiikiHoukatsuKasan.setSelected(true);
+                    break;
             }
         }
     }
@@ -892,6 +898,10 @@ public class MakeBaseChargeStamp extends CheckSantei {
         if (cb_gairaikanri.isSelected()) {
             srycdList.add(new SrycdNumberPair(srycd_Gairaikanri_Kasan));
         }
+        // 地域包括診療加算
+        if (cb_chiikiHoukatsuKasan.isSelected()) {
+            srycdList.add(new SrycdNumberPair(srycd_ChiikiHoukatuKasan));
+        }        
         // 特定疾患療養管理料
         if (cb_tokuteishikkan.isSelected()) {
             srycdList.add(new SrycdNumberPair(srycd_Tokutei_Ryouyou));
@@ -1190,11 +1200,15 @@ public class MakeBaseChargeStamp extends CheckSantei {
         
         // ３列目
         cb_gairaikanri = new JCheckBox("外来管理加算");
+        cb_chiikiHoukatsuKasan = new JCheckBox("地域包括診療加算");
         cb_tokuteishikkan = new JCheckBox("特定疾患療養管理料");
         cb_tokuteishohou = new JCheckBox("特定処方管理加算");
-        cb_yakujou = new JCheckBox("薬剤情報提供料");
-        cb_techou = new JCheckBox("手帳記載");
-        cb_genericName = new JCheckBox("一般名処方加算");
+        //cb_yakujou = new JCheckBox("薬剤情報提供料");
+        //cb_techou = new JCheckBox("手帳記載");
+        //cb_genericName = new JCheckBox("一般名処方加算");
+        cb_yakujou = new JCheckBox("薬情");
+        cb_techou = new JCheckBox("手帳");
+        cb_genericName = new JCheckBox("一般名");
         cb_chouki = new JCheckBox("長期投薬");
         cb_zaitakuKanri = new JCheckBox("在宅時医学管理料");
         cb_nursingHome = new JCheckBox("施設");
@@ -1229,6 +1243,7 @@ public class MakeBaseChargeStamp extends CheckSantei {
         lbl_tokuRyou = new JLabel();
         lbl_tokuShohou = new JLabel();
         lbl_chouki = new JLabel();
+        lbl_chiikiHoukatsuKasan = new JLabel();
 
         btn_update = new JButton("更新");
         btn_cancel = new JButton("取消");
@@ -1328,13 +1343,13 @@ public class MakeBaseChargeStamp extends CheckSantei {
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         tmp = createLeftRightPanel(new JComponent[]{cb_gairaikanri, lbl_gairai});
         panel.add(tmp);
+        tmp = createLeftRightPanel(new JComponent[]{cb_chiikiHoukatsuKasan, lbl_chiikiHoukatsuKasan});
+        panel.add(tmp);
         tmp = createLeftRightPanel(new JComponent[]{cb_tokuteishikkan, lbl_tokuRyou});
         panel.add(tmp);
         tmp = createLeftRightPanel(new JComponent[]{cb_tokuteishohou, lbl_tokuShohou});
         panel.add(tmp);
         tmp = createLeftRightPanel(new JComponent[]{cb_yakujou, cb_techou, cb_genericName});
-        panel.add(tmp);
-        tmp = createLeftRightPanel(new JComponent[]{cb_genericName});
         panel.add(tmp);
         tmp = createLeftRightPanel(new JComponent[]{cb_chouki, lbl_chouki});
         panel.add(tmp);
