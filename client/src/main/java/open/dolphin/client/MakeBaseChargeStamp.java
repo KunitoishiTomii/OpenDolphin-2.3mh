@@ -789,6 +789,10 @@ public class MakeBaseChargeStamp extends CheckSantei {
                     //String num = getFormattedConfirmedDate("d-h-m");
                     //srycdList.add(new SrycdNumberPair(srycd_JikanDayHrMin_Comment, num));
                 }
+                // 地域包括診療加算
+                if (cb_chiikiHoukatsuKasan.isSelected()) {
+                    srycdList.add(new SrycdNumberPair(srycd_ChiikiHoukatuKasan));
+                }     
                 if (rb_jikangai.isSelected()) {
                     srycdList.add(new SrycdNumberPair(srycd_Saishin_Jikangai));
                     //String num = getFormattedConfirmedDate("M-d-h-m");
@@ -897,11 +901,7 @@ public class MakeBaseChargeStamp extends CheckSantei {
         // 外来管理加算
         if (cb_gairaikanri.isSelected()) {
             srycdList.add(new SrycdNumberPair(srycd_Gairaikanri_Kasan));
-        }
-        // 地域包括診療加算
-        if (cb_chiikiHoukatsuKasan.isSelected()) {
-            srycdList.add(new SrycdNumberPair(srycd_ChiikiHoukatuKasan));
-        }        
+        }   
         // 特定疾患療養管理料
         if (cb_tokuteishikkan.isSelected()) {
             srycdList.add(new SrycdNumberPair(srycd_Tokutei_Ryouyou));
