@@ -675,6 +675,9 @@ public class MakeBaseChargeStamp extends CheckSantei {
         //setZaitakuSougouKanriEnable(zaitakuSougouKanri);
 
         cmb_jikan.setSelectedIndex(0);
+        
+        // 地域包括診療加算
+        setChiikiHoukatsuKasanEnable(rb_saishin.isSelected());
     }
 
     protected void makeRetModule() {
@@ -1412,6 +1415,7 @@ public class MakeBaseChargeStamp extends CheckSantei {
                 setSaishinSubEnabled(b);
                 cb_douitsu.setEnabled(!b);
                 setGairaiKanriEnable(b);
+                setChiikiHoukatsuKasanEnable(b);
             }
         });
         
@@ -1465,6 +1469,7 @@ public class MakeBaseChargeStamp extends CheckSantei {
                 cb_douitsu.setEnabled(!b);
                 setTokuShidouEnable(!b);
                 setGairaiKanriEnable(!b);
+                setChiikiHoukatsuKasanEnable(!b);
             }
         });
         
@@ -1633,6 +1638,18 @@ public class MakeBaseChargeStamp extends CheckSantei {
             cb_gairaikanri.setSelected(false);
             cb_gairaikanri.setEnabled(false);
             lbl_gairai.setText("不可");
+        }
+    }
+    
+    private void setChiikiHoukatsuKasanEnable(boolean b) {
+        if (chiikiHoukatsuKasanAvailable && b) {
+            cb_chiikiHoukatsuKasan.setEnabled(true);
+            cb_chiikiHoukatsuKasan.setSelected(true);
+            lbl_chiikiHoukatsuKasan.setText("可");
+        } else {
+            cb_chiikiHoukatsuKasan.setEnabled(false);
+            cb_chiikiHoukatsuKasan.setSelected(false);
+            lbl_chiikiHoukatsuKasan.setText("不可");
         }
     }
     
