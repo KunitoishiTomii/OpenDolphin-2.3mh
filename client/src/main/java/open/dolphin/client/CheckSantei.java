@@ -56,6 +56,7 @@ public class CheckSantei implements ICheckSanteiConst {
     protected boolean yakujouAvailable;
     protected boolean zaitakuKanriAvailable;
     protected boolean yakanSouchouAvailable;
+    protected boolean chiikiHoukatsuKasanAvailable;
     protected boolean isDoujitsu;
     protected boolean isShoshin;
     protected int pastTokuRyouyouCount;
@@ -63,6 +64,7 @@ public class CheckSantei implements ICheckSanteiConst {
     protected int pastChoukiShohouCount;
     protected int pastZaitakuKanriCount;
     protected int pastZaitakuHoumonCount;
+    protected int pastChiikiHoukatsuKasanCount;
 
     private boolean hasInMed;
     private boolean hasExMed;
@@ -76,6 +78,7 @@ public class CheckSantei implements ICheckSanteiConst {
     private int pastNoTokuRyouCount;
     private int newZaitakuKanriCount;
     private int newZaitakuHoumonCount;
+    private int newChiikiHoukatsuKasanCount;
     
     private boolean newZaitakuInMed;
     private boolean pastZaitakuInMed;
@@ -146,6 +149,13 @@ public class CheckSantei implements ICheckSanteiConst {
         }
 
         StringBuilder sb = new StringBuilder();
+        
+        //----------------
+        // 地域包括診療加算
+        //----------------
+        if (!chiikiHoukatsuKasanAvailable && newChiikiHoukatsuKasanCount != 0) {
+            sb.append("地域包括診療加算は算定できません。\n");
+        }
 
         //------------
         // 外来管理加算
@@ -205,7 +215,16 @@ public class CheckSantei implements ICheckSanteiConst {
             sb.append("指導料の算定回数、併算定チェック要。\n");
             tokuShidouAvailable = false;
         }
-
+        
+        //----------------
+        // 地域包括診療加算
+        //----------------
+        // 地域包括診療加算、できます
+        if (chiikiHoukatsuKasanAvailable
+                && newChiikiHoukatsuKasanCount == 0) {
+            sb.append("地域包括診療加算を算定できます。\n");
+        }
+        
         //--------------------
         // 特定疾患処方管理加算
         //--------------------
@@ -465,6 +484,7 @@ public class CheckSantei implements ICheckSanteiConst {
         int tmpNoTokuRyouCount = 0;
         int tmpZaitakuKanriCount = 0;
         int tmpZaitakuHoumonCount = 0;
+        int tmpChiikiHoukatsuKasanCount = 0;
         boolean tmpIsDoujitsu = false;
         boolean tmpDenwa = false;
         boolean tmpZaitakuInMed = false;
@@ -517,6 +537,22 @@ public class CheckSantei implements ICheckSanteiConst {
                 case srycd_TokuiSoukanIn2:
                 case srycd_TokuiSoukanIn3:
                 case srycd_TokuiSoukanIn4:
+                case srycd_ZaiiSoukanIn1_OTHER:
+                case srycd_ZaiiSoukanIn1_SAME:
+                case srycd_ZaiiSoukanIn2_OTHER:
+                case srycd_ZaiiSoukanIn2_SAME:
+                case srycd_ZaiiSoukanIn3_OTHER:
+                case srycd_ZaiiSoukanIn3_SAME:
+                case srycd_ZaiiSoukanIn4_OTHER:
+                case srycd_ZaiiSoukanIn4_SAME:
+                case srycd_TokuiSoukanIn1_OTHER:
+                case srycd_TokuiSoukanIn1_SAME:
+                case srycd_TokuiSoukanIn2_OTHER:
+                case srycd_TokuiSoukanIn2_SAME:
+                case srycd_TokuiSoukanIn3_OTHER:
+                case srycd_TokuiSoukanIn3_SAME:
+                case srycd_TokuiSoukanIn4_OTHER:
+                case srycd_TokuiSoukanIn4_SAME:
                     tmpZaitakuKanriCount += count;
                     tmpZaitakuInMed = true;
                     break;
@@ -528,6 +564,22 @@ public class CheckSantei implements ICheckSanteiConst {
                 case srycd_TokuiSoukanEx2:
                 case srycd_TokuiSoukanEx3:
                 case srycd_TokuiSoukanEx4:
+                case srycd_ZaiiSoukanEx1_OTHER:
+                case srycd_ZaiiSoukanEx1_SAME:
+                case srycd_ZaiiSoukanEx2_OTHER:
+                case srycd_ZaiiSoukanEx2_SAME:
+                case srycd_ZaiiSoukanEx3_OTHER:
+                case srycd_ZaiiSoukanEx3_SAME:
+                case srycd_ZaiiSoukanEx4_OTHER:
+                case srycd_ZaiiSoukanEx4_SAME:
+                case srycd_TokuiSoukanEx1_OTHER:
+                case srycd_TokuiSoukanEx1_SAME:
+                case srycd_TokuiSoukanEx2_OTHER:
+                case srycd_TokuiSoukanEx2_SAME:
+                case srycd_TokuiSoukanEx3_OTHER:
+                case srycd_TokuiSoukanEx3_SAME:
+                case srycd_TokuiSoukanEx4_OTHER:
+                case srycd_TokuiSoukanEx4_SAME:
                     tmpZaitakuKanriCount += count;
                     tmpZaitakuInMed = false;
                     break;
@@ -536,6 +588,9 @@ public class CheckSantei implements ICheckSanteiConst {
                 case srycd_HoumonShinsatsu_douitsu_tokutei:
                 //case srycd_Oushin:
                     tmpZaitakuHoumonCount += count;
+                    break;
+                case srycd_ChiikiHoukatuKasan:
+                    tmpChiikiHoukatsuKasanCount += count;
                     break;
                 default:
                     if (exclusiveTokuteiRyouyou(srycd)) {
@@ -553,6 +608,8 @@ public class CheckSantei implements ICheckSanteiConst {
             pastZaitakuKanriCount = tmpZaitakuKanriCount;
             pastZaitakuHoumonCount = tmpZaitakuHoumonCount;
             isDoujitsu = tmpIsDoujitsu;
+            pastChiikiHoukatsuKasanCount = tmpChiikiHoukatsuKasanCount;
+            
         } else {
             newTokuRyouyouCount = tmpTokuRyouyouCount;
             newTokuShohouCount = tmpTokuShohouCount;
@@ -563,6 +620,7 @@ public class CheckSantei implements ICheckSanteiConst {
             newZaitakuKanriCount = tmpZaitakuKanriCount;
             newZaitakuInMed = tmpZaitakuInMed;
             denwa = tmpDenwa;
+            newChiikiHoukatsuKasanCount = tmpChiikiHoukatsuKasanCount;
         }
     }
 
@@ -695,8 +753,22 @@ public class CheckSantei implements ICheckSanteiConst {
         
         // 薬剤情報
         setupYakujouAvailable();
+        
+        // 地域包括診療加算チェック
+        String ptId = context.getPatient().getPatientId();
+        chiikiHoukatsuKasanAvailable = syskanri.getSyskanriFlag(sk1006_chiikiHoukatsuKasan);
+        if (chiikiHoukatsuKasanAvailable) {
+            String cdata = SqlMiscDao.getInstance().getPtConfData(ptId, "TIIKIHOKATU");
+            int cnt = 0;
+            for (char c : cdata.toCharArray()) {
+                if (c == '1') {
+                    cnt++;
+                }
+            }
+            chiikiHoukatsuKasanAvailable &= (cnt >= 2);
+        }
     }
-    
+
     private void setupPastSanteiHistory() {
         
         Date fromThisMonth = getFromDateThisMonth(karteDate);
