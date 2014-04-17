@@ -90,10 +90,11 @@ public class RE_Model implements IRezeModel {
 
     public int getAge() {
         GregorianCalendar gc = new GregorianCalendar();
-        int year = gc.get(GregorianCalendar.YEAR);
+        gc.setTime(billDate);
+        int ym = gc.get(GregorianCalendar.YEAR) * 12 + gc.get(GregorianCalendar.MONTH) + 1;
         gc.setTime(birthday);
-        int birthYear = gc.get(GregorianCalendar.YEAR);
-        return year - birthYear;
+        int bym = gc.get(GregorianCalendar.YEAR) * 12 + gc.get(GregorianCalendar.MONTH) + 1;
+        return (ym - bym) / 12;
     }
     
     public List<IRezeItem> getItemList() {
