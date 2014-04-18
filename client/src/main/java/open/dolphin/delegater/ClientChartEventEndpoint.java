@@ -32,17 +32,25 @@ public class ClientChartEventEndpoint {
         String fidUid = Project.getUserModel().getUserId();
         String passwd = Project.getUserModel().getPassword();
         String baseURI = Project.getString(Project.SERVER_URI);
-        
+        boolean useSSL = baseURI.toLowerCase().startsWith("https");
         int pos = baseURI.indexOf(":");
+        
         StringBuilder sb = new StringBuilder();
-        sb.append("wss").append(baseURI.substring(pos)).append("/dolphin/ws/");
+        if (useSSL) {
+            sb.append("wss");
+        } else {
+            sb.append("ws");
+        }
+        sb.append(baseURI.substring(pos)).append("/dolphin/ws/");
         sb.append(fidUid).append("/").append(passwd).append("/").append(clientUUID);
         URI uri = URI.create(sb.toString());
         
-        SSLContext ssl = OreOreSSL.getSslContext();
-        SSLEngineConfigurator sslConfig = new SSLEngineConfigurator(ssl, true, false, false);
         ClientManager client = ClientManager.createClient();
-        client.getProperties().put(SSL_ENGINE_CONFIGURATOR, sslConfig);
+        if (useSSL) {
+            SSLContext ssl = OreOreSSL.getSslContext();
+            SSLEngineConfigurator sslConfig = new SSLEngineConfigurator(ssl, true, false, false);
+            client.getProperties().put(SSL_ENGINE_CONFIGURATOR, sslConfig);
+        }
         wsSession = client.connectToServer(this, uri);
         
         //WebSocketContainer c = ContainerProvider.getWebSocketContainer();
