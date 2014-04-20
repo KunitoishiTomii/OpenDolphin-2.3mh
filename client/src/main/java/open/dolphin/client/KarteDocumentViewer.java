@@ -634,9 +634,11 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
     private class MakeViewerTask implements Callable {
 
         private final DocumentModel docModel;
+        private final UserModel     userModel_root;
         
-        private MakeViewerTask(DocumentModel docModel) {
-            this.docModel = docModel;
+        private MakeViewerTask(DocumentModel docModel, UserModel userModel_root) {
+            this.docModel       = docModel;
+            this.userModel_root = userModel_root;
         }
         
         @Override
@@ -673,6 +675,7 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
             final KarteViewer viewer = createKarteViewer(docModel.getDocInfoModel());
             viewer.setContext(getContext());
             viewer.setModel(docModel);
+            viewer.setRootUserModel(userModel_root);
 
             // このコールでモデルの遅延レンダリングが開始される
             viewer.start();
@@ -759,13 +762,16 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
                 List<Long> ids = allIds.subList(fromIndex, toIndex);
                 try {
                     List<DocumentModel> result = ddl.getDocuments(ids);
-                    if (result != null && !result.isEmpty()) {
+                    // 2014.04.20 最初に文書を作成したユーザを取得
+                    rootUserModels = ddl.getRootUsers(ids);
+                    if (result != null && !result.isEmpty() && rootUserModels != null && !rootUserModels.isEmpty()) {
+                        int i=0;
                         for (DocumentModel model : result) {
                             // DocumentModelにDocInfoModelを設定する
                             DocInfoModel docInfo = docInfoMap.get(model.getId());
                             model.setDocInfoModel(docInfo);
                             // Executorに登録していく
-                            MakeViewerTask task = new MakeViewerTask(model);
+                            MakeViewerTask task = new MakeViewerTask(model, rootUserModels.get(i++));
                             service.submit(task);
                             documentIds.add(model.getId());
                             ++taskCount;
@@ -775,18 +781,6 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
                 }
                 fromIndex += fetchSize;
                 fetchSize = defaultFetchSize;
-            }
-            
-            try {
-                rootUserModels = ddl.getRootUsers(documentIds);
-                Logger.getLogger(this.getClass().toString()).warn("getRootUser OK count="+rootUserModels.size());
-                for(UserModel user: rootUserModels){
-                    Logger.getLogger(this.getClass().toString()).warn("UserId ="+user.getId());
-                    Logger.getLogger(this.getClass().toString()).warn("UserName =");
-                    Logger.getLogger(this.getClass().toString()).warn(user.getCommonName());
-                }
-            } catch (Exception ex) {
-                Logger.getLogger(this.getClass().toString()).warn("getRootUser NG");
             }
             
             // 出来上がったものからkarteViewerMapに登録していく

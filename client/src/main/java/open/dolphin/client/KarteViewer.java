@@ -12,6 +12,7 @@ import open.dolphin.infomodel.DocInfoModel;
 import open.dolphin.infomodel.DocumentModel;
 import open.dolphin.infomodel.IInfoModel;
 import open.dolphin.infomodel.ModelUtils;
+import open.dolphin.infomodel.UserModel;
 import open.dolphin.project.Project;
 import open.dolphin.util.AgeCalculator;
 
@@ -38,6 +39,9 @@ public abstract class KarteViewer extends AbstractChartDocument {
 
     // この view のモデル
     private DocumentModel model;
+    
+    // 初版のUserModel
+    private UserModel userModel_root;
 
     // 2号カルテパネル
     private KartePanel kartePanel;
@@ -144,10 +148,14 @@ public abstract class KarteViewer extends AbstractChartDocument {
         // KarteViewerで日付の右Dr名を表示する
         sb.append("／");
         sb.append(model.getUserModel().getCommonName());
-        kartePanel.getTimeStampLabel().setText(sb.toString());
         
-        // 修正予定地
-        // 初版作成者と最新版作成者が違う場合になんとかしたい
+        // 初版作成者と最新版作成者が違う場合はその旨表示する
+        if(model.getUserModel().getCommonName().compareTo(userModel_root.getCommonName()) != 0){
+            sb.append("(初版：");
+            sb.append(userModel_root.getCommonName());
+            sb.append(")");
+        }
+        kartePanel.getTimeStampLabel().setText(sb.toString());
         
 //masuda^   タイトルを文書種別によって色分けする
         kartePanel.setTitleColor(docInfo);
@@ -209,6 +217,15 @@ public abstract class KarteViewer extends AbstractChartDocument {
     public final void setModel(DocumentModel model) {
         // このときに初版カルテを設定出来ないか？
         this.model = model;
+    }
+
+    /**
+     * 初版作成者のUserModelを設定する。
+     * @param userModel_root 初版作成者のUserModel
+     */
+    public final void setRootUserModel(UserModel userModel_root) {
+        // このときに初版カルテを設定出来ないか？
+        this.userModel_root = userModel_root;
     }
 
     /**
