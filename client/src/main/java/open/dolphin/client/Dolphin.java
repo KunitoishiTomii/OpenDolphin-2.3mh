@@ -203,7 +203,13 @@ public class Dolphin implements MainWindow, IChartEventListener {
                 String msg = "他端末で同一ユーザーがログイン中です。\n"
                         + "スタンプ箱の編集はできません。\n"
                         + "不整合を避けるため同時ログインはお勧めしません。\n"
-                        + "追加情報: " + uuid.substring(37);
+                        + "追加情報: ";
+                if(uuid.length()>37){
+                        msg = msg + uuid.substring(37);
+                }
+                else{
+                        msg = msg + "なし";
+                }
                 int val = JOptionPane.showOptionDialog(
                         null, msg, "警告：同時ログイン",
                         JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE, null, options, options[0]);
@@ -646,8 +652,14 @@ public class Dolphin implements MainWindow, IChartEventListener {
             String ptName = pvt.getPatientName();
             String[] options = {"閲覧のみ", "強制的に編集", "キャンセル"};
             String msg = ptName + " 様のカルテは他の端末で編集中です。\n" +
-                    "強制的に編集した場合、後から保存したカルテが最新カルテになります。\n"  +
-                    "追加情報: " + pm.getOwnerUUID().substring(37);
+                    "強制的に編集した場合、後から保存したカルテが最新カルテになります。\n" +
+                    "追加情報: ";
+            if(pm.getOwnerUUID().length()>37){
+                    msg = msg + pm.getOwnerUUID().substring(37);
+            }
+            else{
+                    msg = msg + "なし";
+            }
             int val = JOptionPane.showOptionDialog(
                     getFrame(), msg, "カルテオープン",
                     JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null, options, options[0]);
