@@ -146,6 +146,9 @@ public abstract class KarteViewer extends AbstractChartDocument {
         sb.append(model.getUserModel().getCommonName());
         kartePanel.getTimeStampLabel().setText(sb.toString());
         
+        // 修正予定地
+        // 初版作成者と最新版作成者が違う場合になんとかしたい
+        
 //masuda^   タイトルを文書種別によって色分けする
         kartePanel.setTitleColor(docInfo);
 //masuda$
@@ -204,6 +207,7 @@ public abstract class KarteViewer extends AbstractChartDocument {
      * @param model 表示するDocumentModel
      */
     public final void setModel(DocumentModel model) {
+        // このときに初版カルテを設定出来ないか？
         this.model = model;
     }
 

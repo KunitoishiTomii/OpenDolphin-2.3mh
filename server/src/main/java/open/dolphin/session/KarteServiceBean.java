@@ -341,8 +341,8 @@ public class KarteServiceBean {
 //masuda, katoh$
         
         return result;
-}
-
+    }
+    
     /**
      * 文書(DocumentModel Object)を取得する。
      * @param ids DocumentModel の pkコレクション
@@ -438,6 +438,31 @@ public class KarteServiceBean {
         dmMap.clear();
 
         return documentList;
+    }
+
+    public List<UserModel> getRootUsers(List<Long> documentIds) {
+        List<UserModel> result;
+        
+        result = new ArrayList<>();
+        
+        for (Long documentId: documentIds){
+            List<DocumentModel> givenModels =
+                    em.createQuery("from DocumentModel m where m.id = :id")
+                    .setParameter("id", documentId)
+                    .getResultList();
+            for (DocumentModel givenModel: givenModels){
+                List<DocumentModel> rootModels = 
+                        em.createQuery("from DocumentModel m where m.confirmed = :date and m.karte.patient.id = :karteid")
+                        .setParameter("date", givenModel.getStarted())
+                        .setParameter("karteid", givenModel.getKarte().getPatient().getId())
+                        .getResultList();
+                for (DocumentModel rootModel: rootModels){
+                    result.add(rootModel.getUserModel());
+                }
+            }
+        }
+        
+        return result;
     }
 
     // まとめてquery改改改 postgresでは遅い1？

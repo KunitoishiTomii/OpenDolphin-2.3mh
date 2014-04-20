@@ -17,6 +17,7 @@ import open.dolphin.infomodel.DocumentModel;
 import open.dolphin.infomodel.IInfoModel;
 import open.dolphin.infomodel.ModuleModel;
 import open.dolphin.infomodel.SchemaModel;
+import open.dolphin.infomodel.UserModel;
 import open.dolphin.letter.KartePDFMaker;
 import open.dolphin.project.Project;
 import open.dolphin.util.MultiTaskExecutor;
@@ -736,6 +737,8 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
             logger.debug("KarteTask doInBackground");
             
             DocumentDelegater ddl = DocumentDelegater.getInstance();
+            List <Long>      documentIds;
+            List <UserModel> rootUserModels;
 
             int fromIndex = 0;
             int idListSize = docInfoMap.size();
@@ -750,6 +753,7 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
             // 分割してサーバーから取得する
             List<Long> allIds = new ArrayList<>(docInfoMap.keySet());
             
+            documentIds = new ArrayList<>();
             while (fromIndex < idListSize) {
                 int toIndex = Math.min(fromIndex + fetchSize, idListSize);
                 List<Long> ids = allIds.subList(fromIndex, toIndex);
@@ -763,6 +767,7 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
                             // Executorに登録していく
                             MakeViewerTask task = new MakeViewerTask(model);
                             service.submit(task);
+                            documentIds.add(model.getId());
                             ++taskCount;
                         }
                     }
@@ -770,6 +775,18 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
                 }
                 fromIndex += fetchSize;
                 fetchSize = defaultFetchSize;
+            }
+            
+            try {
+                rootUserModels = ddl.getRootUsers(documentIds);
+                Logger.getLogger(this.getClass().toString()).warn("getRootUser OK count="+rootUserModels.size());
+                for(UserModel user: rootUserModels){
+                    Logger.getLogger(this.getClass().toString()).warn("UserId ="+user.getId());
+                    Logger.getLogger(this.getClass().toString()).warn("UserName =");
+                    Logger.getLogger(this.getClass().toString()).warn(user.getCommonName());
+                }
+            } catch (Exception ex) {
+                Logger.getLogger(this.getClass().toString()).warn("getRootUser NG");
             }
             
             // 出来上がったものからkarteViewerMapに登録していく
