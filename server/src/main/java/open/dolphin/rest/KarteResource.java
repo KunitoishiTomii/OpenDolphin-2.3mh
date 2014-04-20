@@ -82,7 +82,7 @@ public class KarteResource extends AbstractResource {
     }
 
     @GET
-    @Path("document")
+    @Path("rootuser")
     @Produces(MEDIATYPE_JSON_UTF8)
     public Response getRootUsers(@QueryParam(IDS) String ids) {
 
