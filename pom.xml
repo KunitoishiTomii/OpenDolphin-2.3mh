@@ -42,7 +42,7 @@
                 <groupId>masudanaika</groupId>
                 <artifactId>OpenDolphin-launcher</artifactId>
                 <version>${project.version}</version>
-                <type>war</type>
+                <type>jar</type>
             </dependency>
         </dependencies>
     </dependencyManagement>
