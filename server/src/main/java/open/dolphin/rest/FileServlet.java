@@ -36,10 +36,9 @@ public class FileServlet extends HttpServlet {
     private static final String ALGORITHM = "MD5";
     private static final String JAR_NAME = "jar.name";
     private static final String ROOT_PATH = "root.path";
+    private static final String CURR_HASH = "curr.hash";
     private static final Properties prop;
     private static final Logger logger = Logger.getLogger(FileServlet.class.getSimpleName());
-
-    private String currHash;
 
     static {
         prop = new Properties();
@@ -62,7 +61,8 @@ public class FileServlet extends HttpServlet {
             if (rootPath != null && jarName != null) {
                 Path path = Paths.get(rootPath, jarName);
                 if (Files.exists(path)) {
-                    currHash = getFileHash(path, ALGORITHM);
+                    String currHash = getFileHash(path, ALGORITHM);
+                    prop.setProperty(CURR_HASH, currHash);
                     logger.log(Level.INFO, "{0} hash = {1}", new Object[]{jarName, currHash});
                 }
             }
@@ -77,6 +77,8 @@ public class FileServlet extends HttpServlet {
         // headerにhashが設定されていたら比較し、異なる場合はファイル名リストを返す
         String hash = req.getHeader("HASH");
         if (hash != null) {
+            String currHash = prop.getProperty(CURR_HASH);
+            logger.log(Level.INFO, "Current Hash = {0}", currHash);
             if (!hash.equals(currHash)) {
                 serveFilePaths(resp);
             }
