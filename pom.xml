@@ -11,6 +11,7 @@
         <module>common</module>
         <module>server</module>
         <module>client</module>
+        <module>launcher</module>
     </modules>
 
     <properties>
@@ -34,6 +35,12 @@
             <dependency>
                 <groupId>masudanaika</groupId>
                 <artifactId>OpenDolphin-server</artifactId>
+                <version>${project.version}</version>
+                <type>war</type>
+            </dependency>
+            <dependency>
+                <groupId>masudanaika</groupId>
+                <artifactId>OpenDolphin-launcher</artifactId>
                 <version>${project.version}</version>
                 <type>war</type>
             </dependency>
@@ -67,6 +74,11 @@
                                 <copy todir="${basedir}/dist/">
                                     <fileset dir="${basedir}/server/target">
                                         <include name="*.war" />
+                                    </fileset>
+                                </copy>
+                                <copy todir="${basedir}/dist/">
+                                    <fileset dir="${basedir}/launcher/target">
+                                        <include name="*.jar" />
                                     </fileset>
                                 </copy>
                             </target>
