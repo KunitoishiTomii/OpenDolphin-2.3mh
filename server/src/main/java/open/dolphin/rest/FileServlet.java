@@ -171,7 +171,7 @@ public class FileServlet extends HttpServlet {
         try (FileInputStream fis = new FileInputStream(path.toFile());
                 BufferedInputStream bis = new BufferedInputStream(fis);
                 DigestInputStream dis = new DigestInputStream(bis, md)) {
-            while (dis.read() > 0) {
+            while (dis.read() != -1) {
             }
         }
 

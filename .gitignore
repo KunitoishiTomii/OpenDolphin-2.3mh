@@ -4,3 +4,5 @@
 /target/
 /dist/
 /launcher/target/
+/launcher/client/
+/launcher/launcher.properties

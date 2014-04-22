@@ -28,6 +28,7 @@ public class Launcher {
     private static final String JAR_NAME = "jar.name";
     private static final String ALGORITHM = "MD5";
     private static final String JAR_DIR = "client";
+    private static final String FILES_PATH = "/dolphin/files/";
     private String serverAddr;
     private String jarName;
 
@@ -72,7 +73,7 @@ public class Launcher {
                 ? getFileHash(jarPath, ALGORITHM) : "";
 
         StringBuilder sb = new StringBuilder();
-        sb.append("http://").append(serverAddr).append(":8080/dolphin/files/");
+        sb.append("http://").append(serverAddr).append(":8080").append(FILES_PATH);
         URL url = new URL(sb.toString());
 
         sb = new StringBuilder();
@@ -128,7 +129,7 @@ public class Launcher {
         for (String pathStr : pathsStr) {
 
             StringBuilder sb = new StringBuilder();
-            sb.append("http://").append(serverAddr).append(":8080/dolphin/files/").append(pathStr);
+            sb.append("http://").append(serverAddr).append(":8080").append(FILES_PATH).append(pathStr);
             URL url = new URL(sb.toString());
             HttpURLConnection con = null;
             try {
@@ -178,7 +179,7 @@ public class Launcher {
         try (FileInputStream fis = new FileInputStream(path.toFile());
                 BufferedInputStream bis = new BufferedInputStream(fis);
                 DigestInputStream dis = new DigestInputStream(bis, md)) {
-            while (dis.read() > 0) {
+            while (dis.read() != -1) {
             }
         }
 
