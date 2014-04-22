@@ -44,7 +44,7 @@ public class Launcher {
             launch();
         } catch (Exception ex) {
             ex.printStackTrace(System.err);
-            System.exit(-1);
+            System.exit(1);
         }
         System.exit(0);
     }
