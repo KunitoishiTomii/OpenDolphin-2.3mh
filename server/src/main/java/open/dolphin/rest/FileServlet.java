@@ -78,7 +78,7 @@ public class FileServlet extends HttpServlet {
         String hash = req.getHeader("HASH");
         if (hash != null) {
             String currHash = prop.getProperty(CURR_HASH);
-            logger.log(Level.INFO, "Current Hash = {0}", currHash);
+            //logger.log(Level.INFO, "Current Hash = {0}", currHash);
             if (!hash.equals(currHash)) {
                 serveFilePaths(resp);
             }
