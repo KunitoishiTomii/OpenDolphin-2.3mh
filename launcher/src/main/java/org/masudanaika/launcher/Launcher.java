@@ -16,6 +16,9 @@ import java.nio.file.StandardCopyOption;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.util.Properties;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.ProgressMonitor;
 
 /**
  * Launcher
@@ -43,7 +46,8 @@ public class Launcher {
             load();
             launch();
         } catch (Exception ex) {
-            ex.printStackTrace(System.err);
+            JOptionPane.showMessageDialog(null, "プログラムをロードできません", "Dolphin Launcher", JOptionPane.ERROR_MESSAGE);
+            //ex.printStackTrace(System.err);
             System.exit(1);
         }
         System.exit(0);
@@ -60,7 +64,7 @@ public class Launcher {
         }
         pb.start();
     }
-    
+
     private boolean isWin() {
         return System.getProperty("os.name").toLowerCase().startsWith("windows");
     }
@@ -110,7 +114,7 @@ public class Launcher {
 
     // clientフォルダ内を消去する
     private void eraseDir(Path root) {
-        
+
         if (!Files.exists(root)) {
             return;
         }
@@ -130,7 +134,17 @@ public class Launcher {
     // サーバーからファイルをダウンロードする
     private void loadFile(String[] pathsStr) throws Exception {
 
-        for (String pathStr : pathsStr) {
+        int len = pathsStr.length;
+        ProgressMonitor pm = new ProgressMonitor((JFrame) null, "ダウンロード中です", "", 0, len);
+
+        for (int i = 0; i < len; ++i) {
+            if (pm.isCanceled()) {
+                pm.close();
+                throw new InterruptedException();
+            }
+            String pathStr = pathsStr[i];
+            pm.setProgress(i);
+            pm.setNote(pathStr);
 
             StringBuilder sb = new StringBuilder();
             sb.append("http://").append(serverAddr).append(":8080").append(FILES_PATH).append(pathStr);
@@ -153,6 +167,8 @@ public class Launcher {
                 }
             }
         }
+        
+        pm.close();
     }
 
     private void setServerAddr() throws Exception {
