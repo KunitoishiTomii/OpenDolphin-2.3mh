@@ -127,16 +127,6 @@ public class StampTreeTransferHandler extends DolphinTransferHandler {
                     imported = target.addStamp(parentNode, adds, childIndex);
                 }
 
-            } else if (support.isDataFlavorSupported(stringFlavor)) {
-                //-----------------------------------------
-                // KartePaneからDropされたテキストをインポートする
-                //-----------------------------------------
-                String text = (String) tr.getTransferData(stringFlavor);
-                if (targetEntity.equals(IInfoModel.ENTITY_TEXT)) {
-                    imported = target.addTextStamp(parentNode, text, null, childIndex);
-                } else {
-                    imported = false;
-                }
             } else if (support.isDataFlavorSupported(infoModelFlavor)) {
                 //----------------------------------------------
                 // DiagnosisEditorからDropされた病名をインポートする
@@ -148,6 +138,7 @@ public class StampTreeTransferHandler extends DolphinTransferHandler {
                 } else {
                     imported = false;
                 }
+                
             } else if (support.isDataFlavorSupported(stampTreeNodeFlavor)) {
                 //-----------------------------------------------
                 // StampTree内のDnD, Dropされるノードを取得する
@@ -193,7 +184,18 @@ public class StampTreeTransferHandler extends DolphinTransferHandler {
                     model.removeNodeFromParent(dropNode);
                     model.insertNodeInto(dropNode, parentNode, childIndex);
                 }
-
+                
+            } else if (support.isDataFlavorSupported(stringFlavor)) {
+                //-----------------------------------------
+                // KartePaneからDropされたテキストをインポートする
+                //-----------------------------------------
+                String text = (String) tr.getTransferData(stringFlavor);
+                if (targetEntity.equals(IInfoModel.ENTITY_TEXT)) {
+                    imported = target.addTextStamp(parentNode, text, null, childIndex);
+                } else {
+                    imported = false;
+                }
+                
             } else {
                 imported = false;
             }
