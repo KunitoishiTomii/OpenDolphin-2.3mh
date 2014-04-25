@@ -17,6 +17,7 @@ import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.util.Properties;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.ProgressMonitor;
 
 /**
@@ -45,7 +46,8 @@ public class Launcher {
             load();
             launch();
         } catch (Exception ex) {
-            ex.printStackTrace(System.err);
+            JOptionPane.showMessageDialog(null, "プログラムをロードできません", "Dolphin Launcher", JOptionPane.ERROR_MESSAGE);
+            //ex.printStackTrace(System.err);
             System.exit(1);
         }
         System.exit(0);
