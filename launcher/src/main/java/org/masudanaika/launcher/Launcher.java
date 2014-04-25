@@ -110,6 +110,10 @@ public class Launcher {
 
     // clientフォルダ内を消去する
     private void eraseDir(Path root) {
+        
+        if (!Files.exists(root)) {
+            return;
+        }
 
         try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(root)) {
             for (Path path : directoryStream) {
