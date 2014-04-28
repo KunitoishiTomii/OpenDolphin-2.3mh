@@ -173,7 +173,6 @@ public class Dolphin implements MainWindow, IChartEventListener {
                         } catch (UnknownHostException ex) {
                             Logger.getLogger(Dolphin.class.getName()).log(Level.SEVERE, null, ex);
                         }
-                        Logger.getLogger(this.getClass().toString()).warning(clientUUID);
                         registerLogin();
                         startServices();
                         loadStampTree();
