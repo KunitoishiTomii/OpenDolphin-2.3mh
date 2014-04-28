@@ -877,4 +877,20 @@ public final class SqlMiscDao extends SqlDaoBean {
         
         return ptIdKanaMap;
     }
+    
+    // 
+    public String getPtConfData(String ptId, String ckey) throws DaoException {
+        
+        final String sql = "select conf.cdata from tbl_ptconf conf, tbl_ptnum num "
+                + "where conf.ptid = num.ptid and conf.ckey = ? and num.ptnum = ? and num.hospnum = ?";
+        
+        Object[] params = new Object[]{ckey, ptId, getHospNum()};
+        List<String[]> valuesList = executePreparedStatement(sql, params);
+        
+        if (!valuesList.isEmpty()) {
+            return valuesList.get(0)[0].trim();
+        } else {
+            return "";
+        }
+    }
 }

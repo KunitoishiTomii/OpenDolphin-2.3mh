@@ -104,15 +104,6 @@ public class RezeUtil {
         return frmt.format(date);
     }
     
-    public int getAge(Date date) {
-        GregorianCalendar gc = new GregorianCalendar();
-        int year1 = gc.get(GregorianCalendar.YEAR);
-        gc.setTime(date);
-        int year2 = gc.get(GregorianCalendar.YEAR);
-        
-        return year1 - year2;
-    }
-    
     public Date fromYearMonthDate(String str) {
         str = str.trim();
         if (str.isEmpty()) {

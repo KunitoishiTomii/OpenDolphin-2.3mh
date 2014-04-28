@@ -961,7 +961,7 @@ public class RezeptViewer {
         view.getPtSexField().setText(reModel.getSex());
         String birthday = RezeUtil.getInstance().getDateStr(reModel.getBirthday());
         view.getPtBirthdayField().setText(birthday);
-        int age = RezeUtil.getInstance().getAge(reModel.getBirthday());
+        int age = reModel.getAge();
         view.getPtAgeField().setText(String.valueOf(age));
         
         int ten = 0;
