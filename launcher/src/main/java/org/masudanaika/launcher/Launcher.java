@@ -15,6 +15,8 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -77,16 +79,16 @@ public class Launcher {
                 ? getFileHash(jarPath, ALGORITHM) : "";
 
         StringBuilder sb = new StringBuilder();
-        sb.append("http://").append(serverAddr).append(":8080").append(FILES_PATH);
+        sb.append("http://").append(serverAddr).append(":8080").append(FILES_PATH).append("index.html");
         URL url = new URL(sb.toString());
 
-        sb = new StringBuilder();
         HttpURLConnection con = null;
+        String remoteHash = null;
+        List<String> pathsStr = new ArrayList<>();
         try {
             con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
             con.setInstanceFollowRedirects(false);
-            con.setRequestProperty("HASH", hash);
             con.connect();
 
             try (InputStream is = con.getInputStream();
@@ -97,6 +99,14 @@ public class Launcher {
                     if (line == null) {
                         break;
                     }
+                    //タグ除去
+                    line = line.trim().replaceAll("<.+?>", "");
+                    if (line.startsWith("HASH:")) {
+                        remoteHash = line.substring("HASH:".length());
+                    } else if (line.startsWith("FILE:")) {
+                        String fileName = line.substring("FILE:".length());
+                        pathsStr.add(fileName);
+                    }
                     sb.append(line);
                 }
             }
@@ -105,9 +115,9 @@ public class Launcher {
                 con.disconnect();
             }
         }
-        if (sb.length() > 0) {
+        
+        if (!hash.equals(remoteHash)) {
             eraseDir(Paths.get(JAR_DIR));
-            String[] pathsStr = sb.toString().split(",");
             loadFile(pathsStr);
         }
     }
@@ -132,9 +142,9 @@ public class Launcher {
     }
 
     // サーバーからファイルをダウンロードする
-    private void loadFile(String[] pathsStr) throws Exception {
+    private void loadFile(List<String> pathsStr) throws Exception {
 
-        int len = pathsStr.length;
+        int len = pathsStr.size();
         ProgressMonitor pm = new ProgressMonitor((JFrame) null, "ダウンロード中です", "", 0, len);
 
         for (int i = 0; i < len; ++i) {
@@ -142,7 +152,7 @@ public class Launcher {
                 pm.close();
                 throw new InterruptedException();
             }
-            String pathStr = pathsStr[i];
+            String pathStr = pathsStr.get(i);
             pm.setProgress(i);
             pm.setNote(pathStr);
 
