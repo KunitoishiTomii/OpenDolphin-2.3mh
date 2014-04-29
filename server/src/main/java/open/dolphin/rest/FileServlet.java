@@ -38,10 +38,12 @@ public class FileServlet extends HttpServlet {
     private static final String ROOT_PATH = "root.path";
     private static final String CURR_HASH = "curr.hash";
     private static final Properties prop;
+    private static final List<String> fileNames;
     private static final Logger logger = Logger.getLogger(FileServlet.class.getSimpleName());
 
     static {
         prop = new Properties();
+        fileNames = new ArrayList<>();
     }
 
     @Override
@@ -66,6 +68,13 @@ public class FileServlet extends HttpServlet {
                     logger.log(Level.INFO, "{0} hash = {1}", new Object[]{jarName, currHash});
                 }
             }
+            // ファイル名リストを設定する
+            Path root = Paths.get(rootPath);
+            List<Path> filePaths = getFilePaths(root);
+            for (Path path : filePaths) {
+                fileNames.add(root.relativize(path).toString().replace("\\", "/"));
+            }
+
         } catch (Exception ex) {
             logger.log(Level.WARNING, "Exception on loading fileservlet.properties");
         }
@@ -74,33 +83,50 @@ public class FileServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
-        // headerにhashが設定されていたら比較し、異なる場合はファイル名リストを返す
-        String hash = req.getHeader("HASH");
-        if (hash != null) {
-            String currHash = prop.getProperty(CURR_HASH);
-            //logger.log(Level.INFO, "Current Hash = {0}", currHash);
-            if (!hash.equals(currHash)) {
-                serveFilePaths(resp);
-            }
+        // パスが設定されていないならば404
+        String rootPath = prop.getProperty(ROOT_PATH);
+        String pathInfo = req.getPathInfo();
+        if (rootPath == null || pathInfo == null) {
+            resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
+
+        // index.html
+        if ("/index.html".equals(pathInfo)) {
+            serveIndexHtml(resp);
+            return;
+        }
+        
+        // launcher.properties
+        if ("/launcher.properties".equals(pathInfo)) {
+            serveProperties(req, resp);
             return;
         }
 
         // 指定されたファイルを返す
-        String pathInfo = req.getPathInfo();
-        if (pathInfo == null) {
-            resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            return;
+        Path path = Paths.get(rootPath, pathInfo);
+        serveFile(path, req, resp);
+    }
+    
+    // launcher.propertiesを作成して返す
+    private void serveProperties(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        
+        String serverIp = req.getLocalAddr();
+        String jarName = prop.getProperty(JAR_NAME);
+        StringBuilder sb = new StringBuilder();
+        sb.append("jar.name=").append(jarName).append("\n");
+        sb.append("server.ip=").append(serverIp).append("\n");
+        
+        resp.setContentType("text/x-java-properties");
+        try (PrintWriter writer = resp.getWriter()) {
+            writer.write(sb.toString());
         }
+    }
 
-        // パスが設定されていないならば404
-        String rootPath = prop.getProperty(ROOT_PATH);
-        if (rootPath == null) {
-            resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            return;
-        }
+    // 指定されたファイルを返す
+    private void serveFile(Path path, HttpServletRequest req, HttpServletResponse resp) throws IOException {
 
         // ファイルがないなら404
-        Path path = Paths.get(rootPath, pathInfo);
         if (Files.isDirectory(path) || !Files.exists(path)) {
             resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
             return;
@@ -115,25 +141,37 @@ public class FileServlet extends HttpServlet {
         }
     }
 
-    // ファイル名のリストをレスポンスする
-    private void serveFilePaths(HttpServletResponse resp) {
+    // index.htmlページを作成して返す
+    private void serveIndexHtml(HttpServletResponse resp) throws IOException {
 
-        String rootPath = prop.getProperty(ROOT_PATH);
+        String title = prop.getProperty(JAR_NAME).replace(".jar", "");
+        String hash = prop.getProperty(CURR_HASH);
+        
+        StringBuilder sb = new StringBuilder();
+        sb.append("<!DOCTYPE html>\n");
+        sb.append("<html>\n");
+        sb.append("<head>\n");
+        sb.append("<title>").append(title).append("</title>\n");
+        sb.append("</head>\n");
+        sb.append("<body>\n");
+        sb.append("<h1>").append(title).append("</h1>\n");
+        sb.append("<br>\n");
+        sb.append("<p>Download DolphinLauncher and launcher.properties to client's folder.</p>\n");
+        sb.append("<p>e.g. C:\\User Program Files\\OpenDolphin\\</p>\n");
+        sb.append("<br>\n");
+        sb.append("<p><a href=\"DolphinLauncher.jar\">DolphinLauncher</a></p>\n");
+        sb.append("<p><a href=\"launcher.properties\">設定ファイル</a></p>\n");
+        sb.append("<br>\n");
+        sb.append("<p>").append("HASH:").append(hash).append("</p>\n");
+        for (String name : fileNames) {
+            sb.append("<p>").append("FILE:").append(name).append("</p>\n");
+        }
+        sb.append("</body>\n");
+        sb.append("</html>\n");
+
         resp.setContentType("text/html; charset=UTF-8");
         try (PrintWriter writer = resp.getWriter()) {
-            Path root = Paths.get(rootPath);
-            List<Path> filePaths = getFilePaths(root);
-            boolean first = true;
-            for (Path p : filePaths) {
-                if (!first) {
-                    writer.append(',');
-                } else {
-                    first = false;
-                }
-                writer.append(root.relativize(p).toString().replace("\\", "/"));
-            }
-            writer.flush();
-        } catch (IOException ex) {
+            writer.write(sb.toString());
         }
     }
 
