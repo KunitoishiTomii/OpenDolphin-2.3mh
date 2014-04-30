@@ -85,9 +85,19 @@ public class FileServlet extends HttpServlet {
 
         // パスが設定されていないならば404
         String rootPath = prop.getProperty(ROOT_PATH);
-        String pathInfo = req.getPathInfo();
-        if (rootPath == null || pathInfo == null) {
+        if (rootPath == null) {
             resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
+        
+        // dolphin/files/ は index.htmlにリダイレクト
+        String pathInfo = req.getPathInfo();
+        if (pathInfo == null) {
+            resp.sendRedirect("files/index.html");
+            return;
+        }
+        if ("/".equals(pathInfo)) {
+            resp.sendRedirect("index.html");
             return;
         }
 
