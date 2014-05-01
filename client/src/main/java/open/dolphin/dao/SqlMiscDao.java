@@ -752,13 +752,20 @@ public final class SqlMiscDao extends SqlDaoBean {
 
     public List<String[]> getRecedenCsv(String ymStr, String nyugaikbn, int teisyutusaki) throws DaoException {
 
+        final String sql = "select rece.recedata, rece.totalten from tbl_receden rece, tbl_seikyu_main seikyu"
+                + " where (seikyu.sryym = ? or seikyu.skyym = ?) and rece.nyugaikbn = ? and rece.teisyutusaki = ? and rece.hospnum = ?"
+                + " and rece.sryym = seikyu.sryym and rece.nyugaikbn = seikyu.nyugaikbn and rece.teisyutusaki = seikyu.teisyutusaki"
+                + " and rece.ptid = seikyu.ptid"
+                + " order by rece.ptid, rece.rennum";
+/*
         final String sql = "select recedata, totalten from tbl_receden"
                 + " where sryym = ? and nyugaikbn = ? and teisyutusaki = ? and hospnum = ?"
                 + " order by nyugaikbn, ptid, rennum";
-
+*/
         int hospNum = getHospNum();
         int ym = Integer.parseInt(ymStr);
-        Object[] params = {ym, nyugaikbn, teisyutusaki, hospNum};
+        //Object[] params = {ym, nyugaikbn, teisyutusaki, hospNum};
+        Object[] params = {ym, ymStr, nyugaikbn, teisyutusaki, hospNum};
         List<String[]> valuesList = executePreparedStatement(sql, params);
 
         for (String[] values : valuesList) {
@@ -768,7 +775,7 @@ public final class SqlMiscDao extends SqlDaoBean {
 
         return valuesList;
     }
-
+    
     public IndicationModel getTekiouByomei(String srycd) throws DaoException {
 
         final String sql1 = "select byomei from tbl_tekioubyomei"
