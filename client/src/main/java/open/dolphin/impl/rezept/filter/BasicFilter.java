@@ -1,6 +1,5 @@
 package open.dolphin.impl.rezept.filter;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -63,13 +62,8 @@ public class BasicFilter extends AbstractCheckFilter {
     private CheckResult checkLateReze(RE_Model reModel) {
         
         SimpleDateFormat frmt = new SimpleDateFormat("yyyyMM");
-        Date currentYm = reModel.getBillDate();
-        try {
-            currentYm = frmt.parse(viewer.getCurrentYm());
-        } catch (ParseException ex) {
-        }
-        Date rezeYm = reModel.getBillDate();
-        if (!rezeYm.equals(currentYm)) {
+        String rezeYm = frmt.format(reModel.getBillDate());
+        if (!rezeYm.equals(viewer.getCurrentYm())) {
             CheckResult result = createCheckResult("月遅れ・返戻レセプトです。", CheckResult.CHECK_WARNING);
             return result;
         }
