@@ -757,14 +757,14 @@ public final class SqlMiscDao extends SqlDaoBean {
                 + " and rece.sryym = seikyu.sryym and rece.nyugaikbn = seikyu.nyugaikbn and rece.teisyutusaki = seikyu.teisyutusaki"
                 + " and rece.ptid = seikyu.ptid"
                 + " order by rece.ptid, rece.rennum";
-/*
-        final String sql = "select recedata, totalten from tbl_receden"
-                + " where sryym = ? and nyugaikbn = ? and teisyutusaki = ? and hospnum = ?"
-                + " order by nyugaikbn, ptid, rennum";
-*/
+
+        //final String sql = "select recedata, totalten from tbl_receden"
+        //        + " where sryym = ? and nyugaikbn = ? and teisyutusaki = ? and hospnum = ?"
+        //        + " order by nyugaikbn, ptid, rennum";
+        //Object[] params = {ym, nyugaikbn, teisyutusaki, hospNum};
+
         int hospNum = getHospNum();
         int ym = Integer.parseInt(ymStr);
-        //Object[] params = {ym, nyugaikbn, teisyutusaki, hospNum};
         Object[] params = {ym, ymStr, nyugaikbn, teisyutusaki, hospNum};
         List<String[]> valuesList = executePreparedStatement(sql, params);
 
@@ -775,7 +775,7 @@ public final class SqlMiscDao extends SqlDaoBean {
 
         return valuesList;
     }
-    
+
     public IndicationModel getTekiouByomei(String srycd) throws DaoException {
 
         final String sql1 = "select byomei from tbl_tekioubyomei"
