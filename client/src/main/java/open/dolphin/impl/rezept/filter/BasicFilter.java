@@ -1,5 +1,6 @@
 package open.dolphin.impl.rezept.filter;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -46,9 +47,29 @@ public class BasicFilter extends AbstractCheckFilter {
         if (result1 != null) {
             results.add(result1);
         }
+        
+        // 月遅れ・返戻チェック
+        CheckResult result2 = checkLateReze(reModel);
+        if (result2 != null) {
+            results.add(result2);
+        }
+        
 
         return results;
     }
+    
+    // 月遅れ・返戻チェック
+    private CheckResult checkLateReze(RE_Model reModel) {
+        
+        SimpleDateFormat frmt = new SimpleDateFormat("yyyyMM");
+        String rezeYm = frmt.format(reModel.getBillDate());
+        if (!rezeYm.equals(viewer.getCurrentYm())) {
+            CheckResult result = createCheckResult("月遅れ・返戻レセプトです。", CheckResult.CHECK_WARNING);
+            return result;
+        }
+        return null;
+    }
+    
     
     // コメント有無チェック
     private CheckResult checkComment(RE_Model reModel) {

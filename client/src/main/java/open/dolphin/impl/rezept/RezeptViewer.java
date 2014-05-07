@@ -119,6 +119,7 @@ public class RezeptViewer {
     private String facilityName;
 
     private Set<String> itemSrycdSet;
+    private String currentYm;
     
 
     public RezeptViewer() {
@@ -458,6 +459,10 @@ public class RezeptViewer {
         pdfMaker.create();
     }
     
+    public String getCurrentYm() {
+        return currentYm;
+    }
+    
     public Map<String, IndicationModel> getIndicationMap() {
         return indicationMap;
     }
@@ -644,7 +649,8 @@ public class RezeptViewer {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     String ym = e.getActionCommand();
-                    loadFromOrca(ym);
+                    currentYm = ym;
+                    loadFromOrca();
                     //loadFromOrca("201312");
                 }
             };
@@ -703,7 +709,7 @@ public class RezeptViewer {
     }
     
     // ORCAからレセ電データを取得し、表示する
-    private void loadFromOrca(final String ym) {
+    private void loadFromOrca() {
 
         blockGlass.setText("処理中です...");
         blockGlass.block();
@@ -716,11 +722,11 @@ public class RezeptViewer {
             protected List<IR_Model> doInBackground() throws Exception {
  
                 UkeLoader loader = new UkeLoader();
-                List<IR_Model> list = loader.loadFromOrca(ym);
+                List<IR_Model> list = loader.loadFromOrca(currentYm);
                 itemSrycdSet = loader.getItemSrycdSet();
                 reModelCount = loader.getReModelCount();
                 // 医師ごとの担当患者を取得する
-                drPatientIdList = MasudaDelegater.getInstance().getDrPatientIdList(ym);
+                drPatientIdList = MasudaDelegater.getInstance().getDrPatientIdList(currentYm);
                 return list;
             }
 
@@ -961,7 +967,7 @@ public class RezeptViewer {
         view.getPtSexField().setText(reModel.getSex());
         String birthday = RezeUtil.getInstance().getDateStr(reModel.getBirthday());
         view.getPtBirthdayField().setText(birthday);
-        int age = RezeUtil.getInstance().getAge(reModel.getBirthday());
+        int age = reModel.getAge();
         view.getPtAgeField().setText(String.valueOf(age));
         
         int ten = 0;

@@ -1597,6 +1597,10 @@ public class Dolphin implements MainWindow, IChartEventListener {
                 processExit(false);
             }
         });
+        
+        // Dock Icon
+        ImageIcon icon = ClientContext.getImageIcon("OpenDolphin-m.png");
+        fApplication.setDockIconImage(icon.getImage());
     }
     
     public void changeLookAndFeel(String lafClassName) {
