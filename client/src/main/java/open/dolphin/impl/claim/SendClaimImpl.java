@@ -1,7 +1,12 @@
 package open.dolphin.impl.claim;
 
-import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import open.dolphin.client.*;
 import open.dolphin.delegater.OrcaDelegater;
 import open.dolphin.project.Project;
@@ -22,6 +27,7 @@ public class SendClaimImpl implements ClaimMessageListener {
     private String name;
     private MainWindow context;
     private final Logger logger;
+    private ExecutorService exec;
     
     private static final String CLAIM = "CLAIM";
 
@@ -70,6 +76,15 @@ public class SendClaimImpl implements ClaimMessageListener {
      */
     @Override
     public void stop() {
+        try {
+            exec.shutdown();
+            if (!exec.awaitTermination(20, TimeUnit.MILLISECONDS)) {
+                exec.shutdownNow();
+            }
+        } catch (InterruptedException ex) {
+            exec.shutdownNow();
+        } catch (NullPointerException ex) {
+        }
     }
 
     @Override
@@ -119,19 +134,22 @@ public class SendClaimImpl implements ClaimMessageListener {
         
         String str = Project.getString(Project.CLAIM_SENDER);
         boolean client = (str == null || Project.CLAIM_CLIENT.equals(str));
+        if (client && exec == null) {
+            exec = Executors.newSingleThreadExecutor();
+        }
+        
         return client;
     }
     
     private void sendClaim(ClaimMessageEvent evt) {
-
+        
+        InetSocketAddress address = new InetSocketAddress(getHost(), getPort());
+        Future<ClaimMessageEvent> future = exec.submit(new SendClaimTask(getEncoding(), address, evt));
         try {
-            InetSocketAddress address = new InetSocketAddress(getHost(), getPort());
-            ClaimIOHandler handler = new ClaimIOHandler(getEncoding(), address);
-            handler.sendClaim(evt);
-        } catch (IOException ex) {
+            future.get(20, TimeUnit.SECONDS);
+        } catch (InterruptedException | TimeoutException| ExecutionException ex) {
             evt.setErrorCode(ClaimMessageEvent.ERROR_CODE.IO_ERROR);
         }
-
         processSendResult(evt);
     }
 

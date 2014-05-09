@@ -1,7 +1,12 @@
 package open.dolphin.server.orca;
 
-import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import open.dolphin.infomodel.ClaimMessageModel;
 
 /**
@@ -17,8 +22,22 @@ public class SendClaimImpl {
     private static final String NO_ERROR = "00";
     private static final String ERROR = "XXX";
     
+    private ExecutorService exec;
+    
     //private static final Logger logger = Logger.getLogger(SendClaimImpl.class.getSimpleName());
     
+    
+    public void dispose() {
+        try {
+            exec.shutdown();
+            if (!exec.awaitTermination(20, TimeUnit.MILLISECONDS)) {
+                exec.shutdownNow();
+            }
+        } catch (InterruptedException ex) {
+            exec.shutdownNow();
+        } catch (NullPointerException ex) {
+        }
+    }
     
     private int getPort(ClaimMessageModel model) {
         int port = model.getPort();
@@ -32,14 +51,19 @@ public class SendClaimImpl {
     
     public ClaimMessageModel sendClaim(ClaimMessageModel model) {
         
-        try {
-            InetSocketAddress address = new InetSocketAddress(model.getAddress(), getPort(model));
-            ClaimIOHandler handler = new ClaimIOHandler(getEncoding(model), address);
-            handler.sendClaim(model);
-        } catch (IOException ex) {
-            model.setClaimErrorCode(ClaimMessageModel.ERROR_CODE.IO_ERROR);
+        if (exec == null) {
+            exec = Executors.newSingleThreadExecutor();
         }
         
+        InetSocketAddress address = new InetSocketAddress(model.getAddress(), getPort(model));
+        Future<ClaimMessageModel> future = exec.submit(new SendClaimTask(getEncoding(model), address, model));
+        
+        try {
+            future.get(20, TimeUnit.SECONDS);
+        } catch (InterruptedException | TimeoutException| ExecutionException ex) {
+            model.setClaimErrorCode(ClaimMessageModel.ERROR_CODE.IO_ERROR);
+        }
+
         processSendResult(model);
         
         return model;
