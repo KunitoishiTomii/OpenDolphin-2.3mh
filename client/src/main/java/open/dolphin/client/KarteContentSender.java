@@ -78,7 +78,7 @@ public class KarteContentSender implements PropertyChangeListener {
         final String[] options = {"再送信", "取消"};
         if (KarteSenderResult.PROP_KARTE_SENDER_RESULT.equals(prop)) {
             Toolkit.getDefaultToolkit().beep();
-            IKarteSender sender = result.getKarteSender();
+            final IKarteSender sender = result.getKarteSender();
             Chart context = sender.getContext();
             JFrame frame = (context == null) ? null : context.getFrame();
             StringBuilder sb = new StringBuilder();
@@ -91,7 +91,16 @@ public class KarteContentSender implements PropertyChangeListener {
             
             if (val == 0) {
                 // 再送信
-                sender.send();
+                SwingWorker worker = new SwingWorker<Void, Void>() {
+
+                    @Override
+                    protected Void doInBackground() throws Exception {
+                        sender.send();
+                        return null;
+                    }
+
+                };
+                worker.execute();
             } else {
                 // 取消
                 result.removeListener(this);
@@ -99,7 +108,7 @@ public class KarteContentSender implements PropertyChangeListener {
 
         } else if (KarteSenderResult.PROP_DIAG_SENDER_RESULT.equals(prop)) {
             Toolkit.getDefaultToolkit().beep();
-            IDiagnosisSender sender = result.getDiagnosisSender();
+            final IDiagnosisSender sender = result.getDiagnosisSender();
             Chart context = sender.getContext();
             JFrame frame = (context == null) ? null : context.getFrame();
             StringBuilder sb = new StringBuilder();
@@ -112,7 +121,16 @@ public class KarteContentSender implements PropertyChangeListener {
             
             if (val == 1) {
                 // 再送信
-                sender.send();
+                SwingWorker worker = new SwingWorker<Void, Void>() {
+
+                    @Override
+                    protected Void doInBackground() throws Exception {
+                        sender.send();
+                        return null;
+                    }
+
+                };
+                worker.execute();
             } else {
                 // 取消
                 result.removeListener(this);
