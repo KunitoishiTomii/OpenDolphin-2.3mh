@@ -119,7 +119,7 @@ public class KarteContentSender implements PropertyChangeListener {
             int val = JOptionPane.showOptionDialog(frame, msg, "病名送信",
                     JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE, null, options, options[0]);
             
-            if (val == 1) {
+            if (val == 0) {
                 // 再送信
                 SwingWorker worker = new SwingWorker<Void, Void>() {
 
