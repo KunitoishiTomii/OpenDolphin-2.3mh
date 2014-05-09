@@ -1,6 +1,6 @@
 package open.dolphin.impl.server;
 
-import java.io.BufferedReader;
+import java.io.Reader;
 import java.io.StringReader;
 import open.dolphin.delegater.MasudaDelegater;
 import open.dolphin.delegater.PVTDelegater;
@@ -25,9 +25,9 @@ public class PvtPostTask implements Runnable {
     public void run() {
         
         // pvtXmlからPatientVisitModelを作成する
-        BufferedReader br = new BufferedReader(new StringReader(pvtXml));
+        Reader reader = new StringReader(pvtXml);
         PVTBuilder builder = new PVTBuilder();
-        builder.parse(br);
+        builder.parse(reader);
         PatientVisitModel pvt = builder.getProduct();
 
         // pvtがnullなら何もせずリターン

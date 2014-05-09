@@ -1,12 +1,9 @@
 package open.dolphin.server.orca;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.nio.ByteBuffer;
+import java.nio.channels.SocketChannel;
 import open.dolphin.infomodel.ClaimMessageModel;
 
 /**
@@ -16,28 +13,18 @@ import open.dolphin.infomodel.ClaimMessageModel;
  */
 public class SendClaimImpl {
     
+    // Socket constants
+    private static final byte EOT = 0x04;
+    private static final byte ACK = 0x06;
+    private static final byte NAK = 0x15;
     private static final String UTF8 = "UTF-8";
     private static final int DEFAULT_PORT = 5002;
     
     private static final String NO_ERROR = "00";
     private static final String ERROR = "XXX";
     
-    private ExecutorService exec;
-    
     //private static final Logger logger = Logger.getLogger(SendClaimImpl.class.getSimpleName());
-    
-    
-    public void dispose() {
-        try {
-            exec.shutdown();
-            if (!exec.awaitTermination(20, TimeUnit.MILLISECONDS)) {
-                exec.shutdownNow();
-            }
-        } catch (InterruptedException ex) {
-            exec.shutdownNow();
-        } catch (NullPointerException ex) {
-        }
-    }
+
     
     private int getPort(ClaimMessageModel model) {
         int port = model.getPort();
@@ -50,17 +37,39 @@ public class SendClaimImpl {
     }
     
     public ClaimMessageModel sendClaim(ClaimMessageModel model) {
-        
-        if (exec == null) {
-            exec = Executors.newSingleThreadExecutor();
-        }
-        
+
         InetSocketAddress address = new InetSocketAddress(model.getAddress(), getPort(model));
-        Future<ClaimMessageModel> future = exec.submit(new SendClaimTask(getEncoding(model), address, model));
+        String encoding =  getEncoding(model);
         
-        try {
-            future.get(20, TimeUnit.SECONDS);
-        } catch (InterruptedException | TimeoutException| ExecutionException ex) {
+        try (SocketChannel channel = SocketChannel.open()) {
+
+            byte[] bytes = model.getContent().getBytes(encoding);
+            ByteBuffer writeBuffer = ByteBuffer.wrap(bytes);
+            ByteBuffer buff = ByteBuffer.allocate(1);
+            buff.put(EOT);
+            buff.flip();
+
+            channel.connect(address);
+            channel.write(writeBuffer);
+            channel.write(buff);
+
+            buff.clear();
+            channel.read(buff);
+            buff.flip();
+            byte b = buff.get();
+            switch (b) {
+                case ACK:
+                    model.setClaimErrorCode(ClaimMessageModel.ERROR_CODE.NO_ERROR);
+                    break;
+                case NAK:
+                    model.setClaimErrorCode(ClaimMessageModel.ERROR_CODE.NAK_SIGNAL);
+                    break;
+                default:
+                    model.setClaimErrorCode(ClaimMessageModel.ERROR_CODE.IO_ERROR);
+                    break;
+            }
+
+        } catch (IOException ex) {
             model.setClaimErrorCode(ClaimMessageModel.ERROR_CODE.IO_ERROR);
         }
 
