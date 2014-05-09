@@ -56,6 +56,7 @@ public class OrcaService {
             ds.close(true);
         }
         dataSourceMap.clear();
+        sendClaim.dispose();
         logger.info("Server ORCA service stopped.");
     }
 
