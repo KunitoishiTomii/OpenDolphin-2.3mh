@@ -1,8 +1,9 @@
 package open.dolphin.server.pvt;
 
-import java.io.BufferedReader;
+import java.io.Reader;
 import java.io.StringReader;
 import java.util.Map;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Logger;
 import javax.naming.NamingException;
 import open.dolphin.infomodel.PatientVisitModel;
@@ -12,45 +13,61 @@ import open.dolphin.session.MasudaServiceBean;
 import open.dolphin.session.PVTServiceBean;
 
 /**
- * PvtPostTask
+ * PvtPostThread
  *
- * @author masuda, Masuda Naika
+ * @author masuda
  */
-public class PvtPostTask implements Runnable {
-    
-    private static final Logger logger = Logger.getLogger(PvtPostTask.class.getSimpleName());
-    
-    private final String pvtXml;
-    
+public class PvtPostThread implements Runnable {
 
-    public PvtPostTask(String pvtXml) {
-        this.pvtXml = pvtXml;
+    private static final Logger logger = Logger.getLogger(PvtPostThread.class.getSimpleName());
+
+    private final LinkedBlockingQueue<String> queue;
+    private MasudaServiceBean masudaService;
+    private PVTServiceBean pvtService;
+
+    public PvtPostThread() {
+        queue = new LinkedBlockingQueue<>();
+        try {
+            masudaService = (MasudaServiceBean) JndiUtil.getJndiResource(MasudaServiceBean.class);
+            pvtService = (PVTServiceBean) JndiUtil.getJndiResource(PVTServiceBean.class);
+        } catch (NamingException ex) {
+        }
     }
 
     @Override
     public void run() {
-        
+
+        while (true) {
+            try {
+                String pvtXml = queue.take();
+                postPvt(pvtXml);
+            } catch (InterruptedException ex) {
+                break;
+            }
+        }
+    }
+
+    public void offerPvt(String pvtXml) {
+        queue.offer(pvtXml);
+    }
+
+    private void postPvt(String pvtXml) {
+
+        if (masudaService == null || pvtService == null) {
+            return;
+        }
+
         // pvtXmlからPatientVisitModelを作成する
-        BufferedReader br = new BufferedReader(new StringReader(pvtXml));
+        Reader reader = new StringReader(pvtXml);
         PVTBuilder builder = new PVTBuilder();
-        builder.parse(br);
+        builder.parse(reader);
         PatientVisitModel pvt = builder.getProduct();
 
         // pvtがnullなら何もせずリターン
         if (pvt == null) {
             return;
         }
-        
-        MasudaServiceBean masudaService;
-        PVTServiceBean pvtService;
-        // ここはInjectできないんだな…
-        try {
-            masudaService = (MasudaServiceBean) JndiUtil.getJndiResource(MasudaServiceBean.class);
-            pvtService = (PVTServiceBean) JndiUtil.getJndiResource(PVTServiceBean.class);
-        } catch (NamingException ex) {
-            return;
-        }
-                
+
         // CLAIM送信されたJMARI番号からfacilityIdを取得する
         String jmariNum = pvt.getJmariNumber();
         String fid = masudaService.getFidFromJmari(jmariNum);
@@ -61,9 +78,9 @@ public class PvtPostTask implements Runnable {
         boolean pvtOnServer = Boolean.valueOf(propMap.get("pvtOnServer"));
         boolean fevOnServer = Boolean.valueOf(propMap.get("fevOnServer"));
         String sharePath = propMap.get("fevSharePath");
-        boolean sendToFEV = 
-                sharePath != null 
-                && !sharePath.isEmpty() 
+        boolean sendToFEV
+                = sharePath != null
+                && !sharePath.isEmpty()
                 && fevOnServer;
 
         // PVT登録処理
@@ -77,7 +94,7 @@ public class PvtPostTask implements Runnable {
             sb.append(", Name=").append(pvt.getPatientName());
             logger.info(sb.toString());
         }
-        
+
         // FEV-70 export処理
         if (sendToFEV) {
             String ptId = pvt.getPatientId();
@@ -86,4 +103,5 @@ public class PvtPostTask implements Runnable {
             fev.export();
         }
     }
+
 }
