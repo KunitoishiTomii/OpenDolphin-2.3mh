@@ -28,7 +28,7 @@ public class SendClaimImpl implements ClaimMessageListener {
     private MainWindow context;
     private final Logger logger;
     private ExecutorService exec;
-    
+
     private static final String CLAIM = "CLAIM";
 
     /**
@@ -124,77 +124,21 @@ public class SendClaimImpl implements ClaimMessageListener {
     public void claimMessageEvent(ClaimMessageEvent evt) {
 
         if (isClient()) {
-            sendClaim(evt);
+            InetSocketAddress address = new InetSocketAddress(getHost(), getPort());
+            exec.submit(new SendClaimTask(getEncoding(), address, evt));
         } else {
             OrcaDelegater.getInstance().sendClaim(evt);
         }
     }
-    
+
     private boolean isClient() {
-        
+
         String str = Project.getString(Project.CLAIM_SENDER);
         boolean client = (str == null || Project.CLAIM_CLIENT.equals(str));
         if (client && exec == null) {
             exec = Executors.newSingleThreadExecutor();
         }
-        
+
         return client;
-    }
-    
-    private void sendClaim(ClaimMessageEvent evt) {
-        
-        InetSocketAddress address = new InetSocketAddress(getHost(), getPort());
-        Future<ClaimMessageEvent> future = exec.submit(new SendClaimTask(getEncoding(), address, evt));
-        try {
-            future.get(20, TimeUnit.SECONDS);
-        } catch (InterruptedException | TimeoutException| ExecutionException ex) {
-            evt.setErrorCode(ClaimMessageEvent.ERROR_CODE.IO_ERROR);
-        }
-        processSendResult(evt);
-    }
-
-    private void processSendResult(ClaimMessageEvent evt) {
-
-        ClaimMessageEvent.ERROR_CODE errCode = evt.getErrorCode();
-        String errMsg = getErrorInfo(errCode);
-        boolean noError = (errCode == ClaimMessageEvent.ERROR_CODE.NO_ERROR);
-
-        Object evtSource = evt.getSource();
-        if (evtSource instanceof ClaimSender) {
-            ClaimSender sender = (ClaimSender) evtSource;
-            KarteSenderResult result = !noError
-                    ? new KarteSenderResult(CLAIM, KarteSenderResult.ERROR, errMsg, sender)
-                    : new KarteSenderResult(CLAIM, KarteSenderResult.NO_ERROR, null, sender);
-            sender.fireResult(result);
-        } else if (evtSource instanceof DiagnosisSender) {
-            DiagnosisSender sender = (DiagnosisSender) evtSource;
-            KarteSenderResult result = !noError
-                    ? new KarteSenderResult(CLAIM, KarteSenderResult.ERROR, errMsg, sender)
-                    : new KarteSenderResult(CLAIM, KarteSenderResult.NO_ERROR, null, sender);
-            sender.fireResult(result);
-        }
-    }
-
-    private String getErrorInfo(ClaimMessageEvent.ERROR_CODE errorCode) {
-
-        String ret;
-        switch (errorCode) {
-            case NO_ERROR:
-                ret = "No Error";
-                break;
-            case NAK_SIGNAL:
-                ret = "NAK signal received from ORCA";
-                break;
-            case IO_ERROR:
-                ret = "I/O error";
-                break;
-            case CONNECTION_REJECT:
-                ret = "CLAIM connection rejected";
-                break;
-            default:
-                ret = "Unknown Error";
-                break;
-        }
-        return ret;
     }
 }

@@ -1,5 +1,7 @@
 package open.dolphin.client;
 
+import java.beans.PropertyChangeListener;
+
 /**
  * KarteSenderResult
  * 
@@ -106,9 +108,9 @@ public class KarteSenderResult {
         return true;
     }
     
-    public void removeListener() {
+    public void removeListener(PropertyChangeListener listener) {
         if (karteSender != null) {
-            karteSender.removeListeners();
+            karteSender.removeListener(listener);
         }
         if (diagnosisSender != null) {
             diagnosisSender.removeListeners();

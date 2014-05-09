@@ -26,7 +26,6 @@ import open.dolphin.project.Project;
  */
 public final class FalcoSender implements IKarteSender {
 
-    private static SimpleDateFormat SDF = new SimpleDateFormat("yyyyMMddHHmmssSSS");
     private Chart context;
     private DocumentModel sendModel;
     private PropertyChangeSupport boundSupport;
@@ -37,9 +36,10 @@ public final class FalcoSender implements IKarteSender {
     private static final String FALCO = "FALCO";
 
     private static String createOrderNumber() {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmssSSS");
         StringBuilder sb = new StringBuilder();
         sb.append("DL");
-        sb.append(SDF.format(new Date()));
+        sb.append(sdf.format(new Date()));
         return sb.toString();
     }
 
@@ -67,11 +67,9 @@ public final class FalcoSender implements IKarteSender {
     }
     
     @Override
-    public void removeListeners() {
+    public void removeListener(PropertyChangeListener listener) {
         if (boundSupport != null) {
-            for (PropertyChangeListener listener : boundSupport.getPropertyChangeListeners()) {
-                boundSupport.removePropertyChangeListener(KarteSenderResult.PROP_KARTE_SENDER_RESULT, listener);
-            }
+            boundSupport.removePropertyChangeListener(KarteSenderResult.PROP_KARTE_SENDER_RESULT, listener);
         }
     }
 

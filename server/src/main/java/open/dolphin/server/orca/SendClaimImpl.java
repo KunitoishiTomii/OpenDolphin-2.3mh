@@ -43,16 +43,19 @@ public class SendClaimImpl {
         
         try (SocketChannel channel = SocketChannel.open()) {
 
+            // write claim
             byte[] bytes = model.getContent().getBytes(encoding);
-            ByteBuffer writeBuffer = ByteBuffer.wrap(bytes);
-            ByteBuffer buff = ByteBuffer.allocate(1);
+            ByteBuffer buff = ByteBuffer.wrap(bytes);
+            channel.connect(address);
+            channel.write(buff);
+            
+            // write EOT
+            buff.clear();
             buff.put(EOT);
             buff.flip();
-
-            channel.connect(address);
-            channel.write(writeBuffer);
             channel.write(buff);
 
+            // read ACK/NAK
             buff.clear();
             channel.read(buff);
             buff.flip();

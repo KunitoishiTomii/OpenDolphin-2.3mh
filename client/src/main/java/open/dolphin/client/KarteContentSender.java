@@ -19,19 +19,6 @@ import open.dolphin.plugin.PluginLoader;
  */
 public class KarteContentSender implements PropertyChangeListener {
     
-    private static final KarteContentSender instance;
-    
-    static {
-        instance = new KarteContentSender();
-    }
-    
-    private KarteContentSender() {
-    }
-    
-    public static KarteContentSender getInstance() {
-        return instance;
-    }
-
     public void sendKarte(final Chart chart, final DocumentModel model) {
 
         SwingWorker worker = new SwingWorker<Void, Void>() {
@@ -45,7 +32,7 @@ public class KarteContentSender implements PropertyChangeListener {
                     IKarteSender sender = iter.next();
                     sender.setContext(chart);
                     sender.setModel(model);
-                    sender.addListener(instance);
+                    sender.addListener(KarteContentSender.this);
                     sender.send();
                 }
                 return null;
@@ -68,7 +55,7 @@ public class KarteContentSender implements PropertyChangeListener {
                     IDiagnosisSender sender = iter.next();
                     sender.setContext(chart);
                     sender.setModel(rdList);
-                    sender.addListener(instance);
+                    sender.addListener(KarteContentSender.this);
                     sender.send();
                 }
                 return null;
@@ -84,7 +71,7 @@ public class KarteContentSender implements PropertyChangeListener {
         String prop = evt.getPropertyName();
         KarteSenderResult result = (KarteSenderResult) evt.getNewValue();
         if (!result.isError()) {
-            result.removeListener();
+            result.removeListener(this);
             return;
         }
         
@@ -107,7 +94,7 @@ public class KarteContentSender implements PropertyChangeListener {
                 sender.send();
             } else {
                 // 取消
-                result.removeListener();
+                result.removeListener(this);
             }
 
         } else if (KarteSenderResult.PROP_DIAG_SENDER_RESULT.equals(prop)) {
@@ -128,7 +115,7 @@ public class KarteContentSender implements PropertyChangeListener {
                 sender.send();
             } else {
                 // 取消
-                result.removeListener();
+                result.removeListener(this);
             }
         }
     }
