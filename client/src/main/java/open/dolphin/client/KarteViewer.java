@@ -144,6 +144,18 @@ public abstract class KarteViewer extends AbstractChartDocument {
         // KarteViewerで日付の右Dr名を表示する
         sb.append("／");
         sb.append(model.getUserModel().getCommonName());
+        
+//katoh^
+        // a little modification by masuda
+        // 初版作成者と最新版作成者が違う場合はその旨表示する
+        String rootUser = model.getDocInfoModel().getRootUser();
+        if (rootUser != null && !rootUser.equals(model.getUserModel().getCommonName())) {
+            sb.append("(初版：");
+            sb.append(rootUser);
+            sb.append(")");
+        }
+//katoh$
+        
         kartePanel.getTimeStampLabel().setText(sb.toString());
         
 //masuda^   タイトルを文書種別によって色分けする

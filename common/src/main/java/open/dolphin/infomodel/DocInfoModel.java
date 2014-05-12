@@ -119,7 +119,8 @@ public class DocInfoModel implements Serializable, Comparable {
     private boolean sendMml;
     //----------------------------------
     
-//masuda^   入院モデル
+//masuda^
+    // 入院モデル
     @OneToOne(cascade = {CascadeType.ALL})
     @JoinColumn(name="admission_id", nullable=true)
     private AdmissionModel admission;
@@ -129,6 +130,17 @@ public class DocInfoModel implements Serializable, Comparable {
     }
     public void setAdmissionModel(AdmissionModel admission) {
         this.admission = admission;
+    }
+    
+    // root user
+    @Transient
+    private String rootUser;
+    
+    public String getRootUser() {
+        return rootUser;
+    }
+    public void setRootUser(String rootUser) {
+        this.rootUser = rootUser;
     }
  //masuda$
     
