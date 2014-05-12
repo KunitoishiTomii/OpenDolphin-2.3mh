@@ -452,7 +452,7 @@ public class KarteServiceBean {
                     .getResultList();
             for (DocumentModel givenModel: givenModels){
                 List<DocumentModel> rootModels = 
-                        em.createQuery("from DocumentModel m where m.confirmed = :date and m.karte.patient.id = :karteid order by m.id limit 1")
+                        em.createQuery("from DocumentModel m where m.confirmed = :date and m.karte.patient.id = :karteid order by m.id")
                         .setParameter("date", givenModel.getStarted())
                         .setParameter("karteid", givenModel.getKarte().getPatient().getId())
                         .getResultList();
