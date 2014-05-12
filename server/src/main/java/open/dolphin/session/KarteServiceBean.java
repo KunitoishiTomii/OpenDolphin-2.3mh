@@ -337,6 +337,10 @@ public class KarteServiceBean {
             // クライアントが DocInfo だけを利用するケースがあるため
             doc.toDetuch();
             result.add(doc.getDocInfoModel());
+            
+            // find root user
+            DocumentModel parent = getParent(doc);
+            doc.getDocInfoModel().setRootUser(parent.getUserModel().getCommonName());
         }
 //masuda, katoh$
         

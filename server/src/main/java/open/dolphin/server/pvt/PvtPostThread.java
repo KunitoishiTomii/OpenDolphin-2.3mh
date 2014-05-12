@@ -15,7 +15,7 @@ import open.dolphin.session.PVTServiceBean;
 /**
  * PvtPostThread
  *
- * @author masuda
+ * @author masuda, Masuda Naika
  */
 public class PvtPostThread implements Runnable {
 
