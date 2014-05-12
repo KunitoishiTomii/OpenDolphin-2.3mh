@@ -8,6 +8,7 @@ import javax.swing.text.DefaultStyledDocument.ElementSpec;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
+import open.dolphin.common.util.SchemaNumberComparator;
 import open.dolphin.common.util.XmlUtils;
 import open.dolphin.infomodel.DocumentModel;
 import open.dolphin.infomodel.IInfoModel;
@@ -112,7 +113,7 @@ public class KarteRenderer_2 {
         Collections.sort(soaModules);
         Collections.sort(pModules);
         if (schemas != null) {
-            Collections.sort(schemas);
+            Collections.sort(schemas, new SchemaNumberComparator());
         }
 
         // SOA Pane をレンダリングする

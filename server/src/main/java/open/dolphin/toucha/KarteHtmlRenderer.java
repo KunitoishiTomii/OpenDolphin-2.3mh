@@ -8,6 +8,7 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import open.dolphin.common.util.BeanUtils;
+import open.dolphin.common.util.SchemaNumberComparator;
 import open.dolphin.common.util.SimpleXmlWriter;
 import open.dolphin.common.util.StampHtmlRenderer;
 import open.dolphin.common.util.StampRenderingHints;
@@ -92,7 +93,7 @@ public class KarteHtmlRenderer {
         Collections.sort(soaModules);
         Collections.sort(pModules);
         if (schemas != null) {
-            Collections.sort(schemas);
+            Collections.sort(schemas, new SchemaNumberComparator());
         }
         
         SimpleDateFormat frmt = new SimpleDateFormat(IInfoModel.KARTE_DATE_FORMAT);
