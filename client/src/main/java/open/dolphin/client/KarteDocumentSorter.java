@@ -15,25 +15,25 @@ import org.jboss.logging.Logger;
  * @author buntaro
  */
 public class KarteDocumentSorter implements Comparator<DocInfoModel>{
-    private long lSortMethod;
+    private boolean bSortMethod;
 
-    KarteDocumentSorter(long arg_SortMethod){
-        lSortMethod = arg_SortMethod;
+    KarteDocumentSorter(boolean arg_SortMethod){
+        Logger.getLogger(this.getClass().toString()).warn("KarteDocumentSorter Created method=" + arg_SortMethod);
+        bSortMethod = arg_SortMethod;
     }
     
     @Override
     public int compare(DocInfoModel d1, DocInfoModel d2){
         int i;
-    // 関数名のcompareは決まりごとである。
-     // s1がs2より先に来るなら、s1の特徴量がs2のそれより小さくなるような関数を作成する。
-     if( d1.getConfirmDate().compareTo(d2.getConfirmDate()) < 0 ){
-      i = lSortMethod==0 ? 1 : -1;
-     }else if( d1.getConfirmDate().compareTo(d2.getConfirmDate()) > 0){ // s1の方がs2より短い文字列になっている場合
-      i = lSortMethod==0 ? -1 : 1;
-     }else{
-      i = 0;
-     }
-     Logger.getLogger(this.getClass().toString()).warn("compare ret : "+i);
-     return i;
+        // 関数名のcompareは決まりごとである。
+        // s1がs2より先に来るなら、s1の特徴量がs2のそれより小さくなるような関数を作成する。
+        i =(int) (d1.getConfirmDate().compareTo(d2.getConfirmDate()));
+        if (i == 0){
+            i =(int) (d1.getDocPk() - d2.getDocPk());
+        }
+        if(bSortMethod == false){
+            i = i*(-1);
+        }
+        return i;
     }
 };

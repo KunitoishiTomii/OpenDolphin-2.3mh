@@ -291,11 +291,9 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
         
         // ここでソートしておく
         if (ascending) {
-            Logger.getLogger(this.getClass().toString()).warn("asc");
-            Arrays.sort(docInfoList, new KarteDocumentSorter(0) );
+            Arrays.sort(docInfoList);
         } else {
-            Logger.getLogger(this.getClass().toString()).warn("desc");
-            Arrays.sort(docInfoList, new KarteDocumentSorter(1) );
+            Arrays.sort(docInfoList, Collections.reverseOrder());
         }
 
         // 選択リストにあって 現在の karteViewerMap にないものはデータベースから取得する
