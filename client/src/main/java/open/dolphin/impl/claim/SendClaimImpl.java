@@ -1,7 +1,9 @@
 package open.dolphin.impl.claim;
 
-import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import open.dolphin.client.*;
 import open.dolphin.delegater.OrcaDelegater;
 import open.dolphin.project.Project;
@@ -22,7 +24,8 @@ public class SendClaimImpl implements ClaimMessageListener {
     private String name;
     private MainWindow context;
     private final Logger logger;
-    
+    private ExecutorService exec;
+
     private static final String CLAIM = "CLAIM";
 
     /**
@@ -70,6 +73,15 @@ public class SendClaimImpl implements ClaimMessageListener {
      */
     @Override
     public void stop() {
+        try {
+            exec.shutdown();
+            if (!exec.awaitTermination(20, TimeUnit.MILLISECONDS)) {
+                exec.shutdownNow();
+            }
+        } catch (InterruptedException ex) {
+            exec.shutdownNow();
+        } catch (NullPointerException ex) {
+        }
     }
 
     @Override
@@ -109,74 +121,21 @@ public class SendClaimImpl implements ClaimMessageListener {
     public void claimMessageEvent(ClaimMessageEvent evt) {
 
         if (isClient()) {
-            sendClaim(evt);
+            InetSocketAddress address = new InetSocketAddress(getHost(), getPort());
+            exec.submit(new SendClaimTask(getEncoding(), address, evt));
         } else {
             OrcaDelegater.getInstance().sendClaim(evt);
         }
     }
-    
+
     private boolean isClient() {
-        
+
         String str = Project.getString(Project.CLAIM_SENDER);
         boolean client = (str == null || Project.CLAIM_CLIENT.equals(str));
+        if (client && exec == null) {
+            exec = Executors.newSingleThreadExecutor();
+        }
+
         return client;
-    }
-    
-    private void sendClaim(ClaimMessageEvent evt) {
-
-        try {
-            InetSocketAddress address = new InetSocketAddress(getHost(), getPort());
-            ClaimIOHandler handler = new ClaimIOHandler(getEncoding(), address);
-            handler.sendClaim(evt);
-        } catch (IOException ex) {
-            evt.setErrorCode(ClaimMessageEvent.ERROR_CODE.IO_ERROR);
-        }
-
-        processSendResult(evt);
-    }
-
-    private void processSendResult(ClaimMessageEvent evt) {
-
-        ClaimMessageEvent.ERROR_CODE errCode = evt.getErrorCode();
-        String errMsg = getErrorInfo(errCode);
-        boolean noError = (errCode == ClaimMessageEvent.ERROR_CODE.NO_ERROR);
-
-        Object evtSource = evt.getSource();
-        if (evtSource instanceof ClaimSender) {
-            ClaimSender sender = (ClaimSender) evtSource;
-            KarteSenderResult result = !noError
-                    ? new KarteSenderResult(CLAIM, KarteSenderResult.ERROR, errMsg, sender)
-                    : new KarteSenderResult(CLAIM, KarteSenderResult.NO_ERROR, null, sender);
-            sender.fireResult(result);
-        } else if (evtSource instanceof DiagnosisSender) {
-            DiagnosisSender sender = (DiagnosisSender) evtSource;
-            KarteSenderResult result = !noError
-                    ? new KarteSenderResult(CLAIM, KarteSenderResult.ERROR, errMsg, sender)
-                    : new KarteSenderResult(CLAIM, KarteSenderResult.NO_ERROR, null, sender);
-            sender.fireResult(result);
-        }
-    }
-
-    private String getErrorInfo(ClaimMessageEvent.ERROR_CODE errorCode) {
-
-        String ret;
-        switch (errorCode) {
-            case NO_ERROR:
-                ret = "No Error";
-                break;
-            case NAK_SIGNAL:
-                ret = "NAK signal received from ORCA";
-                break;
-            case IO_ERROR:
-                ret = "I/O error";
-                break;
-            case CONNECTION_REJECT:
-                ret = "CLAIM connection rejected";
-                break;
-            default:
-                ret = "Unknown Error";
-                break;
-        }
-        return ret;
     }
 }

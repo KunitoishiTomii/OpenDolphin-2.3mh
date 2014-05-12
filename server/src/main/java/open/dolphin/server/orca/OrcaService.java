@@ -27,8 +27,8 @@ public class OrcaService {
     private static final String user = "orca";
     private static final String passwd = "";
     
-    private SendClaimImpl sendClaim;
-    private Map<String, DataSource> dataSourceMap;
+    private final SendClaimImpl sendClaim;
+    private final Map<String, DataSource> dataSourceMap;
     
     private static final OrcaService instance;
     
@@ -41,12 +41,11 @@ public class OrcaService {
     }
     
     private OrcaService() {
+        sendClaim = new SendClaimImpl();
+        dataSourceMap = new ConcurrentHashMap<>();
     }
     
     public void start() {
-        
-        dataSourceMap = new ConcurrentHashMap<>();
-        sendClaim = new SendClaimImpl();
         logger.info("Server ORCA service started.");
     }
     
@@ -60,7 +59,9 @@ public class OrcaService {
     }
 
     public ClaimMessageModel sendClaim(ClaimMessageModel model) {
-        return sendClaim.sendClaim(model);
+        synchronized (sendClaim) {
+            return sendClaim.sendClaim(model);
+        }
     }
     
     public OrcaSqlModel executeSql(OrcaSqlModel sqlModel) {

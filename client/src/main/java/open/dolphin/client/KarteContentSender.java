@@ -19,19 +19,6 @@ import open.dolphin.plugin.PluginLoader;
  */
 public class KarteContentSender implements PropertyChangeListener {
     
-    private static final KarteContentSender instance;
-    
-    static {
-        instance = new KarteContentSender();
-    }
-    
-    private KarteContentSender() {
-    }
-    
-    public static KarteContentSender getInstance() {
-        return instance;
-    }
-
     public void sendKarte(final Chart chart, final DocumentModel model) {
 
         SwingWorker worker = new SwingWorker<Void, Void>() {
@@ -45,7 +32,7 @@ public class KarteContentSender implements PropertyChangeListener {
                     IKarteSender sender = iter.next();
                     sender.setContext(chart);
                     sender.setModel(model);
-                    sender.addListener(instance);
+                    sender.addListener(KarteContentSender.this);
                     sender.send();
                 }
                 return null;
@@ -68,7 +55,7 @@ public class KarteContentSender implements PropertyChangeListener {
                     IDiagnosisSender sender = iter.next();
                     sender.setContext(chart);
                     sender.setModel(rdList);
-                    sender.addListener(instance);
+                    sender.addListener(KarteContentSender.this);
                     sender.send();
                 }
                 return null;
@@ -84,14 +71,14 @@ public class KarteContentSender implements PropertyChangeListener {
         String prop = evt.getPropertyName();
         KarteSenderResult result = (KarteSenderResult) evt.getNewValue();
         if (!result.isError()) {
-            result.removeListener();
+            result.removeListener(this);
             return;
         }
         
         final String[] options = {"再送信", "取消"};
         if (KarteSenderResult.PROP_KARTE_SENDER_RESULT.equals(prop)) {
             Toolkit.getDefaultToolkit().beep();
-            IKarteSender sender = result.getKarteSender();
+            final IKarteSender sender = result.getKarteSender();
             Chart context = sender.getContext();
             JFrame frame = (context == null) ? null : context.getFrame();
             StringBuilder sb = new StringBuilder();
@@ -104,15 +91,24 @@ public class KarteContentSender implements PropertyChangeListener {
             
             if (val == 0) {
                 // 再送信
-                sender.send();
+                SwingWorker worker = new SwingWorker<Void, Void>() {
+
+                    @Override
+                    protected Void doInBackground() throws Exception {
+                        sender.send();
+                        return null;
+                    }
+
+                };
+                worker.execute();
             } else {
                 // 取消
-                result.removeListener();
+                result.removeListener(this);
             }
 
         } else if (KarteSenderResult.PROP_DIAG_SENDER_RESULT.equals(prop)) {
             Toolkit.getDefaultToolkit().beep();
-            IDiagnosisSender sender = result.getDiagnosisSender();
+            final IDiagnosisSender sender = result.getDiagnosisSender();
             Chart context = sender.getContext();
             JFrame frame = (context == null) ? null : context.getFrame();
             StringBuilder sb = new StringBuilder();
@@ -123,12 +119,21 @@ public class KarteContentSender implements PropertyChangeListener {
             int val = JOptionPane.showOptionDialog(frame, msg, "病名送信",
                     JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE, null, options, options[0]);
             
-            if (val == 1) {
+            if (val == 0) {
                 // 再送信
-                sender.send();
+                SwingWorker worker = new SwingWorker<Void, Void>() {
+
+                    @Override
+                    protected Void doInBackground() throws Exception {
+                        sender.send();
+                        return null;
+                    }
+
+                };
+                worker.execute();
             } else {
                 // 取消
-                result.removeListener();
+                result.removeListener(this);
             }
         }
     }

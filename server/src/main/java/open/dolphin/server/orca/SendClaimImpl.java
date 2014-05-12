@@ -2,6 +2,8 @@ package open.dolphin.server.orca;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
+import java.nio.channels.SocketChannel;
 import open.dolphin.infomodel.ClaimMessageModel;
 
 /**
@@ -11,6 +13,10 @@ import open.dolphin.infomodel.ClaimMessageModel;
  */
 public class SendClaimImpl {
     
+    // Socket constants
+    private static final byte EOT = 0x04;
+    private static final byte ACK = 0x06;
+    private static final byte NAK = 0x15;
     private static final String UTF8 = "UTF-8";
     private static final int DEFAULT_PORT = 5002;
     
@@ -18,7 +24,7 @@ public class SendClaimImpl {
     private static final String ERROR = "XXX";
     
     //private static final Logger logger = Logger.getLogger(SendClaimImpl.class.getSimpleName());
-    
+
     
     private int getPort(ClaimMessageModel model) {
         int port = model.getPort();
@@ -31,15 +37,45 @@ public class SendClaimImpl {
     }
     
     public ClaimMessageModel sendClaim(ClaimMessageModel model) {
+
+        InetSocketAddress address = new InetSocketAddress(model.getAddress(), getPort(model));
+        String encoding =  getEncoding(model);
         
-        try {
-            InetSocketAddress address = new InetSocketAddress(model.getAddress(), getPort(model));
-            ClaimIOHandler handler = new ClaimIOHandler(getEncoding(model), address);
-            handler.sendClaim(model);
+        try (SocketChannel channel = SocketChannel.open()) {
+
+            // write claim
+            byte[] bytes = model.getContent().getBytes(encoding);
+            ByteBuffer buff = ByteBuffer.wrap(bytes);
+            channel.connect(address);
+            channel.write(buff);
+            
+            // write EOT
+            buff.clear();
+            buff.put(EOT);
+            buff.flip();
+            channel.write(buff);
+
+            // read ACK/NAK
+            buff.clear();
+            channel.read(buff);
+            buff.flip();
+            byte b = buff.get();
+            switch (b) {
+                case ACK:
+                    model.setClaimErrorCode(ClaimMessageModel.ERROR_CODE.NO_ERROR);
+                    break;
+                case NAK:
+                    model.setClaimErrorCode(ClaimMessageModel.ERROR_CODE.NAK_SIGNAL);
+                    break;
+                default:
+                    model.setClaimErrorCode(ClaimMessageModel.ERROR_CODE.IO_ERROR);
+                    break;
+            }
+
         } catch (IOException ex) {
             model.setClaimErrorCode(ClaimMessageModel.ERROR_CODE.IO_ERROR);
         }
-        
+
         processSendResult(model);
         
         return model;

@@ -108,7 +108,8 @@ public class KarteDocumentSaver implements IInfoModel {
                 editor.saveDoubleDone(params, savedInfo);
                 
                 // カルテ内容を送信する
-                KarteContentSender.getInstance().sendKarte(chart, docModel);
+                KarteContentSender sender = new KarteContentSender();
+                sender.sendKarte(chart, docModel);
             }
         };
 

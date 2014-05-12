@@ -20,7 +20,7 @@ public interface IKarteSender {
     
     public void addListener(PropertyChangeListener listener);
     
-    public void removeListeners();
+    public void removeListener(PropertyChangeListener listener);
     
     public void fireResult(KarteSenderResult result);
 }

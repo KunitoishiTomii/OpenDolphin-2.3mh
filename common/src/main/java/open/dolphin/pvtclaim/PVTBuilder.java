@@ -1,7 +1,7 @@
 package open.dolphin.pvtclaim;
 
-import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -135,7 +135,7 @@ public final class PVTBuilder {
      *
      * @param reader CLAIM モジュールへの Reader
      */
-    public void parse(BufferedReader reader) {
+    public void parse(Reader reader) {
         
         try {
             SAXBuilder docBuilder = new SAXBuilder();
