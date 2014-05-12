@@ -17,7 +17,6 @@ import open.dolphin.infomodel.DocumentModel;
 import open.dolphin.infomodel.IInfoModel;
 import open.dolphin.infomodel.ModuleModel;
 import open.dolphin.infomodel.SchemaModel;
-import open.dolphin.infomodel.UserModel;
 import open.dolphin.letter.KartePDFMaker;
 import open.dolphin.project.Project;
 import open.dolphin.util.MultiTaskExecutor;
@@ -635,11 +634,9 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
     private class MakeViewerTask implements Callable {
 
         private final DocumentModel docModel;
-        private final UserModel     userModel_root;
         
-        private MakeViewerTask(DocumentModel docModel, UserModel userModel_root) {
-            this.docModel       = docModel;
-            this.userModel_root = userModel_root;
+        private MakeViewerTask(DocumentModel docModel) {
+            this.docModel = docModel;
         }
         
         @Override
@@ -676,7 +673,6 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
             final KarteViewer viewer = createKarteViewer(docModel.getDocInfoModel());
             viewer.setContext(getContext());
             viewer.setModel(docModel);
-            viewer.setRootUserModel(userModel_root);
 
             // このコールでモデルの遅延レンダリングが開始される
             viewer.start();
@@ -741,8 +737,6 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
             logger.debug("KarteTask doInBackground");
             
             DocumentDelegater ddl = DocumentDelegater.getInstance();
-            List <Long>      documentIds;
-            List <UserModel> rootUserModels;
 
             int fromIndex = 0;
             int idListSize = docInfoMap.size();
@@ -757,24 +751,19 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
             // 分割してサーバーから取得する
             List<Long> allIds = new ArrayList<>(docInfoMap.keySet());
             
-            documentIds = new ArrayList<>();
             while (fromIndex < idListSize) {
                 int toIndex = Math.min(fromIndex + fetchSize, idListSize);
                 List<Long> ids = allIds.subList(fromIndex, toIndex);
                 try {
                     List<DocumentModel> result = ddl.getDocuments(ids);
-                    // 2014.04.20 最初に文書を作成したユーザを取得
-                    rootUserModels = ddl.getRootUsers(ids);
-                    if (result != null && !result.isEmpty() && rootUserModels != null && !rootUserModels.isEmpty()) {
-                        int i=0;
+                    if (result != null && !result.isEmpty()) {
                         for (DocumentModel model : result) {
                             // DocumentModelにDocInfoModelを設定する
                             DocInfoModel docInfo = docInfoMap.get(model.getId());
                             model.setDocInfoModel(docInfo);
                             // Executorに登録していく
-                            MakeViewerTask task = new MakeViewerTask(model, rootUserModels.get(i++));
+                            MakeViewerTask task = new MakeViewerTask(model);
                             service.submit(task);
-                            documentIds.add(model.getId());
                             ++taskCount;
                         }
                     }

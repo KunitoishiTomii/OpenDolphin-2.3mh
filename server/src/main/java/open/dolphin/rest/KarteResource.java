@@ -81,21 +81,6 @@ public class KarteResource extends AbstractResource {
         return Response.ok(so).build();
     }
 
-    @GET
-    @Path("rootuser")
-    @Produces(MEDIATYPE_JSON_UTF8)
-    public Response getRootUsers(@QueryParam(IDS) String ids) {
-
-        List<Long> list = getConverter().toLongList(ids);
-
-        List<UserModel> result = karteServiceBean.getRootUsers(list);
-        
-        TypeReference typeRef = new TypeReference<List<UserModel>>(){};
-        StreamingOutput so = getGzipOutStream(result, typeRef);
-        
-        return Response.ok(so).build();
-    }
-
     @POST
     @Path("document")
     @Consumes(MEDIATYPE_JSON_UTF8)

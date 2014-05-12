@@ -337,6 +337,10 @@ public class KarteServiceBean {
             // クライアントが DocInfo だけを利用するケースがあるため
             doc.toDetuch();
             result.add(doc.getDocInfoModel());
+            
+            // find root user
+            DocumentModel parent = getParent(doc);
+            doc.getDocInfoModel().setRootUser(parent.getUserModel().getCommonName());
         }
 //masuda, katoh$
         
@@ -438,31 +442,6 @@ public class KarteServiceBean {
         dmMap.clear();
 
         return documentList;
-    }
-
-    public List<UserModel> getRootUsers(List<Long> documentIds) {
-        List<UserModel> result;
-        
-        result = new ArrayList<>();
-        
-        for (Long documentId: documentIds){
-            List<DocumentModel> givenModels =
-                    em.createQuery("from DocumentModel m where m.id = :id")
-                    .setParameter("id", documentId)
-                    .getResultList();
-            for (DocumentModel givenModel: givenModels){
-                DocumentModel rootModel = 
-                        (DocumentModel)
-                        em.createQuery("from DocumentModel m where m.confirmed = :date and m.karte.patient.id = :karteid order by m.id")
-                        .setParameter("date", givenModel.getStarted())
-                        .setParameter("karteid", givenModel.getKarte().getPatient().getId())
-                        .setMaxResults(1)
-                        .getSingleResult();
-                result.add(rootModel.getUserModel());
-            }
-        }
-        
-        return result;
     }
 
     // まとめてquery改改改 postgresでは遅い1？

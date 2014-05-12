@@ -25,7 +25,6 @@ import open.dolphin.infomodel.ObservationModel;
 import open.dolphin.infomodel.PatientMemoModel;
 import open.dolphin.infomodel.RegisteredDiagnosisModel;
 import open.dolphin.infomodel.SchemaModel;
-import open.dolphin.infomodel.UserModel;
 
 /**
  * Session と Document の送受信を行う Delegater クラス。
@@ -134,26 +133,6 @@ public class  DocumentDelegater extends BusinessDelegater {
         return list;
     }
 
-    public List<UserModel> getRootUsers(List<Long> ids) throws Exception {
-        
-        String path = "karte/rootuser";
-
-        Response response = getWebTarget()
-                .path(path)
-                .queryParam(IDS, getConverter().fromList(ids))
-                .request(MEDIATYPE_JSON_UTF8)
-                .get();
-
-        checkHttpStatus(response);
-        InputStream is = response.readEntity(InputStream.class);
-        TypeReference typeRef = new TypeReference<List<UserModel>>(){};
-        List<UserModel> list = (List<UserModel>)
-                getConverter().fromGzippedJson(is, typeRef);
-        
-        response.close();
-
-        return list;
-    }
     /**
      * 文書履歴を検索して返す。
      * @param spec DocumentSearchSpec 検索仕様

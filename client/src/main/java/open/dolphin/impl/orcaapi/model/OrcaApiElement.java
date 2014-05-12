@@ -11,7 +11,6 @@ import open.dolphin.infomodel.PVTHealthInsuranceModel;
 import open.dolphin.infomodel.PVTPublicInsuranceItemModel;
 import open.dolphin.infomodel.RegisteredDiagnosisModel;
 import org.apache.commons.lang.StringUtils;
-import org.jboss.logging.Logger;
 import org.jdom2.Element;
 
 /**
