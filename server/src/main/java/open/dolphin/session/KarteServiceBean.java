@@ -451,14 +451,14 @@ public class KarteServiceBean {
                     .setParameter("id", documentId)
                     .getResultList();
             for (DocumentModel givenModel: givenModels){
-                List<DocumentModel> rootModels = 
+                DocumentModel rootModel = 
+                        (DocumentModel)
                         em.createQuery("from DocumentModel m where m.confirmed = :date and m.karte.patient.id = :karteid order by m.id")
                         .setParameter("date", givenModel.getStarted())
                         .setParameter("karteid", givenModel.getKarte().getPatient().getId())
-                        .getResultList();
-                for (DocumentModel rootModel: rootModels){
-                    result.add(rootModel.getUserModel());
-                }
+                        .setMaxResults(1)
+                        .getSingleResult();
+                result.add(rootModel.getUserModel());
             }
         }
         
