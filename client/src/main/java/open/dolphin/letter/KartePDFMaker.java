@@ -18,6 +18,7 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import open.dolphin.client.ClientContext;
+import open.dolphin.common.util.SchemaNumberComparator;
 import open.dolphin.project.Project;
 import open.dolphin.common.util.StampRenderingHints;
 import open.dolphin.common.util.XmlUtils;
@@ -182,7 +183,7 @@ public class KartePDFMaker extends AbstractPDFMaker {
                 Collections.sort(soaModules);
                 Collections.sort(pModules);
                 if (schemas != null) {
-                    Collections.sort(schemas);
+                    Collections.sort(schemas, new SchemaNumberComparator());
                 }
 
                 // テーブルを作成する
@@ -386,6 +387,8 @@ public class KartePDFMaker extends AbstractPDFMaker {
         private String italic;
         private String underline;
         
+        private boolean componentFlg;
+        
         private final StampRenderingHints hints;
         private final BaseFont baseFont;
         
@@ -435,11 +438,12 @@ public class KartePDFMaker extends AbstractPDFMaker {
         private void startElement(XMLStreamReader reader) throws XMLStreamException {
             
             String eName = reader.getLocalName();
-
+            
             switch (eName) {
                 case PARAGRAPH_NAME:
                     String alignStr = reader.getAttributeValue(null, ALIGNMENT_NAME);
                     startParagraph(alignStr);
+                    componentFlg = false;
                     break;
                 case CONTENT_NAME:
                     foreground = reader.getAttributeValue(null, FOREGROUND_NAME);
@@ -451,11 +455,13 @@ public class KartePDFMaker extends AbstractPDFMaker {
                 case TEXT_NAME:
                     String text = reader.getElementText();
                     startContent(text);
+                    componentFlg = false;
                     break;
                 case COMPONENT_NAME:
                     String name = reader.getAttributeValue(null, NAME_NAME);
                     String number = reader.getAttributeValue(null, COMPONENT_NAME);
                     startComponent(name, number);
+                    componentFlg = true;
                     break;
                 //case SECTION_NAME:
                 //    break;
@@ -527,8 +533,12 @@ public class KartePDFMaker extends AbstractPDFMaker {
             }
 
             // テキストを挿入する
-            if (!text.trim().isEmpty()) {  // スタンプで改行されないために
+            if (!(text.trim().isEmpty() && componentFlg)) {  // スタンプで改行されないために
                 theParagraph.add(new Chunk(text));
+                float leading = theParagraph.getLeading();
+                if (leading < font.getSize()) {
+                    theParagraph.setLeading(font.getSize());
+                }
             }
         }
 
