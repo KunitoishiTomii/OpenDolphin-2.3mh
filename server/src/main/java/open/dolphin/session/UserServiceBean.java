@@ -265,6 +265,7 @@ public class UserServiceBean {
         }
         if (toRemove != null) {
             contextHolder.getAsyncResponseList().remove(toRemove);
+            toRemove.getAsyncResponse().cancel();
         }
         
         return oldUUID;
