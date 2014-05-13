@@ -118,6 +118,17 @@
             <logger category="jacorb.config">
                 <level name="ERROR"/>
             </logger>
+<!-- Add DgateCgi logger config start -->
+            <logger category="org.dcm4che2">
+                <level name="WARN"/>
+            </logger>
+            <logger category="org.weasis">
+                <level name="WARN"/>
+            </logger>
+            <logger category="DgateCgiServlet">
+                <level name="WARN"/>
+            </logger>
+<!-- Add DgateCgi logger config end   -->
             <root-logger>
                 <level name="INFO"/>
                 <handlers>
