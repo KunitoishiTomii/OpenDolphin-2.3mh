@@ -6,3 +6,4 @@
 /launcher/target/
 /launcher/client/
 /launcher/launcher.properties
+/server/nb-configuration.xml
