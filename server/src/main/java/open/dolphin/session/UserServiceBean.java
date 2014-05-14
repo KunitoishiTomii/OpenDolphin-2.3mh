@@ -3,11 +3,14 @@ package open.dolphin.session;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.persistence.EntityExistsException;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import open.dolphin.infomodel.*;
+import open.dolphin.mbean.AsyncResponseModel;
+import open.dolphin.mbean.ServletContextHolder;
 
 /**
  *
@@ -30,6 +33,9 @@ public class UserServiceBean {
     
     private static final String MEMBER_TYPE = "memberType";
     private static final String MEMBER_TYPE_EXPIRED = "EXPIRED";
+    
+    @Inject
+    private ServletContextHolder contextHolder;
     
     @PersistenceContext
     private EntityManager em;
@@ -248,6 +254,20 @@ public class UserServiceBean {
             user.setClientUUID(null);
             em.merge(user);
         }
+        
+        // remove AsyncResponse
+        AsyncResponseModel toRemove = null;
+        for (AsyncResponseModel arModel : contextHolder.getAsyncResponseList()) {
+            if (clientUUID.equals(arModel.getClientUUID())) {
+                toRemove = arModel;
+                break;
+            }
+        }
+        if (toRemove != null) {
+            contextHolder.getAsyncResponseList().remove(toRemove);
+            toRemove.getAsyncResponse().cancel();
+        }
+        
         return oldUUID;
     }
 }

@@ -241,6 +241,21 @@ public class KarteEditor extends AbstractChartDocument implements IInfoModel,
         if (boundSupport != null) {
             boundSupport.firePropertyChange(KarteEditor.SAVE_DONE, false, true);
         }
+        
+        // インスペクタをtoFrontする
+        if (getContext() instanceof EditorFrame) {
+            
+            SwingUtilities.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    EditorFrame ef = (EditorFrame) getContext();
+                    JFrame frame = ef.getChart().getFrame();
+                    frame.setExtendedState(java.awt.Frame.NORMAL);
+                    frame.toFront();
+                }
+            });
+        }
     }
 
     public void printPanel2(final PageFormat format) {
