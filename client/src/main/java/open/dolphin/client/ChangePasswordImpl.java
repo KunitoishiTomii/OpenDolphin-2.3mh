@@ -499,7 +499,7 @@ public class ChangePasswordImpl extends AbstractMainTool implements ChangeProfil
 //masuda^
             final UserDelegater udl = UserDelegater.getInstance();
             Component c = getFrame();
-            String message = null;
+            String message = TITLE;
             String note = PROGRESS_NOTE;
           
             ProgressMonitorWorker worker = new ProgressMonitorWorker<Void, Void>(c, message, note) {
