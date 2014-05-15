@@ -1,6 +1,5 @@
 package open.dolphin.mbean;
 
-import javax.naming.NamingException;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
@@ -19,12 +18,9 @@ public class DolphinServletListener implements ServletContextListener {
     @Override
     public void contextInitialized(ServletContextEvent sce) {
         
-        try {
-            MasudaServiceBean masudaService = (MasudaServiceBean) JndiUtil.getJndiResource(MasudaServiceBean.class);
-            if (masudaService != null && masudaService.usePvtServletServer()) {
-                PvtServletServer.getInstance().start();
-            }
-        } catch (NamingException ex) {
+        MasudaServiceBean masudaService = (MasudaServiceBean) JndiUtil.getJndiResource(MasudaServiceBean.class);
+        if (masudaService != null && masudaService.usePvtServletServer()) {
+            PvtServletServer.getInstance().start();
         }
 
         OrcaService.getInstance().start();
@@ -32,12 +28,10 @@ public class DolphinServletListener implements ServletContextListener {
 
     @Override
     public void contextDestroyed(ServletContextEvent sce) {
-        try {
-            MasudaServiceBean masudaService = (MasudaServiceBean) JndiUtil.getJndiResource(MasudaServiceBean.class);
-            if (masudaService != null && masudaService.usePvtServletServer()) {
-                PvtServletServer.getInstance().dispose();
-            }
-        } catch (NamingException ex) {
+
+        MasudaServiceBean masudaService = (MasudaServiceBean) JndiUtil.getJndiResource(MasudaServiceBean.class);
+        if (masudaService != null && masudaService.usePvtServletServer()) {
+            PvtServletServer.getInstance().dispose();
         }
 
         OrcaService.getInstance().dispose();

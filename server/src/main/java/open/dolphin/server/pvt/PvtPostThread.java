@@ -5,7 +5,6 @@ import java.io.StringReader;
 import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Logger;
-import javax.naming.NamingException;
 import open.dolphin.infomodel.PatientVisitModel;
 import open.dolphin.mbean.JndiUtil;
 import open.dolphin.pvtclaim.PVTBuilder;
@@ -22,16 +21,9 @@ public class PvtPostThread implements Runnable {
     private static final Logger logger = Logger.getLogger(PvtPostThread.class.getSimpleName());
 
     private final LinkedBlockingQueue<String> queue;
-    private MasudaServiceBean masudaService;
-    private PVTServiceBean pvtService;
 
     public PvtPostThread() {
         queue = new LinkedBlockingQueue<>();
-        try {
-            masudaService = (MasudaServiceBean) JndiUtil.getJndiResource(MasudaServiceBean.class);
-            pvtService = (PVTServiceBean) JndiUtil.getJndiResource(PVTServiceBean.class);
-        } catch (NamingException ex) {
-        }
     }
 
     @Override
@@ -53,6 +45,8 @@ public class PvtPostThread implements Runnable {
 
     private void postPvt(String pvtXml) {
 
+        MasudaServiceBean masudaService = (MasudaServiceBean) JndiUtil.getJndiResource(MasudaServiceBean.class);
+        PVTServiceBean pvtService = (PVTServiceBean) JndiUtil.getJndiResource(PVTServiceBean.class);
         if (masudaService == null || pvtService == null) {
             return;
         }
