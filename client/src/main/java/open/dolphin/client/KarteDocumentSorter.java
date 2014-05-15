@@ -27,7 +27,7 @@ public class KarteDocumentSorter implements Comparator<DocInfoModel>{
         int i;
         // 関数名のcompareは決まりごとである。
         // s1がs2より先に来るなら、s1の特徴量がs2のそれより小さくなるような関数を作成する。
-        i =(int) (d1.getConfirmDate().compareTo(d2.getConfirmDate()));
+        i =(int) (d1.getFirstConfirmDate().compareTo(d2.getFirstConfirmDate()));
         if (i == 0){
             i =(int) (d1.getDocPk() - d2.getDocPk());
         }
