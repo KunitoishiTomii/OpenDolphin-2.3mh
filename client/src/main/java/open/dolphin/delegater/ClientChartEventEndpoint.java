@@ -26,7 +26,6 @@ import org.glassfish.tyrus.client.ClientManager;
 @ClientEndpoint
 public class ClientChartEventEndpoint {
 
-    private static final String SSL_ENGINE_CONFIGURATOR = "org.glassfish.tyrus.client.sslEngineConfigurator";
     private Session wsSession;
 
     public void connect() throws Exception {
@@ -52,7 +51,7 @@ public class ClientChartEventEndpoint {
         if (useSSL) {
             SSLContext ssl = OreOreSSL.getSslContext();
             SSLEngineConfigurator sslConfig = new SSLEngineConfigurator(ssl, true, false, false);
-            client.getProperties().put(SSL_ENGINE_CONFIGURATOR, sslConfig);
+            client.getProperties().put(ClientManager.SSL_ENGINE_CONFIGURATOR, sslConfig);
         }
         wsSession = client.connectToServer(this, uri);
 /*
