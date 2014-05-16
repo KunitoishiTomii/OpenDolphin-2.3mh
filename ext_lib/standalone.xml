@@ -171,7 +171,7 @@
 -->
                     <connection-url>jdbc:postgresql://localhost:5432/dolphin</connection-url>
                     <driver-class>org.postgresql.Driver</driver-class>
-                    <driver>postgresql-9.3-1101-jdbc41.jar</driver>
+                    <driver>postgresql-9.3-1101.jdbc41.jar</driver>
                     <transaction-isolation>TRANSACTION_READ_COMMITTED</transaction-isolation>
                     <security>
                         <user-name>dolphin</user-name>
