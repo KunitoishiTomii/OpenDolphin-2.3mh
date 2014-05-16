@@ -14,7 +14,7 @@ public class JndiUtil {
 
     private static final String warName = "OpenDolphin-server-2.3m_WF8";
     
-    public static Object getJndiResource(Class cls) {
+    public static <T> T getJndiResource(Class<T> cls) {
 
         try {
             StringBuilder sb = new StringBuilder();
@@ -22,7 +22,7 @@ public class JndiUtil {
             sb.append(warName).append("/");
             sb.append(cls.getSimpleName());
             InitialContext ic = new InitialContext();
-            Object obj = ic.lookup(sb.toString());
+            T obj = (T) ic.lookup(sb.toString());
             return obj;
         } catch (NamingException ex) {
             Logger.getLogger(JndiUtil.class.getSimpleName()).log(Level.SEVERE, null, ex);

@@ -18,7 +18,7 @@ public class DolphinServletListener implements ServletContextListener {
     @Override
     public void contextInitialized(ServletContextEvent sce) {
         
-        MasudaServiceBean masudaService = (MasudaServiceBean) JndiUtil.getJndiResource(MasudaServiceBean.class);
+        MasudaServiceBean masudaService = JndiUtil.getJndiResource(MasudaServiceBean.class);
         if (masudaService != null && masudaService.usePvtServletServer()) {
             PvtServletServer.getInstance().start();
         }
@@ -29,7 +29,7 @@ public class DolphinServletListener implements ServletContextListener {
     @Override
     public void contextDestroyed(ServletContextEvent sce) {
 
-        MasudaServiceBean masudaService = (MasudaServiceBean) JndiUtil.getJndiResource(MasudaServiceBean.class);
+        MasudaServiceBean masudaService = JndiUtil.getJndiResource(MasudaServiceBean.class);
         if (masudaService != null && masudaService.usePvtServletServer()) {
             PvtServletServer.getInstance().dispose();
         }
