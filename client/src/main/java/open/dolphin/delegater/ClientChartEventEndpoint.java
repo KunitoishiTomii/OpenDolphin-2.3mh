@@ -1,22 +1,22 @@
 package open.dolphin.delegater;
 
-import io.undertow.websockets.jsr.DefaultWebSocketClientSslProvider;
 import java.io.IOException;
 import java.net.URI;
 import javax.net.ssl.SSLContext;
 import javax.websocket.OnMessage;
 import javax.websocket.ClientEndpoint;
 import javax.websocket.CloseReason;
-import javax.websocket.ContainerProvider;
 import javax.websocket.Session;
-import javax.websocket.WebSocketContainer;
 import open.dolphin.client.ChartEventListener;
 import open.dolphin.client.Dolphin;
 import open.dolphin.common.util.JsonConverter;
 import open.dolphin.infomodel.ChartEventModel;
 import open.dolphin.project.Project;
-//import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
-//import org.glassfish.tyrus.client.ClientManager;
+import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
+import org.glassfish.tyrus.client.ClientManager;
+//import javax.websocket.ContainerProvider;
+//import javax.websocket.WebSocketContainer;
+//import io.undertow.websockets.jsr.DefaultWebSocketClientSslProvider;
 
 /**
  * ClientChartEventEndpoint
@@ -26,7 +26,7 @@ import open.dolphin.project.Project;
 @ClientEndpoint
 public class ClientChartEventEndpoint {
 
-    //private static final String SSL_ENGINE_CONFIGURATOR = "org.glassfish.tyrus.client.sslEngineConfigurator";
+    private static final String SSL_ENGINE_CONFIGURATOR = "org.glassfish.tyrus.client.sslEngineConfigurator";
     private Session wsSession;
 
     public void connect() throws Exception {
@@ -47,7 +47,7 @@ public class ClientChartEventEndpoint {
         sb.append(baseURI.substring(pos)).append("/dolphin/ws/");
         sb.append(fidUid).append("/").append(passwd).append("/").append(clientUUID);
         URI uri = URI.create(sb.toString());
-/*
+
         ClientManager client = ClientManager.createClient();
         if (useSSL) {
             SSLContext ssl = OreOreSSL.getSslContext();
@@ -55,14 +55,14 @@ public class ClientChartEventEndpoint {
             client.getProperties().put(SSL_ENGINE_CONFIGURATOR, sslConfig);
         }
         wsSession = client.connectToServer(this, uri);
-*/
+/*
         if (useSSL) {
             SSLContext ssl = OreOreSSL.getSslContext();
             DefaultWebSocketClientSslProvider.setSslContext(ssl);
         }
         WebSocketContainer c = ContainerProvider.getWebSocketContainer();
         wsSession = c.connectToServer(this, uri);
-
+*/
     }
 
     public void close() {
