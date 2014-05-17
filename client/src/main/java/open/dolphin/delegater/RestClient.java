@@ -3,15 +3,9 @@ package open.dolphin.delegater;
 import java.net.URI;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.util.concurrent.TimeUnit;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.WebTarget;
 import open.dolphin.project.Project;
@@ -30,9 +24,12 @@ public class RestClient {
 
     private static final RestClient instance;
     
-    private static final int TIMEOUT_IN_MILLISEC = 30 * 1000; // 30sec
+    private static final int TIMEOUT_IN_MILLISEC = 60 * 1000; // 60sec
     
     private String baseURI;
+    
+    private final boolean useJersey;
+    private final boolean useComet;
     
     // 非同期通信を分けるほうがよいのかどうか不明だが
     private Client client;
@@ -48,6 +45,10 @@ public class RestClient {
     }
 
     private RestClient() {
+        
+        useJersey = Project.getBoolean(MiscSettingPanel.USE_JERSEY, MiscSettingPanel.DEFAULT_USE_JERSEY);
+        useComet = !Project.getBoolean(MiscSettingPanel.USE_WEBSOCKET, MiscSettingPanel.DEFAULT_USE_WEBSOCKET);
+        
         setupSslClients();
     }
 
@@ -76,7 +77,9 @@ public class RestClient {
         
         URI uri = URI.create(baseURI);
         webTarget = client.target(uri);
-        asyncWebTarget = asyncClient.target(uri);
+        if (useComet) {
+            asyncWebTarget = asyncClient.target(uri);
+        }
     }
     
     public WebTarget getWebTarget() {
@@ -91,30 +94,31 @@ public class RestClient {
     // オレオレSSL復活ｗ
     private void setupSslClients() {
         
-        boolean useJersey = Project.getBoolean(MiscSettingPanel.USE_JERSEY, MiscSettingPanel.DEFAULT_USE_JERSEY);
-
-        try {
-            SSLContext ssl = SSLContext.getInstance("TLS");
-            TrustManager[] certs = {new OreOreTrustManager()};
-            ssl.init(null, certs, new SecureRandom());
-            HostnameVerifier verifier = new OreOreHostnameVerifier();
-            
-            client = createClient(useJersey, ssl, verifier, false);
-            asyncClient = createClient(useJersey, ssl, verifier, true);
-
-        } catch (KeyManagementException | NoSuchAlgorithmException ex) {
-            client = createClient(useJersey, null, null, false);
-            asyncClient = createClient(useJersey, null, null, true);
-        }
-
         // DolphnAuthFilterを設定する
         authFilter = new DolphinAuthFilter();
-        client.register(authFilter);
-        asyncClient.register(authFilter);
+        
+        try {
+            SSLContext ssl = OreOreSSL.getSslContext();
+            HostnameVerifier verifier = OreOreSSL.getVerifier();
+            client = createClient(ssl, verifier, false);
+            client.register(authFilter);
+            if (useComet) {
+                asyncClient = createClient(ssl, verifier, true);
+                asyncClient.register(authFilter);
+            }
+
+        } catch (KeyManagementException | NoSuchAlgorithmException ex) {
+            client = createClient(null, null, false);
+            client.register(authFilter);
+            if (useComet) {
+                asyncClient = createClient(null, null, true);
+                asyncClient.register(authFilter);
+            }
+        }
     }
     
     // Clientを作成する
-    private Client createClient(boolean useJersey, SSLContext ssl, HostnameVerifier verifier, boolean async) {
+    private Client createClient(SSLContext ssl, HostnameVerifier verifier, boolean async) {
 
         Client ret = useJersey
                 ? createJerseyClient(ssl, verifier, async)
@@ -153,30 +157,5 @@ public class RestClient {
         }
         
         return builder.build();
-    }
-
-    private static class OreOreHostnameVerifier implements HostnameVerifier {
-
-        @Override
-        public boolean verify(String string, SSLSession ssls) {
-            return true;
-        }
-        
-    }
-    
-    private static class OreOreTrustManager implements X509TrustManager {
-
-        @Override
-        public void checkClientTrusted(X509Certificate[] xcs, String string) throws CertificateException {
-        }
-
-        @Override
-        public void checkServerTrusted(X509Certificate[] xcs, String string) throws CertificateException {
-        }
-
-        @Override
-        public X509Certificate[] getAcceptedIssuers() {
-            return null;
-        }
     }
 }
