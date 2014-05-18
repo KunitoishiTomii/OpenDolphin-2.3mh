@@ -1,5 +1,5 @@
 package open.dolphin.delegater;
-
+/*
 import org.jboss.resteasy.client.jaxrs.internal.ClientInvocation;
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -7,14 +7,15 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import org.jboss.resteasy.client.jaxrs.engines.URLConnectionEngine;
+*/
 
 /**
  * HttpsURLConnectionEngine
  * 
  * @author masuda, Masuda Naika
  */
-public class HttpsURLConnectionEngine extends URLConnectionEngine {
-    
+public class HttpsURLConnectionEngine { // extends URLConnectionEngine {
+/*
     public HttpsURLConnectionEngine(SSLContext ssl, HostnameVerifier verifier) {
         setSslContext(ssl);
         setHostnameVerifier(verifier);
@@ -38,4 +39,5 @@ public class HttpsURLConnectionEngine extends URLConnectionEngine {
 
         return connection;
     }
+*/
 }

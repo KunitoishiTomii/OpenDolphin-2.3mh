@@ -10,7 +10,7 @@ import javax.ws.rs.core.Response;
 import open.dolphin.project.Project;
 import open.dolphin.setting.MiscSettingPanel;
 import org.glassfish.jersey.client.JerseyClientBuilder;
-import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
+//import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 
 /**
  * OsiriXをXML-RPCで開く
@@ -43,13 +43,16 @@ public class OsirixXmlRpcClient {
     }
 
     private void setupClient() {
-
+/*
         boolean useJersey = Project.getBoolean(MiscSettingPanel.USE_JERSEY, MiscSettingPanel.DEFAULT_USE_JERSEY);
         if (useJersey) {
             client = new JerseyClientBuilder().build();
         } else {
             client = new ResteasyClientBuilder().build();
         }
+*/
+        client = new JerseyClientBuilder().build();
+        
         setupWebTarget();
     }
 
