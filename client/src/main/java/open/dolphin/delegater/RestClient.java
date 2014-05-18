@@ -3,7 +3,7 @@ package open.dolphin.delegater;
 import java.net.URI;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
-import java.util.concurrent.TimeUnit;
+//import java.util.concurrent.TimeUnit;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import javax.ws.rs.client.Client;
@@ -13,7 +13,7 @@ import open.dolphin.setting.MiscSettingPanel;
 import open.dolphin.util.HashUtil;
 import org.glassfish.jersey.client.ClientProperties;
 import org.glassfish.jersey.client.JerseyClientBuilder;
-import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
+//import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 
 /**
  * RestClient
@@ -119,11 +119,12 @@ public class RestClient {
     
     // Clientを作成する
     private Client createClient(SSLContext ssl, HostnameVerifier verifier, boolean async) {
-
+/*
         Client ret = useJersey
                 ? createJerseyClient(ssl, verifier, async)
                 : createResteasyClient(ssl, verifier, async);
-        
+*/
+        Client ret = createJerseyClient(ssl, verifier, async);
         return ret;
     }
     
@@ -142,6 +143,7 @@ public class RestClient {
         return builder.build();
     }
     
+/*
     // ResteasyClientを作成する
     private Client createResteasyClient(SSLContext ssl, HostnameVerifier verifier, boolean async) {
         
@@ -158,4 +160,5 @@ public class RestClient {
         
         return builder.build();
     }
+*/
 }

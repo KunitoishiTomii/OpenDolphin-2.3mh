@@ -62,20 +62,22 @@ public class PvtServletServer {
     public void dispose() {
 
         // ServerThreadを中止させる
-        serverThread.stop();
-
-        // ServerSocketのThread破棄する
-        sThread.interrupt();
-        sThread = null;
+        if (serverThread != null) {
+            serverThread.stop();
+            // ServerSocketのThread破棄する
+            sThread.interrupt();
+        }
 
         // shutdown PvtPostTask
-        exec.shutdown();
-        try {
-            if (!exec.awaitTermination(50, TimeUnit.MILLISECONDS)) {
+        if (exec != null) {
+            exec.shutdown();
+            try {
+                if (!exec.awaitTermination(100, TimeUnit.MILLISECONDS)) {
+                    exec.shutdownNow();
+                }
+            } catch (InterruptedException ex) {
                 exec.shutdownNow();
             }
-        } catch (InterruptedException ex) {
-            exec.shutdownNow();
         }
 
         logger.info("PVT Server stopped.");
