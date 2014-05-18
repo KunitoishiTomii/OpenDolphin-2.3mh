@@ -222,15 +222,15 @@ public class Dolphin implements MainWindow, IChartEventListener {
 
         // 環境設定ダイアログで変更される場合があるので保存する
         saveEnv = new Properties();
-/*
-        // PVT Sever を起動する
-        if (Project.getBoolean(Project.USE_AS_PVT_SERVER)) {
-            startPvtServer();
 
-        } else {
-            saveEnv.put(GUIConst.KEY_PVT_SERVER, GUIConst.SERVICE_NOT_RUNNING);
-        }
-*/
+//        // PVT Sever を起動する
+//        if (Project.getBoolean(Project.USE_AS_PVT_SERVER)) {
+//            startPvtServer();
+//
+//        } else {
+//            saveEnv.put(GUIConst.KEY_PVT_SERVER, GUIConst.SERVICE_NOT_RUNNING);
+//        }
+
         // CLAIM送信を生成する
         if (Project.getBoolean(Project.SEND_CLAIM)) {
             startSendClaim();
@@ -752,21 +752,20 @@ public class Dolphin implements MainWindow, IChartEventListener {
     /**
      * PVTServer を開始する。
      */
-/*
-    private void startPvtServer() {
-        PluginLoader<PVTServer> loader = PluginLoader.load(PVTServer.class);
-        Iterator<PVTServer> iter = loader.iterator();
-        if (iter.hasNext()) {
-            pvtServer = iter.next();
-            pvtServer.setContext(this);
-            pvtServer.setBindAddress(Project.getString(Project.CLAIM_BIND_ADDRESS));
-            pvtServer.start();
-            providers.put("pvtServer", pvtServer);
-            saveEnv.put(GUIConst.KEY_PVT_SERVER, GUIConst.SERVICE_RUNNING);
-            ClientContext.getBootLogger().debug("pvtServer did  start");
-        }
-    }
-*/
+//    private void startPvtServer() {
+//        PluginLoader<PVTServer> loader = PluginLoader.load(PVTServer.class);
+//        Iterator<PVTServer> iter = loader.iterator();
+//        if (iter.hasNext()) {
+//            pvtServer = iter.next();
+//            pvtServer.setContext(this);
+//            pvtServer.setBindAddress(Project.getString(Project.CLAIM_BIND_ADDRESS));
+//            pvtServer.start();
+//            providers.put("pvtServer", pvtServer);
+//            saveEnv.put(GUIConst.KEY_PVT_SERVER, GUIConst.SERVICE_RUNNING);
+//            ClientContext.getBootLogger().debug("pvtServer did  start");
+//        }
+//    }
+
     /**
      * CLAIM 送信を開始する。
      */
@@ -864,23 +863,23 @@ public class Dolphin implements MainWindow, IChartEventListener {
 
                     // 設定の変化を調べ、サービスの制御を行う
                     List<String> messages = new ArrayList<>();
-/*
-                    // PvtServer
-                    boolean oldRunning = saveEnv.getProperty(GUIConst.KEY_PVT_SERVER).equals(GUIConst.SERVICE_RUNNING);
-                    boolean newRun = Project.getBoolean(Project.USE_AS_PVT_SERVER);
-                    boolean start = (!oldRunning && newRun);
-                    boolean stop = (oldRunning && !newRun);
 
-                    if (start) {
-                        startPvtServer();
-                        messages.add("受付受信を開始しました。");
-                    } else if (stop && pvtServer != null) {
-                        pvtServer.stop();
-                        pvtServer = null;
-                        saveEnv.put(GUIConst.KEY_PVT_SERVER, GUIConst.SERVICE_NOT_RUNNING);
-                        messages.add("受付受信を停止しました。");
-                    }
-*/
+//                    // PvtServer
+//                    boolean oldRunning = saveEnv.getProperty(GUIConst.KEY_PVT_SERVER).equals(GUIConst.SERVICE_RUNNING);
+//                    boolean newRun = Project.getBoolean(Project.USE_AS_PVT_SERVER);
+//                    boolean start = (!oldRunning && newRun);
+//                    boolean stop = (oldRunning && !newRun);
+//
+//                    if (start) {
+//                        startPvtServer();
+//                        messages.add("受付受信を開始しました。");
+//                    } else if (stop && pvtServer != null) {
+//                        pvtServer.stop();
+//                        pvtServer = null;
+//                        saveEnv.put(GUIConst.KEY_PVT_SERVER, GUIConst.SERVICE_NOT_RUNNING);
+//                        messages.add("受付受信を停止しました。");
+//                    }
+
                     // SendClaim
                     boolean oldRunning = saveEnv.getProperty(GUIConst.KEY_SEND_CLAIM).equals(GUIConst.SERVICE_RUNNING);
                     boolean newRun = Project.getBoolean(Project.SEND_CLAIM);
