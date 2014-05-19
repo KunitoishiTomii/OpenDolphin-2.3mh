@@ -9,6 +9,7 @@ import java.util.concurrent.CompletionService;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import javax.swing.*;
+import open.dolphin.common.util.ModuleBeanDecoder;
 import open.dolphin.delegater.DocumentDelegater;
 import open.dolphin.helper.DBTask;
 import open.dolphin.helper.WindowSupport;

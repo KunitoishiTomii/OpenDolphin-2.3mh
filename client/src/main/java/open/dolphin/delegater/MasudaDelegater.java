@@ -6,13 +6,12 @@ import java.util.Date;
 import java.util.List;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Response;
-import open.dolphin.common.util.BeanUtils;
+import open.dolphin.common.util.ModuleBeanDecoder;
 import open.dolphin.infomodel.DisconItemModel;
 import open.dolphin.infomodel.DocInfoModel;
 import open.dolphin.infomodel.DrPatientIdModel;
 import open.dolphin.infomodel.ETensuModel1;
 import open.dolphin.infomodel.ExamHistoryModel;
-import open.dolphin.infomodel.IModuleModel;
 import open.dolphin.infomodel.InFacilityLaboItem;
 import open.dolphin.infomodel.IndicationModel;
 import open.dolphin.infomodel.ModuleModel;
@@ -73,7 +72,8 @@ public class MasudaDelegater extends BusinessDelegater {
         // いつもデコード忘れるｗ
         for (RoutineMedModel model : list) {
             for (ModuleModel mm : model.getModuleList()) {
-                mm.setModel((IModuleModel) BeanUtils.xmlDecode(mm.getBeanBytes()));
+                //mm.setModel((IModuleModel) BeanUtils.xmlDecode(mm.getBeanBytes()));
+                mm.setModel(ModuleBeanDecoder.getInstance().decode(mm.getBeanBytes()));
             }
         }
 
@@ -101,7 +101,8 @@ public class MasudaDelegater extends BusinessDelegater {
         }
         // いつもデコード忘れるｗ
         for (ModuleModel mm : model.getModuleList()) {
-            mm.setModel((IModuleModel) BeanUtils.xmlDecode(mm.getBeanBytes()));
+            //mm.setModel((IModuleModel) BeanUtils.xmlDecode(mm.getBeanBytes()));
+            mm.setModel(ModuleBeanDecoder.getInstance().decode(mm.getBeanBytes()));
         }
 
         return model;
@@ -329,7 +330,8 @@ public class MasudaDelegater extends BusinessDelegater {
         response.close();
 
         for (ModuleModel module : list) {
-            module.setModel((IModuleModel) BeanUtils.xmlDecode(module.getBeanBytes()));
+            //module.setModel((IModuleModel) BeanUtils.xmlDecode(module.getBeanBytes()));
+            module.setModel(ModuleBeanDecoder.getInstance().decode(module.getBeanBytes()));
         }
 
         return list;

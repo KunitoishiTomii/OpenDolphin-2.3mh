@@ -1,6 +1,6 @@
 package open.dolphin.infomodel;
 
-import open.dolphin.common.util.BeanUtils;
+import open.dolphin.common.util.ModuleBeanDecoder;
 import org.hibernate.search.bridge.StringBridge;
 
 /**
@@ -15,7 +15,8 @@ public class ModuleModelBridge implements StringBridge {
     public String objectToString(Object object) {
 
         byte[] beanBytes = (byte[]) object;
-        IModuleModel im = (IModuleModel) BeanUtils.xmlDecode(beanBytes);
+        //IModuleModel im = (IModuleModel) BeanUtils.xmlDecode(beanBytes);
+        IModuleModel im = ModuleBeanDecoder.getInstance().decode(beanBytes);
         
         if (im instanceof ProgressCourse) {
             String xml = ((ProgressCourse) im).getFreeText();
