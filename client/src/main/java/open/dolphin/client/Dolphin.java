@@ -18,6 +18,8 @@ import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import javax.print.attribute.HashPrintRequestAttributeSet;
 import javax.print.attribute.PrintRequestAttributeSet;
 import javax.swing.*;
@@ -128,12 +130,20 @@ public class Dolphin implements MainWindow, IChartEventListener {
     public static Dolphin getInstance() {
         return instance;
     }
+    
+    // 共通のExecutorService
+    private final ExecutorService exec;
+    
+    public ExecutorService getExecutorService() {
+        return exec;
+    }
 //masuda$
     
     /**
      * Creates new MainWindow
      */
     public Dolphin() {
+        exec = Executors.newFixedThreadPool(2);
     }
 
     public void start(boolean pro) {
@@ -1065,7 +1075,9 @@ public class Dolphin implements MainWindow, IChartEventListener {
 
         // FocusProperetyChangeListenerを破棄する
         FocusPropertyChangeListener.getInstance().dispose();
-
+        
+        // shutdown Executor
+        exec.shutdownNow();
         
         // ログアウト処理
         try {

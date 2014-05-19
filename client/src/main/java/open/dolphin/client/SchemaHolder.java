@@ -24,17 +24,11 @@ public final class SchemaHolder extends AbstractComponentHolder {
     private SchemaModel schema;
 
     public SchemaHolder(KartePane kartePane, SchemaModel schema) {
-        this(kartePane, schema, false);
-    }
-    
-    public SchemaHolder(KartePane kartePane, SchemaModel schema, boolean lazy) {
         super(kartePane);
         function = SchemaHolderFunction.getInstance();
         function.setDeleteAction(SchemaHolder.this);
         this.schema = schema;
-        if (!lazy) {
-            setImageIcon();
-        }
+        setImageIcon();
     }
     
     public SchemaModel getSchema() {
@@ -75,15 +69,6 @@ public final class SchemaHolder extends AbstractComponentHolder {
     @Override
     public String getAttributeName() {
         return ATTRIBUTE_NAME;
-    }
-
-    @Override
-    protected void paintComponent(Graphics g) {
-        
-        if (getIcon() ==  null) {
-            setImageIcon();
-        }
-        super.paintComponent(g);
     }
     
     private void setImageIcon() {
