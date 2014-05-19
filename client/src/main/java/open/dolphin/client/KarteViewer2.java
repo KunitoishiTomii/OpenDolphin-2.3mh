@@ -29,13 +29,16 @@ public class KarteViewer2 extends KarteViewer {
 
     private void initialize() {
 
-        Chart parent = getContext();
-        boolean verticalLayout = false;
-        if (parent != null && parent instanceof ChartImpl) {
-            boolean vsc = Project.getBoolean(Project.KARTE_SCROLL_DIRECTION);
-            boolean vl = Project.getBoolean(MiscSettingPanel.USE_VERTICAL_LAYOUT);
-            verticalLayout = !vsc && vl;
-        }
+//        Chart parent = getContext();
+//        boolean verticalLayout = false;
+//        if (parent != null && parent instanceof ChartImpl) {
+//            boolean vsc = Project.getBoolean(Project.KARTE_SCROLL_DIRECTION);
+//            boolean vl = Project.getBoolean(MiscSettingPanel.USE_VERTICAL_LAYOUT);
+//            verticalLayout = !vsc && vl;
+//        }
+        boolean vsc = Project.getBoolean(Project.KARTE_SCROLL_DIRECTION);
+        boolean vl = Project.getBoolean(MiscSettingPanel.USE_VERTICAL_LAYOUT);
+        boolean verticalLayout = !vsc && vl;
 
         KartePanel kartePanel = KartePanel.createKartePanel(KartePanel.MODE.DOUBLE_VIEWER, verticalLayout);
 

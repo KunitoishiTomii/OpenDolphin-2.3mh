@@ -665,7 +665,7 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
                             // シングル及び２号用紙の判定を行い、KarteViewer を生成する
                             KarteViewer viewer = createKarteViewer(model);
                             viewer.setContext(getContext());
-                            karteViewerMap.put(viewer.getModel().getId(), viewer);
+                            karteViewerMap.put(model.getId(), viewer);
                             // Executorでレンダリングする
                             KarteRenderTask task = new KarteRenderTask(viewer);
                             Dolphin.getInstance().getExecutorService().submit(task);
