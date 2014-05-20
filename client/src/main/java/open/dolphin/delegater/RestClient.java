@@ -119,7 +119,7 @@ public class RestClient {
     
     // Clientを作成する
     private Client createClient(SSLContext ssl, HostnameVerifier verifier, boolean async) {
-
+/*
         Client ret = useJersey
                 ? createJerseyClient(ssl, verifier, async)
                 : createResteasyClient(ssl, verifier, async);
@@ -160,4 +160,5 @@ public class RestClient {
         
         return builder.build();
     }
+*/
 }

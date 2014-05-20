@@ -1,19 +1,12 @@
 package open.dolphin.server.pvt;
 
 import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
-import open.dolphin.infomodel.PatientVisitModel;
-import open.dolphin.mbean.JndiUtil;
-import open.dolphin.pvtclaim.PVTBuilder;
-import open.dolphin.session.MasudaServiceBean;
-import open.dolphin.session.PVTServiceBean;
 
 /**
  * PvtServerThread, server
@@ -92,5 +85,6 @@ public class PvtServletServer {
 
     // PvtClaimIOHanlderから呼ばれる
     public void postPvt(String pvtXml) {
+        exec.submit(new PvtPostTask(pvtXml));
     }
 }
