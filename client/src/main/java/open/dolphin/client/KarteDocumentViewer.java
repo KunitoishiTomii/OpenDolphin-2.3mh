@@ -4,6 +4,8 @@ import java.awt.Color;
 import java.awt.Rectangle;
 import java.awt.event.*;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import javax.swing.*;
 import open.dolphin.common.util.ModuleBeanDecoder;
 import open.dolphin.delegater.DocumentDelegater;
@@ -624,6 +626,7 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
      */
     private final class KarteTask extends DBTask<Void, Void> {
         
+        private static final int eagerRenderCount = 5;
         private static final int defaultFetchSize = 200;
         private final Map<Long, DocInfoModel> docInfoMap;
         
@@ -634,7 +637,7 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
         }
 
         @Override
-        protected Integer doInBackground() {
+        protected Integer doInBackground() throws InterruptedException, ExecutionException {
             
             logger.debug("KarteTask doInBackground");
             
@@ -642,7 +645,7 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
 
             int fromIndex = 0;
             int idListSize = docInfoMap.size();
-            int cnt = 0;
+            List<Future> futures = new ArrayList<>(eagerRenderCount);
             // 最初のfetchSizeを決める
             // 20文書までは一回で、20～400文書までは２分割で、400以上は200文書ごと取得
             int fetchSize = (idListSize <= 20 || idListSize / defaultFetchSize >= 2)
@@ -667,13 +670,11 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
                             viewer.setContext(getContext());
                             karteViewerMap.put(model.getId(), viewer);
                             // Executorでレンダリングする
-                            if (cnt >= 5) {
-                                KarteRenderTask task = new KarteRenderTask(viewer);
-                                Dolphin.getInstance().getExecutorService().submit(task);
-                            } else {
-                                renderKarte(viewer);
+                            KarteRenderTask task = new KarteRenderTask(viewer);
+                            Future future = Dolphin.getInstance().getExecutorService().submit(task);
+                            if (futures.size() < eagerRenderCount) {
+                                futures.add(future);
                             }
-                            cnt++;
                         }
                     }
                 } catch (Exception ex) {
@@ -681,6 +682,12 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
                 fromIndex += fetchSize;
                 fetchSize = defaultFetchSize;
             }
+            
+            // EagerRenderingの終了を待つ
+            for (Future future : futures) {
+                future.get();
+            }
+            futures.clear();
             
             logger.debug("doInBackground noErr, return result");
             return null;
