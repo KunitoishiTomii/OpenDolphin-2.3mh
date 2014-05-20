@@ -642,6 +642,13 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
             logger.debug("KarteTask doInBackground");
             
             DocumentDelegater ddl = DocumentDelegater.getInstance();
+            
+            // レンダリング待ちするするためにdocInfoListの最初の数個のリストを作る。ちらつき対策
+            int eSize = Math.min(docInfoList.length, eagerRenderCount);
+            List<Long> eIdList = new ArrayList<>(eSize);
+            for (int i = 0; i < eSize; ++i) {
+                eIdList.add(docInfoList[i].getDocPk());
+            }
 
             int fromIndex = 0;
             int idListSize = docInfoMap.size();
@@ -651,15 +658,14 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
             int fetchSize = (idListSize <= 20 || idListSize / defaultFetchSize >= 2)
                     ? idListSize % defaultFetchSize
                     : idListSize / 2;
-            
+
             // 分割してサーバーから取得する
             List<Long> allIds = new ArrayList<>(docInfoMap.keySet());
-            
+
             while (fromIndex < idListSize) {
                 int toIndex = Math.min(fromIndex + fetchSize, idListSize);
-                List<Long> ids = allIds.subList(fromIndex, toIndex);
                 try {
-                    List<DocumentModel> result = ddl.getDocuments(ids);
+                    List<DocumentModel> result = ddl.getDocuments(allIds.subList(fromIndex, toIndex));
                     if (result != null && !result.isEmpty()) {
                         for (DocumentModel model : result) {
                             // DocumentModelにDocInfoModelを設定する
@@ -672,7 +678,8 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
                             // Executorでレンダリングする
                             KarteRenderTask task = new KarteRenderTask(viewer);
                             Future future = Dolphin.getInstance().getExecutorService().submit(task);
-                            if (futures.size() < eagerRenderCount) {
+                            // レンダリング待ちするものはFutureを取得しておく
+                            if (eIdList.contains(model.getId())) {
                                 futures.add(future);
                             }
                         }
@@ -683,7 +690,7 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
                 fetchSize = defaultFetchSize;
             }
             
-            // EagerRenderingの終了を待つ
+            // レンダリング待ち
             for (Future future : futures) {
                 future.get();
             }
@@ -749,7 +756,7 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
         // ダブルクリックされたカルテを別画面で表示する
         viewer.addMouseListener(mouseListener);
 
-            // KarteViewerのJTextPaneにKarteScrollerPanelのActionMapを設定する
+        // KarteViewerのJTextPaneにKarteScrollerPanelのActionMapを設定する
         // これをしないとJTextPaneにフォーカスがあるとキーでスクロールできない
         ActionMap amap = scrollerPanel.getActionMap();
         viewer.setParentActionMap(amap);
