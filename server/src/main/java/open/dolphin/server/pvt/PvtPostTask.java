@@ -3,9 +3,7 @@ package open.dolphin.server.pvt;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.Map;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Logger;
-import javax.naming.NamingException;
 import open.dolphin.infomodel.PatientVisitModel;
 import open.dolphin.mbean.JndiUtil;
 import open.dolphin.pvtclaim.PVTBuilder;
@@ -13,46 +11,25 @@ import open.dolphin.session.MasudaServiceBean;
 import open.dolphin.session.PVTServiceBean;
 
 /**
- * PvtPostThread
+ * PvtPostTask
  *
  * @author masuda, Masuda Naika
  */
-public class PvtPostThread implements Runnable {
+public class PvtPostTask implements Runnable {
 
-    private static final Logger logger = Logger.getLogger(PvtPostThread.class.getSimpleName());
+    private static final Logger logger = Logger.getLogger(PvtPostTask.class.getSimpleName());
+    
+    private final String pvtXml;
 
-    private final LinkedBlockingQueue<String> queue;
-    private MasudaServiceBean masudaService;
-    private PVTServiceBean pvtService;
-
-    public PvtPostThread() {
-        queue = new LinkedBlockingQueue<>();
-        try {
-            masudaService = (MasudaServiceBean) JndiUtil.getJndiResource(MasudaServiceBean.class);
-            pvtService = (PVTServiceBean) JndiUtil.getJndiResource(PVTServiceBean.class);
-        } catch (NamingException ex) {
-        }
+    public PvtPostTask(String pvtXml) {
+        this.pvtXml = pvtXml;
     }
 
     @Override
     public void run() {
 
-        while (true) {
-            try {
-                String pvtXml = queue.take();
-                postPvt(pvtXml);
-            } catch (InterruptedException ex) {
-                break;
-            }
-        }
-    }
-
-    public void offerPvt(String pvtXml) {
-        queue.offer(pvtXml);
-    }
-
-    private void postPvt(String pvtXml) {
-
+        MasudaServiceBean masudaService = JndiUtil.getJndiResource(MasudaServiceBean.class);
+        PVTServiceBean pvtService = JndiUtil.getJndiResource(PVTServiceBean.class);
         if (masudaService == null || pvtService == null) {
             return;
         }
