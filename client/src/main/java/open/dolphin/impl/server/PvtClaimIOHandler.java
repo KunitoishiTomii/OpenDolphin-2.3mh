@@ -1,6 +1,5 @@
 package open.dolphin.impl.server;
 
-import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -26,13 +25,11 @@ public class PvtClaimIOHandler implements IHandler {
     
     private final PVTClientServer server;
     private final ByteArrayOutputStream baos;
-    private final BufferedOutputStream bos;
    
 
     public PvtClaimIOHandler(PVTClientServer server) {
         this.server = server;
         baos = new ByteArrayOutputStream();
-        bos = new BufferedOutputStream(baos);
         byteBuffer = ByteBuffer.allocate(bufferSize);
     }
 
@@ -59,12 +56,12 @@ public class PvtClaimIOHandler implements IHandler {
             byte b = byteBuffer.get(readLen - 1);
             if (b == EOT) {
                 // EOTを除いて書き出す
-                bos.write(byteBuffer.array(), 0, readLen - 1);
+                baos.write(byteBuffer.array(), 0, readLen - 1);
                 // writableにしてACKを返せるようにする
                 key.interestOps(SelectionKey.OP_WRITE);
             } else {
                 // byteBuffer全部書き出す
-                bos.write(byteBuffer.array(), 0, readLen);
+                baos.write(byteBuffer.array(), 0, readLen);
             }
 
         } catch (IOException ex) {
@@ -75,11 +72,10 @@ public class PvtClaimIOHandler implements IHandler {
 
     private void write(SelectionKey key) {
 
-        SocketChannel channel = (SocketChannel) key.channel();
+        try (SocketChannel channel = (SocketChannel) key.channel()) {
 
-        try {
             // 取得したxmlをPVT登録キューに送る
-            bos.flush();
+            baos.flush();
             String pvtXml = baos.toString(server.getEncoding());
             server.putPvt(pvtXml);
             // ACKを返す
@@ -89,10 +85,7 @@ public class PvtClaimIOHandler implements IHandler {
             ClientContext.getPvtLogger().warn("Exception while sending ACK:" + ex);
         } finally {
             try {
-                // close channel
-                channel.close();
                 // close stream
-                bos.close();
                 baos.close();
             } catch (IOException ex) {
                 ClientContext.getPvtLogger().warn("Exception while closing channel:" + ex);

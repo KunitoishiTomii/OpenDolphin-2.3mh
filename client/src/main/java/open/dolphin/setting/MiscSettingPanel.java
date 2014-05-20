@@ -45,7 +45,7 @@ public class MiscSettingPanel extends AbstractSettingPanel {
     public static final String USE_WINE = "useWine";
     public static final String WINE_PATH = "winePath";
     public static final String SEND_PATIENT_INFO = "sendPatientInfo";
-    public static final String PVT_ON_SERVER = "pvtOnServer";
+    //public static final String PVT_ON_SERVER = "pvtOnServer";
     public static final String FEV_ON_SERVER = "fevOnServer";
 
     public static final String FOLLOW_MEDICOM = "followMedicom";
@@ -179,7 +179,7 @@ public class MiscSettingPanel extends AbstractSettingPanel {
     private JLabel lbl_fev70;
     private JLabel lbl_fevShareFolder;
     
-    private JCheckBox cb_PvtOnServer;
+    //private JCheckBox cb_PvtOnServer;
     private JCheckBox cb_FevOnServer;
     
     private JButton btn_discardSize;
@@ -231,8 +231,8 @@ public class MiscSettingPanel extends AbstractSettingPanel {
     
     private JButton btn_hsInit;
     
-    private JRadioButton rb_jersey;
-    private JRadioButton rb_resteasy;
+    //private JRadioButton rb_jersey;
+    //private JRadioButton rb_resteasy;
     private JRadioButton rb_comet;
     private JRadioButton rb_websocket;
 
@@ -473,11 +473,11 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         JPanel inspector = gbl.getProduct();
         
         gbl = new GridBagBuilder("サーバー設定");
-        cb_PvtOnServer = new JCheckBox("PVT受信登録処理をサーバーで行う");
+        //cb_PvtOnServer = new JCheckBox("PVT受信登録処理をサーバーで行う");
         cb_FevOnServer = new JCheckBox("FEV患者登録処理をサーバーで行う");
         cb_FevOnServer.setToolTipText("出力先フォルダは設定１で入力してください");
-        gbl.add(cb_PvtOnServer, 0, 0, GridBagConstraints.CENTER);
-        gbl.add(cb_FevOnServer, 0, 1, GridBagConstraints.CENTER);
+        //gbl.add(cb_PvtOnServer, 0, 0, GridBagConstraints.CENTER);
+        gbl.add(cb_FevOnServer, 0, 0, GridBagConstraints.CENTER);
         JPanel pvt = gbl.getProduct();
         
         gbl = new GridBagBuilder("カルテスクロール");
@@ -723,7 +723,7 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         });
         gbl.add(btn_hsInit, 0, 0, GridBagConstraints.CENTER);
         JPanel hs = gbl.getProduct();
-        
+/*
         // client REST
         gbl = new GridBagBuilder("クライアントJAX-RS");
         rb_jersey = new JRadioButton("Jersey");
@@ -739,7 +739,7 @@ public class MiscSettingPanel extends AbstractSettingPanel {
 
         gbl.add(pnlRest, 0, row, GridBagConstraints.CENTER);
         JPanel rest = gbl.getProduct();
-        
+*/
         // comet / websocket
         gbl = new GridBagBuilder("チャート状態同期");
         rb_comet = new JRadioButton("Comet");
@@ -761,8 +761,8 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         gbl.add(orcaMed, 0, 0, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
         gbl.add(labo, 0, 1, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
         gbl.add(hs, 0, 2, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
-        gbl.add(rest, 0, 3, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
-        gbl.add(sync, 0, 4, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
+        //gbl.add(rest, 0, 3, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
+        gbl.add(sync, 0, 3, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
         JPanel setting3 = gbl.getProduct();
         
         // UI設定
@@ -1075,7 +1075,7 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         tf_rsbBrowserPath.setText(val);
 */
         // PVT
-        cb_PvtOnServer.setSelected(model.pvtOnServer);
+        //cb_PvtOnServer.setSelected(model.pvtOnServer);
         cb_FevOnServer.setSelected(model.fevOnServer);
         // Pacs
         cb_UsePacs.setSelected(model.usePacs);
@@ -1130,14 +1130,14 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         
         // orcaMed
         cb_orcaMedUseApi.setSelected(model.orcaMedUseApi);
-        
+/*
         // rest
         if (model.useJersey) {
             rb_jersey.setSelected(true);
         } else {
             rb_resteasy.setSelected(true);
         }
-        
+*/
         // UI
         cmb_UiFontName.setSelectedItem(model.uiFontName);
         cmb_UiFontSize.setSelectedItem(model.uiFontSize);
@@ -1203,7 +1203,7 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         model.rsbBrowserPath = tf_rsbBrowserPath.getText().trim();
 */
         // PVT
-        model.pvtOnServer = cb_PvtOnServer.isSelected();
+        //model.pvtOnServer = cb_PvtOnServer.isSelected();
         model.fevOnServer = cb_FevOnServer.isSelected();
         
         // Pacs
@@ -1236,7 +1236,7 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         model.orcaMedUseApi = cb_orcaMedUseApi.isSelected();
         
         // rest
-        model.useJersey = rb_jersey.isSelected();
+        //model.useJersey = rb_jersey.isSelected();
         
         // UI
         model.uiFontName = (String) cmb_UiFontName.getSelectedItem();
@@ -1345,7 +1345,7 @@ public class MiscSettingPanel extends AbstractSettingPanel {
             rsbBrowserPath = Project.getString(RSB_BROWSER_PATH, DEFAULT_RSB_BROWSER_PATH);
 */
             // PVT
-            pvtOnServer = Project.getBoolean(PVT_ON_SERVER, DEFAULT_PVT_ON_SERVER);
+            //pvtOnServer = Project.getBoolean(PVT_ON_SERVER, DEFAULT_PVT_ON_SERVER);
             fevOnServer = Project.getBoolean(FEV_ON_SERVER, DEFAULT_FEV_ON_SERVER);
             
             // Pacs
@@ -1418,7 +1418,7 @@ public class MiscSettingPanel extends AbstractSettingPanel {
             Project.setString(RSB_BROWSER_PATH, rsbBrowserPath);
 */
             // PVT
-            Project.setBoolean(PVT_ON_SERVER, pvtOnServer);
+            //Project.setBoolean(PVT_ON_SERVER, pvtOnServer);
             Project.setBoolean(FEV_ON_SERVER, fevOnServer);
             
             // Pacs

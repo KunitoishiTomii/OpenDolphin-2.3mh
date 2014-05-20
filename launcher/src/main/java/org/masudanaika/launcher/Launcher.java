@@ -34,6 +34,7 @@ public class Launcher {
     private static final String ALGORITHM = "MD5";
     private static final String JAR_DIR = "client";
     private static final String FILES_PATH = "/dolphin/files/";
+    private static final int CONNECTION_TIMEOUT = 5000;
     private String serverAddr;
     private String jarName;
 
@@ -87,6 +88,7 @@ public class Launcher {
         List<String> pathsStr = new ArrayList<>();
         try {
             con = (HttpURLConnection) url.openConnection();
+            con.setConnectTimeout(CONNECTION_TIMEOUT);
             con.setRequestMethod("GET");
             con.setInstanceFollowRedirects(false);
             con.connect();
@@ -162,6 +164,7 @@ public class Launcher {
             HttpURLConnection con = null;
             try {
                 con = (HttpURLConnection) url.openConnection();
+                con.setConnectTimeout(CONNECTION_TIMEOUT);
                 con.setRequestMethod("GET");
                 con.setInstanceFollowRedirects(false);
                 con.connect();

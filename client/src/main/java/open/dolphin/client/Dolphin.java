@@ -18,8 +18,8 @@ import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import javax.print.attribute.HashPrintRequestAttributeSet;
 import javax.print.attribute.PrintRequestAttributeSet;
 import javax.swing.*;
@@ -37,7 +37,7 @@ import open.dolphin.helper.ProgressMonitorWorker;
 import open.dolphin.helper.WindowSupport;
 import open.dolphin.impl.login.LoginDialog;
 import open.dolphin.impl.rezept.RezeptViewer;
-import open.dolphin.impl.server.StandAlonePVTServer;
+//import open.dolphin.impl.server.StandAlonePVTServer;
 import open.dolphin.impl.tempkarte.TempKarteCheckDialog;
 import open.dolphin.infomodel.ChartEventModel;
 import open.dolphin.infomodel.FacilityModel;
@@ -51,7 +51,7 @@ import open.dolphin.plugin.PluginLoader;
 import open.dolphin.project.AbstractProjectFactory;
 import open.dolphin.project.Project;
 import open.dolphin.project.ProjectStub;
-import open.dolphin.server.PVTServer;
+//import open.dolphin.server.PVTServer;
 import open.dolphin.setting.MiscSettingPanel;
 import open.dolphin.setting.ProjectSettingDialog;
 import open.dolphin.stampbox.StampBoxPlugin;
@@ -88,7 +88,7 @@ public class Dolphin implements MainWindow, IChartEventListener {
     private StampBoxPlugin stampBox;
 
     // 受付受信サーバ
-    private PVTServer pvtServer;
+    //private PVTServer pvtServer;
 
     // CLAIM リスナ
     private ClaimMessageListener sendClaim;
@@ -130,12 +130,20 @@ public class Dolphin implements MainWindow, IChartEventListener {
     public static Dolphin getInstance() {
         return instance;
     }
+    
+    // 共通のExecutorService
+    private final ExecutorService exec;
+    
+    public ExecutorService getExecutorService() {
+        return exec;
+    }
 //masuda$
     
     /**
      * Creates new MainWindow
      */
     public Dolphin() {
+        exec = Executors.newFixedThreadPool(2);
     }
 
     public void start(boolean pro) {
@@ -241,13 +249,13 @@ public class Dolphin implements MainWindow, IChartEventListener {
         // 環境設定ダイアログで変更される場合があるので保存する
         saveEnv = new Properties();
 
-        // PVT Sever を起動する
-        if (Project.getBoolean(Project.USE_AS_PVT_SERVER)) {
-            startPvtServer();
-
-        } else {
-            saveEnv.put(GUIConst.KEY_PVT_SERVER, GUIConst.SERVICE_NOT_RUNNING);
-        }
+//        // PVT Sever を起動する
+//        if (Project.getBoolean(Project.USE_AS_PVT_SERVER)) {
+//            startPvtServer();
+//
+//        } else {
+//            saveEnv.put(GUIConst.KEY_PVT_SERVER, GUIConst.SERVICE_NOT_RUNNING);
+//        }
 
         // CLAIM送信を生成する
         if (Project.getBoolean(Project.SEND_CLAIM)) {
@@ -551,8 +559,6 @@ public class Dolphin implements MainWindow, IChartEventListener {
         } else {
             tempKarte.dispose();
         }
-        // ModuleBeanDecoderを初期化
-        ModuleBeanDecoder.getInstance().init();
 //masuda$
     }
 
@@ -777,19 +783,19 @@ public class Dolphin implements MainWindow, IChartEventListener {
     /**
      * PVTServer を開始する。
      */
-    private void startPvtServer() {
-        PluginLoader<PVTServer> loader = PluginLoader.load(PVTServer.class);
-        Iterator<PVTServer> iter = loader.iterator();
-        if (iter.hasNext()) {
-            pvtServer = iter.next();
-            pvtServer.setContext(this);
-            pvtServer.setBindAddress(Project.getString(Project.CLAIM_BIND_ADDRESS));
-            pvtServer.start();
-            providers.put("pvtServer", pvtServer);
-            saveEnv.put(GUIConst.KEY_PVT_SERVER, GUIConst.SERVICE_RUNNING);
-            ClientContext.getBootLogger().debug("pvtServer did  start");
-        }
-    }
+//    private void startPvtServer() {
+//        PluginLoader<PVTServer> loader = PluginLoader.load(PVTServer.class);
+//        Iterator<PVTServer> iter = loader.iterator();
+//        if (iter.hasNext()) {
+//            pvtServer = iter.next();
+//            pvtServer.setContext(this);
+//            pvtServer.setBindAddress(Project.getString(Project.CLAIM_BIND_ADDRESS));
+//            pvtServer.start();
+//            providers.put("pvtServer", pvtServer);
+//            saveEnv.put(GUIConst.KEY_PVT_SERVER, GUIConst.SERVICE_RUNNING);
+//            ClientContext.getBootLogger().debug("pvtServer did  start");
+//        }
+//    }
 
     /**
      * CLAIM 送信を開始する。
@@ -889,27 +895,27 @@ public class Dolphin implements MainWindow, IChartEventListener {
                     // 設定の変化を調べ、サービスの制御を行う
                     List<String> messages = new ArrayList<>();
 
-                    // PvtServer
-                    boolean oldRunning = saveEnv.getProperty(GUIConst.KEY_PVT_SERVER).equals(GUIConst.SERVICE_RUNNING);
-                    boolean newRun = Project.getBoolean(Project.USE_AS_PVT_SERVER);
-                    boolean start = (!oldRunning && newRun);
-                    boolean stop = (oldRunning && !newRun);
-
-                    if (start) {
-                        startPvtServer();
-                        messages.add("受付受信を開始しました。");
-                    } else if (stop && pvtServer != null) {
-                        pvtServer.stop();
-                        pvtServer = null;
-                        saveEnv.put(GUIConst.KEY_PVT_SERVER, GUIConst.SERVICE_NOT_RUNNING);
-                        messages.add("受付受信を停止しました。");
-                    }
+//                    // PvtServer
+//                    boolean oldRunning = saveEnv.getProperty(GUIConst.KEY_PVT_SERVER).equals(GUIConst.SERVICE_RUNNING);
+//                    boolean newRun = Project.getBoolean(Project.USE_AS_PVT_SERVER);
+//                    boolean start = (!oldRunning && newRun);
+//                    boolean stop = (oldRunning && !newRun);
+//
+//                    if (start) {
+//                        startPvtServer();
+//                        messages.add("受付受信を開始しました。");
+//                    } else if (stop && pvtServer != null) {
+//                        pvtServer.stop();
+//                        pvtServer = null;
+//                        saveEnv.put(GUIConst.KEY_PVT_SERVER, GUIConst.SERVICE_NOT_RUNNING);
+//                        messages.add("受付受信を停止しました。");
+//                    }
 
                     // SendClaim
-                    oldRunning = saveEnv.getProperty(GUIConst.KEY_SEND_CLAIM).equals(GUIConst.SERVICE_RUNNING);
-                    newRun = Project.getBoolean(Project.SEND_CLAIM);
-                    start = (!oldRunning && newRun);
-                    stop = (oldRunning && !newRun);
+                    boolean oldRunning = saveEnv.getProperty(GUIConst.KEY_SEND_CLAIM).equals(GUIConst.SERVICE_RUNNING);
+                    boolean newRun = Project.getBoolean(Project.SEND_CLAIM);
+                    boolean start = (!oldRunning && newRun);
+                    boolean stop = (oldRunning && !newRun);
 
                     boolean restart = false;
                     String oldAddress = saveEnv.getProperty(GUIConst.ADDRESS_CLAIM);
@@ -1092,7 +1098,9 @@ public class Dolphin implements MainWindow, IChartEventListener {
 
         // FocusProperetyChangeListenerを破棄する
         FocusPropertyChangeListener.getInstance().dispose();
-
+        
+        // shutdown Executor
+        exec.shutdownNow();
         
         // ログアウト処理
         try {
@@ -1519,28 +1527,28 @@ public class Dolphin implements MainWindow, IChartEventListener {
         settingForMac();
         
         boolean pro = false;
-        boolean server = false;
-        String userId = null;
-        String userPassword = null;
-        for (String arg : args) {
-            if ("pro".equals(arg.toLowerCase())) {
-                pro = true;
-            }
-            if (arg.startsWith("-U")) {
-                userId = arg.substring(2);
-            }
-            if (arg.startsWith("-P")) {
-                userPassword = arg.substring(2);
-            }
-            if (arg.startsWith("-S")) {
-                server = true;
-            }
-        }
-        
-        if (server) {
-            new StandAlonePVTServer(pro, null, userId, userPassword);
-            return;
-        }
+//        boolean server = false;
+//        String userId = null;
+//        String userPassword = null;
+//        for (String arg : args) {
+//            if ("pro".equals(arg.toLowerCase())) {
+//                pro = true;
+//            }
+//            if (arg.startsWith("-U")) {
+//                userId = arg.substring(2);
+//            }
+//            if (arg.startsWith("-P")) {
+//                userPassword = arg.substring(2);
+//            }
+//            if (arg.startsWith("-S")) {
+//                server = true;
+//            }
+//        }
+//        
+//        if (server) {
+//            new StandAlonePVTServer(pro, null, userId, userPassword);
+//            return;
+//        }
 
         ClientContext.setClientContextStub(new ClientContextStub(pro));
         Project.setProjectStub(new ProjectStub());

@@ -27,19 +27,11 @@ public final class StampHolder extends AbstractComponentHolder {
     private ModuleModel stamp;
 
     public StampHolder(KartePane kartePane, ModuleModel stamp) {
-        this(kartePane, stamp, false);
-    }
-    
-    public StampHolder(KartePane kartePane, ModuleModel stamp, boolean lazy) {
         super(kartePane);
         getFunction().setDeleteAction(StampHolder.this);
         setFont(getHints().getFont());
         setForeground(FOREGROUND);
-        if (lazy) {
-            this.stamp = stamp;
-        } else {
-            setStamp(stamp);
-        }
+        setStamp(stamp);
     }
 
     private StampHolderFunction getFunction() {
@@ -54,11 +46,7 @@ public final class StampHolder extends AbstractComponentHolder {
     //　見栄えが悪いので線を追加描画する
     @Override
     protected void paintComponent(Graphics g) {
-        
-        if (getText().isEmpty()) {  // JLabel.textの初期値は""である
-            setMyText();
-        }
-        
+
         super.paintComponent(g);
         Color c = g.getColor();
         g.setColor(LBL_COLOR);

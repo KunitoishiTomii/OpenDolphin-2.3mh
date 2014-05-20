@@ -28,13 +28,17 @@
             <artifactId>OpenDolphin-common</artifactId>
             <version>2.3.8.8</version>
         </dependency>
-    
+        <dependency>
+            <groupId>org.glassfish.tyrus</groupId>
+            <artifactId>tyrus-container-jdk-client</artifactId>
+            <version>1.6</version>
+        </dependency>
+<!-- 
         <dependency>
             <groupId>org.glassfish.tyrus.bundles</groupId>
             <artifactId>tyrus-standalone-client</artifactId>
             <version>1.6</version>
         </dependency>
-<!--
         <dependency>
             <groupId>io.undertow</groupId>
             <artifactId>undertow-websockets-jsr</artifactId>
@@ -71,11 +75,13 @@
             <artifactId>jersey-client</artifactId>
             <version>2.8</version>
         </dependency>
+<!--
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-client</artifactId>
             <version>3.0.8.Final</version>
         </dependency>
+-->
         <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>

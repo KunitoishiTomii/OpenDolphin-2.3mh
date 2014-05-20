@@ -54,11 +54,6 @@ public abstract class KartePanel extends Panel2 {
 
     // ファクトリー
     public static KartePanel createKartePanel(MODE mode, boolean verticalLayout) {
-        
-        return createKartePanel(mode, verticalLayout, null);
-    }
-    
-    public static KartePanel createKartePanel(MODE mode, boolean verticalLayout, KarteViewer karteViewer) {
 
         KartePanel kartePanel;
 

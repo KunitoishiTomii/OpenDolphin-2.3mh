@@ -12,7 +12,7 @@ import open.dolphin.client.ImageEntry;
 import open.dolphin.dto.DocumentSearchSpec;
 import open.dolphin.dto.ImageSearchSpec;
 import open.dolphin.dto.ModuleSearchSpec;
-import open.dolphin.common.util.BeanUtils;
+import open.dolphin.common.util.ModuleBeanDecoder;
 import open.dolphin.infomodel.AppointmentModel;
 import open.dolphin.infomodel.DocInfoModel;
 import open.dolphin.infomodel.DocumentModel;
@@ -326,7 +326,8 @@ public class  DocumentDelegater extends BusinessDelegater {
         
         for (List<ModuleModel> list : ret) {
             for (ModuleModel module : list) {
-                IModuleModel model = (IModuleModel) BeanUtils.xmlDecode(module.getBeanBytes());
+                //IModuleModel model = (IModuleModel) BeanUtils.xmlDecode(module.getBeanBytes());
+                IModuleModel model = ModuleBeanDecoder.getInstance().decode(module.getBeanBytes());
                 module.setModel(model);
             }
         }
