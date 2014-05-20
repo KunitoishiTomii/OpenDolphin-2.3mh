@@ -642,7 +642,7 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
 
             int fromIndex = 0;
             int idListSize = docInfoMap.size();
-
+            int cnt = 0;
             // 最初のfetchSizeを決める
             // 20文書までは一回で、20～400文書までは２分割で、400以上は200文書ごと取得
             int fetchSize = (idListSize <= 20 || idListSize / defaultFetchSize >= 2)
@@ -667,8 +667,13 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
                             viewer.setContext(getContext());
                             karteViewerMap.put(model.getId(), viewer);
                             // Executorでレンダリングする
-                            KarteRenderTask task = new KarteRenderTask(viewer);
-                            Dolphin.getInstance().getExecutorService().submit(task);
+                            if (cnt >= 5) {
+                                KarteRenderTask task = new KarteRenderTask(viewer);
+                                Dolphin.getInstance().getExecutorService().submit(task);
+                            } else {
+                                renderKarte(viewer);
+                            }
+                            cnt++;
                         }
                     }
                 } catch (Exception ex) {
@@ -705,38 +710,42 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
 
         @Override
         public void run() {
-            
-            DocumentModel docModel = viewer.getModel();
-            
-            // DocumentDelegaterから移動
-            Collection<ModuleModel> mc = docModel.getModules();
-            if (mc != null && !mc.isEmpty()) {
-                for (ModuleModel module : mc) {
-                    //module.setModel((IModuleModel) BeanUtils.xmlDecode(module.getBeanBytes()));
-                    module.setModel(ModuleBeanDecoder.getInstance().decode(module.getBeanBytes()));
-                }
+            renderKarte(viewer);
+        }
+    }
+    
+    private void renderKarte(KarteViewer viewer) {
+        
+        DocumentModel docModel = viewer.getModel();
+
+        // DocumentDelegaterから移動
+        Collection<ModuleModel> mc = docModel.getModules();
+        if (mc != null && !mc.isEmpty()) {
+            for (ModuleModel module : mc) {
+                //module.setModel((IModuleModel) BeanUtils.xmlDecode(module.getBeanBytes()));
+                module.setModel(ModuleBeanDecoder.getInstance().decode(module.getBeanBytes()));
             }
+        }
 
-            // JPEG byte をアイコンへ戻す
-            Collection<SchemaModel> sc = docModel.getSchema();
-            if (sc != null && !sc.isEmpty()) {
-                for (SchemaModel schema : sc) {
-                    ImageIcon icon = new ImageIcon(schema.getJpegByte());
-                    schema.setIcon(icon);
-                }
+        // JPEG byte をアイコンへ戻す
+        Collection<SchemaModel> sc = docModel.getSchema();
+        if (sc != null && !sc.isEmpty()) {
+            for (SchemaModel schema : sc) {
+                ImageIcon icon = new ImageIcon(schema.getJpegByte());
+                schema.setIcon(icon);
             }
+        }
 
-            // このコールでモデルのレンダリングが開始される
-            viewer.start();
+        // このコールでモデルのレンダリングが開始される
+        viewer.start();
 
-            // ダブルクリックされたカルテを別画面で表示する
-            viewer.addMouseListener(mouseListener);
+        // ダブルクリックされたカルテを別画面で表示する
+        viewer.addMouseListener(mouseListener);
 
             // KarteViewerのJTextPaneにKarteScrollerPanelのActionMapを設定する
-            // これをしないとJTextPaneにフォーカスがあるとキーでスクロールできない
-            ActionMap amap = scrollerPanel.getActionMap();
-            viewer.setParentActionMap(amap);
-        }
+        // これをしないとJTextPaneにフォーカスがあるとキーでスクロールできない
+        ActionMap amap = scrollerPanel.getActionMap();
+        viewer.setParentActionMap(amap);
     }
 
     /**
