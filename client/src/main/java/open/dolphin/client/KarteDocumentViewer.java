@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.awt.Rectangle;
 import java.awt.event.*;
 import java.util.*;
-import java.util.concurrent.LinkedBlockingQueue;
 import javax.swing.*;
 import open.dolphin.common.util.ModuleBeanDecoder;
 import open.dolphin.delegater.DocumentDelegater;
@@ -627,26 +626,20 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
         
         private static final int defaultFetchSize = 200;
         private final Map<Long, DocInfoModel> docInfoMap;
-        private final Thread eagerThread;
-        private final EagerKarteRenderTask eagerTask;
         
 
         public KarteTask(Chart ctx, Map<Long, DocInfoModel> docInfoMap) {
             super(ctx);
             this.docInfoMap = docInfoMap;
-            eagerTask = new EagerKarteRenderTask();
-            eagerThread = new Thread(eagerTask, "EagerKarteRender thread");
         }
 
         @Override
-        protected Integer doInBackground() throws InterruptedException {
+        protected Integer doInBackground() {
             
             logger.debug("KarteTask doInBackground");
             
-            eagerThread.start();
-            
             DocumentDelegater ddl = DocumentDelegater.getInstance();
-            
+
             int fromIndex = 0;
             int idListSize = docInfoMap.size();
             int cnt = 0;
@@ -673,12 +666,12 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
                             KarteViewer viewer = createKarteViewer(model);
                             viewer.setContext(getContext());
                             karteViewerMap.put(model.getId(), viewer);
-                            // 別スレッドでレンダリングする
+                            // Executorでレンダリングする
                             if (cnt >= 5) {
-                                LazyKarteRenderTask task = new LazyKarteRenderTask(viewer);
+                                KarteRenderTask task = new KarteRenderTask(viewer);
                                 Dolphin.getInstance().getExecutorService().submit(task);
                             } else {
-                                 eagerTask.getQueue().offer(viewer);
+                                renderKarte(viewer);
                             }
                             cnt++;
                         }
@@ -687,16 +680,6 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
                 }
                 fromIndex += fetchSize;
                 fetchSize = defaultFetchSize;
-            }
-            
-            // 最初の５つのレンダリング完了を待つ
-            eagerTask.setRunning(false);
-            if (eagerTask.getQueue().isEmpty()) {
-                // EagerRenderTaskが既に完了している場合はtakeで止まっているのでinterruptする
-                eagerThread.interrupt();
-            } else {
-                // EagerRenderTask完了を待つ
-                eagerThread.join();
             }
             
             logger.debug("doInBackground noErr, return result");
@@ -717,43 +700,11 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
         }
     }
     
-    // ちらつき対策
-    private class EagerKarteRenderTask implements Runnable {
-
-        private final LinkedBlockingQueue<KarteViewer> queue;
-        private boolean running;
-
-        private EagerKarteRenderTask() {
-            queue = new LinkedBlockingQueue<>();
-            running = true;
-        }
-
-        private LinkedBlockingQueue getQueue() {
-            return queue;
-        }
-
-        private void setRunning(boolean running) {
-            this.running = running;
-        }
-
-        @Override
-        public void run() {
-            while (running || !queue.isEmpty()) {
-                try {
-                    KarteViewer viewer = queue.take();
-                    renderKarte(viewer);
-                } catch (InterruptedException ex) {
-                    break;
-                }
-            }
-        }
-    }
-    
-    private class LazyKarteRenderTask implements Runnable {
+    private class KarteRenderTask implements Runnable {
 
         private final KarteViewer viewer;
 
-        private LazyKarteRenderTask(KarteViewer viewer) {
+        private KarteRenderTask(KarteViewer viewer) {
             this.viewer = viewer;
         }
 
