@@ -4,8 +4,6 @@ import java.awt.Color;
 import java.awt.Rectangle;
 import java.awt.event.*;
 import java.util.*;
-import java.util.concurrent.CompletionService;
-import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import javax.swing.*;
 import open.dolphin.common.util.ModuleBeanDecoder;
@@ -19,6 +17,7 @@ import open.dolphin.infomodel.ModuleModel;
 import open.dolphin.infomodel.SchemaModel;
 import open.dolphin.letter.KartePDFMaker;
 import open.dolphin.project.Project;
+import open.dolphin.util.TaskCompletionService;
 import org.apache.log4j.Logger;
 
 /**
@@ -652,8 +651,8 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
             }
             // ExecutorとCompletionService
             ExecutorService exec = Dolphin.getInstance().getExecutorService();
-            CompletionService complService = new ExecutorCompletionService(exec);
-            int complTaskCnt = 0;
+            TaskCompletionService complService = new TaskCompletionService(exec);
+            boolean eager = true;
             
             // 最初のfetchSizeを決める
             // 20文書までは一回で、20～400文書までは２分割で、400以上は200文書ごと取得
@@ -681,10 +680,12 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
                             karteViewerMap.put(model.getId(), viewer);
                             // Executorでレンダリングする
                             KarteRenderTask task = new KarteRenderTask(viewer);
-                            if (complTaskCnt < eCnt && eIdList.contains(model.getId())) {
-                                // render eagerly, submit to  CompletionService
+                            if (eager && eIdList.contains(model.getId())) {
+                                // render eagerly, submit to CompletionService
                                 complService.submit(task, null);
-                                complTaskCnt++;
+                                if (complService.getTaskCount() >= eCnt) {
+                                    eager = false;
+                                }
                             } else {
                                 // render lazily, submit to ExecutorSerivice
                                 exec.submit(task);
@@ -698,9 +699,7 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
             }
             
             // レンダリング待ち, wait completion
-            for (int i = 0; i < complTaskCnt; ++i) {
-                complService.take();
-            }
+            complService.waitCompletion();
             
             logger.debug("doInBackground noErr, return result");
             return null;
