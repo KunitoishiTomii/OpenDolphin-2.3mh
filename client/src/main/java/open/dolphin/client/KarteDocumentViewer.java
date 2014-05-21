@@ -674,28 +674,12 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
                     if (result != null && !result.isEmpty()) {
                         // eagerが先にexecutorに入るように…
                         if (ascending) {
-                            for (Iterator<DocumentModel> itr = result.iterator(); itr.hasNext();) {
-                                DocumentModel model = itr.next();
-                                KarteRenderTask task = createKarteRenderTask(model);
-                                if (!eagerIdList.isEmpty() && eagerIdList.remove(model.getId())) {
-                                    // render eagerly, submitTask to CompletionService
-                                    complService.submitTask(task);
-                                } else {
-                                    // render lazily, submit to ExecutorSerivice
-                                    exec.submit(task);
-                                }
+                            for (DocumentModel model : result) {
+                                submitKarteRenderTask(model, eagerIdList, exec, complService);
                             }
                         } else {
                             for (ListIterator<DocumentModel> itr = result.listIterator(result.size()); itr.hasPrevious();) {
-                                DocumentModel model = itr.previous();
-                                KarteRenderTask task = createKarteRenderTask(model);
-                                if (!eagerIdList.isEmpty() && eagerIdList.remove(model.getId())) {
-                                    // render eagerly, submitTask to CompletionService
-                                    complService.submitTask(task);
-                                } else {
-                                    // render lazily, submit to ExecutorSerivice
-                                    exec.submit(task);
-                                }
+                                submitKarteRenderTask(itr.previous(), eagerIdList, exec, complService);
                             }
                         }
                     }
@@ -712,7 +696,8 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
             return null;
         }
         
-        private KarteRenderTask createKarteRenderTask(DocumentModel model) {
+        private void submitKarteRenderTask(DocumentModel model, List<Long> eagerIdList,
+                ExecutorService exec, TaskCompletionService complService) {
 
             // DocumentModelにDocInfoModelを設定する
             DocInfoModel docInfo = docInfoMap.get(model.getId());
@@ -722,7 +707,15 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
             viewer.setContext(getContext());
             karteViewerMap.put(model.getId(), viewer);
 
-            return new KarteRenderTask(viewer);
+            // Executorで実行させる
+            KarteRenderTask task = new KarteRenderTask(viewer);
+            if (!eagerIdList.isEmpty() && eagerIdList.remove(model.getId())) {
+                // render eagerly, submitTask to CompletionService
+                complService.submitTask(task);
+            } else {
+                // render lazily, submit to ExecutorSerivice
+                exec.submit(task);
+            }
         }
 
         @Override
@@ -749,42 +742,38 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
 
         @Override
         public void run() {
-            renderKarte(viewer);
-        }
-    }
-    
-    private void renderKarte(KarteViewer viewer) {
-        
-        DocumentModel docModel = viewer.getModel();
+            
+            DocumentModel docModel = viewer.getModel();
 
-        // DocumentDelegaterから移動
-        Collection<ModuleModel> mc = docModel.getModules();
-        if (mc != null && !mc.isEmpty()) {
-            for (ModuleModel module : mc) {
-                //module.setModel((IModuleModel) BeanUtils.xmlDecode(module.getBeanBytes()));
-                module.setModel(ModuleBeanDecoder.getInstance().decode(module.getBeanBytes()));
+            // DocumentDelegaterから移動
+            Collection<ModuleModel> mc = docModel.getModules();
+            if (mc != null && !mc.isEmpty()) {
+                for (ModuleModel module : mc) {
+                    //module.setModel((IModuleModel) BeanUtils.xmlDecode(module.getBeanBytes()));
+                    module.setModel(ModuleBeanDecoder.getInstance().decode(module.getBeanBytes()));
+                }
             }
-        }
 
-        // JPEG byte をアイコンへ戻す
-        Collection<SchemaModel> sc = docModel.getSchema();
-        if (sc != null && !sc.isEmpty()) {
-            for (SchemaModel schema : sc) {
-                ImageIcon icon = new ImageIcon(schema.getJpegByte());
-                schema.setIcon(icon);
+            // JPEG byte をアイコンへ戻す
+            Collection<SchemaModel> sc = docModel.getSchema();
+            if (sc != null && !sc.isEmpty()) {
+                for (SchemaModel schema : sc) {
+                    ImageIcon icon = new ImageIcon(schema.getJpegByte());
+                    schema.setIcon(icon);
+                }
             }
-        }
 
-        // このコールでモデルのレンダリングが開始される
-        viewer.start();
+            // このコールでモデルのレンダリングが開始される
+            viewer.start();
 
-        // ダブルクリックされたカルテを別画面で表示する
-        viewer.addMouseListener(mouseListener);
+            // ダブルクリックされたカルテを別画面で表示する
+            viewer.addMouseListener(mouseListener);
 
         // KarteViewerのJTextPaneにKarteScrollerPanelのActionMapを設定する
-        // これをしないとJTextPaneにフォーカスがあるとキーでスクロールできない
-        ActionMap amap = scrollerPanel.getActionMap();
-        viewer.setParentActionMap(amap);
+            // これをしないとJTextPaneにフォーカスがあるとキーでスクロールできない
+            ActionMap amap = scrollerPanel.getActionMap();
+            viewer.setParentActionMap(amap);
+        }
     }
 
     /**
