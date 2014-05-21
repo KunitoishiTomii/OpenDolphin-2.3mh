@@ -651,7 +651,7 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
             }
             // ExecutorとCompletionService
             ExecutorService exec = Dolphin.getInstance().getExecutorService();
-            TaskCompletionService complService = new TaskCompletionService(exec);
+            TaskCompletionService<Void> complService = new TaskCompletionService<>(exec);
             boolean eager = true;
             
             // 最初のfetchSizeを決める
@@ -681,13 +681,13 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
                             // Executorでレンダリングする
                             KarteRenderTask task = new KarteRenderTask(viewer);
                             if (eager && eIdList.contains(model.getId())) {
-                                // render eagerly, submit to CompletionService
-                                complService.submit(task, null);
+                                // render eagerly, submitTask to CompletionService
+                                complService.submitTask(task);
                                 if (complService.getTaskCount() >= eCnt) {
                                     eager = false;
                                 }
                             } else {
-                                // render lazily, submit to ExecutorSerivice
+                                // render lazily, submitTask to ExecutorSerivice
                                 exec.submit(task);
                             }
                         }

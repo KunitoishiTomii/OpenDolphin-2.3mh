@@ -1,10 +1,7 @@
 package open.dolphin.util;
 
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorCompletionService;
-import java.util.concurrent.Future;
 
 /**
  * Utility class for ExecutorCompletionService
@@ -19,27 +16,10 @@ public class TaskCompletionService<V> extends ExecutorCompletionService<V> {
         super(executor);
     }
 
-    public TaskCompletionService(Executor executor, BlockingQueue<Future<V>> completionQueue) {
-        super(executor, completionQueue);
-    }
-
-    @Override
-    public Future<V> submit(Callable<V> task) {
+    public void submitTask(Runnable task) {
         try {
-            Future<V> f = super.submit(task);
+            submit(task, null);
             taskCount++;
-            return f;
-        } catch (Exception ex) {
-            throw ex;
-        }
-    }
-
-    @Override
-    public Future<V> submit(Runnable task, V result) {
-        try {
-            Future<V> f = super.submit(task, result);
-            taskCount++;
-            return f;
         } catch (Exception ex) {
             throw ex;
         }
