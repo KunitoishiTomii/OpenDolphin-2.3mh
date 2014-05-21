@@ -682,7 +682,7 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
                             // レンダリング待ちするものはFutureを取得しておく
                             if (!lazy && eIdList.contains(model.getId())) {
                                 futures.add(future);
-                                if (futures.size() >= eagerRenderCount) {
+                                if (futures.size() >= eSize) {
                                     lazy = true;
                                 }
                             }
