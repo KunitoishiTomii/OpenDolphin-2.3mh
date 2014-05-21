@@ -644,6 +644,7 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
             DocumentDelegater ddl = DocumentDelegater.getInstance();
             
             // レンダリング待ちするするためにdocInfoListの最初の数個のリストを作る。ちらつき対策
+            boolean lazy = false;
             int eSize = Math.min(docInfoList.length, eagerRenderCount);
             List<Long> eIdList = new ArrayList<>(eSize);
             for (int i = 0; i < eSize; ++i) {
@@ -679,8 +680,11 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
                             KarteRenderTask task = new KarteRenderTask(viewer);
                             Future future = Dolphin.getInstance().getExecutorService().submit(task);
                             // レンダリング待ちするものはFutureを取得しておく
-                            if (eIdList.contains(model.getId())) {
+                            if (!lazy && eIdList.contains(model.getId())) {
                                 futures.add(future);
+                                if (futures.size() >= eagerRenderCount) {
+                                    lazy = true;
+                                }
                             }
                         }
                     }
