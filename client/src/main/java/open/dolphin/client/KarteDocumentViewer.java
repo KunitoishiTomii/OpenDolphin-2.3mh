@@ -642,17 +642,19 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
             logger.debug("KarteTask doInBackground");
             
             DocumentDelegater ddl = DocumentDelegater.getInstance();
-            
-            // レンダリング待ちするするためにdocInfoListの最初の数個のリストを作る。ちらつき対策
-            int eCnt = Math.min(docInfoList.length, eagerRenderCount);
-            List<Long> eIdList = new ArrayList<>(eCnt);
-            for (int i = 0; i < eCnt; ++i) {
-                eIdList.add(docInfoList[i].getDocPk());
-            }
             // ExecutorとCompletionService
             ExecutorService exec = Dolphin.getInstance().getExecutorService();
             TaskCompletionService<Void> complService = new TaskCompletionService<>(exec);
-            boolean eager = true;
+            
+            // レンダリング待ちするするためにdocInfoListの最初の数個に属するリストを作る。ちらつき対策
+            int cnt = Math.min(docInfoList.length, eagerRenderCount);
+            List<Long> eagerIdList = new ArrayList<>();
+            for (int i = 0; i < cnt; ++i) {
+                long docPk = docInfoList[i].getDocPk();
+                if (docInfoMap.containsKey(docPk)) {
+                    eagerIdList.add(docPk);
+                }
+            }
             
             // 最初のfetchSizeを決める
             // 20文書までは一回で、20～400文書までは２分割で、400以上は200文書ごと取得
@@ -670,25 +672,30 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
                 try {
                     List<DocumentModel> result = ddl.getDocuments(allIds.subList(fromIndex, toIndex));
                     if (result != null && !result.isEmpty()) {
-                        for (DocumentModel model : result) {
-                            // DocumentModelにDocInfoModelを設定する
-                            DocInfoModel docInfo = docInfoMap.get(model.getId());
-                            model.setDocInfoModel(docInfo);
-                            // シングル及び２号用紙の判定を行い、KarteViewer を生成する
-                            KarteViewer viewer = createKarteViewer(model);
-                            viewer.setContext(getContext());
-                            karteViewerMap.put(model.getId(), viewer);
-                            // Executorでレンダリングする
-                            KarteRenderTask task = new KarteRenderTask(viewer);
-                            if (eager && eIdList.contains(model.getId())) {
-                                // render eagerly, submitTask to CompletionService
-                                complService.submitTask(task);
-                                if (complService.getTaskCount() >= eCnt) {
-                                    eager = false;
+                        // eagerが先にexecutorに入るように…
+                        if (ascending) {
+                            for (Iterator<DocumentModel> itr = result.iterator(); itr.hasNext();) {
+                                DocumentModel model = itr.next();
+                                KarteRenderTask task = createKarteRenderTask(model);
+                                if (!eagerIdList.isEmpty() && eagerIdList.remove(model.getId())) {
+                                    // render eagerly, submitTask to CompletionService
+                                    complService.submitTask(task);
+                                } else {
+                                    // render lazily, submit to ExecutorSerivice
+                                    exec.submit(task);
                                 }
-                            } else {
-                                // render lazily, submitTask to ExecutorSerivice
-                                exec.submit(task);
+                            }
+                        } else {
+                            for (ListIterator<DocumentModel> itr = result.listIterator(result.size()); itr.hasPrevious();) {
+                                DocumentModel model = itr.previous();
+                                KarteRenderTask task = createKarteRenderTask(model);
+                                if (!eagerIdList.isEmpty() && eagerIdList.remove(model.getId())) {
+                                    // render eagerly, submitTask to CompletionService
+                                    complService.submitTask(task);
+                                } else {
+                                    // render lazily, submit to ExecutorSerivice
+                                    exec.submit(task);
+                                }
                             }
                         }
                     }
@@ -703,6 +710,19 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
             
             logger.debug("doInBackground noErr, return result");
             return null;
+        }
+        
+        private KarteRenderTask createKarteRenderTask(DocumentModel model) {
+
+            // DocumentModelにDocInfoModelを設定する
+            DocInfoModel docInfo = docInfoMap.get(model.getId());
+            model.setDocInfoModel(docInfo);
+            // シングル及び２号用紙の判定を行い、KarteViewer を生成する
+            KarteViewer viewer = createKarteViewer(model);
+            viewer.setContext(getContext());
+            karteViewerMap.put(model.getId(), viewer);
+
+            return new KarteRenderTask(viewer);
         }
 
         @Override
