@@ -4,7 +4,6 @@ import ch.randelshofer.quaqua.QuaquaManager;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.io.*;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.text.DateFormat;
 import java.util.List;
@@ -634,14 +633,12 @@ public final class ClientContextStub {
      */
     public void setUI() {
 
-        //String sytemLafCls = UIManager.getSystemLookAndFeelClassName();
-        //Locale locale = Locale.getDefault();
+        //String systemLaf = UIManager.getSystemLookAndFeelClassName();
         String systemLaf = isMac()
                 ? ILookAndFeelConst.AQUA_LAF_CLS
                 : ILookAndFeelConst.NIMBUS_LAF_CLS;
         String userLaf = Project.getString("lookAndFeel", systemLaf);
 
-        //userLaf = QUAQUA_LAF_CLS;
         boolean isQuaqua = ILookAndFeelConst.QUAQUA_LAF_CLS.equals(userLaf);
         boolean isNimbus = userLaf.contains("nimbus");
 
@@ -664,19 +661,15 @@ public final class ClientContextStub {
             //UIManager.put("Quaqua.Debug.showClipBounds", true);
         }
 
-        // MacにもNimbusあった
-        //if (isMac() && isNimbus) {
-        //    userLaf = sytemLafCls;
-        //}
-        // JTattooの設定
-        if (userLaf.startsWith(ILookAndFeelConst.JTATTOO)) {
-            try {
-                Class cls = Class.forName(userLaf);
-                Method method = cls.getMethod("setTheme", new Class[]{String.class, String.class, String.class});
-                method.invoke(cls.newInstance(), "Default", "", "");
-            } catch (Exception ex) {
-            }
-        }
+//        // JTattooの設定
+//        if (userLaf.startsWith(ILookAndFeelConst.JTATTOO)) {
+//            try {
+//                Class cls = Class.forName(userLaf);
+//                Method method = cls.getMethod("setTheme", new Class[]{String.class, String.class, String.class});
+//                method.invoke(cls.newInstance(), "Default", "", "");
+//            } catch (Exception ex) {
+//            }
+//        }
 
         // UIManagerにLAFを設定する
         try {
@@ -734,8 +727,6 @@ public final class ClientContextStub {
 
         getBootLogger().debug("デフォルトのフォントを変更しました。");
 
-        // Web Look and Feelがロケールを書き換えやがるので戻す
-        //Locale.setDefault(locale);
         // ウィンドウフレームの装飾
         //JFrame.setDefaultLookAndFeelDecorated(true);
         //JDialog.setDefaultLookAndFeelDecorated(true);
