@@ -1073,30 +1073,13 @@ public class Dolphin implements MainWindow, IChartEventListener {
             chart.stop();
         }
 
-        // FocusProperetyChangeListenerを破棄する
-        FocusPropertyChangeListener.getInstance().dispose();
-        
-        // shutdown Executor
-        exec.shutdownNow();
-        
         // ログアウト処理
-        try {
-            String fidUid = Project.getUserModel().getUserId();
-            String uuid = UserDelegater.getInstance().logout(fidUid, clientUUID);
-            if (clientUUID.equals(uuid)) {
-                saveStampTree();
-            } else {
-                shutdown();
-            }
-        } catch (Exception ex) {
-        }
-        
-        // DAO DataSourceを閉じる
-        SqlDaoBean.closeDao();
+        saveStampTree();
 //masuda$        
     }
 
     private void saveStampTree() {
+        
         // Stamp 保存
         final IStampTreeModel treeTosave = stampBox.getUsersTreeTosave();
         
@@ -1110,10 +1093,16 @@ public class Dolphin implements MainWindow, IChartEventListener {
 
             @Override
             protected Void doInBackground() throws Exception {
+                
                 ClientContext.getBootLogger().debug("stampTask doInBackground");
+                // logout処理もここで行う
+                String fidUid = Project.getUserModel().getUserId();
+                String uuid = UserDelegater.getInstance().logout(fidUid, clientUUID);
                 // Stamp 保存
-                StampDelegater dl = StampDelegater.getInstance();
-                dl.putTree(treeTosave);
+                if (clientUUID.equals(uuid)) {
+                    StampDelegater dl = StampDelegater.getInstance();
+                    dl.putTree(treeTosave);
+                }
                 return null;
             }
 
@@ -1220,6 +1209,15 @@ public class Dolphin implements MainWindow, IChartEventListener {
             cel.stop();
         }
 
+        // FocusProperetyChangeListenerを破棄する
+        FocusPropertyChangeListener.getInstance().dispose();
+        
+        // shutdown Executor
+        exec.shutdownNow();
+        
+        // DAO DataSourceを閉じる
+        SqlDaoBean.closeDao();
+        
         ClientContext.getBootLogger().debug("アプリケーションを終了します");
         System.exit(0);
     }
