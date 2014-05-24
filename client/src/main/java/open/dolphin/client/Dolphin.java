@@ -18,8 +18,6 @@ import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javax.print.attribute.HashPrintRequestAttributeSet;
@@ -154,11 +152,11 @@ public class Dolphin implements MainWindow, IChartEventListener {
         if (ClientContext.isMac()){
             enableMacApplicationMenu();
         }
-                    
-        // 排他処理用のUUIDを決める(仮決め)
-       clientUUID = UUID.randomUUID().toString();
-       
-       //------------------------------
+
+        // 排他処理用のUUIDを決める
+        clientUUID = UUID.randomUUID().toString();
+
+        //------------------------------
         // ログインダイアログを表示する
         //------------------------------
         PluginLoader<ILoginDialog> loader = PluginLoader.load(ILoginDialog.class);
@@ -171,18 +169,9 @@ public class Dolphin implements MainWindow, IChartEventListener {
 
                 LoginDialog.LoginStatus result = (LoginDialog.LoginStatus) e.getNewValue();
                 login.close();
-                
+
                 switch (result) {
                     case AUTHENTICATED:
-                        try {
-                            // 排他処理用のUUIDを決める
-                            clientUUID = clientUUID + "," +
-                                    Project.getUserModel().getUserId().substring(22) + "," +
-                                    new Date() + "," +
-                                    InetAddress.getLocalHost().getLocalHost();
-                        } catch (UnknownHostException ex) {
-                            Logger.getLogger(Dolphin.class.getName()).log(Level.SEVERE, null, ex);
-                        }
                         registerLogin();
                         startServices();
                         loadStampTree();
@@ -211,14 +200,7 @@ public class Dolphin implements MainWindow, IChartEventListener {
                 String[] options = {"ログアウト", "ならない", "プライマリになる"};
                 String msg = "他端末で同一ユーザーがログイン中です。\n"
                         + "スタンプ箱の編集はできません。\n"
-                        + "不整合を避けるため同時ログインはお勧めしません。\n"
-                        + "追加情報: ";
-                if(uuid.length()>37){
-                        msg = msg + uuid.substring(37);
-                }
-                else{
-                        msg = msg + "なし";
-                }
+                        + "不整合を避けるため同時ログインはお勧めしません。";
                 int val = JOptionPane.showOptionDialog(
                         null, msg, "警告：同時ログイン",
                         JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE, null, options, options[0]);
@@ -659,14 +641,7 @@ public class Dolphin implements MainWindow, IChartEventListener {
             String ptName = pvt.getPatientName();
             String[] options = {"閲覧のみ", "強制的に編集", "キャンセル"};
             String msg = ptName + " 様のカルテは他の端末で編集中です。\n" +
-                    "強制的に編集した場合、後から保存したカルテが最新カルテになります。\n" +
-                    "追加情報: ";
-            if(pm.getOwnerUUID().length()>37){
-                    msg = msg + pm.getOwnerUUID().substring(37);
-            }
-            else{
-                    msg = msg + "なし";
-            }
+                    "強制的に編集した場合、後から保存したカルテが最新カルテになります。";
             int val = JOptionPane.showOptionDialog(
                     getFrame(), msg, "カルテオープン",
                     JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null, options, options[0]);
@@ -1098,30 +1073,13 @@ public class Dolphin implements MainWindow, IChartEventListener {
             chart.stop();
         }
 
-        // FocusProperetyChangeListenerを破棄する
-        FocusPropertyChangeListener.getInstance().dispose();
-        
-        // shutdown Executor
-        exec.shutdownNow();
-        
         // ログアウト処理
-        try {
-            String fidUid = Project.getUserModel().getUserId();
-            String uuid = UserDelegater.getInstance().logout(fidUid, clientUUID);
-            if (clientUUID.equals(uuid)) {
-                saveStampTree();
-            } else {
-                shutdown();
-            }
-        } catch (Exception ex) {
-        }
-        
-        // DAO DataSourceを閉じる
-        SqlDaoBean.closeDao();
+        saveStampTree();
 //masuda$        
     }
 
     private void saveStampTree() {
+        
         // Stamp 保存
         final IStampTreeModel treeTosave = stampBox.getUsersTreeTosave();
         
@@ -1135,10 +1093,16 @@ public class Dolphin implements MainWindow, IChartEventListener {
 
             @Override
             protected Void doInBackground() throws Exception {
+                
                 ClientContext.getBootLogger().debug("stampTask doInBackground");
+                // logout処理もここで行う
+                String fidUid = Project.getUserModel().getUserId();
+                String uuid = UserDelegater.getInstance().logout(fidUid, clientUUID);
                 // Stamp 保存
-                StampDelegater dl = StampDelegater.getInstance();
-                dl.putTree(treeTosave);
+                if (clientUUID.equals(uuid)) {
+                    StampDelegater dl = StampDelegater.getInstance();
+                    dl.putTree(treeTosave);
+                }
                 return null;
             }
 
@@ -1245,6 +1209,15 @@ public class Dolphin implements MainWindow, IChartEventListener {
             cel.stop();
         }
 
+        // FocusProperetyChangeListenerを破棄する
+        FocusPropertyChangeListener.getInstance().dispose();
+        
+        // shutdown Executor
+        exec.shutdownNow();
+        
+        // DAO DataSourceを閉じる
+        SqlDaoBean.closeDao();
+        
         ClientContext.getBootLogger().debug("アプリケーションを終了します");
         System.exit(0);
     }
@@ -1337,8 +1310,8 @@ public class Dolphin implements MainWindow, IChartEventListener {
         evt.setMsgUUID(UUID.randomUUID().toString());
         evt.setMsgTitle("ブロードキャスト　テスト");
         evt.setMsgOwner(getHostName());
-        evt.setMsgContent("メンテナンスを行いますので、OpenDolphinを閉じてください。");
-        evt.setMsgOpts(new String[]{"OK!", "待って"});
+        evt.setMsgContent("メンテナンスするぞ。早く仕事終えやがれ！");
+        evt.setMsgOpts(new String[]{"わかった", "やだね"});
         cel.publishMsg(evt);
     }
 

@@ -84,7 +84,7 @@ public class ClientChartEventEndpoint {
         try {
             CloseReason cr = new CloseReason(CloseReason.CloseCodes.NORMAL_CLOSURE, "end client");
             wsSession.close(cr);
-        } catch (IOException ex) {
+        } catch (IOException | IllegalStateException ex) {
         }
     }
 
