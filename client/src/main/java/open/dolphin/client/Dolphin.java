@@ -18,6 +18,8 @@ import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javax.print.attribute.HashPrintRequestAttributeSet;
@@ -153,7 +155,7 @@ public class Dolphin implements MainWindow, IChartEventListener {
             enableMacApplicationMenu();
         }
 
-        // 排他処理用のUUIDを決める
+        // 排他処理用のUUIDを決める(仮決め)
         clientUUID = UUID.randomUUID().toString();
 
         //------------------------------
@@ -172,6 +174,15 @@ public class Dolphin implements MainWindow, IChartEventListener {
 
                 switch (result) {
                     case AUTHENTICATED:
+                        try {
+                            // 排他処理用のUUIDを決める
+                            clientUUID = clientUUID + "," +
+                                    Project.getUserModel().getUserId().substring(22) + "," +
+                                    new Date() + "," +
+                                    InetAddress.getLocalHost().getLocalHost();
+                        } catch (UnknownHostException ex) {
+                            Logger.getLogger(Dolphin.class.getName()).log(Level.SEVERE, null, ex);
+                        }
                         registerLogin();
                         startServices();
                         loadStampTree();
@@ -200,7 +211,14 @@ public class Dolphin implements MainWindow, IChartEventListener {
                 String[] options = {"ログアウト", "ならない", "プライマリになる"};
                 String msg = "他端末で同一ユーザーがログイン中です。\n"
                         + "スタンプ箱の編集はできません。\n"
-                        + "不整合を避けるため同時ログインはお勧めしません。";
+                        + "不整合を避けるため同時ログインはお勧めしません。\n"
+                        + "追加情報: ";
+                if(uuid.length()>37){
+                        msg = msg + uuid.substring(37);
+                }
+                else{
+                        msg = msg + "なし";
+                }
                 int val = JOptionPane.showOptionDialog(
                         null, msg, "警告：同時ログイン",
                         JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE, null, options, options[0]);
@@ -641,7 +659,14 @@ public class Dolphin implements MainWindow, IChartEventListener {
             String ptName = pvt.getPatientName();
             String[] options = {"閲覧のみ", "強制的に編集", "キャンセル"};
             String msg = ptName + " 様のカルテは他の端末で編集中です。\n" +
-                    "強制的に編集した場合、後から保存したカルテが最新カルテになります。";
+                    "強制的に編集した場合、後から保存したカルテが最新カルテになります。\n" +
+                    "追加情報: ";
+            if(pm.getOwnerUUID().length()>37){
+                    msg = msg + pm.getOwnerUUID().substring(37);
+            }
+            else{
+                    msg = msg + "なし";
+            }
             int val = JOptionPane.showOptionDialog(
                     getFrame(), msg, "カルテオープン",
                     JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null, options, options[0]);
@@ -1310,8 +1335,8 @@ public class Dolphin implements MainWindow, IChartEventListener {
         evt.setMsgUUID(UUID.randomUUID().toString());
         evt.setMsgTitle("ブロードキャスト　テスト");
         evt.setMsgOwner(getHostName());
-        evt.setMsgContent("メンテナンスするぞ。早く仕事終えやがれ！");
-        evt.setMsgOpts(new String[]{"わかった", "やだね"});
+        evt.setMsgContent("メンテナンスを行いますので、OpenDolphinを閉じてください。");
+        evt.setMsgOpts(new String[]{"OK!", "待って"});
         cel.publishMsg(evt);
     }
 
