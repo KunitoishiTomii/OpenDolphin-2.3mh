@@ -6,7 +6,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -18,6 +17,7 @@ import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import javax.net.ssl.HttpsURLConnection;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.ProgressMonitor;
@@ -80,17 +80,19 @@ public class Launcher {
                 ? getFileHash(jarPath, ALGORITHM) : "";
 
         StringBuilder sb = new StringBuilder();
-        sb.append("http://").append(serverAddr).append(":8080").append(FILES_PATH).append("index.html");
+        sb.append("https://").append(serverAddr).append(":8443").append(FILES_PATH).append("index.html");
         URL url = new URL(sb.toString());
 
-        HttpURLConnection con = null;
+        HttpsURLConnection con = null;
         String remoteHash = null;
         List<String> pathsStr = new ArrayList<>();
         try {
-            con = (HttpURLConnection) url.openConnection();
+            con = (HttpsURLConnection) url.openConnection();
             con.setConnectTimeout(CONNECTION_TIMEOUT);
             con.setRequestMethod("GET");
             con.setInstanceFollowRedirects(false);
+            con.setSSLSocketFactory(OreOreSSL.getSslContext().getSocketFactory());
+            con.setHostnameVerifier(OreOreSSL.getVerifier());
             con.connect();
 
             try (InputStream is = con.getInputStream();
@@ -159,14 +161,16 @@ public class Launcher {
             pm.setNote(pathStr);
 
             StringBuilder sb = new StringBuilder();
-            sb.append("http://").append(serverAddr).append(":8080").append(FILES_PATH).append(pathStr);
+            sb.append("https://").append(serverAddr).append(":8443").append(FILES_PATH).append(pathStr);
             URL url = new URL(sb.toString());
-            HttpURLConnection con = null;
+            HttpsURLConnection con = null;
             try {
-                con = (HttpURLConnection) url.openConnection();
+                con = (HttpsURLConnection) url.openConnection();
                 con.setConnectTimeout(CONNECTION_TIMEOUT);
                 con.setRequestMethod("GET");
                 con.setInstanceFollowRedirects(false);
+                con.setSSLSocketFactory(OreOreSSL.getSslContext().getSocketFactory());
+                con.setHostnameVerifier(OreOreSSL.getVerifier());
                 con.connect();
                 Path path = Paths.get(JAR_DIR, pathStr);
                 Path parent = path.getParent();
