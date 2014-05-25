@@ -2,12 +2,13 @@ package open.dolphin.session;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
+import javax.ejb.Asynchronous;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
-import open.dolphin.common.util.BeanUtils;
+import open.dolphin.common.util.ModuleBeanDecoder;
 import open.dolphin.infomodel.*;
 import open.dolphin.mbean.ServletContextHolder;
 import org.hibernate.search.jpa.FullTextEntityManager;
@@ -966,7 +967,7 @@ public class KarteServiceBean {
 
     
 //masuda^   算定情報登録
-    //@Asynchronous
+    @Asynchronous
     private void registSanteiHistory(DocumentModel document) {
         
         // 算定履歴登録はFINALカルテのみ
@@ -984,7 +985,8 @@ public class KarteServiceBean {
             if (IInfoModel.MODULE_PROGRESS_COURSE.equals(entity)) {
                 continue;
             }
-            mm.setModel((IModuleModel) BeanUtils.xmlDecode(mm.getBeanBytes()));
+            //mm.setModel((IModuleModel) BeanUtils.xmlDecode(mm.getBeanBytes()));
+            mm.setModel(ModuleBeanDecoder.getInstance().decode(mm.getBeanBytes()));
             ClaimBundle cb = (ClaimBundle) mm.getModel();
             if (cb == null) {
                 continue;

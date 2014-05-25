@@ -4,11 +4,9 @@ import java.awt.Color;
 import java.awt.Rectangle;
 import java.awt.event.*;
 import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CompletionService;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
+import java.util.concurrent.ExecutorService;
 import javax.swing.*;
+import open.dolphin.common.util.ModuleBeanDecoder;
 import open.dolphin.delegater.DocumentDelegater;
 import open.dolphin.helper.DBTask;
 import open.dolphin.helper.WindowSupport;
@@ -19,14 +17,14 @@ import open.dolphin.infomodel.ModuleModel;
 import open.dolphin.infomodel.SchemaModel;
 import open.dolphin.letter.KartePDFMaker;
 import open.dolphin.project.Project;
-import open.dolphin.util.MultiTaskExecutor;
+import open.dolphin.util.TaskCompletionService;
 import org.apache.log4j.Logger;
 
 /**
  * DocumentViewer
  *
  * @author Minagawa,Kazushi
- * @author modified by masuda, Masuda Naika, 11/06/04 -> 12/07/13
+ * @author modified by masuda, Masuda Naika, 11/06/04 -> 14/05/18
  */
 public class KarteDocumentViewer extends AbstractChartDocument implements DocumentViewer {
 
@@ -111,20 +109,8 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
         model.setKarteBean(getContext().getKarte());
         model.getDocInfoModel().setConfirmDate(new Date());
 
-//        ClaimSender claimSender = new ClaimSender(getContext().getCLAIMListener());
-//
-//        // DG  DocInfoに設定されているGUIDに一致する保険情報モジュールを設定する
-//        PVTHealthInsuranceModel applyIns = getContext().getHealthInsuranceToApply(model.getDocInfoModel().getHealthInsuranceGUID());
-//        claimSender.setInsuranceToApply(applyIns);
-//        claimSender.send(model);
-
         model.getDocInfoModel().setSendClaim(true);
-/*
-        ClaimSender claimSender = new ClaimSender();
-        claimSender.setContext(getContext());
-        claimSender.prepare(model);
-        claimSender.send(model);
-*/
+
         KarteContentSender sender = new KarteContentSender();
         sender.sendKarte(getContext(), model);
     }
@@ -336,50 +322,33 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
     }
 
     private void showKarteViewers() {
-        
-        SwingWorker worker = new SwingWorker<Void, Void>() {
 
-            @Override
-            protected Void doInBackground() throws Exception {
-                
-                initScrollerPanel();
+        initScrollerPanel();
 
-                // 選択されているDocInfoに対応するKarteViewerをviewerListに追加する
-                int size = docInfoList.length;
-                for (int i = 0; i < size; ++i) {
-                    DocInfoModel docInfo = docInfoList[i];
-                    KarteViewer viewer = karteViewerMap.get(docInfo.getDocPk());
-                    if (viewer != null) {
-                        JPanel panel = viewer.getUI();
-                        // skip scroll用にインデックスを振る
-                        panel.putClientProperty(GUIConst.PROP_VIEWER_INDEX, i);
-                        scrollerPanel.add(panel);
-                    }
-                }
-                
-                return null;
+        // 選択されているDocInfoに対応するKarteViewerをviewerListに追加する
+        int size = docInfoList.length;
+        for (int i = 0; i < size; ++i) {
+            DocInfoModel docInfo = docInfoList[i];
+            KarteViewer viewer = karteViewerMap.get(docInfo.getDocPk());
+            if (viewer != null) {
+                JPanel panel = viewer.getUI();
+                // skip scroll用にインデックスを振る
+                panel.putClientProperty(GUIConst.PROP_VIEWER_INDEX, i);
+                scrollerPanel.add(panel);
             }
+        }
 
-            @Override
-            protected void done() {
-
-                // 文書履歴タブに変更
-                getContext().showDocument(0);
-                // 一つ目を選択し、フォーカスを設定する。フォーカスがないとキー移動できない
-                int index = (ascending) ? docInfoList.length - 1 : 0;
-                KarteViewer kv = karteViewerMap.get(docInfoList[index].getDocPk());
-                if (kv != null) {
-                    setSelectedKarte(kv);
-                    kv.getUI().requestFocusInWindow();
-                }
-                // 先頭にスクロール
-                scrollerPanel.scrollRectToVisible(new Rectangle(0, 0, 1, 1));
-                
-                //timer.stop();
-            }
-        };
-        
-        worker.execute();
+        // 文書履歴タブに変更
+        getContext().showDocument(0);
+        // 一つ目を選択し、フォーカスを設定する。フォーカスがないとキー移動できない
+        int index = (ascending) ? docInfoList.length - 1 : 0;
+        KarteViewer kv = karteViewerMap.get(docInfoList[index].getDocPk());
+        if (kv != null) {
+            setSelectedKarte(kv);
+            kv.getUI().requestFocusInWindow();
+        }
+        // 先頭にスクロール
+        scrollerPanel.scrollRectToVisible(new Rectangle(0, 0, 1, 1));
     }
 
     /**
@@ -555,9 +524,7 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
 
         // 表示している文書タイプに応じて Viewer を作成する
         DocumentModel model = selectedKarte.getModel();
-        DocInfoModel docInfo = model.getDocInfoModel();
-        KarteViewer viewer = createKarteViewer(docInfo);
-        viewer.setModel(model);
+        KarteViewer viewer = createKarteViewer(model);
         
         // EditorFrameで表示
         EditorFrame editorFrame = new EditorFrame();
@@ -630,17 +597,153 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
         task.execute();
     }
 
-    
-    private class MakeViewerTask implements Callable {
+    private KarteViewer createKarteViewer(DocumentModel docModel) {
 
-        private final DocumentModel docModel;
+        KarteViewer karteViewer;
+        DocInfoModel docInfo = docModel.getDocInfoModel();
         
-        private MakeViewerTask(DocumentModel docModel) {
-            this.docModel = docModel;
+        // サマリー対応
+        if (docInfo != null && docInfo.getDocType() != null) {
+            
+            switch(docInfo.getDocType()) {
+                case IInfoModel.DOCTYPE_S_KARTE:
+                case IInfoModel.DOCTYPE_SUMMARY:
+                    karteViewer = KarteViewer.createKarteViewer(docModel, KarteViewer.MODE.SINGLE);
+                    break;
+                default:
+                    karteViewer = KarteViewer.createKarteViewer(docModel, KarteViewer.MODE.DOUBLE);
+                    break;
+            }
+        } else {
+            karteViewer = KarteViewer.createKarteViewer(docModel, KarteViewer.MODE.DOUBLE);
         }
         
+        return karteViewer;
+    }
+
+    /**
+     * 文書をデータベースから取得するタスククラス。
+     */
+    private final class KarteTask extends DBTask<Void, Void> {
+        
+        private static final int eagerRenderCount = 5;
+        private static final int defaultFetchSize = 200;
+        private final Map<Long, DocInfoModel> docInfoMap;
+        
+
+        public KarteTask(Chart ctx, Map<Long, DocInfoModel> docInfoMap) {
+            super(ctx);
+            this.docInfoMap = docInfoMap;
+        }
+
         @Override
-        public KarteViewer call() throws Exception {
+        protected Integer doInBackground() throws InterruptedException {
+            
+            logger.debug("KarteTask doInBackground");
+            
+            DocumentDelegater ddl = DocumentDelegater.getInstance();
+            // ExecutorとCompletionService
+            ExecutorService exec = Dolphin.getInstance().getExecutorService();
+            TaskCompletionService<Void> complService = new TaskCompletionService<>(exec);
+            
+            // レンダリング待ちするするためにdocInfoListの最初の数個に属するリストを作る。ちらつき対策
+            int cnt = Math.min(docInfoList.length, eagerRenderCount);
+            List<Long> eagerIdList = new ArrayList<>();
+            for (int i = 0; i < cnt; ++i) {
+                long docPk = docInfoList[i].getDocPk();
+                if (docInfoMap.containsKey(docPk)) {
+                    eagerIdList.add(docPk);
+                }
+            }
+            
+            // 最初のfetchSizeを決める
+            // 20文書までは一回で、20～400文書までは２分割で、400以上は200文書ごと取得
+            int fromIndex = 0;
+            int idListSize = docInfoMap.size();
+            int fetchSize = (idListSize <= 20 || idListSize / defaultFetchSize >= 2)
+                    ? idListSize % defaultFetchSize
+                    : idListSize / 2;
+
+            // 分割してサーバーから取得する
+            List<Long> allIds = new ArrayList<>(docInfoMap.keySet());
+
+            while (fromIndex < idListSize) {
+                int toIndex = Math.min(fromIndex + fetchSize, idListSize);
+                try {
+                    List<DocumentModel> result = ddl.getDocuments(allIds.subList(fromIndex, toIndex));
+                    if (result != null && !result.isEmpty()) {
+                        // eagerが先にexecutorに入るように…
+                        if (ascending) {
+                            for (DocumentModel model : result) {
+                                submitKarteRenderTask(model, eagerIdList, exec, complService);
+                            }
+                        } else {
+                            for (ListIterator<DocumentModel> itr = result.listIterator(result.size()); itr.hasPrevious();) {
+                                submitKarteRenderTask(itr.previous(), eagerIdList, exec, complService);
+                            }
+                        }
+                    }
+                } catch (Exception ex) {
+                }
+                fromIndex += fetchSize;
+                fetchSize = defaultFetchSize;
+            }
+            
+            // レンダリング待ち, wait completion
+            complService.waitCompletion();
+            
+            logger.debug("doInBackground noErr, return result");
+            return null;
+        }
+        
+        private void submitKarteRenderTask(DocumentModel model, List<Long> eagerIdList,
+                ExecutorService exec, TaskCompletionService complService) {
+
+            // DocumentModelにDocInfoModelを設定する
+            DocInfoModel docInfo = docInfoMap.get(model.getId());
+            model.setDocInfoModel(docInfo);
+            // シングル及び２号用紙の判定を行い、KarteViewer を生成する
+            KarteViewer viewer = createKarteViewer(model);
+            viewer.setContext(getContext());
+            karteViewerMap.put(model.getId(), viewer);
+
+            // Executorで実行させる
+            KarteRenderTask task = new KarteRenderTask(viewer);
+            if (!eagerIdList.isEmpty() && eagerIdList.remove(model.getId())) {
+                // render eagerly, submitTask to CompletionService
+                complService.submitTask(task);
+            } else {
+                // render lazily, submit to ExecutorSerivice
+                exec.submit(task);
+            }
+        }
+
+        @Override
+        protected void succeeded(Void object) {
+            logger.debug("KarteTask succeeded");
+            docInfoMap.clear();
+            showKarteViewers();
+        }
+
+        @Override
+        protected void failed(Throwable e) {
+            logger.debug(e.getMessage());
+            docInfoMap.clear();
+        }
+    }
+    
+    private class KarteRenderTask implements Runnable {
+
+        private final KarteViewer viewer;
+
+        private KarteRenderTask(KarteViewer viewer) {
+            this.viewer = viewer;
+        }
+
+        @Override
+        public void run() {
+            
+            DocumentModel docModel = viewer.getModel();
 
             // DocumentDelegaterから移動
             Collection<ModuleModel> mc = docModel.getModules();
@@ -659,154 +762,17 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
                     schema.setIcon(icon);
                 }
             }
-            // KarteTaskに移動
-/*
-            // DocumentModelにDocInfoModelを設定する
-            for (DocInfoModel info : docInfoList) {
-                if (docModel.getId() == info.getDocPk()) {
-                    docModel.setDocInfoModel(info);
-                    break;
-                }
-            }
-*/
-            // シングル及び２号用紙の判定を行い、KarteViewer を生成する
-            final KarteViewer viewer = createKarteViewer(docModel.getDocInfoModel());
-            viewer.setContext(getContext());
-            viewer.setModel(docModel);
 
-            // このコールでモデルの遅延レンダリングが開始される
+            // このコールでモデルのレンダリングが開始される
             viewer.start();
 
             // ダブルクリックされたカルテを別画面で表示する
             viewer.addMouseListener(mouseListener);
 
-            // KarteViewerのJTextPaneにKarteScrollerPanelのActionMapを設定する
+        // KarteViewerのJTextPaneにKarteScrollerPanelのActionMapを設定する
             // これをしないとJTextPaneにフォーカスがあるとキーでスクロールできない
             ActionMap amap = scrollerPanel.getActionMap();
             viewer.setParentActionMap(amap);
-
-            return viewer;
-        }
-    }
-
-    private KarteViewer createKarteViewer(DocInfoModel docInfo) {
-
-        // サマリー対応
-        KarteViewer karteViewer;
-        
-        if (docInfo != null && docInfo.getDocType() != null) {
-            
-            switch(docInfo.getDocType()) {
-                case IInfoModel.DOCTYPE_S_KARTE:
-                case IInfoModel.DOCTYPE_SUMMARY:
-                    karteViewer = KarteViewer.createKarteViewer(KarteViewer.MODE.SINGLE);
-                    break;
-                default:
-                    karteViewer = KarteViewer.createKarteViewer(KarteViewer.MODE.DOUBLE);
-                    break;
-            }
-        } else {
-            karteViewer = KarteViewer.createKarteViewer(KarteViewer.MODE.DOUBLE);
-        }
-        
-        return karteViewer;
-    }
-
-    /**
-     * 文書をデータベースから取得するタスククラス。
-     */
-    private final class KarteTask extends DBTask<Integer, Void> {
-        
-        private static final int defaultFetchSize = 200;
-        private final Map<Long, DocInfoModel> docInfoMap;
-        private CompletionService service;
-        private final MultiTaskExecutor exec;
-        
-
-        public KarteTask(Chart ctx, Map<Long, DocInfoModel> docInfoMap) {
-            super(ctx);
-            this.docInfoMap = docInfoMap;
-            // CompletionServceを使ってみる
-            exec = new MultiTaskExecutor();
-            service = exec.createCompletionService();
-        }
-
-        @Override
-        protected Integer doInBackground() {
-            
-            logger.debug("KarteTask doInBackground");
-            
-            DocumentDelegater ddl = DocumentDelegater.getInstance();
-
-            int fromIndex = 0;
-            int idListSize = docInfoMap.size();
-            int taskCount=  0;
-
-            // 最初のfetchSizeを決める
-            // 20文書までは一回で、20～400文書までは２分割で、400以上は200文書ごと取得
-            int fetchSize = (idListSize <= 20 || idListSize / defaultFetchSize >= 2)
-                    ? idListSize % defaultFetchSize
-                    : idListSize / 2;
-            
-            // 分割してサーバーから取得する
-            List<Long> allIds = new ArrayList<>(docInfoMap.keySet());
-            
-            while (fromIndex < idListSize) {
-                int toIndex = Math.min(fromIndex + fetchSize, idListSize);
-                List<Long> ids = allIds.subList(fromIndex, toIndex);
-                try {
-                    List<DocumentModel> result = ddl.getDocuments(ids);
-                    if (result != null && !result.isEmpty()) {
-                        for (DocumentModel model : result) {
-                            // DocumentModelにDocInfoModelを設定する
-                            DocInfoModel docInfo = docInfoMap.get(model.getId());
-                            model.setDocInfoModel(docInfo);
-                            // Executorに登録していく
-                            MakeViewerTask task = new MakeViewerTask(model);
-                            service.submit(task);
-                            ++taskCount;
-                        }
-                    }
-                } catch (Exception ex) {
-                }
-                fromIndex += fetchSize;
-                fetchSize = defaultFetchSize;
-            }
-            
-            // 出来上がったものからkarteViewerMapに登録していく
-            for (int i = 0; i < taskCount; ++i) {
-                try {
-                    Future<KarteViewer> future = service.take();
-                    KarteViewer viewer = future.get();
-                    karteViewerMap.put(viewer.getModel().getId(), viewer);
-                } catch (ExecutionException | InterruptedException ex) {
-                    logger.debug(ex);
-                }
-            }
-
-            logger.debug("doInBackground noErr, return result");
-            
-            return taskCount;
-        }
-
-        @Override
-        protected void succeeded(Integer taskCount) {
-            logger.debug("KarteTask succeeded");
-            if (taskCount > 0) {
-                // KarteViewersを表示する
-                showKarteViewers();
-            }
-            service = null;
-            exec.dispose();
-            docInfoMap.clear();
-        }
-
-        @Override
-        protected void failed(Throwable e) {
-            logger.debug(e.getMessage());
-            service = null;
-            exec.dispose();
-            docInfoMap.clear();
         }
     }
 

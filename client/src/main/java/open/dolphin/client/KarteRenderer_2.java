@@ -68,14 +68,6 @@ public class KarteRenderer_2 {
      * @param model レンダリングする DocumentModel
      */
     public final void render(DocumentModel model, KartePane soaPane, KartePane pPane) {
-        render(model, soaPane, pPane, false);
-    }
-    
-    public final void renderLazily(DocumentModel model, KartePane soaPane, KartePane pPane) {
-        render(model, soaPane, pPane, true);
-    }
-
-    private void render(DocumentModel model, KartePane soaPane, KartePane pPane, boolean lazy) {
 
         final List<ModuleModel> modules = model.getModules();
 
@@ -124,7 +116,7 @@ public class KarteRenderer_2 {
             }
 
         } else {
-            new KartePaneRenderer_ElementSpec().renderPane(soaSpec, soaModules, schemas, soaPane, lazy);
+            new KartePaneRenderer_ElementSpec().renderPane(soaSpec, soaModules, schemas, soaPane);
         }
 
         // P Pane をレンダリングする
@@ -136,7 +128,7 @@ public class KarteRenderer_2 {
                     pPane.stamp(mm);
                 }
             } else {
-                new KartePaneRenderer_ElementSpec().renderPane(pSpec, pModules, schemas, pPane, lazy);
+                new KartePaneRenderer_ElementSpec().renderPane(pSpec, pModules, schemas, pPane);
             }
         }
     }
@@ -144,7 +136,6 @@ public class KarteRenderer_2 {
     // ElementSpec版
     private static class KartePaneRenderer_ElementSpec {
         
-        private boolean lazy;
         private KartePane kartePane;
         private KarteStyledDocument doc;
         private Style defaultStyle;
@@ -166,10 +157,8 @@ public class KarteRenderer_2 {
          *
          * @param xml TextPane Dump の XML
          */
-        private void renderPane(String xml, List<ModuleModel> modules, 
-                List<SchemaModel> schemas, KartePane kartePane, boolean lazy) {
+        private void renderPane(String xml, List<ModuleModel> modules, List<SchemaModel> schemas, KartePane kartePane) {
 
-            this.lazy = lazy;
             this.modules = modules;
             this.schemas = schemas;
             this.kartePane = kartePane;
@@ -362,7 +351,7 @@ public class KarteRenderer_2 {
             switch (name) {
                 case STAMP_HOLDER: {
                     // StampHolderを作成する。setMyTextは後回し
-                    final StampHolder sh = new StampHolder(kartePane, modules.get(index), lazy);
+                    final StampHolder sh = new StampHolder(kartePane, modules.get(index));
                     sh.setTransferHandler(StampHolderTransferHandler.getInstance());
                     // このスタンプ用のスタイルを生成する
                     final MutableAttributeSet atts = doc.createComponentAttribute(sh);
@@ -371,7 +360,7 @@ public class KarteRenderer_2 {
                 }
                 case SCHEMA_HOLDER: {
                     // SchemaHolderを作成する
-                    final SchemaHolder sh = new SchemaHolder(kartePane, schemas.get(index), lazy);
+                    final SchemaHolder sh = new SchemaHolder(kartePane, schemas.get(index));
                     sh.setTransferHandler(SchemaHolderTransferHandler.getInstance());
                     // このスタンプ用のスタイルを生成する
                     final MutableAttributeSet atts = doc.createComponentAttribute(sh);

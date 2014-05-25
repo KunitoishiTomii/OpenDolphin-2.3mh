@@ -9,12 +9,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import javax.ws.rs.client.InvocationCallback;
 import javax.ws.rs.core.Response;
 import open.dolphin.delegater.ChartEventDelegater;
 import open.dolphin.project.Project;
 import open.dolphin.common.util.BeanUtils;
 import open.dolphin.common.util.JsonConverter;
+import open.dolphin.delegater.ClientChartEventEndpoint;
 import open.dolphin.delegater.PatientDelegater;
 import open.dolphin.infomodel.ChartEventModel;
 import open.dolphin.infomodel.HealthInsuranceModel;
@@ -22,15 +22,17 @@ import open.dolphin.infomodel.ModelUtils;
 import open.dolphin.infomodel.PVTHealthInsuranceModel;
 import open.dolphin.infomodel.PatientModel;
 import open.dolphin.infomodel.PatientVisitModel;
+import open.dolphin.setting.MiscSettingPanel;
 import open.dolphin.util.NamedThreadFactory;
 
 /**
  * カルテオープンなどの状態の変化をまとめて管理する
+ * 
  * @author masuda, Masuda Naika
  */
 public class ChartEventListener {
 
-     // このクライアントのパラメーター類
+    // このクライアントのパラメーター類
     private String clientUUID;
     private String orcaId;
     private String deptCode;
@@ -39,6 +41,9 @@ public class ChartEventListener {
     private String userId;
     private String jmariCode;
     private String facilityId;
+    
+    private boolean useWebSocket;
+    private ClientChartEventEndpoint endpoint;
 
     private List<IChartEventListener> listeners;
     
@@ -73,8 +78,9 @@ public class ChartEventListener {
         jmariCode = Project.getString(Project.JMARI_CODE);
         facilityId = Project.getFacilityId();
         listeners = new ArrayList<>();
+        useWebSocket = Project.getBoolean(MiscSettingPanel.USE_WEBSOCKET, MiscSettingPanel.DEFAULT_USE_WEBSOCKET);
     }
-    
+
     public String getClientUUID() {
         return clientUUID;
     }
@@ -91,7 +97,7 @@ public class ChartEventListener {
     private void publish(ChartEventModel evt) {
         onEventExec.execute(new LocalOnEventTask(evt));
     }
-    
+
     public void publishMsg(ChartEventModel evt) {
         evt.setIssuerUUID(clientUUID);
         //evt.setFacilityId = Project.getFacilityId();
@@ -153,17 +159,31 @@ public class ChartEventListener {
     }
 
     public void start() {
+        
         NamedThreadFactory factory = new NamedThreadFactory("ChartEvent Handle Task");
         onEventExec = Executors.newSingleThreadExecutor(factory);
-        listenThread = new EventListenThread();
-        listenThread.start();
-        //eventCallback = new ChartEventCallback();
-        //eventCallback.start();
+        
+        if (useWebSocket) {
+            try {
+                endpoint = new ClientChartEventEndpoint();
+                endpoint.connect();
+            } catch (Exception ex) {
+                useWebSocket = false;
+                ex.printStackTrace(System.err);
+            }
+        }
+        if (!useWebSocket) {
+            listenThread = new EventListenThread();
+            listenThread.start();
+        }
     }
 
     public void stop() {
-        listenThread.halt();
-        //eventCallback.halt();
+        if (useWebSocket) {
+            endpoint.close();
+        } else {
+            listenThread.halt();
+        }
         shutdownExecutor();
     }
 
@@ -216,42 +236,6 @@ public class ChartEventListener {
         }
     }
     
-    // InvocationCallbackを使ってみるが、completedが終了するとresponseを閉じてしまうのでボツ
-    private class ChartEventCallback implements InvocationCallback<Response> {
-
-        private Future<Response> future;
-        private boolean isRunning;
-
-        private void start() {
-            isRunning = true;
-            subscribe();
-        }
-
-        private void halt() {
-            isRunning = false;
-            if (future != null) {
-                future.cancel(true);
-            }
-        }
-
-        private void subscribe() {
-            if (isRunning) {
-                future = ChartEventDelegater.getInstance().subscribe(this);
-            }
-        }
-
-        @Override
-        public void completed(Response response) {
-            onEventExec.execute(new RemoteOnEventTask(response));
-            subscribe();
-        }
-
-        @Override
-        public void failed(Throwable thrwbl) {
-            subscribe();
-        }
-    }
-
     // 自クライアントの状態変更後、サーバーに通知するタスク
     private class LocalOnEventTask implements Runnable {
         
@@ -273,9 +257,13 @@ public class ChartEventListener {
             }
             
             // サーバーに更新を通知
-            ChartEventDelegater del = ChartEventDelegater.getInstance();
             try {
-                del.putChartEvent(evt);
+                if (useWebSocket) {
+                    endpoint.putChartEvent(evt);
+                } else {
+                    ChartEventDelegater del = ChartEventDelegater.getInstance();
+                    del.putChartEvent(evt);
+                }
             } catch (Exception ex) {
             }
         }
@@ -307,30 +295,58 @@ public class ChartEventListener {
             
             response.close();
             
-            if (evt == null) {
-                return;
-            }
-            
-            // PatientModelが乗っかってきている場合は保険をデコード
-            PatientModel pm = evt.getPatientModel();
-            if (pm != null) {
-                decodeHealthInsurance(pm);
-            }
-            PatientVisitModel pvt = evt.getPatientVisitModel();
-            if (pvt != null) {
-                decodeHealthInsurance(pvt.getPatientModel());
-            }
-            
-            // 各リスナーで更新処理をする
-            for (IChartEventListener listener : listeners) {
-                try {
-                    listener.onEvent(evt);
-                } catch (Exception ex) {
-                }
+            if (evt != null) {
+                processRemoteChartEvent(evt);
             }
         }
     }
     
+    private void processRemoteChartEvent(ChartEventModel evt) {
+        
+        // PatientModelが乗っかってきている場合は保険をデコード
+        PatientModel pm = evt.getPatientModel();
+        if (pm != null) {
+            decodeHealthInsurance(pm);
+        }
+        PatientVisitModel pvt = evt.getPatientVisitModel();
+        if (pvt != null) {
+            decodeHealthInsurance(pvt.getPatientModel());
+        }
+
+        // 各リスナーで更新処理をする
+        for (IChartEventListener listener : listeners) {
+            try {
+                listener.onEvent(evt);
+            } catch (Exception ex) {
+            }
+        }
+    }
+    
+    // web socket
+    public void onWebSocketMessage(String json) {
+        onEventExec.execute(new RemoteOnEventTaskWs(json));
+    }
+    
+    private class RemoteOnEventTaskWs implements Runnable {
+        
+        private final String json;
+        
+        private RemoteOnEventTaskWs(String json) {
+            this.json = json;
+        }
+
+        @Override
+        public void run() {
+
+            ChartEventModel evt = (ChartEventModel) 
+                    JsonConverter.getInstance().fromJson(json, ChartEventModel.class);
+            
+            if (evt != null) {
+                processRemoteChartEvent(evt);
+            }
+        }
+    }
+
     /**
      * バイナリの健康保険データをオブジェクトにデコードする。
      *

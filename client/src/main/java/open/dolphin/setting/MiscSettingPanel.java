@@ -45,7 +45,7 @@ public class MiscSettingPanel extends AbstractSettingPanel {
     public static final String USE_WINE = "useWine";
     public static final String WINE_PATH = "winePath";
     public static final String SEND_PATIENT_INFO = "sendPatientInfo";
-    public static final String PVT_ON_SERVER = "pvtOnServer";
+    //public static final String PVT_ON_SERVER = "pvtOnServer";
     public static final String FEV_ON_SERVER = "fevOnServer";
 
     public static final String FOLLOW_MEDICOM = "followMedicom";
@@ -83,6 +83,7 @@ public class MiscSettingPanel extends AbstractSettingPanel {
     public static final String ZEBRA_COLOR = "zebraColor";
     public static final String HL7_FORMAT = "hl7format";
     public static final String USE_JERSEY = "useJersey";
+    public static final String USE_WEBSOCKET = "useWebsocket";
     
     public static final String UI_FONT_SIZE = "uiFontSize";
     public static final String UI_FONT_NAME = "uiFontName";
@@ -141,6 +142,7 @@ public class MiscSettingPanel extends AbstractSettingPanel {
     
     public static final String DEFAULT_HL7_FORMAT = "wakayama";
     public static final boolean DEFAULT_USE_JERSEY = true;
+    public static final boolean DEFAULT_USE_WEBSOCKET = false;
     
     public static final int DEFAULT_UI_FONT_SIZE = 13;
     public static final String DEFAULT_UI_FONT_NAME = Font.SANS_SERIF;
@@ -177,7 +179,7 @@ public class MiscSettingPanel extends AbstractSettingPanel {
     private JLabel lbl_fev70;
     private JLabel lbl_fevShareFolder;
     
-    private JCheckBox cb_PvtOnServer;
+    //private JCheckBox cb_PvtOnServer;
     private JCheckBox cb_FevOnServer;
     
     private JButton btn_discardSize;
@@ -229,8 +231,11 @@ public class MiscSettingPanel extends AbstractSettingPanel {
     
     private JButton btn_hsInit;
     
-    private JRadioButton rb_jersey;
-    private JRadioButton rb_resteasy;
+    //private JRadioButton rb_jersey;
+    //private JRadioButton rb_resteasy;
+    private JRadioButton rb_comet;
+    private JRadioButton rb_websocket;
+
     
     private JComboBox cmb_UiFontName;
     private JComboBox cmb_UiFontSize;
@@ -468,11 +473,11 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         JPanel inspector = gbl.getProduct();
         
         gbl = new GridBagBuilder("サーバー設定");
-        cb_PvtOnServer = new JCheckBox("PVT受信登録処理をサーバーで行う");
+        //cb_PvtOnServer = new JCheckBox("PVT受信登録処理をサーバーで行う");
         cb_FevOnServer = new JCheckBox("FEV患者登録処理をサーバーで行う");
         cb_FevOnServer.setToolTipText("出力先フォルダは設定１で入力してください");
-        gbl.add(cb_PvtOnServer, 0, 0, GridBagConstraints.CENTER);
-        gbl.add(cb_FevOnServer, 0, 1, GridBagConstraints.CENTER);
+        //gbl.add(cb_PvtOnServer, 0, 0, GridBagConstraints.CENTER);
+        gbl.add(cb_FevOnServer, 0, 0, GridBagConstraints.CENTER);
         JPanel pvt = gbl.getProduct();
         
         gbl = new GridBagBuilder("カルテスクロール");
@@ -664,7 +669,6 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         cb_orcaMedUseApi = new JCheckBox("ORCA APIを利用する");
         gbl.add(cb_orcaMedUseApi, 0, 0, GridBagConstraints.CENTER);
         JPanel orcaMed = gbl.getProduct();
-        
         // Labo
         gbl = new GridBagBuilder("ラボ");
         row = 0;
@@ -719,7 +723,7 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         });
         gbl.add(btn_hsInit, 0, 0, GridBagConstraints.CENTER);
         JPanel hs = gbl.getProduct();
-        
+/*
         // client REST
         gbl = new GridBagBuilder("クライアントJAX-RS");
         rb_jersey = new JRadioButton("Jersey");
@@ -735,13 +739,30 @@ public class MiscSettingPanel extends AbstractSettingPanel {
 
         gbl.add(pnlRest, 0, row, GridBagConstraints.CENTER);
         JPanel rest = gbl.getProduct();
+*/
+        // comet / websocket
+        gbl = new GridBagBuilder("チャート状態同期");
+        rb_comet = new JRadioButton("Comet");
+        rb_websocket = new JRadioButton("WebSocket");
+        ButtonGroup bgSync = new ButtonGroup();
+        bgSync.add(rb_comet);
+        bgSync.add(rb_websocket);
 
+        JPanel pnlSync = new JPanel();
+        pnlSync.setLayout(new FlowLayout());
+        pnlSync.add(rb_comet);
+        pnlSync.add(rb_websocket);
+
+        gbl.add(pnlSync, 0, row, GridBagConstraints.CENTER);
+        JPanel sync = gbl.getProduct();
+        
         // 全体レイアウト
         gbl = new GridBagBuilder();
         gbl.add(orcaMed, 0, 0, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
         gbl.add(labo, 0, 1, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
         gbl.add(hs, 0, 2, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
-        gbl.add(rest, 0, 3, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
+        //gbl.add(rest, 0, 3, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
+        gbl.add(sync, 0, 3, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
         JPanel setting3 = gbl.getProduct();
         
         // UI設定
@@ -839,9 +860,8 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         // 全体レイアウト
         gbl = new GridBagBuilder();
         gbl.add(color, 0, 0, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
-        gbl.add(font, 0, 1, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
+        gbl.add(labo, 0, 1, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
         JPanel uiSetting = gbl.getProduct();
-        
         
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.addTab("設定１", setting);
@@ -1055,7 +1075,7 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         tf_rsbBrowserPath.setText(val);
 */
         // PVT
-        cb_PvtOnServer.setSelected(model.pvtOnServer);
+        //cb_PvtOnServer.setSelected(model.pvtOnServer);
         cb_FevOnServer.setSelected(model.fevOnServer);
         // Pacs
         cb_UsePacs.setSelected(model.usePacs);
@@ -1110,14 +1130,14 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         
         // orcaMed
         cb_orcaMedUseApi.setSelected(model.orcaMedUseApi);
-        
+/*
         // rest
         if (model.useJersey) {
             rb_jersey.setSelected(true);
         } else {
             rb_resteasy.setSelected(true);
         }
-        
+*/
         // UI
         cmb_UiFontName.setSelectedItem(model.uiFontName);
         cmb_UiFontSize.setSelectedItem(model.uiFontSize);
@@ -1125,6 +1145,13 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         cmb_StampFontName.setSelectedItem(model.stampFontName);
         cmb_StampFontSize.setSelectedItem(model.stampFontSize);
         cmb_StampFontStyle.setSelectedIndex(model.stampFontStyle);
+        
+        // Chart sync
+        if (model.useWebsocket) {
+            rb_websocket.setSelected(true);
+        } else {
+            rb_comet.setSelected(true);
+        }
     }
 
     /**
@@ -1176,7 +1203,7 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         model.rsbBrowserPath = tf_rsbBrowserPath.getText().trim();
 */
         // PVT
-        model.pvtOnServer = cb_PvtOnServer.isSelected();
+        //model.pvtOnServer = cb_PvtOnServer.isSelected();
         model.fevOnServer = cb_FevOnServer.isSelected();
         
         // Pacs
@@ -1209,7 +1236,7 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         model.orcaMedUseApi = cb_orcaMedUseApi.isSelected();
         
         // rest
-        model.useJersey = rb_jersey.isSelected();
+        //model.useJersey = rb_jersey.isSelected();
         
         // UI
         model.uiFontName = (String) cmb_UiFontName.getSelectedItem();
@@ -1218,6 +1245,9 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         model.stampFontName = (String) cmb_StampFontName.getSelectedItem();
         model.stampFontSize = (int) cmb_StampFontSize.getSelectedItem();
         model.stampFontStyle = cmb_StampFontStyle.getSelectedIndex();
+        
+        // Chart sync
+        model.useWebsocket = rb_websocket.isSelected();
     }
 
     /**
@@ -1271,6 +1301,7 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         private boolean orcaMedUseApi;
         
         private boolean useJersey;
+        private boolean useWebsocket;
         
         private String uiFontName;
         private int uiFontSize;
@@ -1314,7 +1345,7 @@ public class MiscSettingPanel extends AbstractSettingPanel {
             rsbBrowserPath = Project.getString(RSB_BROWSER_PATH, DEFAULT_RSB_BROWSER_PATH);
 */
             // PVT
-            pvtOnServer = Project.getBoolean(PVT_ON_SERVER, DEFAULT_PVT_ON_SERVER);
+            //pvtOnServer = Project.getBoolean(PVT_ON_SERVER, DEFAULT_PVT_ON_SERVER);
             fevOnServer = Project.getBoolean(FEV_ON_SERVER, DEFAULT_FEV_ON_SERVER);
             
             // Pacs
@@ -1353,6 +1384,9 @@ public class MiscSettingPanel extends AbstractSettingPanel {
             stampFontName = Project.getString(STAMP_FONT_NAME, DEFAULT_STAMP_FONT_NAME);
             stampFontSize = Project.getInt(STAMP_FONT_SIZE, DEFAULT_STAMP_FONT_SIZE);
             stampFontStyle = Project.getInt(STAMP_FONT_STYLE, DEFAULT_STAMP_FONT_STYLE);
+            
+            // Chart sync
+            useWebsocket = Project.getBoolean(USE_WEBSOCKET, DEFAULT_USE_WEBSOCKET);
         }
 
         public void restore() {
@@ -1384,7 +1418,7 @@ public class MiscSettingPanel extends AbstractSettingPanel {
             Project.setString(RSB_BROWSER_PATH, rsbBrowserPath);
 */
             // PVT
-            Project.setBoolean(PVT_ON_SERVER, pvtOnServer);
+            //Project.setBoolean(PVT_ON_SERVER, pvtOnServer);
             Project.setBoolean(FEV_ON_SERVER, fevOnServer);
             
             // Pacs
@@ -1424,6 +1458,9 @@ public class MiscSettingPanel extends AbstractSettingPanel {
             Project.setString(STAMP_FONT_NAME, stampFontName);
             Project.setInt(STAMP_FONT_SIZE, stampFontSize);
             Project.setInt(STAMP_FONT_STYLE, stampFontStyle);
+            
+            // Chart sync
+            Project.setBoolean(USE_WEBSOCKET, useWebsocket);
         }
     }
 

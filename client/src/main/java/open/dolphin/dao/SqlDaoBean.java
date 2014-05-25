@@ -11,8 +11,8 @@ import open.dolphin.infomodel.DiseaseEntry;
 import open.dolphin.infomodel.OrcaSqlModel;
 import open.dolphin.infomodel.TensuMaster;
 import open.dolphin.project.Project;
-import org.apache.tomcat.jdbc.pool.DataSource;
-import org.apache.tomcat.jdbc.pool.PoolProperties;
+//import org.apache.tomcat.jdbc.pool.DataSource;
+//import org.apache.tomcat.jdbc.pool.PoolProperties;
 
 /**
  * SqlDaoBean
@@ -56,7 +56,7 @@ public class SqlDaoBean extends DaoBean {
     
     protected static final DecimalFormat srycdFrmt = new DecimalFormat("000000000");
     
-    private static DataSource dataSource;
+    //private static DataSource dataSource;
     
     
     /**
@@ -301,37 +301,37 @@ public class SqlDaoBean extends DaoBean {
 
     private Connection getConnection() throws SQLException {
         
-        //return DriverManager.getConnection(getURL(), getUser(), getPasswd());
-        return getConnectionFromPool();
+        return DriverManager.getConnection(getURL(), getUser(), getPasswd());
+        //return getConnectionFromPool();
     }
     
-    private Connection getConnectionFromPool() throws SQLException{
-        
-        if (dataSource == null) {
-            setupDataSource();
-        }
-        
-        return dataSource.getConnection();
-    }
-    
-    private void setupDataSource() {
-        
-        PoolProperties p = new PoolProperties();
-        p.setDriverClassName(getDriver());
-        p.setUrl(getURL());
-        p.setUsername(getUser());
-        p.setPassword(getPasswd());
-        p.setDefaultReadOnly(true);
-        p.setMaxActive(2);
-        p.setMaxIdle(2);
-        p.setMinIdle(1);
-        p.setInitialSize(1);
-        p.setMaxWait(5000);
-        p.setRemoveAbandonedTimeout(30);
-        p.setRemoveAbandoned(true);
-        dataSource = new DataSource();
-        dataSource.setPoolProperties(p);
-    }
+//    private Connection getConnectionFromPool() throws SQLException{
+//        
+//        if (dataSource == null) {
+//            setupDataSource();
+//        }
+//        
+//        return dataSource.getConnection();
+//    }
+//    
+//    private void setupDataSource() {
+//        
+//        PoolProperties p = new PoolProperties();
+//        p.setDriverClassName(getDriver());
+//        p.setUrl(getURL());
+//        p.setUsername(getUser());
+//        p.setPassword(getPasswd());
+//        p.setDefaultReadOnly(true);
+//        p.setMaxActive(2);
+//        p.setMaxIdle(2);
+//        p.setMinIdle(1);
+//        p.setInitialSize(1);
+//        p.setMaxWait(5000);
+//        p.setRemoveAbandonedTimeout(30);
+//        p.setRemoveAbandoned(true);
+//        dataSource = new DataSource();
+//        dataSource.setPoolProperties(p);
+//    }
 
     public String getDriver() {
         return driver;
@@ -402,9 +402,9 @@ public class SqlDaoBean extends DaoBean {
     }
     
     public static void closeDao() {
-        if (dataSource != null) {
-            dataSource.close(true);
-        }
+//        if (dataSource != null) {
+//            dataSource.close(true);
+//        }
     }
     
     protected void rollback(Connection con) {

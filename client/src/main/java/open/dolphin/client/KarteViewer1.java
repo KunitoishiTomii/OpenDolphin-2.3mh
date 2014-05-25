@@ -3,6 +3,7 @@ package open.dolphin.client;
 import java.awt.Color;
 import java.awt.event.MouseListener;
 import javax.swing.ActionMap;
+import open.dolphin.infomodel.DocumentModel;
 import open.dolphin.infomodel.IInfoModel;
 
 /**
@@ -13,15 +14,19 @@ import open.dolphin.infomodel.IInfoModel;
 public class KarteViewer1 extends KarteViewer {
 
     // SOA Pane
-    private KartePane soaPane;
+    private final KartePane soaPane;
+    
+    public KarteViewer1(DocumentModel model) {
+        super(model);
+        soaPane = new KartePane();
+        initialize();
+    }
     
     private void initialize() {
 
-        // 遅延レンダリング
-        KartePanel kartePanel = KartePanel.createKartePanel(KartePanel.MODE.SINGLE_VIEWER, false, this);
+        KartePanel kartePanel = KartePanel.createKartePanel(KartePanel.MODE.SINGLE_VIEWER, false);
 
         // SOA Pane を生成する
-        soaPane = new KartePane();
         soaPane.setRole(IInfoModel.ROLE_SOA);
         soaPane.setTextPane(kartePanel.getSoaTextPane());
 
@@ -49,29 +54,21 @@ public class KarteViewer1 extends KarteViewer {
     @Override
     public void start() {
 
-        // Creates GUI
-        initialize();
-
-        if (getModel() == null) {
-            return;
-        }
-
         // タイトルを設定する
         setTitle();
 
-        // 怠惰レンダリングする
-        renderKarteLazily();
+        // レンダリングする
+        KarteRenderer_2.getInstance().render(getModel(), soaPane, null);
         
         // モデル表示後にリスナ等を設定する
         ChartMediator mediator = getContext().getChartMediator();
         soaPane.init(false, mediator);
-
+        
     }
 
     @Override
     public void stop() {
         soaPane.clear();
-        soaPane = null;
         // memory leak?
         dispose();
     }

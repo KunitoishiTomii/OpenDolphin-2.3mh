@@ -1,5 +1,6 @@
 package open.dolphin.session;
 
+import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import javax.ejb.Stateless;
@@ -7,7 +8,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
-import open.dolphin.common.util.BeanUtils;
+import open.dolphin.common.util.ModuleBeanDecoder;
 import open.dolphin.infomodel.*;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.queryParser.ParseException;
@@ -324,11 +325,18 @@ public class MasudaServiceBean {
 
         // 総DocumentModel数を取得。進捗表示に使用
         if (modelCount == 0) {
-            modelCount = (Long)
-                    em.createQuery("select count(m) " + fromSql)
-                    .setParameter("fPk", fPk)
-                    .setParameter("fromPk", 0L)
+//            modelCount = (Long)
+//                    em.createQuery("select count(m) " + fromSql)
+//                    .setParameter("fPk", fPk)
+//                    .setParameter("fromPk", 0L)
+//                    .getSingleResult();
+            // use native query
+            final String countSql = "select count(d.id) from d_document d, d_users u"
+                    + " where d.creator_id = u.id and d.status = 'F' and u.facility_id = ?";
+            BigInteger value = (BigInteger) em.createNativeQuery(countSql)
+                    .setParameter(1, fPk)
                     .getSingleResult();
+            modelCount = value.longValue();
         }
         if (modelCount == 0) {
             return FINISHED;
@@ -576,7 +584,8 @@ public class MasudaServiceBean {
         HashMap<Long, List<Long>> karteIdDocIdMap = new HashMap<>();
         for (ModuleModel mm : modules) {
             // テキスト抽出
-            IModuleModel im = (IModuleModel) BeanUtils.xmlDecode(mm.getBeanBytes());
+            //IModuleModel im = (IModuleModel) BeanUtils.xmlDecode(mm.getBeanBytes());
+            IModuleModel im = ModuleBeanDecoder.getInstance().decode(mm.getBeanBytes());
             mm.setModel(im);
             String text;
             if (im instanceof ProgressCourse) {
@@ -644,7 +653,8 @@ public class MasudaServiceBean {
         HashMap<Long, ExamHistoryModel> examMap = new HashMap<>();
 
         for (ModuleModel mm : models) {
-            mm.setModel((IModuleModel) BeanUtils.xmlDecode(mm.getBeanBytes()));
+            //mm.setModel((IModuleModel) BeanUtils.xmlDecode(mm.getBeanBytes()));
+            mm.setModel(ModuleBeanDecoder.getInstance().decode(mm.getBeanBytes()));
             long docPk = mm.getDocumentModel().getId();
             ExamHistoryModel eh = examMap.get(docPk);
             if (eh == null) {
@@ -674,7 +684,8 @@ public class MasudaServiceBean {
         HashMap<PatientModel, List<ModuleModel>> pmmmMap = new HashMap<>();
         for (ModuleModel mm : mmList){
             // いつもデコード忘れるｗ
-            mm.setModel((IModuleModel) BeanUtils.xmlDecode(mm.getBeanBytes()));
+            //mm.setModel((IModuleModel) BeanUtils.xmlDecode(mm.getBeanBytes()));
+            mm.setModel(ModuleBeanDecoder.getInstance().decode(mm.getBeanBytes()));
             PatientModel pModel = mm.getKarteBean().getPatient();
             List<ModuleModel> list = pmmmMap.get(pModel);
             if (list == null){
@@ -824,18 +835,32 @@ public class MasudaServiceBean {
         
         final String sql1 = "from ModuleModel m "
                 + "where m.moduleInfo.entity <> '" + IInfoModel.MODULE_PROGRESS_COURSE + "' "
-                + "and m.status = 'F' and m.creator.facility.facilityId = :fid";
-        final String sql2 = "select count(m) " + sql1;
+                + "and m.status = 'F' and m.creator.facility.id = :fPk";
+        //final String sql2 = "select count(m) " + sql1;
         final String sql3 = sql1 + " and m.id > :fromId order by m.id";
         final String sql4 = "from SanteiHistoryModel s "
                 + "where s.moduleModel.id = :mid and s.srycd = :srycd "
                 + "and s.itemIndex = :index";
         
+        long fPk = getFacilityPk(fid);
+        if (fPk == 0) {
+            System.out.println("InitSanteiHistory: Illegal facility id.");
+            return FINISHED;
+        }
+        
         // 総数を取得する
         if (totalCount == 0) {
-            totalCount = (Long) em.createQuery(sql2)
-                    .setParameter("fid", fid)
+//            totalCount = (Long) em.createQuery(sql2)
+//                    .setParameter("fid", fid)
+//                    .getSingleResult();
+            // use native query
+            final String countSql = "select count(m.id) from d_module m, d_users u"
+                    + " where m.creator_id = u.id and m.entity <> 'progressCourse'"
+                    + " and m.status = 'F' and u.facility_id = ?";
+            BigInteger value = (BigInteger) em.createNativeQuery(countSql)
+                    .setParameter(1, fPk)
                     .getSingleResult();
+            totalCount = value.longValue();
         }
         // 0件ならFINESHEDを返して終了
         if (totalCount == 0) {
@@ -845,7 +870,7 @@ public class MasudaServiceBean {
         // fromIdからModuleModelを取得する
         List<ModuleModel> mmList =
                 em.createQuery(sql3)
-                .setParameter("fid", fid)
+                .setParameter("fPk", fPk)
                 .setParameter("fromId", fromId)
                 .setMaxResults(maxResults)
                 .getResultList();
@@ -862,7 +887,8 @@ public class MasudaServiceBean {
         // まずはsrycdをリストアップ
         Set<String> srycds = new HashSet<>();
         for (ModuleModel mm : mmList) {
-            mm.setModel((IModuleModel) BeanUtils.xmlDecode(mm.getBeanBytes()));
+            //mm.setModel((IModuleModel) BeanUtils.xmlDecode(mm.getBeanBytes()));
+            mm.setModel(ModuleBeanDecoder.getInstance().decode(mm.getBeanBytes()));
             ClaimBundle cb = (ClaimBundle) mm.getModel();
             if (cb == null) {
                 continue;
@@ -962,7 +988,8 @@ public class MasudaServiceBean {
         // SanteiHistoryModelに算定日と名前を設定する
         for (SanteiHistoryModel shm : list) {
             ModuleModel mm = shm.getModuleModel();
-            mm.setModel((IModuleModel) BeanUtils.xmlDecode(mm.getBeanBytes()));
+            //mm.setModel((IModuleModel) BeanUtils.xmlDecode(mm.getBeanBytes()));
+            mm.setModel((IModuleModel) ModuleBeanDecoder.getInstance().decode(mm.getBeanBytes()));
             ClaimBundle cb = (ClaimBundle) mm.getModel();
             shm.setItemName(cb.getClaimItem()[shm.getItemIndex()].getName());
             shm.setSanteiDate(mm.getStarted());
@@ -1041,7 +1068,8 @@ public class MasudaServiceBean {
             
             List<RpModel> rpModelList = new ArrayList<>();
             for (ModuleModel mm : mmList) {
-                mm.setModel((IModuleModel) BeanUtils.xmlDecode(mm.getBeanBytes()));
+                //mm.setModel((IModuleModel) BeanUtils.xmlDecode(mm.getBeanBytes()));
+                mm.setModel(ModuleBeanDecoder.getInstance().decode(mm.getBeanBytes()));
                 BundleMed bm = (BundleMed) mm.getModel();
                 String rpDay = bm.getBundleNumber();
                 String adminSrycd = bm.getAdminCode();

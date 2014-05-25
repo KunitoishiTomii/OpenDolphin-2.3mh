@@ -52,7 +52,6 @@ public class PvtPostTask implements Runnable {
 
         // 施設プロパティーを取得する
         Map<String, String> propMap = masudaService.getUserPropertyMap(fid);
-        boolean pvtOnServer = Boolean.valueOf(propMap.get("pvtOnServer"));
         boolean fevOnServer = Boolean.valueOf(propMap.get("fevOnServer"));
         String sharePath = propMap.get("fevSharePath");
         boolean sendToFEV
@@ -61,16 +60,14 @@ public class PvtPostTask implements Runnable {
                 && fevOnServer;
 
         // PVT登録処理
-        if (pvtOnServer) {
-            pvtService.addPvt(pvt);
-            StringBuilder sb = new StringBuilder();
-            sb.append("PVT post: ").append(pvt.getPvtDate());
-            sb.append(", Fid=").append(pvt.getFacilityId());
-            sb.append("(").append(jmariNum).append(")");
-            sb.append(", PtID=").append(pvt.getPatientId());
-            sb.append(", Name=").append(pvt.getPatientName());
-            logger.info(sb.toString());
-        }
+        pvtService.addPvt(pvt);
+        StringBuilder sb = new StringBuilder();
+        sb.append("PVT post: ").append(pvt.getPvtDate());
+        sb.append(", Fid=").append(pvt.getFacilityId());
+        sb.append("(").append(jmariNum).append(")");
+        sb.append(", PtID=").append(pvt.getPatientId());
+        sb.append(", Name=").append(pvt.getPatientName());
+        logger.info(sb.toString());
 
         // FEV-70 export処理
         if (sendToFEV) {

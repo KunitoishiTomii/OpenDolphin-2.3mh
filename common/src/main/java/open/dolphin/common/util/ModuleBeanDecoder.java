@@ -1,4 +1,4 @@
-package open.dolphin.client;
+package open.dolphin.common.util;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -42,6 +42,7 @@ public class ModuleBeanDecoder {
     private ModuleBeanDecoder() {
         reflectFieldMap = new ConcurrentHashMap<>();
         classMap = new ConcurrentHashMap<>();
+        init();
     }
 
     public static ModuleBeanDecoder getInstance() {
@@ -191,7 +192,7 @@ public class ModuleBeanDecoder {
     }
 
     // 前もって関連クラス・フィールドを登録しておく
-    public void init() {
+    private void init() {
 
         for (Class clazz : KNOWN_CLASSES) {
             // クラスを登録する

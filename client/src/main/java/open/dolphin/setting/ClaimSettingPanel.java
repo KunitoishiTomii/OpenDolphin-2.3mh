@@ -37,8 +37,8 @@ public class ClaimSettingPanel extends AbstractSettingPanel {
     private JTextField jmariField;
     private JTextField claimAddressField;
     private JTextField claimPortField;
-    private JCheckBox useAsPVTServer;
-    private JTextField bindAddress;
+    //private JCheckBox useAsPVTServer;
+    //private JTextField bindAddress;
     private JRadioButton claimConnectionIsClient;
     private JRadioButton claimConnectionIsServer;
 
@@ -137,13 +137,13 @@ public class ClaimSettingPanel extends AbstractSettingPanel {
         jmariField.setToolTipText("医療機関コードの数字部分のみ12桁を入力してください。");
         claimAddressField = GUIFactory.createTextField(12, null, null, null);
         claimPortField = GUIFactory.createTextField(5, null, null, null);
-        
+
         // 受付受信ボタン
-        useAsPVTServer = GUIFactory.createCheckBox("このマシンでORCAからの受付情報を受信する", null);
-        useAsPVTServer.setToolTipText("このマシンでORCAからの受付情報を受信する場合はチェックしてください");
-        bindAddress = GUIFactory.createTextField(12, null, null, null);
-        bindAddress.setToolTipText("複数ネットワークカードがある場合、受付受信サーバのバインドアドレスを入力してください");
-        
+//        useAsPVTServer = GUIFactory.createCheckBox("このマシンでORCAからの受付情報を受信する", null);
+//        useAsPVTServer.setToolTipText("このマシンでORCAからの受付情報を受信する場合はチェックしてください");
+//        bindAddress = GUIFactory.createTextField(12, null, null, null);
+//        bindAddress.setToolTipText("複数ネットワークカードがある場合、受付受信サーバのバインドアドレスを入力してください");
+
         // CLAIM（請求）送信情報
         GridBagBuilder gbl = new GridBagBuilder("CLAIM（請求データ）送信");
         int row = 0;
@@ -217,21 +217,22 @@ public class ClaimSettingPanel extends AbstractSettingPanel {
         gbl.add(label,          0, row, GridBagConstraints.EAST);
         gbl.add(claimPortField, 1, row, GridBagConstraints.WEST);
         JPanel port = gbl.getProduct();
-        
+
         // レセコンからの受付受信
-        gbl = new GridBagBuilder("受付情報の受信");
-        label = new JLabel("バインドアドレス(オプション):");
-        gbl.add(useAsPVTServer, 0, 0, 2, 1, GridBagConstraints.EAST);
-        gbl.add(label,          0, 1, GridBagConstraints.EAST);
-        gbl.add(bindAddress,    1, 1, GridBagConstraints.WEST);
-        JPanel pvt = gbl.getProduct();
-        
+//        gbl = new GridBagBuilder("受付情報の受信");
+//        label = new JLabel("バインドアドレス(オプション):");
+//        gbl.add(useAsPVTServer, 0, 0, 2, 1, GridBagConstraints.EAST);
+//        gbl.add(label,          0, 1, GridBagConstraints.EAST);
+//        gbl.add(bindAddress,    1, 1, GridBagConstraints.WEST);
+//        JPanel pvt = gbl.getProduct();
+
         // 全体レイアウト
         gbl = new GridBagBuilder();
         gbl.add(sendClaim, 0, 0, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
         gbl.add(port,      0, 1, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
-        gbl.add(pvt,       0, 2, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
-        gbl.add(new JLabel(""), 0, 3, GridBagConstraints.BOTH,  1.0, 1.0);
+//        gbl.add(pvt,       0, 2, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
+//        gbl.add(new JLabel(""), 0, 3, GridBagConstraints.BOTH,  1.0, 1.0);
+        gbl.add(new JLabel(""), 0, 2, GridBagConstraints.BOTH,  1.0, 1.0);
         setUI(gbl.getProduct());
 
         connect();       
@@ -280,13 +281,13 @@ public class ClaimSettingPanel extends AbstractSettingPanel {
         claimAddressField.setDocument(ipDoc);
         claimAddressField.getDocument().addDocumentListener(dl);
         claimAddressField.addFocusListener(AutoRomanListener.getInstance());
-        
-        String ipPattern2 = "[A-Za-z0-9.\\-_]*";
-        RegexConstrainedDocument ipDoc2 = new RegexConstrainedDocument(ipPattern2);
-        bindAddress.setDocument(ipDoc2);
-        bindAddress.getDocument().addDocumentListener(dl);
-        bindAddress.addFocusListener(AutoRomanListener.getInstance());
-        
+
+//        String ipPattern2 = "[A-Za-z0-9.\\-_]*";
+//        RegexConstrainedDocument ipDoc2 = new RegexConstrainedDocument(ipPattern2);
+//        bindAddress.setDocument(ipDoc2);
+//        bindAddress.getDocument().addDocumentListener(dl);
+//        bindAddress.addFocusListener(AutoRomanListener.getInstance());
+
         // アクションリスナ
         ActionListener al = new ActionListener() {
 
@@ -297,17 +298,17 @@ public class ClaimSettingPanel extends AbstractSettingPanel {
         };
         sendClaimYes.addActionListener(al);
         sendClaimNo.addActionListener(al);
-        
-        // バインドアドレス
-        ActionListener al3 = new ActionListener() {
 
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                stateMgr.controlBindAddress();
-            }
-        };
-        useAsPVTServer.addActionListener(al3);
-        
+        // バインドアドレス
+//        ActionListener al3 = new ActionListener() {
+//
+//            @Override
+//            public void actionPerformed(ActionEvent e) {
+//                stateMgr.controlBindAddress();
+//            }
+//        };
+//        useAsPVTServer.addActionListener(al3);
+
         // orca api
         ActionListener al2 = new ActionListener() {
 
@@ -360,17 +361,17 @@ public class ClaimSettingPanel extends AbstractSettingPanel {
         val = model.getClaimHostName();
         val = val != null ? val : "";
         claimHostCombo.setSelectedItem(val);
-        
-        // 受付受信
-        boolean tmp = model.isUseAsPVTServer();
-        useAsPVTServer.setSelected(tmp);
-        
-        // バインドアドレス
-        String bindAddr = model.getBindAddress();
-        bindAddr = bindAddr != null ? bindAddr : "";
-        bindAddress.setText(bindAddr);
-        bindAddress.setEnabled(tmp);
-        
+
+//        // 受付受信
+//        boolean tmp = model.isUseAsPVTServer();
+//        useAsPVTServer.setSelected(tmp);
+//        
+//        // バインドアドレス
+//        String bindAddr = model.getBindAddress();
+//        bindAddr = bindAddr != null ? bindAddr : "";
+//        bindAddress.setText(bindAddr);
+//        bindAddress.setEnabled(tmp);
+
         // 01 小児科
         claim01.setSelected(model.isClaim01());
         
@@ -428,14 +429,14 @@ public class ClaimSettingPanel extends AbstractSettingPanel {
         } catch (NumberFormatException e) {
             model.setClaimPort(5001);
         }
-        
-        // 受付受信を保存する
-        model.setUseAsPVTServer(useAsPVTServer.isSelected());
-        
-        // バインドアドレスを保存する
-        val = bindAddress.getText().trim();
-        model.setBindAddress(val);
-        
+
+//        // 受付受信を保存する
+//        model.setUseAsPVTServer(useAsPVTServer.isSelected());
+//        
+//        // バインドアドレスを保存する
+//        val = bindAddress.getText().trim();
+//        model.setBindAddress(val);
+
         // 01 小児科
         model.setClaim01(claim01.isSelected());
         
@@ -487,8 +488,8 @@ public class ClaimSettingPanel extends AbstractSettingPanel {
             // ホスト名
             setClaimHostName(Project.getString(Project.CLAIM_HOST_NAME)); // stub.getClaimHostName()
             
-            // 受付受信
-            setUseAsPVTServer(Project.getBoolean(Project.USE_AS_PVT_SERVER));    // stub.getUseAsPVTServer()
+//            // 受付受信
+//            setUseAsPVTServer(Project.getBoolean(Project.USE_AS_PVT_SERVER));    // stub.getUseAsPVTServer()
             
             // バインドアドレス
             setBindAddress(Project.getString(Project.CLAIM_BIND_ADDRESS));   // stub.getBindAddress()
@@ -676,12 +677,12 @@ public class ClaimSettingPanel extends AbstractSettingPanel {
             jmariField.setEnabled(b);
             this.checkState();
         }
-        
-        public void controlBindAddress() {
-            boolean b = useAsPVTServer.isSelected();
-            bindAddress.setEnabled(b);
-            this.checkState();
-        }
+
+//        public void controlBindAddress() {
+//            boolean b = useAsPVTServer.isSelected();
+//            bindAddress.setEnabled(b);
+//            this.checkState();
+//        }
 
 //pns^
         public void controlUseOrcaApi() {
@@ -724,19 +725,20 @@ public class ClaimSettingPanel extends AbstractSettingPanel {
                 claimPortOk = true;
                 orcaApiOk = true;
             }
-            
-            if (useAsPVTServer.isSelected()) {
-                String test = bindAddress.getText().trim();
-                if (test != null && (!test.equals(""))) {
-                    bindAdrOk = isIPAddress(test);
-                } else {
-                    bindAdrOk = true;
-                }
-            } else {
-                bindAdrOk = true;
-            }
-            
-            return jmariOk && claimAddrOk && claimPortOk && bindAdrOk && orcaApiOk;
+
+//            if (useAsPVTServer.isSelected()) {
+//                String test = bindAddress.getText().trim();
+//                if (test != null && (!test.equals(""))) {
+//                    bindAdrOk = isIPAddress(test);
+//                } else {
+//                    bindAdrOk = true;
+//                }
+//            } else {
+//                bindAdrOk = true;
+//            }
+//            return jmariOk && claimAddrOk && claimPortOk && bindAdrOk && orcaApiOk;
+
+            return jmariOk && claimAddrOk && claimPortOk && orcaApiOk;
         }
 
         private boolean isIPAddress(String test) {

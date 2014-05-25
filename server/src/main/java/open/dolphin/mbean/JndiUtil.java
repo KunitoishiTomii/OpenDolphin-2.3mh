@@ -12,7 +12,7 @@ import javax.naming.NamingException;
  */
 public class JndiUtil {
 
-    private static final String warName = "OpenDolphin-server-2.3";
+    private static final String warName = "OpenDolphin-server-2.3m_WF8";
     
     public static <T> T getJndiResource(Class<T> cls) {
 

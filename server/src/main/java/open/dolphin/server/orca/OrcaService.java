@@ -1,19 +1,20 @@
 package open.dolphin.server.orca;
 
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+//import java.util.Map;
+//import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 import open.dolphin.infomodel.ClaimMessageModel;
 import open.dolphin.infomodel.OrcaSqlModel;
-import org.apache.tomcat.jdbc.pool.DataSource;
-import org.apache.tomcat.jdbc.pool.PoolProperties;
+//import org.apache.tomcat.jdbc.pool.DataSource;
+//import org.apache.tomcat.jdbc.pool.PoolProperties;
 
 /**
  * OrcaService
@@ -28,7 +29,7 @@ public class OrcaService {
     private static final String passwd = "";
     
     private final SendClaimImpl sendClaim;
-    private final Map<String, DataSource> dataSourceMap;
+    //private final Map<String, DataSource> dataSourceMap;
     
     private static final OrcaService instance;
     
@@ -42,7 +43,7 @@ public class OrcaService {
     
     private OrcaService() {
         sendClaim = new SendClaimImpl();
-        dataSourceMap = new ConcurrentHashMap<>();
+        //dataSourceMap = new ConcurrentHashMap<>();
     }
     
     public void start() {
@@ -51,10 +52,10 @@ public class OrcaService {
     
     public void dispose() {
 
-        for (DataSource ds : dataSourceMap.values()) {
-            ds.close(true);
-        }
-        dataSourceMap.clear();
+//        for (DataSource ds : dataSourceMap.values()) {
+//            ds.close(true);
+//        }
+//        dataSourceMap.clear();
         logger.info("Server ORCA service stopped.");
     }
 
@@ -133,44 +134,45 @@ public class OrcaService {
     
     private Connection getConnection(String url) 
             throws ClassNotFoundException, SQLException, NullPointerException {
-        DataSource ds = getDataSource(url, user, passwd);
-        return ds.getConnection();
+//        DataSource ds = getDataSource(url, user, passwd);
+//        return ds.getConnection();
+        return DriverManager.getConnection(url, user, passwd);
     }
     
-    private DataSource getDataSource(String url, String user, String pass) {
-
-        DataSource ds = dataSourceMap.get(url);
-        if (ds == null) {
-            try {
-                ds = setupDataSource(url, user, pass);
-                dataSourceMap.put(url, ds);
-            } catch (ClassNotFoundException ex) {
-            }
-        }
-        return ds;
-    }
-    
-    private DataSource setupDataSource(String url, String user, String pass) throws ClassNotFoundException {
-
-        PoolProperties p = new PoolProperties();
-        p.setDriverClassName(POSTGRES_DRIVER);
-        p.setUrl(url);
-        p.setUsername(user);
-        p.setPassword(pass);
-        p.setDefaultReadOnly(true);
-        p.setMaxActive(5);
-        p.setMaxIdle(5);
-        p.setMinIdle(1);
-        p.setInitialSize(1);
-        p.setMaxWait(5000);
-        p.setRemoveAbandonedTimeout(30);
-        p.setRemoveAbandoned(true);
-        p.setTestOnBorrow(true);
-        p.setValidationQuery("select 1");
-        DataSource ds = new DataSource();
-        ds.setPoolProperties(p);
-
-        return ds;
-    }
+//    private DataSource getDataSource(String url, String user, String pass) {
+//
+//        DataSource ds = dataSourceMap.get(url);
+//        if (ds == null) {
+//            try {
+//                ds = setupDataSource(url, user, pass);
+//                dataSourceMap.put(url, ds);
+//            } catch (ClassNotFoundException ex) {
+//            }
+//        }
+//        return ds;
+//    }
+//    
+//    private DataSource setupDataSource(String url, String user, String pass) throws ClassNotFoundException {
+//
+//        PoolProperties p = new PoolProperties();
+//        p.setDriverClassName(POSTGRES_DRIVER);
+//        p.setUrl(url);
+//        p.setUsername(user);
+//        p.setPassword(pass);
+//        p.setDefaultReadOnly(true);
+//        p.setMaxActive(5);
+//        p.setMaxIdle(5);
+//        p.setMinIdle(1);
+//        p.setInitialSize(1);
+//        p.setMaxWait(5000);
+//        p.setRemoveAbandonedTimeout(30);
+//        p.setRemoveAbandoned(true);
+//        p.setTestOnBorrow(true);
+//        p.setValidationQuery("select 1");
+//        DataSource ds = new DataSource();
+//        ds.setPoolProperties(p);
+//
+//        return ds;
+//    }
     
 }

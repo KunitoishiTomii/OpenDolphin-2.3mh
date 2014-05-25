@@ -113,7 +113,6 @@ public class StandAlonePVTServer {
         //System.out.println(msg);
     }
 
-    @SuppressWarnings("unchecked")
     private void startPVTServer() {
 
         // plugin loader

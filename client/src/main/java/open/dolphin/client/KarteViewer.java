@@ -6,7 +6,6 @@ import java.awt.print.PageFormat;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.border.Border;
-import javax.swing.text.StyleConstants;
 import open.dolphin.infomodel.AdmissionModel;
 import open.dolphin.infomodel.DocInfoModel;
 import open.dolphin.infomodel.DocumentModel;
@@ -34,10 +33,8 @@ public abstract class KarteViewer extends AbstractChartDocument {
     // 仮保存中のドキュメントを表す文字
     protected static final String UNDER_TMP_SAVE = " - 仮保存中";
     
-    private static final String COMPONENT_NAME = StyleConstants.ComponentElementName;
-
     // この view のモデル
-    private DocumentModel model;
+    private final DocumentModel model;
 
     // 2号カルテパネル
     private KartePanel kartePanel;
@@ -47,6 +44,10 @@ public abstract class KarteViewer extends AbstractChartDocument {
     
     // １号用紙か２号用紙
     public static enum MODE {SINGLE, DOUBLE};
+    
+    public KarteViewer(DocumentModel model) {
+        this.model = model;
+    }
 
     // 抽象メソッド
     public abstract KartePane getSOAPane();
@@ -63,13 +64,13 @@ public abstract class KarteViewer extends AbstractChartDocument {
 
     
     // ファクトリー
-    public static KarteViewer createKarteViewer(MODE mode) {
+    public static KarteViewer createKarteViewer(DocumentModel model, MODE mode) {
 
         switch(mode) {
             case SINGLE:
-                return new KarteViewer1();
+                return new KarteViewer1(model);
             case DOUBLE:
-                return new KarteViewer2();
+                return new KarteViewer2(model);
         }
         return null;
     }
@@ -162,11 +163,6 @@ public abstract class KarteViewer extends AbstractChartDocument {
         kartePanel.setTitleColor(docInfo);
 //masuda$
     }
-    
-    // StampHolder, SchemaHolder内容設定を後回しにしてレンダリング
-    protected final void renderKarteLazily() {
-        KarteRenderer_2.getInstance().renderLazily(getModel(), getSOAPane(), getPPane());
-    }
 
     protected final void setKartePanel(KartePanel kartePanel) {
         this.kartePanel = kartePanel;
@@ -215,9 +211,9 @@ public abstract class KarteViewer extends AbstractChartDocument {
      * 表示するモデルを設定する。
      * @param model 表示するDocumentModel
      */
-    public final void setModel(DocumentModel model) {
-        this.model = model;
-    }
+//    public final void setModel(DocumentModel model) {
+//        this.model = model;
+//    }
 
     /**
      * 表示するモデルを返す。
