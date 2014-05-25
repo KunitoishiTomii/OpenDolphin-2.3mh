@@ -6,7 +6,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -15,9 +14,18 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.logging.Logger;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.ProgressMonitor;
@@ -35,10 +43,32 @@ public class Launcher {
     private static final String JAR_DIR = "client";
     private static final String FILES_PATH = "/dolphin/files/";
     private static final int CONNECTION_TIMEOUT = 5000;
+    private static TrustManager[] tm ={ new X509TrustManager() {
+            public X509Certificate[] getAcceptedIssuers() {
+                return null;
+            }
+            @Override
+            public void checkClientTrusted(X509Certificate[] chain,
+                    String authType) throws CertificateException {
+            }
+            @Override
+            public void checkServerTrusted(X509Certificate[] chain,
+                    String authType) throws CertificateException {
+            }
+        } };
     private String serverAddr;
     private String jarName;
 
     public static void main(String[] args) {
+        //ホスト名の検証ルール　何が来てもtrueを返す
+        HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier() {
+            @Override
+            public boolean verify(String hostname,
+                    SSLSession session) {
+                return true;
+            }
+        });
+
         new Launcher().start();
     }
 
@@ -50,7 +80,7 @@ public class Launcher {
             launch();
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(null, "プログラムをロードできません", "Dolphin Launcher", JOptionPane.ERROR_MESSAGE);
-            //ex.printStackTrace(System.err);
+            ex.printStackTrace(System.err);
             System.exit(1);
         }
         System.exit(0);
@@ -80,16 +110,21 @@ public class Launcher {
                 ? getFileHash(jarPath, ALGORITHM) : "";
 
         StringBuilder sb = new StringBuilder();
-        sb.append("http://").append(serverAddr).append(":8080").append(FILES_PATH).append("index.html");
+        sb.append("https://").append(serverAddr).append(":8443").append(FILES_PATH).append("index.html");
         URL url = new URL(sb.toString());
 
-        HttpURLConnection con = null;
+        HttpsURLConnection con = null;
         String remoteHash = null;
         List<String> pathsStr = new ArrayList<>();
         try {
-            con = (HttpURLConnection) url.openConnection();
+            //参考：http://symfoware.blog68.fc2.com/blog-entry-1165.html
+            SSLContext sslcontext = SSLContext.getInstance("SSL");
+            sslcontext.init(null, tm, null);
+
+            con = (HttpsURLConnection) url.openConnection();
             con.setConnectTimeout(CONNECTION_TIMEOUT);
             con.setRequestMethod("GET");
+            con.setSSLSocketFactory(sslcontext.getSocketFactory());
             con.setInstanceFollowRedirects(false);
             con.connect();
 
@@ -159,14 +194,18 @@ public class Launcher {
             pm.setNote(pathStr);
 
             StringBuilder sb = new StringBuilder();
-            sb.append("http://").append(serverAddr).append(":8080").append(FILES_PATH).append(pathStr);
+            sb.append("https://").append(serverAddr).append(":8443").append(FILES_PATH).append(pathStr);
             URL url = new URL(sb.toString());
-            HttpURLConnection con = null;
+            HttpsURLConnection con = null;
             try {
-                con = (HttpURLConnection) url.openConnection();
+                SSLContext sslcontext = SSLContext.getInstance("SSL");
+                sslcontext.init(null, tm, null);
+
+                con = (HttpsURLConnection) url.openConnection();
                 con.setConnectTimeout(CONNECTION_TIMEOUT);
                 con.setRequestMethod("GET");
                 con.setInstanceFollowRedirects(false);
+                con.setSSLSocketFactory(sslcontext.getSocketFactory());
                 con.connect();
                 Path path = Paths.get(JAR_DIR, pathStr);
                 Path parent = path.getParent();
