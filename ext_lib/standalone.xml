@@ -389,7 +389,11 @@
     </profile>
     <interfaces>
         <interface name="management">
+<!-- Modify. Allow connection from intranet -->
+<!--
             <inet-address value="${jboss.bind.address.management:127.0.0.1}"/>
+-->
+            <subnet-match value="192.168.0.0/24"/>
         </interface>
         <interface name="public">
 <!-- Allow connection from any address start -->
