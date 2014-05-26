@@ -145,7 +145,7 @@ public class PacsServiceImpl implements PacsService {
             } catch (IOException ex) {
                 getLogger().warn("Failed to start PacsService");
             }
-            System.out.println("PacsService listening on port " + conn.getPort());
+            getLogger().info("PacsService listening on port " + conn.getPort());
         }
     }
 
