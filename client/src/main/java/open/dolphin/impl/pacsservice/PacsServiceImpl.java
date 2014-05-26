@@ -13,6 +13,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import open.dolphin.client.MainWindow;
 import open.dolphin.client.PacsService;
 import open.dolphin.project.Project;
@@ -88,6 +89,7 @@ public class PacsServiceImpl implements PacsService {
         KO(UID.KeyObjectSelectionDocumentStorage),
         SR(UID.BasicTextSRStorage),
         ES(UID.VLEndoscopicImageStorage);
+        
         final String uid;
 
         CUID(String uid) {
@@ -148,7 +150,15 @@ public class PacsServiceImpl implements PacsService {
         if (conn != null && conn.isListening()) {
             conn.unbind();
         }
-        exec.shutdownNow();
+        try {
+            exec.shutdown();
+            if (!exec.awaitTermination(10, TimeUnit.MILLISECONDS)) {
+                exec.shutdownNow();
+            }
+        } catch (InterruptedException ex) {
+            exec.shutdownNow();
+        } catch (NullPointerException ex) {
+        }
         getLogger().info("PacsService stopped.");
     }
 
