@@ -5,15 +5,8 @@ import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import open.dolphin.client.MainWindow;
 import open.dolphin.client.PacsService;
 import open.dolphin.project.Project;
@@ -102,19 +95,30 @@ public class PacsServiceImpl implements PacsService {
     private String name;
     private MainWindow context;
     private PropertyChangeSupport boundSupport;
-    // Dicomアクセス実行用SingleThreadExecutor
-    private ExecutorService exec;
 
     // dcm4che2 tool kit
     private final int priority = 0;
     private final int cancelAfter = Integer.MAX_VALUE;
-    private Executor executor;
-    private Device device;
-    private NetworkConnection conn;
-    private NetworkApplicationEntity ae;
-    private NetworkApplicationEntity remoteAE;
-    private NetworkConnection remoteConn;
+    private final Executor executor;
+    private final Device device;
+    private final NetworkConnection conn;
+    private final NetworkApplicationEntity ae;
+    private final NetworkApplicationEntity remoteAE;
+    private final NetworkConnection remoteConn;
     private List<TransferCapability> storageCapability;
+    
+    
+    public PacsServiceImpl() {
+        
+        String pacsLocalAE = Project.getString(MiscSettingPanel.PACS_LOCAL_AE, MiscSettingPanel.DEFAULT_PACS_LOCAL_AE);
+        device = new Device(pacsLocalAE);
+        executor = new NewThreadExecutor(pacsLocalAE);
+        conn = new NetworkConnection();
+        remoteConn = new NetworkConnection();
+        remoteAE = new NetworkApplicationEntity();
+        ae = new NetworkApplicationEntity();
+        ae.setAETitle(pacsLocalAE);
+    }
 
     @Override
     public void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -149,15 +153,6 @@ public class PacsServiceImpl implements PacsService {
     public void stop() {
         if (conn != null && conn.isListening()) {
             conn.unbind();
-        }
-        try {
-            exec.shutdown();
-            if (!exec.awaitTermination(10, TimeUnit.MILLISECONDS)) {
-                exec.shutdownNow();
-            }
-        } catch (InterruptedException ex) {
-            exec.shutdownNow();
-        } catch (NullPointerException ex) {
         }
         getLogger().info("PacsService stopped.");
     }
@@ -194,32 +189,21 @@ public class PacsServiceImpl implements PacsService {
         String pacsRemoteAE = Project.getString(MiscSettingPanel.PACS_REMOTE_AE, MiscSettingPanel.DEFAULT_PACS_REMOTE_AE);
         String pacsLocalHost = Project.getString(MiscSettingPanel.PACS_LOCAL_HOST, MiscSettingPanel.DEFAULT_PACS_LOCAL_HOST);
         int pacsLocalPort = Project.getInt(MiscSettingPanel.PACS_LOCAL_PORT, MiscSettingPanel.DEFAULT_PACS_LOCAL_PORT);
-        String pacsLocalAE = Project.getString(MiscSettingPanel.PACS_LOCAL_AE, MiscSettingPanel.DEFAULT_PACS_LOCAL_AE);
-
-        device = new Device(pacsLocalAE);
-        executor = new NewThreadExecutor(pacsLocalAE);
-        conn = new NetworkConnection();
+        
         conn.setHostname(pacsLocalHost);
         conn.setPort(pacsLocalPort);
-
-        ae = new NetworkApplicationEntity();
         ae.setNetworkConnection(conn);
         ae.setAssociationInitiator(true);
         ae.setAssociationAcceptor(true);
-        ae.setAETitle(pacsLocalAE);
         device.setNetworkApplicationEntity(ae);
         device.setNetworkConnection(conn);
 
-        remoteConn = new NetworkConnection();
         remoteConn.setHostname(pacsRemoteHost);
         remoteConn.setPort(pacsRemotePort);
-        remoteAE = new NetworkApplicationEntity();
         remoteAE.setAETitle(pacsRemoteAE);
         remoteAE.setInstalled(true);
         remoteAE.setAssociationAcceptor(true);
         remoteAE.setNetworkConnection(remoteConn);
-
-        exec = Executors.newSingleThreadExecutor();
 
         setupStorageCapability();
     }
@@ -243,96 +227,78 @@ public class PacsServiceImpl implements PacsService {
         }
         // SpecificCharacterも取得する
         keys.putNull(Tag.SpecificCharacterSet, VR.CS);
+        
+        List<DicomObject> result = new ArrayList<>();
+        Association assoc = null;
 
-        Callable<List<DicomObject>> task = new Callable<List<DicomObject>>() {
+        synchronized (ae) {
 
-            @Override
-            public List<DicomObject> call() throws Exception {
-                List<DicomObject> result = new ArrayList<>();
-                Association assoc = null;
+            try {
+                setFindTransferCapability();
+                assoc = ae.connect(remoteAE, executor);
 
-                try {
-                    setFindTransferCapability();
-                    assoc = ae.connect(remoteAE, executor);
+                TransferCapability tc = selectTransferCapability(assoc, STUDY_LEVEL_FIND_CUID);
+                String cuid = tc.getSopClass();
+                String tsuid = selectTransferSyntax(tc);
 
-                    TransferCapability tc = selectTransferCapability(assoc, STUDY_LEVEL_FIND_CUID);
-                    String cuid = tc.getSopClass();
-                    String tsuid = selectTransferSyntax(tc);
-
-                    DimseRSP rsp = assoc.cfind(cuid, priority, keys, tsuid, cancelAfter);
-                    while (rsp.next()) {
-                        DicomObject cmd = rsp.getCommand();
-                        if (CommandUtils.isPending(cmd)) {
-                            DicomObject data = rsp.getDataset();
-                            result.add(data);
-                        }
-                    }
-                } finally {
-                    if (assoc != null) {
-                        assoc.release(true);
+                DimseRSP rsp = assoc.cfind(cuid, priority, keys, tsuid, cancelAfter);
+                while (rsp.next()) {
+                    DicomObject cmd = rsp.getCommand();
+                    if (CommandUtils.isPending(cmd)) {
+                        DicomObject data = rsp.getDataset();
+                        result.add(data);
                     }
                 }
-
-                return result;
+            } finally {
+                if (assoc != null) {
+                    assoc.release(true);
+                }
             }
-
-        };
-
-        Future<List<DicomObject>> future = exec.submit(task);
-
-        try {
-            return future.get();
-        } catch (InterruptedException | ExecutionException ex) {
-            getLogger().error(ex);
         }
 
-        return Collections.emptyList();
+        return result;
     }
 
     @Override
     public void retrieveDicomObject(final DicomObject obj) throws Exception {
-
-        Runnable task = new Runnable() {
-
-            private final DimseRSPHandler rspHandler = new DimseRSPHandler() {
-                @Override
-                public void onDimseRSP(Association as, DicomObject cmd, DicomObject data) {
-                }
-            };
-
+        
+        DimseRSPHandler rspHandler = new DimseRSPHandler() {
             @Override
-            public void run() {
-                Association assoc = null;
-                try {
-                    setMoveTransferCapability();
-                    assoc = ae.connect(remoteAE, executor);
-
-                    TransferCapability tc = selectTransferCapability(assoc, STUDY_LEVEL_MOVE_CUID);
-                    if (tc == null) {
-                        throw new NoPresentationContextException(UIDDictionary.getDictionary().prompt(STUDY_LEVEL_MOVE_CUID[0])
-                                + " not supported by " + assoc.getRemoteAET());
-                    }
-
-                    String cuid = tc.getSopClass();
-                    String tsuid = selectTransferSyntax(tc);
-                    DicomObject dokeys = obj.subSet(MOVE_KEYS);
-                    assoc.cmove(cuid, priority, dokeys, tsuid, assoc.getLocalAET(), rspHandler);
-
-                    assoc.waitForDimseRSP();
-                } catch (ConfigurationException | IOException | InterruptedException ex) {
-                    getLogger().error(ex);
-                } finally {
-                    try {
-                        if (assoc != null) {
-                            assoc.release(true);
-                        }
-                    } catch (InterruptedException ex) {
-                    }
-
-                }
+            public void onDimseRSP(Association as, DicomObject cmd, DicomObject data) {
             }
         };
-        exec.submit(task);
+        
+        Association assoc = null;
+        synchronized (ae) {
+
+            try {
+                setMoveTransferCapability();
+                assoc = ae.connect(remoteAE, executor);
+
+                TransferCapability tc = selectTransferCapability(assoc, STUDY_LEVEL_MOVE_CUID);
+                if (tc == null) {
+                    throw new NoPresentationContextException(UIDDictionary.getDictionary().prompt(STUDY_LEVEL_MOVE_CUID[0])
+                            + " not supported by " + assoc.getRemoteAET());
+                }
+
+                String cuid = tc.getSopClass();
+                String tsuid = selectTransferSyntax(tc);
+                DicomObject dokeys = obj.subSet(MOVE_KEYS);
+                assoc.cmove(cuid, priority, dokeys, tsuid, assoc.getLocalAET(), rspHandler);
+
+                assoc.waitForDimseRSP();
+            } catch (ConfigurationException | IOException | InterruptedException ex) {
+                getLogger().error(ex);
+            } finally {
+                try {
+                    if (assoc != null) {
+                        assoc.release(true);
+                    }
+                } catch (InterruptedException ex) {
+                }
+
+            }
+        }
     }
 
     private void setupStorageCapability() {

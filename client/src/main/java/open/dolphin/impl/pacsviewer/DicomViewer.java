@@ -9,9 +9,6 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -51,7 +48,7 @@ public class DicomViewer {
     private JLabel statusLbl;
     private JSlider slider;
     private JLabel sliderValue;
-    private ExecutorService exec;
+
     private ThumbnailTableModel<DicomImageEntry> thumbnailTableModel;
     private static final int MAX_IMAGE_SIZE = 120;
     private static final int CELL_WIDTH_MARGIN = 20;
@@ -69,7 +66,6 @@ public class DicomViewer {
 
     public DicomViewer() {
         initComponents();
-        exec = Executors.newSingleThreadExecutor();
     }
     
     public JRadioButton getZoomBtn() {
@@ -92,16 +88,6 @@ public class DicomViewer {
         // memory leak?
         thumbnailTableModel.clear();
         
-        try {
-            exec.shutdown();
-            if (!exec.awaitTermination(10, TimeUnit.MILLISECONDS)) {
-                exec.shutdownNow();
-            }
-        } catch (InterruptedException ex) {
-            exec.shutdownNow();
-        } catch (NullPointerException ex) {
-        }
-        exec = null;
     }
     
     private void initComponents() {
@@ -270,24 +256,18 @@ public class DicomViewer {
 
     // クリップボードに画像をコピー
     private void copyImage() {
-        SwingWorker worker = new SwingWorker() {
-
-            @Override
-            protected Object doInBackground() throws Exception {
-                BufferedImage buf = viewerPanel.getSubImage();
-                if (buf != null) {
-                    ImageTool.copyToClipboard(buf);
-                }
-                return null;
-            }
-        };
-        worker.execute();
+        BufferedImage buf = viewerPanel.getSubImage();
+        if (buf != null) {
+            ImageTool.copyToClipboard(buf);
+        }
     }
 
     // サムネイルで選択した画像を表示させる
     private void setSelectedIndex() {
+        
         final int row = index / columnCount;
         final int col = index % columnCount;
+        
         SwingUtilities.invokeLater(new Runnable() {
 
             @Override
@@ -305,9 +285,11 @@ public class DicomViewer {
         for (DicomImageEntry entry : list) {
             thumbnailTableModel.addImage(entry);
         }
+        
         index = 0;
+        setSelectedIndex();
         frame.setVisible(true);
-        showSelectedImage();
+        showSelectedImage(index);
     }
 
     // imageTableにレンダラー等を設定する
@@ -329,7 +311,7 @@ public class DicomViewer {
         ThumbnailTableRenderer imageRenderer = new ThumbnailTableRenderer();
         imageRenderer.setHorizontalAlignment(SwingConstants.CENTER);
         tbl.setDefaultRenderer(java.lang.Object.class, imageRenderer);
-
+        
         // サムネイルが選択されるとその画像を表示する
         ListSelectionModel m = tbl.getSelectionModel();
         m.addListSelectionListener(new ListSelectionListener() {
@@ -340,48 +322,33 @@ public class DicomViewer {
                     int row = thumbnailTable.getSelectedRow();
                     int col = thumbnailTable.getSelectedColumn();
                     index = col + columnCount * row;
-                    showSelectedImage();
+                    showSelectedImage(index);
                 }
             }
         });
     }
 
     // 選択中の画像を設定する
-    private void showSelectedImage() {
-
-        exec.execute(new ShowSelectedImageTask(index));
-    }
-
-    // 選択中の画像をimagePanelに設定するタスク
-    private class ShowSelectedImageTask implements Runnable {
-
-        private final int imageIndex;
-
-        private ShowSelectedImageTask(final int index) {
-            this.imageIndex = index;
-        }
-
-        @Override
-        public void run() {
-
-            int row = imageIndex % columnCount;
-            int column = imageIndex / columnCount;
-            try {
-                DicomImageEntry entry = thumbnailTableModel.getValueAt(row, column);
-                if (entry != null) {
-                    DicomObject object = entry.getDicomObject();
-                    boolean isCR = "CR".equals(object.getString(Tag.Modality));
-                    gammaBtn.setSelected(isCR);
-                    setStudyInfoLabel(object);
-                    BufferedImage image = ImageTool.getDicomImage(object);
-                    viewerPanel.setPixelSpacing(object.getDoubles(Tag.PixelSpacing));
-                    viewerPanel.setInfo(new DicomImageInfo(object));
-                    viewerPanel.setImage(image);
-                }
-            } catch (IOException ex) {
+    private void showSelectedImage(int imageIndex) {
+        
+        int row = imageIndex % columnCount;
+        int column = imageIndex / columnCount;
+        try {
+            DicomImageEntry entry = thumbnailTableModel.getValueAt(row, column);
+            if (entry != null) {
+                DicomObject object = entry.getDicomObject();
+                boolean isCR = "CR".equals(object.getString(Tag.Modality));
+                gammaBtn.setSelected(isCR);
+                setStudyInfoLabel(object);
+                BufferedImage image = ImageTool.getDicomImage(object);
+                viewerPanel.setPixelSpacing(object.getDoubles(Tag.PixelSpacing));
+                viewerPanel.setInfo(new DicomImageInfo(object));
+                viewerPanel.setImage(image);
             }
+        } catch (IOException ex) {
         }
     }
+
 
     // study informationを表示する
     private void setStudyInfoLabel(DicomObject object) {
