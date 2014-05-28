@@ -240,6 +240,12 @@ public class AdmissionList extends AbstractMainComponent {
                 openKarte();
             }
         };
+        
+        // Enterでカルテオープン Katoh@Hashimoto-iin
+        final String optionMapKey = "openKarte";
+        final KeyStroke enter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
+        table.getInputMap(JTable.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(enter, optionMapKey);
+        table.getActionMap().put(optionMapKey, openKarteAction);
     }
     
     /**
