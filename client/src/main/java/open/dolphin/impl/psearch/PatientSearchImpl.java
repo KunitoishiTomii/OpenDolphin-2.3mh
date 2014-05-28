@@ -463,6 +463,18 @@ public class PatientSearchImpl extends AbstractMainComponent {
         };
         view.getTable().getInputMap().put(copy, "Copy");
         view.getTable().getActionMap().put("Copy", copyAction);
+        
+        // Enterでカルテオープン Katoh@Hashimoto-iin
+        final String optionMapKey = "openKarte";
+        final KeyStroke enter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
+        view.getTable().getInputMap(JTable.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(enter, optionMapKey);
+        view.getTable().getActionMap().put(optionMapKey, new AbstractAction(){
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                openKarte();
+            }
+        });
     }
 
     private class EventAdapter extends MouseAdapter implements ActionListener, ListSelectionListener {

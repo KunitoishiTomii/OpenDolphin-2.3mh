@@ -476,6 +476,19 @@ public class WatingListImpl extends AbstractMainComponent {
         };
         pvtTable.getInputMap().put(copy, "Copy");
         pvtTable.getActionMap().put("Copy", copyAction);
+        
+        // Enterでカルテオープン Katoh@Hashimoto-iin
+        final String optionMapKey = "openKarte";
+        final KeyStroke enter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
+        pvtTable.getInputMap(JTable.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(enter, optionMapKey);
+        pvtTable.getActionMap().put(optionMapKey, new AbstractAction(){
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                openKarte();
+            }
+        });
+        
     }
 
     // comet long polling機能を設定する
