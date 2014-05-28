@@ -14,8 +14,6 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -37,32 +35,10 @@ public class Launcher {
     private static final String JAR_DIR = "client";
     private static final String FILES_PATH = "/dolphin/files/";
     private static final int CONNECTION_TIMEOUT = 5000;
-    private static TrustManager[] tm ={ new X509TrustManager() {
-            public X509Certificate[] getAcceptedIssuers() {
-                return null;
-            }
-            @Override
-            public void checkClientTrusted(X509Certificate[] chain,
-                    String authType) throws CertificateException {
-            }
-            @Override
-            public void checkServerTrusted(X509Certificate[] chain,
-                    String authType) throws CertificateException {
-            }
-        } };
     private String serverAddr;
     private String jarName;
 
     public static void main(String[] args) {
-        //ホスト名の検証ルール　何が来てもtrueを返す
-        HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier() {
-            @Override
-            public boolean verify(String hostname,
-                    SSLSession session) {
-                return true;
-            }
-        });
-
         new Launcher().start();
     }
 
@@ -74,7 +50,7 @@ public class Launcher {
             launch();
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(null, "プログラムをロードできません", "Dolphin Launcher", JOptionPane.ERROR_MESSAGE);
-            ex.printStackTrace(System.err);
+            //ex.printStackTrace(System.err);
             System.exit(1);
         }
         System.exit(0);
@@ -114,7 +90,6 @@ public class Launcher {
             con = (HttpsURLConnection) url.openConnection();
             con.setConnectTimeout(CONNECTION_TIMEOUT);
             con.setRequestMethod("GET");
-            con.setSSLSocketFactory(sslcontext.getSocketFactory());
             con.setInstanceFollowRedirects(false);
             con.setSSLSocketFactory(OreOreSSL.getSslContext().getSocketFactory());
             con.setHostnameVerifier(OreOreSSL.getVerifier());
