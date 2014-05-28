@@ -19,13 +19,7 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Logger;
-import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.ProgressMonitor;
@@ -117,15 +111,13 @@ public class Launcher {
         String remoteHash = null;
         List<String> pathsStr = new ArrayList<>();
         try {
-            //参考：http://symfoware.blog68.fc2.com/blog-entry-1165.html
-            SSLContext sslcontext = SSLContext.getInstance("SSL");
-            sslcontext.init(null, tm, null);
-
             con = (HttpsURLConnection) url.openConnection();
             con.setConnectTimeout(CONNECTION_TIMEOUT);
             con.setRequestMethod("GET");
             con.setSSLSocketFactory(sslcontext.getSocketFactory());
             con.setInstanceFollowRedirects(false);
+            con.setSSLSocketFactory(OreOreSSL.getSslContext().getSocketFactory());
+            con.setHostnameVerifier(OreOreSSL.getVerifier());
             con.connect();
 
             try (InputStream is = con.getInputStream();
@@ -198,14 +190,12 @@ public class Launcher {
             URL url = new URL(sb.toString());
             HttpsURLConnection con = null;
             try {
-                SSLContext sslcontext = SSLContext.getInstance("SSL");
-                sslcontext.init(null, tm, null);
-
                 con = (HttpsURLConnection) url.openConnection();
                 con.setConnectTimeout(CONNECTION_TIMEOUT);
                 con.setRequestMethod("GET");
                 con.setInstanceFollowRedirects(false);
-                con.setSSLSocketFactory(sslcontext.getSocketFactory());
+                con.setSSLSocketFactory(OreOreSSL.getSslContext().getSocketFactory());
+                con.setHostnameVerifier(OreOreSSL.getVerifier());
                 con.connect();
                 Path path = Paths.get(JAR_DIR, pathStr);
                 Path parent = path.getParent();

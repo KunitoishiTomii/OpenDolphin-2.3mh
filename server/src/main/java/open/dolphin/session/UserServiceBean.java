@@ -41,7 +41,7 @@ public class UserServiceBean {
     private EntityManager em;
     
     
-    public boolean authenticate(String userName, String password) {
+    public boolean authenticate(String userName, String password, String remoteIp) {
 
         boolean ret = false;
 
@@ -56,7 +56,7 @@ public class UserServiceBean {
             } else {
                 int failCount = user.getFailCount() + 1;
                 user.setFailCount(failCount);
-                String msg = String.format("Authentication Failed: user=%s, failCount=%d", userName, failCount);
+                String msg = String.format("Authentication Failed: user=%s, failCount=%d, remoteIp=%s", userName, failCount, remoteIp);
                 logger.warning(msg);
             }
             
