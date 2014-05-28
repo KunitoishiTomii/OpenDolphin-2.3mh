@@ -16,7 +16,7 @@ public class AdmissionListView extends JPanel {
     
     private final JButton updateBtn;
     private final JLabel infoLbl;
-    private final AdmissionTable table;
+    private final JTable table;
 
     public AdmissionListView() {
 
@@ -35,7 +35,7 @@ public class AdmissionListView extends JPanel {
         panel.add(infoLbl);
         panel.add(Box.createHorizontalGlue());
 
-        table = new AdmissionTable();
+        table = new JTable();
         JScrollPane scroll = new JScrollPane(table);
 
         this.setLayout(new BorderLayout());

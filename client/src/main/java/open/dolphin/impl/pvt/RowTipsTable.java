@@ -1,16 +1,13 @@
 
 package open.dolphin.impl.pvt;
 
-import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.Date;
 import javax.swing.JTable;
-import javax.swing.KeyStroke;
 import open.dolphin.infomodel.ModelUtils;
 import open.dolphin.infomodel.PatientVisitModel;
 import open.dolphin.table.ListTableSorter;
 import org.apache.commons.lang.time.DurationFormatUtils;
-import org.jboss.logging.Logger;
 
 /**
  *
@@ -44,23 +41,5 @@ public class RowTipsTable extends JTable {
         }
         return null;
 //pns$
-    }
-    
-    @Override
-    protected boolean processKeyBinding(KeyStroke ks,
-                                    KeyEvent e,
-                                    int condition,
-                                    boolean pressed){
-        boolean bReturn;
-        if(e.getExtendedKeyCode() == KeyEvent.VK_ENTER && pressed == true){
-            // Enter押下時の動作は上位層で定義
-            bReturn = false;
-        }
-        else{
-            // Enter以外はJTableデフォルトの実装に任せる
-            bReturn = super.processKeyBinding(ks, e, condition, pressed);
-        }
-        
-        return bReturn;
     }
 }

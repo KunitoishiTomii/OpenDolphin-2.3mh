@@ -209,9 +209,6 @@ public class AdmissionList extends AbstractMainComponent {
         // コンテキストメニューを登録する
         view.getTable().addMouseListener(new ContextListener());
 
-        // キーリスナを設定する
-        view.getTable().addKeyListener(new ListKeyListener());
-
         // 靴のアイコンをクリックした時来院情報を検索する
         view.getUpdateBtn().addActionListener(new ActionListener() {
 
@@ -441,33 +438,6 @@ public class AdmissionList extends AbstractMainComponent {
         }
     }
     
-    /**
-     * 受付リストのキーリスナクラス。
-     */
-    private class ListKeyListener extends KeyAdapter {
-
-            @Override
-            public void keyTyped(KeyEvent e) {
-                //
-            }
-
-            @Override
-            public void keyPressed(KeyEvent e) {
-                if(e.getKeyCode() == KeyEvent.VK_ENTER){
-                    // Enterを押されたらカルテを開く (もともとの下段へ移動する動作はRowTipsTable.javaにて抑止)
-                    openKarte();
-                    return;
-                }else{
-                    // 何もしない
-                }
-            }
-
-            @Override
-            public void keyReleased(KeyEvent e) {
-                //
-            }
-    }
-
     private class PatientListTableRenderer extends StripeTableCellRenderer {
         
         @Override

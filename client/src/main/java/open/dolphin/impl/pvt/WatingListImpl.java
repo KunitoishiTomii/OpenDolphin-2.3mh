@@ -453,8 +453,6 @@ public class WatingListImpl extends AbstractMainComponent {
         // コンテキストメニューを登録する
         view.getTable().addMouseListener(new ContextListener());
 
-        view.getTable().addKeyListener(new ListKeyListener());
-        
         // 靴のアイコンをクリックした時来院情報を検索する
         view.getKutuBtn().addActionListener(new ActionListener() {
 
@@ -808,33 +806,6 @@ public class WatingListImpl extends AbstractMainComponent {
         }
     }
 
-    /**
-     * 受付リストのキーリスナクラス。
-     */
-    private class ListKeyListener extends KeyAdapter {
-
-            @Override
-            public void keyTyped(KeyEvent e) {
-                //
-            }
-
-            @Override
-            public void keyPressed(KeyEvent e) {
-                if(e.getKeyCode() == KeyEvent.VK_ENTER){
-                    // Enterを押されたらカルテを開く (もともとの下段へ移動する動作はRowTipsTable.javaにて抑止)
-                    openKarte();
-                    return;
-                }else{
-                    // 何もしない
-                }
-            }
-
-            @Override
-            public void keyReleased(KeyEvent e) {
-                //
-            }
-    }
-    
     /**
      * 修正送信アイコンを決める
      *
