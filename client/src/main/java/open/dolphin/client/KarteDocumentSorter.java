@@ -8,7 +8,6 @@ package open.dolphin.client;
 
 import java.util.Comparator;
 import open.dolphin.infomodel.DocInfoModel;
-import org.jboss.logging.Logger;
 
 /**
  *
@@ -18,7 +17,6 @@ public class KarteDocumentSorter implements Comparator<DocInfoModel>{
     private boolean bSortMethod;
 
     KarteDocumentSorter(boolean arg_SortMethod){
-        Logger.getLogger(this.getClass().toString()).warn("KarteDocumentSorter Created method=" + arg_SortMethod);
         bSortMethod = arg_SortMethod;
     }
     
