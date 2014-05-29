@@ -36,6 +36,7 @@ public class DicomMeasurePanel extends JPanel {
     public DicomMeasurePanel(DicomViewerRootPane parent) {
         this.parent = parent;
         measureList = new ArrayList();
+        setOpaque(false);
     }
 
     public List<PointPair> getMeasureList() {

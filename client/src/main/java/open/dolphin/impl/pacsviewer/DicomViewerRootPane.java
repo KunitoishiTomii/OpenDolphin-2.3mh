@@ -49,6 +49,7 @@ public class DicomViewerRootPane extends JLayeredPane {
 
         this.viewer = viewer;
         topPanel = new JPanel();
+        topPanel.setOpaque(false);
         baseLayer = new JLayeredPane();
         infoLabel = new DicomInfoLabel();
         selectionPanel = new DicomSelectionPanel(this);

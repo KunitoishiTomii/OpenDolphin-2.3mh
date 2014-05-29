@@ -21,6 +21,7 @@ public class DicomInfoLabel extends JLabel {
     public DicomInfoLabel() {
         setForeground(Color.LIGHT_GRAY);
         setFont(new Font("Dialog", Font.PLAIN, 20));
+        setOpaque(false);
     }
 
     public void setDicomInfo(DicomImageInfo info) {

@@ -35,6 +35,7 @@ public class DicomImagePanel extends JPanel {
     public DicomImagePanel(DicomViewerRootPane parent) {
         this.parent = parent;
         lut = new byte[MAX_DEPTH];
+        setOpaque(false);
     }
     
     @Override

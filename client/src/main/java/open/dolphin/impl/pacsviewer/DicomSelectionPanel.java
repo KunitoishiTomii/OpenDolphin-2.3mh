@@ -30,6 +30,7 @@ public class DicomSelectionPanel extends JPanel {
     
     public DicomSelectionPanel(DicomViewerRootPane parent) {
         this.parent = parent;
+        setOpaque(false);
     }
     
     public void setStartPoint(Point p) {
