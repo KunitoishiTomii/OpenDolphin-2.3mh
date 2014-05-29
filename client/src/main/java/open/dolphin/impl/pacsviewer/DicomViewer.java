@@ -187,6 +187,7 @@ public class DicomViewer {
         gammaField = new JTextField(frmt1.format(d));
         gammaField.setEditable(false);
         gammaField.setFocusable(false);
+        gammaField.setToolTipText("γボタン有効時クリックで値を変更できます");
         int pos = (int) ((d - gammaMin) / gammaStep);
         slider.setValue(pos);
         viewerPane.setGamma(d);
@@ -203,6 +204,12 @@ public class DicomViewer {
         gammaBar.add(gammaBtn);
         gammaBar.add(gammaField);
         toolPanel.add(gammaBar);
+        JToolBar actionBar = new JToolBar();
+        actionBar.add(copyBtn);
+        actionBar.add(resetBtn);
+        actionBar.add(new JToolBar.Separator());
+        actionBar.add(showInfoCb);
+        toolPanel.add(actionBar);
         JToolBar mouseBar = new JToolBar();
         mouseBar.add(new JLabel("マウス左："));
         mouseBar.add(dragBtn);
@@ -213,14 +220,10 @@ public class DicomViewer {
         mouseBar.add(moveBtn);
         mouseBar.add(zoomBtn);
         mouseBar.add(new JToolBar.Separator());
-        mouseBar.add(new JLabel("右：WL/WW"));
+        JLabel rtLbl = new JLabel("右：WW / WL");
+        rtLbl.setToolTipText("右ドラッグでWindow Width / Levelを変更します");
+        mouseBar.add(rtLbl);
         toolPanel.add(mouseBar);
-        JToolBar actionBar = new JToolBar();
-        actionBar.add(copyBtn);
-        actionBar.add(resetBtn);
-        actionBar.add(new JToolBar.Separator());
-        actionBar.add(showInfoCb);
-        toolPanel.add(actionBar);
 
         // ボタングループを設定
         ButtonGroup group = new ButtonGroup();
