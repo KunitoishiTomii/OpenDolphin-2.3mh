@@ -13,56 +13,43 @@ import javax.swing.border.EmptyBorder;
 
 /**
  * ImageEntryのJList
+ * 
  * @author masuda, Masuda Naika
  */
-public class ImageEntryJList<E> extends JList { //implements DragGestureListener {
+public class ImageEntryJList<E extends ImageEntry> extends JList {
     
     private int maxIconTextWidth;
     private final Insets margin = new Insets(5, 5, 5, 5);
     
-    public ImageEntryJList(DefaultListModel<ImageEntry> model) {
+    public ImageEntryJList(DefaultListModel<E> model) {
+        this(model, JList.HORIZONTAL_WRAP);
+    }
+    
+    public ImageEntryJList(DefaultListModel<E> model, int layoutOrientation) {
         super(model);
-        setLayoutOrientation(JList.HORIZONTAL_WRAP);
+        setLayoutOrientation(layoutOrientation);
         setVisibleRowCount(0);
         getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         
         // レンダラ設定
-        setCellRenderer(new ImageEntryJListCellRenderer());
+        setCellRenderer(new ImageEntryJListCellRenderer<E>());
         setDropMode(DropMode.INSERT);
         setDragEnabled(true);
-/*
-        // quaquaではDrag時にクリックしなおさないといけないので…
-        DragSource dragSource = DragSource.getDefaultDragSource();
-        dragSource.createDefaultDragGestureRecognizer(
-                ImageEntryJList.this, DnDConstants.ACTION_COPY_OR_MOVE, ImageEntryJList.this);
-*/
+
     }
     
     public void setMaxIconTextWidth(int width) {
         maxIconTextWidth = width;
     }
     
-/*
-    @Override
-    public void dragGestureRecognized(DragGestureEvent dge) {
-        int action = dge.getDragAction();
-        InputEvent event = dge.getTriggerEvent();
-        JComponent comp = (JComponent) dge.getComponent();
-        TransferHandler handler = comp.getTransferHandler();
-        if (handler != null) {
-            handler.exportAsDrag(comp, event, action);
-        }
-    }
-*/
-    
-    private class ImageEntryJListCellRenderer extends DefaultListCellRenderer {
+    private class ImageEntryJListCellRenderer<E extends ImageEntry> extends DefaultListCellRenderer {
         
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             
             super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             
-            ImageEntry entry = (ImageEntry) value;
+            E entry = (E) value;
             setIcon(entry.getImageIcon());
             String text = entry.getIconText();
             if (text != null && !text.isEmpty()) {

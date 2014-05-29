@@ -579,6 +579,7 @@ public class PacsDicomDocImpl extends AbstractChartDocument implements PropertyC
         // ImageEntryを作成する
         DicomImageEntry entry = ImageTool.getImageEntryFromDicom(object);
         entry.setDicomObject(object);
+        entry.setIconText(entry.getFileName());
         
         int size = listModel.getSize();
         boolean added = false;

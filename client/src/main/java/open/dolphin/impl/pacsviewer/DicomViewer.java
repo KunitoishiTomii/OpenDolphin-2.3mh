@@ -3,9 +3,10 @@ package open.dolphin.impl.pacsviewer;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.*;
-import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.List;
@@ -14,13 +15,13 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.table.TableColumn;
 import open.dolphin.client.ClientContext;
+import open.dolphin.client.ImageEntryJList;
 import open.dolphin.helper.ComponentMemory;
 import open.dolphin.project.Project;
 import open.dolphin.setting.MiscSettingPanel;
 import open.dolphin.util.DicomImageEntry;
-import open.dolphin.util.ImageTool;
+import open.dolphin.util.ModifiedFlowLayout;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 
@@ -33,29 +34,44 @@ import org.dcm4che2.data.Tag;
  */
 public class DicomViewer {
 
+    private static final ImageIcon RESET_ICON
+            = ClientContext.getClientContextStub().getImageIcon("edit-undo-4_24.png");
+    private static final ImageIcon DRAG_ICON
+            = ClientContext.getClientContextStub().getImageIcon("transform-move.png");
+    private static final ImageIcon MEASURE_ICON
+            = ClientContext.getClientContextStub().getImageIcon("measure.png");
+    private static final ImageIcon SELECT_ICON
+            = ClientContext.getClientContextStub().getImageIcon("select.png");
+    private static final ImageIcon ZOOM_ICON
+            = ClientContext.getClientContextStub().getImageIcon("zoom-5.png");
+    private static final ImageIcon MOVE_ICON
+            = ClientContext.getClientContextStub().getImageIcon("media-playback-start-5.png");
+    private static final ImageIcon COPY_ICON
+            = ClientContext.getClientContextStub().getImageIcon("edit-copy-2_24.png");
+
+    private static final int MAX_IMAGE_SIZE = 120;
+
     private JFrame frame;
-    private DicomViewerPanel viewerPanel;
-    private JTable thumbnailTable;
+    private DicomViewerRootPane viewerPane;
     private JScrollPane thumbnailScrollPane;
     private JButton resetBtn;
     private JButton copyBtn;
     private JCheckBox showInfoCb;
-    private JRadioButton moveBtn;
-    private JRadioButton zoomBtn;
+    private JToggleButton moveBtn;
+    private JToggleButton zoomBtn;
+    private JToggleButton dragBtn;
     private JToggleButton measureBtn;
+    private JToggleButton selectBtn;
     private JToggleButton gammaBtn;
     private JLabel studyInfoLbl;
     private JLabel statusLbl;
     private JSlider slider;
-    private JLabel sliderValue;
+    private JTextField sliderValue;
+    private JPanel sliderPanel;
 
-    private ThumbnailTableModel<DicomImageEntry> thumbnailTableModel;
-    private static final int MAX_IMAGE_SIZE = 120;
-    private static final int CELL_WIDTH_MARGIN = 20;
-    private static final int CELL_HEIGHT_MARGIN = 20;
-    private final int cellWidth = MAX_IMAGE_SIZE + CELL_WIDTH_MARGIN;
-    private final int cellHeight = MAX_IMAGE_SIZE + CELL_HEIGHT_MARGIN;
-    private final int columnCount = 1;
+    private ImageEntryJList<DicomImageEntry> thumbnailList;
+    private DefaultListModel<DicomImageEntry> thumbnailListModel;
+
     private int index = 0;
     private final static DecimalFormat frmt = new DecimalFormat("0.0");
     private final static DecimalFormat frmt1 = new DecimalFormat("0.00");
@@ -67,29 +83,39 @@ public class DicomViewer {
     public DicomViewer() {
         initComponents();
     }
-    
-    public JRadioButton getZoomBtn() {
+
+    public JToggleButton getZoomBtn() {
         return zoomBtn;
     }
-    public JRadioButton getMoveBtn() {
+
+    public JToggleButton getMoveBtn() {
         return moveBtn;
     }
+
     public JToggleButton getMeasureBtn() {
         return measureBtn;
     }
-    
+
+    public JToggleButton getSelectBtn() {
+        return selectBtn;
+    }
+
+    public JToggleButton getDragBtn() {
+        return dragBtn;
+    }
+
     private void exit() {
-        
+
         // Frameを閉じるときにPreferrenceに保存する
         Project.setDouble(MiscSettingPanel.PACS_VIEWER_GAMMA, getSliderGamma());
         boolean b = showInfoCb.isSelected();
         Project.setBoolean(MiscSettingPanel.PACS_SHOW_IMAGEINFO, b);
-        
+
         // memory leak?
-        thumbnailTableModel.clear();
-        
+        thumbnailListModel.clear();
+
     }
-    
+
     private void initComponents() {
 
         frame = new JFrame();
@@ -103,57 +129,88 @@ public class DicomViewer {
                 exit();
             }
         });
-        
+
         // do not remove copyright!
         String title = ClientContext.getFrameTitle("Dicom Viewer, Masuda Naika");
         frame.setTitle(title);
         frame.setPreferredSize(new Dimension(640, 480));
-        viewerPanel = new DicomViewerPanel(DicomViewer.this);
-        thumbnailTable = new JTable();
+        viewerPane = new DicomViewerRootPane(this);
         frame.setLayout(new BorderLayout());
 
-        measureBtn = new JToggleButton("計測");
-        resetBtn = new JButton("リセット");
-        copyBtn = new JButton("コピー");
-        moveBtn = new JRadioButton("前後画像");
-        zoomBtn = new JRadioButton("ズーム");
-        showInfoCb = new JCheckBox("画像情報");
-        statusLbl = new JLabel("OpenDolphin 1.4m");
+        dragBtn = new JToggleButton(DRAG_ICON, true);
+        dragBtn.setToolTipText("画像をドラッグして移動させます");
+        measureBtn = new JToggleButton(MEASURE_ICON);
+        measureBtn.setToolTipText("計測します");
+        selectBtn = new JToggleButton(SELECT_ICON);
+        selectBtn.setToolTipText("コピーする領域を選択します");
+        resetBtn = new JButton(RESET_ICON);
+        resetBtn.setToolTipText("画像を初期状態に戻します");
+        copyBtn = new JButton(COPY_ICON);
+        copyBtn.setToolTipText("選択領域をコピーします");
+        moveBtn = new JToggleButton(MOVE_ICON, true);
+        moveBtn.setToolTipText("マウスホイールで前後画像に移動します");
+        zoomBtn = new JToggleButton(ZOOM_ICON);
+        zoomBtn.setToolTipText("マウスホイールで画像拡大縮小します");
+        showInfoCb = new JCheckBox("情報");
+        statusLbl = new JLabel("OpenDolphin-m");
         studyInfoLbl = new JLabel("Study Info.");
-        gammaBtn = new JToggleButton("γ");
+        gammaBtn = new JToggleButton(" γ ");
+        Font f = new Font(Font.SANS_SERIF, Font.BOLD, 16);
+        gammaBtn.setFont(f);
+        gammaBtn.setBorderPainted(true);
         // ガンマ係数スライダの設定
         double d = Project.getDouble(MiscSettingPanel.PACS_VIEWER_GAMMA, MiscSettingPanel.DEFAULT_PACS_GAMMA);
         int sliderMax = (int) ((gammaMax - gammaMin) / gammaStep);
         slider = new JSlider(0, sliderMax);
         JLabel lblSliderLeft = new JLabel(frmt.format(gammaMin));
         JLabel lblSliderRight = new JLabel(frmt.format(gammaMax));
-        sliderValue = new JLabel(frmt1.format(d));
+        sliderValue = new JTextField(frmt1.format(d));
+        sliderValue.setEditable(false);
+        sliderValue.setFocusable(false);
         int pos = (int) ((d - gammaMin) / gammaStep);
         slider.setValue(pos);
-        viewerPanel.setGamma(d);
+        viewerPane.setGamma(d);
+        sliderPanel = new JPanel();
+        sliderPanel.setLayout(new BoxLayout(sliderPanel, BoxLayout.X_AXIS));
+        sliderPanel.add(lblSliderLeft);
+        sliderPanel.add(slider);
+        sliderPanel.add(lblSliderRight);
 
         // ボタンのパネル
-        JPanel panel = new JPanel();
-        panel.setLayout(new FlowLayout(FlowLayout.LEFT));
-        //panel.add(new JLabel(ClientContext.getImageIcon("dcm4che.gif")));
-        panel.add(gammaBtn);
-        panel.add(lblSliderLeft);
-        panel.add(slider);
-        panel.add(lblSliderRight);
-        panel.add(sliderValue);
-        panel.add(measureBtn);
-        panel.add(copyBtn);
-        panel.add(resetBtn);
-        panel.add(showInfoCb);
+        JPanel toolPanel = new JPanel();
+        toolPanel.setLayout(new ModifiedFlowLayout(FlowLayout.LEFT));
+        JToolBar gammaBar = new JToolBar();
+        gammaBar.add(gammaBtn);
+        gammaBar.add(sliderValue);
+        toolPanel.add(gammaBar);
+        JToolBar leftBar = new JToolBar();
+        leftBar.add(new JLabel("マウス左："));
+        leftBar.add(dragBtn);
+        leftBar.add(measureBtn);
+        leftBar.add(selectBtn);
+        leftBar.add(new JSeparator(SwingConstants.VERTICAL));
+        leftBar.add(new JLabel("右：WL/W"));
+        toolPanel.add(leftBar);
+        JToolBar actionBar = new JToolBar();
+        actionBar.add(copyBtn);
+        actionBar.add(resetBtn);
+        actionBar.add(showInfoCb);
+        toolPanel.add(actionBar);
+        JToolBar rightBar = new JToolBar();
+        rightBar.add(new JLabel("ホイール："));
+        rightBar.add(moveBtn);
+        rightBar.add(zoomBtn);
+        toolPanel.add(rightBar);
+
         ButtonGroup group = new ButtonGroup();
         group.add(moveBtn);
         group.add(zoomBtn);
-        moveBtn.setSelected(true);
-        panel.add(new JLabel(" ホイール:"));
-        panel.add(moveBtn);
-        panel.add(zoomBtn);
+        ButtonGroup group2 = new ButtonGroup();
+        group2.add(dragBtn);
+        group2.add(measureBtn);
+        group2.add(selectBtn);
 
-        frame.add(panel, BorderLayout.NORTH);
+        frame.add(toolPanel, BorderLayout.NORTH);
         // ボタン類の設定
         copyBtn.addActionListener(new ActionListener() {
 
@@ -166,7 +223,7 @@ public class DicomViewer {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                viewerPanel.resetImage();
+                viewerPane.resetImage();
             }
         });
         showInfoCb.addItemListener(new ItemListener() {
@@ -174,60 +231,95 @@ public class DicomViewer {
             @Override
             public void itemStateChanged(ItemEvent e) {
                 boolean b = showInfoCb.isSelected();
-                viewerPanel.setShowInfo(b);
+                viewerPane.setShowInfo(b);
             }
         });
-        slider.addChangeListener(new ChangeListener(){
+        slider.addChangeListener(new ChangeListener() {
 
             @Override
             public void stateChanged(ChangeEvent e) {
                 double d = getSliderGamma();
                 sliderValue.setText(frmt1.format(d));
-                viewerPanel.setGamma(d);
+                viewerPane.setGamma(d);
             }
         });
         gammaBtn.setSelected(true);
-        gammaBtn.addChangeListener(new ChangeListener(){
+        gammaBtn.addChangeListener(new ChangeListener() {
 
             @Override
             public void stateChanged(ChangeEvent e) {
                 if (gammaBtn.isSelected()) {
                     double d = getSliderGamma();
                     sliderValue.setText(frmt1.format(d));
-                    viewerPanel.setGamma(d);
+                    viewerPane.setGamma(d);
                     slider.setEnabled(true);
                 } else {
                     sliderValue.setText(frmt1.format(gammaDefault));
-                    viewerPanel.setGamma(gammaDefault);
+                    viewerPane.setGamma(gammaDefault);
                     slider.setEnabled(false);
+                }
+            }
+        });
+        sliderValue.addMouseListener(new MouseAdapter() {
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (gammaBtn.isSelected()) {
+                    JPopupMenu popup = new JPopupMenu();
+                    popup.add(sliderPanel);
+                    popup.show(sliderValue, 0, 32);
                 }
             }
         });
 
         // イメージ表示パネル
-        frame.add(viewerPanel, BorderLayout.CENTER);
+        frame.add(viewerPane, BorderLayout.CENTER);
 
         // サムネイルパネル
-        thumbnailTableModel = new ThumbnailTableModel<>(columnCount);
-        thumbnailTable.setModel(thumbnailTableModel);
-        thumbnailTable.setTableHeader(null);
-        prepareTable(thumbnailTable);
+        thumbnailListModel = new DefaultListModel();
+        thumbnailList = new ImageEntryJList<>(thumbnailListModel, JList.VERTICAL);
+        thumbnailList.setMaxIconTextWidth(MAX_IMAGE_SIZE);
+        thumbnailList.setDragEnabled(false);
+        thumbnailList.addListSelectionListener(new ListSelectionListener() {
+
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                if (!e.getValueIsAdjusting()) {
+                    int idx = thumbnailList.getSelectedIndex();
+                    if (idx >= 0) {
+                        DicomImageEntry entry = thumbnailListModel.get(idx);
+                        showSelectedImage(entry);
+                    }
+                }
+            }
+        });
+        thumbnailList.addMouseWheelListener(new MouseWheelListener() {
+
+            @Override
+            public void mouseWheelMoved(MouseWheelEvent e) {
+                int cnt = e.getWheelRotation();
+                if (cnt > 0) {
+                    nextImage();
+                } else {
+                    prevImage();
+                }
+            }
+        });
         // サムネイルはScrollPaneに入れる
-        thumbnailScrollPane = new JScrollPane(thumbnailTable, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        int pWidth = (int) thumbnailTable.getPreferredSize().getWidth() + 20;
-        int pHeight = (int) thumbnailTable.getPreferredSize().getHeight();
-        thumbnailScrollPane.setPreferredSize(new Dimension(pWidth, pHeight));
+        thumbnailScrollPane = new JScrollPane(thumbnailList,
+                ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         frame.add(thumbnailScrollPane, BorderLayout.WEST);
 
         // 情報パネル
-        panel = new JPanel();
+        JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
         panel.add(studyInfoLbl);
         panel.add(statusLbl);
         frame.add(panel, BorderLayout.SOUTH);
 
         boolean b = Project.getBoolean(MiscSettingPanel.PACS_SHOW_IMAGEINFO, MiscSettingPanel.DEFAULT_PACS_SHOW_IMAGEINFO);
-        viewerPanel.setShowInfo(b);
+        viewerPane.setShowInfo(b);
         showInfoCb.setSelected(b);
         ComponentMemory cm = new ComponentMemory(frame, new Point(100, 100), frame.getPreferredSize(), DicomViewer.this);
         cm.setToPreferenceBounds();
@@ -238,9 +330,21 @@ public class DicomViewer {
         return gammaStep * pos + gammaMin;
     }
 
+    private void copyImage() {
+        SwingWorker worker = new SwingWorker() {
+
+            @Override
+            protected Object doInBackground() throws Exception {
+                viewerPane.copyImage();
+                return null;
+            }
+        };
+        worker.execute();
+    }
+
     // 次の画像を表示
     public void nextImage() {
-        if (index < thumbnailTableModel.getImageList().size() - 1) {
+        if (index < thumbnailListModel.size() - 1) {
             ++index;
             setSelectedIndex();
         }
@@ -254,27 +358,16 @@ public class DicomViewer {
         }
     }
 
-    // クリップボードに画像をコピー
-    private void copyImage() {
-        BufferedImage buf = viewerPanel.getSubImage();
-        if (buf != null) {
-            ImageTool.copyToClipboard(buf);
-        }
-    }
-
     // サムネイルで選択した画像を表示させる
     private void setSelectedIndex() {
-        
-        final int row = index / columnCount;
-        final int col = index % columnCount;
-        
+
         SwingUtilities.invokeLater(new Runnable() {
 
             @Override
             public void run() {
-                thumbnailTable.setRowSelectionInterval(row, row);
-                thumbnailTable.setColumnSelectionInterval(col, col);
-                thumbnailTable.scrollRectToVisible(thumbnailTable.getCellRect(row, col, true));
+                thumbnailList.setSelectedIndex(index);
+                Rectangle r = thumbnailList.getCellBounds(index, index);
+                thumbnailList.scrollRectToVisible(r);
             }
         });
     }
@@ -283,72 +376,30 @@ public class DicomViewer {
     public void enter(List<DicomImageEntry> list) {
 
         for (DicomImageEntry entry : list) {
-            thumbnailTableModel.addImage(entry);
+            thumbnailListModel.addElement(entry);
         }
-        
+
         index = 0;
         setSelectedIndex();
         frame.setVisible(true);
-        showSelectedImage(index);
-    }
-
-    // imageTableにレンダラー等を設定する
-    private void prepareTable(final JTable tbl) {
-
-        tbl.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        tbl.setCellSelectionEnabled(true);
-        tbl.setRowSelectionAllowed(true);
-        tbl.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-
-        // columnCountは１だけど。
-        for (int i = 0; i < columnCount; i++) {
-            TableColumn column = tbl.getColumnModel().getColumn(i);
-            column.setPreferredWidth(cellWidth);
-        }
-        tbl.setRowHeight(cellHeight);
-
-        // サムネイルテーブルのレンダラーを設定
-        ThumbnailTableRenderer imageRenderer = new ThumbnailTableRenderer();
-        imageRenderer.setHorizontalAlignment(SwingConstants.CENTER);
-        tbl.setDefaultRenderer(java.lang.Object.class, imageRenderer);
-        
-        // サムネイルが選択されるとその画像を表示する
-        ListSelectionModel m = tbl.getSelectionModel();
-        m.addListSelectionListener(new ListSelectionListener() {
-
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                if (e.getValueIsAdjusting() == false) {
-                    int row = thumbnailTable.getSelectedRow();
-                    int col = thumbnailTable.getSelectedColumn();
-                    index = col + columnCount * row;
-                    showSelectedImage(index);
-                }
-            }
-        });
     }
 
     // 選択中の画像を設定する
-    private void showSelectedImage(int imageIndex) {
-        
-        int row = imageIndex % columnCount;
-        int column = imageIndex / columnCount;
+    private void showSelectedImage(DicomImageEntry entry) {
+
+        if (entry == null) {
+            return;
+        }
         try {
-            DicomImageEntry entry = thumbnailTableModel.getValueAt(row, column);
-            if (entry != null) {
-                DicomObject object = entry.getDicomObject();
-                boolean isCR = "CR".equals(object.getString(Tag.Modality));
-                gammaBtn.setSelected(isCR);
-                setStudyInfoLabel(object);
-                BufferedImage image = ImageTool.getDicomImage(object);
-                viewerPanel.setPixelSpacing(object.getDoubles(Tag.PixelSpacing));
-                viewerPanel.setInfo(new DicomImageInfo(object));
-                viewerPanel.setImage(image);
-            }
+
+            DicomObject object = entry.getDicomObject();
+            boolean isCR = "CR".equals(object.getString(Tag.Modality));
+            gammaBtn.setSelected(isCR);
+            setStudyInfoLabel(object);
+            viewerPane.setDicomObject(object);
         } catch (IOException ex) {
         }
     }
-
 
     // study informationを表示する
     private void setStudyInfoLabel(DicomObject object) {

@@ -21,8 +21,7 @@ import org.dcm4che2.imageio.plugins.dcm.DicomImageReadParam;
 import org.dcm4che2.io.DicomOutputStream;
 
 /**
- * ImageTool.java
- * 画像関連の諸々
+ * ImageTool.java 画像関連の諸々
  *
  * @author masuda, Masuda Naika
  */
@@ -71,22 +70,17 @@ public class ImageTool {
     // ファイルからイメージエントリーを作成する
     public static ImageEntry getImageEntryFromFile(File file) throws IOException {
         BufferedImage image = ImageIO.read(file);
-        ImageEntry entry = (ImageEntry) prepareImageEntry(image);
+        ImageEntry entry = new ImageEntry();
+        setIconImage(entry, image);
         entry.setUrl(file.toURI().toString());
         entry.setPath(file.getPath());
         entry.setFileName(file.getName());
         return entry;
     }
 
-    // java.awt.ImageからImageEntryを作成（クリップボードからのペースト時に使用）
-    public static ImageEntry getImageEntryFromImage(Image image) throws IOException {
-        BufferedImage buf = createBufferedImage(image);
-        ImageEntry entry = (ImageEntry) prepareImageEntry(buf);
-        return entry;
-    }
-    
     /**
      * シェーマモデルをエントリに変換する。
+     *
      * @param schema シェーマモデル
      * @param iconSize アイコンのサイズ
      * @return ImageEntry
@@ -109,12 +103,13 @@ public class ImageTool {
 
         return model;
     }
-    
+
     // DicomObjectからDicomImageEntryを作成
     public static DicomImageEntry getImageEntryFromDicom(DicomObject object) throws IOException {
 
         BufferedImage image = getDicomImage(object);
-        DicomImageEntry entry = prepareImageEntry(image);
+        DicomImageEntry entry = new DicomImageEntry();
+        setIconImage(entry, image);
         // file nameの設定
         StringBuilder sb = new StringBuilder();
         sb.append(object.getString(Tag.PatientName));
@@ -125,25 +120,20 @@ public class ImageTool {
         entry.setTitle(object.getString(Tag.SOPInstanceUID));
         // iconText
         entry.setIconText(entry.getFileName());
-        
+
         return entry;
     }
 
-    // ImageIconとjpegBytesなどを設定しておく
-    private static DicomImageEntry prepareImageEntry(BufferedImage image) throws IOException {
-        DicomImageEntry entry = new DicomImageEntry();
+    private static void setIconImage(ImageEntry entry, BufferedImage image) throws IOException {
+
         BufferedImage iconImage = adjustImageSize(image, MAX_ICON_SIZE);
         ImageIcon icon = new ImageIcon();
         icon.setImage(iconImage);
-        // Dolphin_ja.propertiesで設定されているmax.image.widthまで縮小して、編集用にjpegを別に保存しておく
-        BufferedImage resized = adjustImageSize(image, MAX_IMAGE_SIZE);
-        entry.setResizedJpegBytes(getJpegBytes(resized));
 
         entry.setNumImages(1);
-        entry.setWidth(resized.getWidth());
-        entry.setHeight(resized.getHeight());
+        entry.setWidth(image.getWidth());
+        entry.setHeight(image.getHeight());
         entry.setImageIcon(icon);
-        return entry;
     }
 
     // BufferedImageをクリップボードに転送する
@@ -176,12 +166,12 @@ public class ImageTool {
         ImageIO.write(img, "JPEG", bos);
         return bos.toByteArray();
     }
-    
+
     // byte[]からBufferedImageを作る
     public static BufferedImage getBufferedImage(byte[] bytes) throws IOException {
         return ImageIO.read(new ByteArrayInputStream(bytes));
     }
-    
+
     // ImageからjpegのBytesを作成する
     public static byte[] getJpegBytes(Image image) throws IOException {
         BufferedImage bf = createBufferedImage(image);
@@ -201,31 +191,30 @@ public class ImageTool {
         return getFirstScaledInstance(bf, dim);
     }
 
-/*  色がgetFirstScaledInstanceと違う。なんでかわからん
-    private static Image adjustImageSize1(Image image, Dimension dim) {
+    /*  色がgetFirstScaledInstanceと違う。なんでかわからん
+     private static Image adjustImageSize1(Image image, Dimension dim) {
 
-        int imageHeight = image.getHeight(null);
-        int imageWidth = image.getWidth(null);
+     int imageHeight = image.getHeight(null);
+     int imageWidth = image.getWidth(null);
 
-        if (imageHeight > dim.height || imageWidth > dim.width) {
-            float hRatio = (float) imageHeight / dim.height;
-            float wRatio = (float) imageWidth / dim.width;
-            int h, w;
-            if (hRatio > wRatio) {
-                h = dim.height;
-                w = (int) (imageWidth / hRatio);
-            } else {
-                w = dim.width;
-                h = (int) (imageHeight / wRatio);
-            }
-            Image resized = image.getScaledInstance(w, h, Image.SCALE_SMOOTH);
-            return resized;
-        } else {
-            return image;
-        }
-    }
-*/
-
+     if (imageHeight > dim.height || imageWidth > dim.width) {
+     float hRatio = (float) imageHeight / dim.height;
+     float wRatio = (float) imageWidth / dim.width;
+     int h, w;
+     if (hRatio > wRatio) {
+     h = dim.height;
+     w = (int) (imageWidth / hRatio);
+     } else {
+     w = dim.width;
+     h = (int) (imageHeight / wRatio);
+     }
+     Image resized = image.getScaledInstance(w, h, Image.SCALE_SMOOTH);
+     return resized;
+     } else {
+     return image;
+     }
+     }
+     */
     private static BufferedImage getFirstScaledInstance(BufferedImage inImage, Dimension dim) {
 
         if (inImage.getWidth() <= dim.width && inImage.getHeight() <= dim.height) {
@@ -237,7 +226,7 @@ public class ImageTool {
         try {
             // Determine the scale.
             double scaleH = (double) dim.height / (double) inImage.getHeight();
-            double scaleW = (double) dim.width  / (double) inImage.getWidth();
+            double scaleW = (double) dim.width / (double) inImage.getWidth();
             double scale = Math.min(scaleH, scaleW);
 
             // Determine size of new image.
@@ -268,7 +257,7 @@ public class ImageTool {
         return outImage;
     }
 
-    private static BufferedImage createBufferedImage(Image image) {
+    public static BufferedImage createBufferedImage(Image image) {
         int width = image.getWidth(null);
         int height = image.getHeight(null);
         BufferedImage bf = new BufferedImage(width, height, BufferedImage.TYPE_INT_BGR);
@@ -278,5 +267,5 @@ public class ImageTool {
         g.dispose();
         return bf;
     }
-    
+
 }
