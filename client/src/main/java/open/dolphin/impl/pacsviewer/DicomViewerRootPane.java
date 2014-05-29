@@ -24,7 +24,7 @@ import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 
 /**
- * 移動・拡大を可能にした画像表示用のパネル
+ * DICOM画像表示の基底ペイン
  *
  * @author masuda, Masauda Naika
  */
@@ -38,8 +38,11 @@ public class DicomViewerRootPane extends JLayeredPane {
     private final JLayeredPane baseLayer;
 
     private final DicomViewer viewer;
+    // ウィンドウサイズにフィットしたスケール
     private double initialScale;
+    // 現在のスケール
     private double currentScale;
+    // 現在の拡大インデックス
     private int pow;
 
     public DicomViewerRootPane(DicomViewer viewer) {
@@ -52,7 +55,7 @@ public class DicomViewerRootPane extends JLayeredPane {
         imagePanel = new DicomImagePanel(this);
         measurePanel = new DicomMeasurePanel(this);
 
-        // baseLayerにはimagePanel, infoLabel, measurePanelを設置する
+        // baseLayerにはimagePanel, infoLabel, measurePanel, selectionPanelを設置する
         baseLayer.add(imagePanel, DEFAULT_LAYER);
         baseLayer.add(infoLabel, PALETTE_LAYER);
         baseLayer.add(measurePanel, MODAL_LAYER);
@@ -62,7 +65,7 @@ public class DicomViewerRootPane extends JLayeredPane {
         add(baseLayer, DEFAULT_LAYER);
         add(topPanel, DRAG_LAYER);
 
-        // topPanelにマウスリスナーをセットする
+        // topPanelは内容なくマウス処理用。マウスリスナーをセットする
         MyMouseAdapter adapter = new MyMouseAdapter();
         topPanel.addMouseWheelListener(adapter);
         topPanel.addMouseListener(adapter);
@@ -84,13 +87,30 @@ public class DicomViewerRootPane extends JLayeredPane {
     
     // imagePanelにimageを設定する
     public void setDicomObject(DicomObject object) throws IOException {
+        
         BufferedImage image = ImageTool.getDicomImage(object);
         setPixelSpacing(object.getDoubles(Tag.PixelSpacing));
-        setInfo(new DicomImageInfo(object));
+        
         imagePanel.setImage(image);
         infoLabel.setWindowLevel(imagePanel.getWindowLevel());
         infoLabel.setWindowWidth(imagePanel.getWindowWidth());
+        // 画像情報を設定する
+        infoLabel.setDicomInfo(new DicomImageInfo(object));
+        
         resetImage2();
+    }
+
+    // 画像のPixel spacingを設定する
+    private void setPixelSpacing(double[] pixelSpacing) {
+
+        double pixelSpacingX = 0;
+        double pixelSpacingY = 0;
+
+        if (pixelSpacing != null) {
+            pixelSpacingX = pixelSpacing[0];
+            pixelSpacingY = pixelSpacing[1];
+        }
+        measurePanel.setPixelSpacing(pixelSpacingX, pixelSpacingY);
     }
 
     // 移動・拡大を初期値に戻し、計測を消去。
@@ -103,19 +123,16 @@ public class DicomViewerRootPane extends JLayeredPane {
         imagePanel.setWindowLevel(wl, ww);
         imagePanel.setLUT();
         zoomReset();
-        //imagePanel.repaint();
 
         measurePanel.getMeasureList().clear();
-        //measurePanel.repaint();
         
         selectionPanel.clearPoints();
-        //selectionPanel.repaint();
 
         infoLabel.setWindowLevel(wl);
         infoLabel.setWindowWidth(ww);
         infoLabel.updateText();
-        //infoLabel.repaint();
-        
+
+        // image, measure, selection infoをリペイント
         baseLayer.repaint();
     }
 
@@ -126,54 +143,29 @@ public class DicomViewerRootPane extends JLayeredPane {
 
         imagePanel.setLUT();
         zoomReset();
-        //imagePanel.repaint();
 
         measurePanel.getMeasureList().clear();
-        //measurePanel.repaint();
         
         selectionPanel.clearPoints();
-        //selectionPanel.repaint();
         
-        //infoLabel.repaint();
-        
+        // image, measure, selection infoをリペイント
         baseLayer.repaint();
-    }
-
-    // 画像情報を設定する
-    public void setInfo(DicomImageInfo info) {
-        infoLabel.setDicomInfo(info);
-        infoLabel.repaint();
     }
 
     // 画像情報を表示するかのフラグ
     public void setShowInfo(boolean b) {
         infoLabel.setVisible(b);
     }
-
-    // 画像のPixel spacingを設定する
-    public void setPixelSpacing(double[] pixelSpacing) {
-
-        double pixelSpacingX = 0;
-        double pixelSpacingY = 0;
-
-        if (pixelSpacing != null) {
-            pixelSpacingX = pixelSpacing[0];
-            pixelSpacingY = pixelSpacing[1];
-        }
-        measurePanel.setPixelSpacing(pixelSpacingX, pixelSpacingY);
-    }
-
+    
     // ガンマ係数を設定する
     public void setGamma(double d) {
         imagePanel.setGamma(d);
     }
-
-    public double getGamma() {
-        return imagePanel.getGamma();
-    }
     
+    // クリップボードにコピーする
     public void copyImage() {
         
+        // コピーする領域を設定する。未指定時は全部
         Rectangle r;
         if (selectionPanel.getStartPoint() != null) {
             r = selectionPanel.getSelectedRectangle();
@@ -183,6 +175,7 @@ public class DicomViewerRootPane extends JLayeredPane {
             r = new Rectangle(0, 0, width, height);
         }
 
+        // BufferedImageにimageとmeasureを書き込む
         AffineTransform af = new AffineTransform();
         af.translate(-r.x, -r.y);
         BufferedImage image = new BufferedImage(r.width, r.height, BufferedImage.TYPE_INT_BGR);
@@ -192,6 +185,7 @@ public class DicomViewerRootPane extends JLayeredPane {
         measurePanel.paint(g2d);
         g2d.dispose();
 
+        // クリップボードにコピー
         Clipboard clip = Toolkit.getDefaultToolkit().getSystemClipboard();
         ImageTransferable it = new ImageTransferable(image);
         clip.setContents(it, null);
@@ -226,7 +220,6 @@ public class DicomViewerRootPane extends JLayeredPane {
             d.width = (int) (image.getWidth() * currentScale);
             d.height = (int) (image.getHeight() * currentScale);
             resizeBaseLayer(d);
-            imagePanel.repaint();
         }
     }
 
@@ -326,6 +319,7 @@ public class DicomViewerRootPane extends JLayeredPane {
                         Cursor cursor = Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR);
                         e.getComponent().setCursor(cursor);
                     } else if (viewer.getSelectBtn().isSelected()){
+                        // 矩形選択
                         Point sp = new Point(startP);
                         toAbsoluteBasePoint(sp);
                         selectionPanel.setStartPoint(sp);
@@ -366,6 +360,7 @@ public class DicomViewerRootPane extends JLayeredPane {
                                 e.getY() - startP.y + oldBaseP.y);
                         baseLayer.setLocation(p);
                     } else if (viewer.getSelectBtn().isSelected()){
+                        // 矩形選択
                         Point endP = e.getPoint();
                         toAbsoluteBasePoint(endP);
                         selectionPanel.setEndPoint(endP);

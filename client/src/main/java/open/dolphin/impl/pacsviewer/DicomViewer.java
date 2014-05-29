@@ -66,7 +66,7 @@ public class DicomViewer {
     private JLabel studyInfoLbl;
     private JLabel statusLbl;
     private JSlider slider;
-    private JTextField sliderValue;
+    private JTextField gammaField;
     private JPanel sliderPanel;
 
     private ImageEntryJList<DicomImageEntry> thumbnailList;
@@ -171,7 +171,7 @@ public class DicomViewer {
         moveBtn.setToolTipText("マウスホイールで前後画像に移動します");
         zoomBtn = new JToggleButton(ZOOM_ICON);
         zoomBtn.setToolTipText("マウスホイールで画像拡大縮小します");
-        showInfoCb = new JCheckBox("情報");
+        showInfoCb = new JCheckBox("画像情報");
         statusLbl = new JLabel("OpenDolphin-m");
         studyInfoLbl = new JLabel("Study Info.");
         gammaBtn = new JToggleButton(" γ ");
@@ -184,9 +184,9 @@ public class DicomViewer {
         slider = new JSlider(0, sliderMax);
         JLabel lblSliderLeft = new JLabel(frmt.format(gammaMin));
         JLabel lblSliderRight = new JLabel(frmt.format(gammaMax));
-        sliderValue = new JTextField(frmt1.format(d));
-        sliderValue.setEditable(false);
-        sliderValue.setFocusable(false);
+        gammaField = new JTextField(frmt1.format(d));
+        gammaField.setEditable(false);
+        gammaField.setFocusable(false);
         int pos = (int) ((d - gammaMin) / gammaStep);
         slider.setValue(pos);
         viewerPane.setGamma(d);
@@ -201,7 +201,7 @@ public class DicomViewer {
         toolPanel.setLayout(new ModifiedFlowLayout(FlowLayout.LEFT));
         JToolBar gammaBar = new JToolBar();
         gammaBar.add(gammaBtn);
-        gammaBar.add(sliderValue);
+        gammaBar.add(gammaField);
         toolPanel.add(gammaBar);
         JToolBar mouseBar = new JToolBar();
         mouseBar.add(new JLabel("マウス左："));
@@ -213,7 +213,7 @@ public class DicomViewer {
         mouseBar.add(moveBtn);
         mouseBar.add(zoomBtn);
         mouseBar.add(new JToolBar.Separator());
-        mouseBar.add(new JLabel("右：WL/W"));
+        mouseBar.add(new JLabel("右：WL/WW"));
         toolPanel.add(mouseBar);
         JToolBar actionBar = new JToolBar();
         actionBar.add(copyBtn);
@@ -222,6 +222,7 @@ public class DicomViewer {
         actionBar.add(showInfoCb);
         toolPanel.add(actionBar);
 
+        // ボタングループを設定
         ButtonGroup group = new ButtonGroup();
         group.add(moveBtn);
         group.add(zoomBtn);
@@ -246,7 +247,7 @@ public class DicomViewer {
             @Override
             public void stateChanged(ChangeEvent e) {
                 double d = getSliderGamma();
-                sliderValue.setText(frmt1.format(d));
+                gammaField.setText(frmt1.format(d));
                 viewerPane.setGamma(d);
             }
         });
@@ -257,24 +258,22 @@ public class DicomViewer {
             public void stateChanged(ChangeEvent e) {
                 if (gammaBtn.isSelected()) {
                     double d = getSliderGamma();
-                    sliderValue.setText(frmt1.format(d));
+                    gammaField.setText(frmt1.format(d));
                     viewerPane.setGamma(d);
-                    slider.setEnabled(true);
                 } else {
-                    sliderValue.setText(frmt1.format(gammaDefault));
+                    gammaField.setText(frmt1.format(gammaDefault));
                     viewerPane.setGamma(gammaDefault);
-                    slider.setEnabled(false);
                 }
             }
         });
-        sliderValue.addMouseListener(new MouseAdapter() {
+        gammaField.addMouseListener(new MouseAdapter() {
 
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (gammaBtn.isSelected()) {
                     JPopupMenu popup = new JPopupMenu();
                     popup.add(sliderPanel);
-                    popup.show(sliderValue, 0, 32);
+                    popup.show(gammaField, 0, 32);
                 }
             }
         });
@@ -287,6 +286,7 @@ public class DicomViewer {
         thumbnailList = new ImageEntryJList<>(thumbnailListModel, JList.VERTICAL);
         thumbnailList.setMaxIconTextWidth(MAX_IMAGE_SIZE);
         thumbnailList.setDragEnabled(false);
+        // サムネイル選択で画像表示
         thumbnailList.addListSelectionListener(new ListSelectionListener() {
 
             @Override
@@ -338,6 +338,7 @@ public class DicomViewer {
         panel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(ksc, optionMapKey);
         panel.getActionMap().put(optionMapKey, resetImageAction);
 
+        // preferrence設定
         boolean b = Project.getBoolean(MiscSettingPanel.PACS_SHOW_IMAGEINFO, MiscSettingPanel.DEFAULT_PACS_SHOW_IMAGEINFO);
         viewerPane.setShowInfo(b);
         showInfoCb.setSelected(b);
@@ -350,6 +351,7 @@ public class DicomViewer {
         return gammaStep * pos + gammaMin;
     }
 
+    // クリップボードにコピーする
     private void copyImage() {
         SwingWorker worker = new SwingWorker() {
 

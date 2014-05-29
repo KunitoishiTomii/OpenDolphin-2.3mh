@@ -56,14 +56,16 @@ public class DicomSelectionPanel extends JPanel {
     @Override
     protected void paintComponent(Graphics g) {
 
-        if (start != null && end != null) {
-            
-            Graphics2D g2D = (Graphics2D) g;
-            g2D.setColor(Color.MAGENTA);
-            g2D.setStroke(STROKE_DOTTED);
-            Rectangle r = getSelectedRectangle();
-            g2D.drawRect(r.x, r.y, r.width, r.height);
+        if (start == null || end == null) {
+            return;
         }
+
+        Graphics2D g2D = (Graphics2D) g;
+        g2D.setColor(Color.MAGENTA);
+        g2D.setStroke(STROKE_DOTTED);
+        Rectangle r = getSelectedRectangle();
+        g2D.drawRect(r.x, r.y, r.width, r.height);
+
     }
 
     public Rectangle getSelectedRectangle() {
@@ -74,6 +76,7 @@ public class DicomSelectionPanel extends JPanel {
         int width = (int) (Math.abs(start.x - end.x) * scale);
         int height = (int) (Math.abs(start.y - end.y) * scale);
         Rectangle r = new Rectangle(x, y, width, height);
+        
         return r;
     }
 }

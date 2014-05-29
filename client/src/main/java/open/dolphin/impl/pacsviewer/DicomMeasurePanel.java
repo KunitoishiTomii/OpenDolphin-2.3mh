@@ -18,7 +18,7 @@ import javax.swing.JPanel;
 public class DicomMeasurePanel extends JPanel {
 
     private final DicomViewerRootPane parent;
-    private List<PointPair> measureList;
+    private final List<PointPair> measureList;
 
     private double pixelSpacingX;
     private double pixelSpacingY;
@@ -35,17 +35,11 @@ public class DicomMeasurePanel extends JPanel {
 
     public DicomMeasurePanel(DicomViewerRootPane parent) {
         this.parent = parent;
+        measureList = new ArrayList();
     }
 
     public List<PointPair> getMeasureList() {
-        if (measureList == null) {
-            measureList = new ArrayList();
-        }
         return measureList;
-    }
-
-    public void setMeasureList(List<PointPair> list) {
-        measureList = list;
     }
 
     public void setPixelSpacing(double pSpacingX, double pSpacingY) {
