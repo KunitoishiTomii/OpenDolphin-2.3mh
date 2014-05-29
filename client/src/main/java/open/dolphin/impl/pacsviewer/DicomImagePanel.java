@@ -61,7 +61,6 @@ public class DicomImagePanel extends JPanel {
     public void setGamma(double gamma) {
         this.gamma = gamma;
         setLUT();
-        repaint();
     }
     
     public double getGamma() {
@@ -91,7 +90,6 @@ public class DicomImagePanel extends JPanel {
         }
         windowWidth = width;
         setLUT();
-        repaint();
     }
 
     // Window Width/Levelとガンマ値に応じたLUTを作成する。

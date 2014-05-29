@@ -160,6 +160,7 @@ public class DicomViewerRootPane extends JLayeredPane {
     // ガンマ係数を設定する
     public void setGamma(double d) {
         imagePanel.setGamma(d);
+        imagePanel.repaint();
     }
     
     // クリップボードにコピーする
@@ -373,6 +374,7 @@ public class DicomViewerRootPane extends JLayeredPane {
                     int deltaX = endP.x - startP.x;
                     int deltaY = endP.y - startP.y;
                     imagePanel.setWindowLevel(windowLevel + deltaX / 2, windowWidth + deltaY / 2);
+                    imagePanel.repaint();
                     infoLabel.setWindowLevel(imagePanel.getWindowLevel());
                     infoLabel.setWindowWidth(imagePanel.getWindowWidth());
                     infoLabel.updateText();
