@@ -129,6 +129,22 @@ public class DicomViewer {
                 exit();
             }
         });
+        
+        // アクション定義
+        AbstractAction resetImageAction = new AbstractAction(){
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                viewerPane.resetImage();
+            }
+        };
+        AbstractAction copyImageAction = new AbstractAction(){
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                copyImage();
+            }
+        };
 
         // do not remove copyright!
         String title = ClientContext.getFrameTitle("Dicom Viewer, Masuda Naika");
@@ -143,9 +159,13 @@ public class DicomViewer {
         measureBtn.setToolTipText("計測します");
         selectBtn = new JToggleButton(SELECT_ICON);
         selectBtn.setToolTipText("コピーする領域を選択します");
-        resetBtn = new JButton(RESET_ICON);
+        resetBtn = new JButton();
+        resetBtn.setAction(resetImageAction);
+        resetBtn.setIcon(RESET_ICON);
         resetBtn.setToolTipText("画像を初期状態に戻します");
-        copyBtn = new JButton(COPY_ICON);
+        copyBtn = new JButton();
+        copyBtn.setAction(copyImageAction);
+        copyBtn.setIcon(COPY_ICON);
         copyBtn.setToolTipText("選択領域をコピーします");
         moveBtn = new JToggleButton(MOVE_ICON, true);
         moveBtn.setToolTipText("マウスホイールで前後画像に移動します");
@@ -211,21 +231,8 @@ public class DicomViewer {
         group2.add(selectBtn);
 
         frame.add(toolPanel, BorderLayout.NORTH);
+        
         // ボタン類の設定
-        copyBtn.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                copyImage();
-            }
-        });
-        resetBtn.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                viewerPane.resetImage();
-            }
-        });
         showInfoCb.addItemListener(new ItemListener() {
 
             @Override
@@ -317,6 +324,19 @@ public class DicomViewer {
         panel.add(studyInfoLbl);
         panel.add(statusLbl);
         frame.add(panel, BorderLayout.SOUTH);
+        
+        // ショートカット　CTRL+C でコピー
+        panel.getActionMap();
+        String optionMapKey = "copyImage";
+        KeyStroke ksc = KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_MASK);
+        panel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(ksc, optionMapKey);
+        panel.getActionMap().put(optionMapKey, copyImageAction);
+        
+        // CTRL+R でリセット
+        optionMapKey = "resetImage";
+        ksc = KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.CTRL_MASK);
+        panel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(ksc, optionMapKey);
+        panel.getActionMap().put(optionMapKey, resetImageAction);
 
         boolean b = Project.getBoolean(MiscSettingPanel.PACS_SHOW_IMAGEINFO, MiscSettingPanel.DEFAULT_PACS_SHOW_IMAGEINFO);
         viewerPane.setShowInfo(b);
