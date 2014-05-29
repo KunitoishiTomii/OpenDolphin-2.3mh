@@ -860,7 +860,7 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         // 全体レイアウト
         gbl = new GridBagBuilder();
         gbl.add(color, 0, 0, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
-        gbl.add(labo, 0, 1, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
+        gbl.add(font, 0, 1, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
         JPanel uiSetting = gbl.getProduct();
         
         JTabbedPane tabbedPane = new JTabbedPane();
