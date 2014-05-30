@@ -166,7 +166,7 @@ public class DicomViewerRootPane extends JLayeredPane {
         // BufferedImageにimageとmeasureを書き込む
         AffineTransform af = new AffineTransform();
         af.translate(-r.x, -r.y);
-        BufferedImage image = new BufferedImage(r.width, r.height, BufferedImage.TYPE_INT_BGR);
+        BufferedImage image = new BufferedImage(r.width, r.height, BufferedImage.TYPE_3BYTE_BGR);
         Graphics2D g2d = image.createGraphics();
         g2d.setTransform(af);
         imagePanel.paint(g2d);

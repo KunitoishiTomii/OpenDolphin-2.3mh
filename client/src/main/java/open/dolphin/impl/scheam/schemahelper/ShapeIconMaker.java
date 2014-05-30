@@ -12,7 +12,7 @@ import javax.swing.ImageIcon;
 public class ShapeIconMaker {
     
     public static ImageIcon createRectFillIcon(Color color, Dimension size) {
-        BufferedImage image = new BufferedImage(size.width, size.height, BufferedImage.TYPE_INT_BGR);
+        BufferedImage image = new BufferedImage(size.width, size.height, BufferedImage.TYPE_3BYTE_BGR);
         Rectangle2D rect = new Rectangle2D.Double(0, 0, size.width, size.height);
         Graphics2D g2 = image.createGraphics();
         g2.setPaint(color);
@@ -24,7 +24,7 @@ public class ShapeIconMaker {
     }
     
     public static ImageIcon createCircleFillIcon(Color color, int size) {
-        BufferedImage image = new BufferedImage(size, size, BufferedImage.TYPE_INT_BGR);
+        BufferedImage image = new BufferedImage(size, size, BufferedImage.TYPE_3BYTE_BGR);
         Ellipse2D rect = new Ellipse2D.Double(0, 0, size, size);
         Graphics2D g2 = image.createGraphics();
         g2.setPaint(color);

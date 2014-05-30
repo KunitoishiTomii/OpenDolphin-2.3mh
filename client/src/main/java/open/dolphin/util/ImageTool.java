@@ -153,7 +153,7 @@ public class ImageTool {
     // ComponentからBufferedImageを作成する
     public static BufferedImage getImageFromComponent(Component cmp) {
         Rectangle d = cmp.getBounds();
-        BufferedImage image = new BufferedImage(d.width, d.height, BufferedImage.TYPE_INT_BGR);
+        BufferedImage image = new BufferedImage(d.width, d.height, BufferedImage.TYPE_3BYTE_BGR);
         Graphics2D g2d = image.createGraphics();
         cmp.paint(g2d);
         g2d.dispose();
@@ -234,7 +234,7 @@ public class ImageTool {
             int scaledH = (int) (scale * (double) inImage.getHeight());
 
             // Create an image buffer in which to paint on.
-            outImage = new BufferedImage(scaledW, scaledH, BufferedImage.TYPE_INT_BGR);
+            outImage = new BufferedImage(scaledW, scaledH, BufferedImage.TYPE_3BYTE_BGR);
 
             // Set the scale.
             AffineTransform tx = new AffineTransform();
@@ -260,7 +260,7 @@ public class ImageTool {
     public static BufferedImage createBufferedImage(Image image) {
         int width = image.getWidth(null);
         int height = image.getHeight(null);
-        BufferedImage bf = new BufferedImage(width, height, BufferedImage.TYPE_INT_BGR);
+        BufferedImage bf = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
         Graphics2D g = bf.createGraphics();
         g.setPaint(Color.WHITE);
         g.drawImage(image, 0, 0, null);
