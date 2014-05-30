@@ -134,8 +134,8 @@ public class DicomImagePanel extends JPanel {
                 lut[x] = (byte) x;
             }
         } else {
-            int c = windowCenter / (imageDepth / DEPTH);
-            int w = windowWidth / (imageDepth / DEPTH);
+            double c = windowCenter * DEPTH / imageDepth;
+            double w = windowWidth * DEPTH / imageDepth;
 
             for (int x = 0; x < DEPTH; ++x) {
                 double y;
