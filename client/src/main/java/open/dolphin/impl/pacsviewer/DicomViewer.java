@@ -50,11 +50,9 @@ public class DicomViewer {
             = ClientContext.getClientContextStub().getImageIcon("edit-copy-2_24.png");
     private static final ImageIcon GAMMA_ICON
             = ClientContext.getClientContextStub().getImageIcon("gamma-24.png");
-    private static final ImageIcon BLACK_ICON
-            = ClientContext.getClientContextStub().getImageIcon("black-24.png");
-    private static final ImageIcon WHITE_ICON
-            = ClientContext.getClientContextStub().getImageIcon("white-24.png");
-
+    private static final ImageIcon INVERT_ICON
+            = ClientContext.getClientContextStub().getImageIcon("blackwhite-24.png");
+    
     private static final int MAX_IMAGE_SIZE = 120;
 
     private JFrame frame;
@@ -178,8 +176,7 @@ public class DicomViewer {
         copyBtn.setAction(copyImageAction);
         copyBtn.setIcon(COPY_ICON);
         copyBtn.setToolTipText("選択領域をコピーします(CTRL+C)");
-        invertBtn = new JToggleButton(BLACK_ICON);
-        invertBtn.setSelectedIcon(WHITE_ICON);
+        invertBtn = new JToggleButton(INVERT_ICON);
         invertBtn.setToolTipText("色反転します");
         moveBtn = new JToggleButton(MOVE_ICON, true);
         moveBtn.setToolTipText("マウスホイールで前後画像に移動します");
