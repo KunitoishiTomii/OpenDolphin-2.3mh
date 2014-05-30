@@ -17,7 +17,6 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
 import open.dolphin.tr.ImageTransferable;
 import org.dcm4che2.data.DicomObject;
 
@@ -224,20 +223,19 @@ public class DicomViewerRootPane extends JLayeredPane {
         if (image == null) {
             return;
         }
-
-        SwingUtilities.invokeLater(new Runnable() {
-
-            @Override
-            public void run() {
-                Dimension d = getSize();
-                // スケール計算
-                double sx = (double) d.width / image.getWidth();
-                double sy = (double) d.height / image.getHeight();
-                initialScale = Math.min(sx, sy);
-                currentScale = initialScale;
-                resizeBaseLayer(d);
-            }
-        });
+        
+        // スケール計算
+        Dimension d = getSize();
+        double sx = (double) d.width / image.getWidth();
+        double sy = (double) d.height / image.getHeight();
+        initialScale = Math.min(sx, sy);
+        currentScale = initialScale;
+        resizeBaseLayer(d);
+        
+        // 中心に表示されるようにbaseLayerを移動する
+        int x  = (int) ((d.width - image.getWidth() * initialScale) / 2);
+        int y = (int) ((d.height - image.getHeight() * initialScale) / 2);
+        baseLayer.setLocation(x, y);
     }
 
     // 座標変換
