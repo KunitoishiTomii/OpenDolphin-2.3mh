@@ -288,6 +288,7 @@ public class DicomViewer {
         thumbnailListModel = new DefaultListModel();
         thumbnailList = new ImageEntryJList<>(thumbnailListModel, JList.VERTICAL);
         thumbnailList.setMaxIconTextWidth(MAX_IMAGE_SIZE);
+        thumbnailList.setFocusable(false);
         thumbnailList.setDragEnabled(false);
         // サムネイル選択で画像表示
         thumbnailList.addListSelectionListener(new ListSelectionListener() {
