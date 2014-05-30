@@ -9,6 +9,8 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JPanel;
+import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.Tag;
 
 /**
  * 計測線を表示するパネル
@@ -42,10 +44,18 @@ public class DicomMeasurePanel extends JPanel {
     public List<PointPair> getMeasureList() {
         return measureList;
     }
+    
+    public void setDicomObject(DicomObject object) {
 
-    public void setPixelSpacing(double pSpacingX, double pSpacingY) {
-        pixelSpacingX = pSpacingX;
-        pixelSpacingY = pSpacingY;
+        // 画像のPixel spacingを設定する
+        pixelSpacingX = 0;
+        pixelSpacingY = 0;
+        
+        double[] pixelSpacing = object.getDoubles(Tag.PixelSpacing);
+        if (pixelSpacing != null) {
+            pixelSpacingX = pixelSpacing[0];
+            pixelSpacingY = pixelSpacing[1];
+        }
     }
 
     @Override

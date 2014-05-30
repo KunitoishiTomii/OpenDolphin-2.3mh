@@ -3,6 +3,7 @@ package open.dolphin.impl.pacsviewer;
 import java.awt.Color;
 import java.awt.Font;
 import javax.swing.JLabel;
+import org.dcm4che2.data.DicomObject;
 
 /**
  * 画像情報を表示するラベル
@@ -23,10 +24,9 @@ public class DicomInfoLabel extends JLabel {
         setFont(new Font("Dialog", Font.PLAIN, 20));
         setOpaque(false);
     }
-
-    public void setDicomInfo(DicomImageInfo info) {
-        this.info = info;
-        updateText();
+    
+    public void setDicomObject(DicomObject object) {
+        info = new DicomImageInfo(object);
     }
 
     public void setWindowWidth(int windowWidth) {

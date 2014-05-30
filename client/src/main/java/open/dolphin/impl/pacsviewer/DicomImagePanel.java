@@ -6,7 +6,11 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.awt.image.ByteLookupTable;
 import java.awt.image.LookupOp;
+import java.io.IOException;
 import javax.swing.JPanel;
+import open.dolphin.util.ImageTool;
+import org.dcm4che2.data.DicomObject;
+import org.dcm4che2.data.Tag;
 
 /**
  * 画像を表示するパネル
@@ -15,16 +19,22 @@ import javax.swing.JPanel;
  */
 public class DicomImagePanel extends JPanel {
     
-    private static final int MAX_DEPTH = 256;
-    private static final int MAX_WW = MAX_DEPTH - 1;
-    private static final int MIN_WW = 1;
-    private static final int MAX_WL = MAX_DEPTH - 1;
-    private static final int MIN_WL = -MAX_WL;
-    public static final int DEFALUT_WW = MAX_DEPTH - 1;
-    public static final int DEFAULT_WL = MAX_DEPTH / 2 - 1;
-    private int windowWidth = DEFALUT_WW;
-    private int windowLevel = DEFAULT_WL;
+    private static final int DEPTH = 256;
+    private static final int Y_MAX = DEPTH - 1;
+    private static final int Y_MIN = 0;
     
+    private int imageDepth;
+    private int defaultWindowWidth;
+    private int defaultWindowCenter;
+    
+    private int windowWidth;
+    private int windowCenter;
+    
+    private int maxWidth;
+    private final int minWidth = 1;
+    private int maxCenter;
+    private int minCenter;
+
     private final DicomViewerRootPane parent;
     private final byte[] lut;
     
@@ -34,7 +44,7 @@ public class DicomImagePanel extends JPanel {
     
     public DicomImagePanel(DicomViewerRootPane parent) {
         this.parent = parent;
-        lut = new byte[MAX_DEPTH];
+        lut = new byte[DEPTH];
         setOpaque(false);
     }
     
@@ -51,8 +61,31 @@ public class DicomImagePanel extends JPanel {
         }
     }
     
-    public void setImage(BufferedImage image) {
-        this.image = image;
+    public void setDicomObject(DicomObject object) throws IOException {
+        
+        image = ImageTool.getDicomImage(object);
+        int bitsStored = object.getInt(Tag.BitsStored);
+        imageDepth = 1 << bitsStored;
+        maxWidth = imageDepth - 1;
+        maxCenter = imageDepth + imageDepth / 2 - 1;
+        minCenter = -imageDepth / 2 + 1;
+
+        String wl = object.getString(Tag.WindowCenter);
+        String ww = object.getString(Tag.WindowWidth);
+        try {
+            windowCenter = Integer.parseInt(wl);
+            windowWidth = Integer.parseInt(ww);
+        } catch (NullPointerException | NumberFormatException ex) {
+            windowCenter = maxWidth / 2;
+            windowWidth = maxWidth;
+        }
+        defaultWindowCenter = windowCenter;
+        defaultWindowWidth = windowWidth;
+    }
+    
+    public void restoreDefault() {
+        windowCenter = defaultWindowCenter;
+        windowWidth = defaultWindowWidth;
     }
     
     public BufferedImage getImage() {
@@ -67,48 +100,57 @@ public class DicomImagePanel extends JPanel {
     public double getGamma() {
         return gamma;
     }
-    
-    public int getWindowLevel() {
-        return windowLevel;
+
+    public int getWindowCenter() {
+        return windowCenter;
     }
-    
+
     public int getWindowWidth() {
         return windowWidth;
     }
     
-    public void setWindowLevel(int level, int width) {
+    public void setWindowWidthAndCenter(int wWidth, int wCenter) {
         
-        if (level > MAX_WL) {
-            level = MAX_WL;
-        } else if (level < MIN_WL) {
-            level = MIN_WL;
+        if (wCenter > maxCenter) {
+            wCenter = maxCenter;
+        } else if (wCenter < minCenter) {
+            wCenter = minCenter;
         }
-        windowLevel = level;
-        if (width > MAX_WW) {
-            width = MAX_WW;
-        } else if (width < MIN_WW) {
-            width = MIN_WW;
+        windowCenter = wCenter;
+        if (wWidth > maxWidth) {
+            wWidth = maxWidth;
+        } else if (wWidth < minWidth) {
+            wWidth = minWidth;
         }
-        windowWidth = width;
+        windowWidth = wWidth;
         setLUT();
     }
 
     // Window Width/Levelとガンマ値に応じたLUTを作成する。
     public void setLUT() {
         
-        for (int i = 0; i < MAX_DEPTH; ++i) {
-            double d1;
-            if (i <= windowLevel - 0.5 - (windowWidth - 1) / 2) {
-                d1 = MIN_WW;
-            } else if (i > windowLevel - 0.5 + (windowWidth - 1) / 2) {
-                d1 = MAX_WW;
-            } else {
-                d1 = ((i - (windowLevel - 0.5)) / (windowWidth - 1) + 0.5) * (MAX_WW - MIN_WW) + MIN_WW;
+        if (imageDepth == 0) {
+            for (int x = 0; x < DEPTH; ++x) {
+                lut[x] = (byte) x;
             }
-            double d2 = (MAX_DEPTH - 1) * Math.pow(d1 / (MAX_DEPTH - 1), 1 / gamma);
-            lut[i] = (byte) d2;
+        } else {
+            int c = windowCenter / (imageDepth / DEPTH);
+            int w = windowWidth / (imageDepth / DEPTH);
+
+            for (int x = 0; x < DEPTH; ++x) {
+                double y;
+                if (x <= c - 0.5 - (w - 1) / 2) {
+                    y = Y_MIN;
+                } else if (x > c - 0.5 + (w - 1) / 2) {
+                    y = Y_MAX;
+                } else {
+                    y = ((x - (c - 0.5)) / (w - 1) + 0.5) * (Y_MAX - Y_MIN) + Y_MIN;
+                }
+                double yg = (DEPTH - 1) * Math.pow(y / (DEPTH - 1), 1 / gamma);
+                lut[x] = (byte) yg;
+            }
         }
         lookupOp = new LookupOp(new ByteLookupTable(0, lut), null);
     }
-    
+
 }
