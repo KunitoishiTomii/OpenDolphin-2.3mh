@@ -48,12 +48,19 @@ public class DicomViewer {
             = ClientContext.getClientContextStub().getImageIcon("media-playback-start-5.png");
     private static final ImageIcon COPY_ICON
             = ClientContext.getClientContextStub().getImageIcon("edit-copy-2_24.png");
+    private static final ImageIcon GAMMA_ICON
+            = ClientContext.getClientContextStub().getImageIcon("gamma-24.png");
+    private static final ImageIcon BLACK_ICON
+            = ClientContext.getClientContextStub().getImageIcon("black-24.png");
+    private static final ImageIcon WHITE_ICON
+            = ClientContext.getClientContextStub().getImageIcon("white-24.png");
 
     private static final int MAX_IMAGE_SIZE = 120;
 
     private JFrame frame;
     private DicomViewerRootPane viewerPane;
     private JScrollPane thumbnailScrollPane;
+    private JToggleButton invertBtn;
     private JButton resetBtn;
     private JButton copyBtn;
     private JCheckBox showInfoCb;
@@ -102,6 +109,10 @@ public class DicomViewer {
 
     public JToggleButton getDragBtn() {
         return dragBtn;
+    }
+    
+    public JToggleButton getInvertBtn() {
+        return invertBtn;
     }
 
     private void exit() {
@@ -167,6 +178,9 @@ public class DicomViewer {
         copyBtn.setAction(copyImageAction);
         copyBtn.setIcon(COPY_ICON);
         copyBtn.setToolTipText("選択領域をコピーします(CTRL+C)");
+        invertBtn = new JToggleButton(BLACK_ICON);
+        invertBtn.setSelectedIcon(WHITE_ICON);
+        invertBtn.setToolTipText("色反転します");
         moveBtn = new JToggleButton(MOVE_ICON, true);
         moveBtn.setToolTipText("マウスホイールで前後画像に移動します");
         zoomBtn = new JToggleButton(ZOOM_ICON);
@@ -174,7 +188,7 @@ public class DicomViewer {
         showInfoCb = new JCheckBox("画像情報");
         statusLbl = new JLabel("OpenDolphin-m");
         studyInfoLbl = new JLabel("Study Info.");
-        gammaBtn = new JToggleButton(" γ ");
+        gammaBtn = new JToggleButton(GAMMA_ICON);
         Font f = new Font(Font.SANS_SERIF, Font.BOLD, 16);
         gammaBtn.setFont(f);
         gammaBtn.setBorderPainted(true);
@@ -205,6 +219,7 @@ public class DicomViewer {
         gammaBar.add(gammaField);
         toolPanel.add(gammaBar);
         JToolBar actionBar = new JToolBar();
+        actionBar.add(invertBtn);
         actionBar.add(copyBtn);
         actionBar.add(resetBtn);
         actionBar.add(new JToolBar.Separator());
@@ -278,6 +293,13 @@ public class DicomViewer {
                     popup.add(sliderPanel);
                     popup.show(gammaField, 0, 32);
                 }
+            }
+        });
+        invertBtn.addChangeListener(new ChangeListener() {
+
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                viewerPane.setInverted(invertBtn.isSelected());
             }
         });
 

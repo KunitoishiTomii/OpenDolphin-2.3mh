@@ -149,6 +149,13 @@ public class DicomViewerRootPane extends JLayeredPane {
         imagePanel.repaint();
     }
     
+    // 色反転処理
+    public void setInverted(boolean b) {
+        imagePanel.setInverted(b);
+        imagePanel.setLUT();
+        imagePanel.repaint();
+    }
+    
     // クリップボードにコピーする
     public void copyImage() {
         

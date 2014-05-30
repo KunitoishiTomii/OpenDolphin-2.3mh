@@ -41,6 +41,7 @@ public class DicomImagePanel extends JPanel {
     private BufferedImage image;
     private LookupOp lookupOp;
     private double gamma;
+    private boolean inverted;
     
     public DicomImagePanel(DicomViewerRootPane parent) {
         this.parent = parent;
@@ -100,6 +101,14 @@ public class DicomImagePanel extends JPanel {
     public double getGamma() {
         return gamma;
     }
+    
+    public void setInverted(boolean inverted) {
+        this.inverted = inverted;
+    }
+    
+    public boolean isInverted() {
+        return inverted;
+    }
 
     public int getWindowCenter() {
         return windowCenter;
@@ -128,16 +137,16 @@ public class DicomImagePanel extends JPanel {
 
     // Window Width/Levelとガンマ値に応じたLUTを作成する。
     public void setLUT() {
-        
+
         if (imageDepth != 0) {
-            
+
             int factor = imageDepth / DEPTH;
             double ww = windowWidth;
             double wc = windowCenter;
             double y;
-            
+
             for (int i = 0; i < DEPTH; ++i) {
-                double x = i * factor;
+                double x = !inverted ? i * factor : (DEPTH - 1 - i) * factor;
                 if (x <= wc - 0.5 - (ww - 1) / 2) {
                     y = Y_MIN;
                 } else if (x > wc - 0.5 + (ww - 1) / 2) {
