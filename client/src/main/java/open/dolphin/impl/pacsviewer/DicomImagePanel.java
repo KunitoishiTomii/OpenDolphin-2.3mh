@@ -138,26 +138,24 @@ public class DicomImagePanel extends JPanel {
     // Window Width/Levelとガンマ値に応じたLUTを作成する。
     public void setLUT() {
 
-        if (imageDepth != 0) {
+        int factor = imageDepth / DEPTH;
+        double ww = windowWidth;
+        double wc = windowCenter;
+        double y;
 
-            int factor = imageDepth / DEPTH;
-            double ww = windowWidth;
-            double wc = windowCenter;
-            double y;
-
-            for (int i = 0; i < DEPTH; ++i) {
-                double x = !inverted ? i * factor : (DEPTH - 1 - i) * factor;
-                if (x <= wc - 0.5 - (ww - 1) / 2) {
-                    y = Y_MIN;
-                } else if (x > wc - 0.5 + (ww - 1) / 2) {
-                    y = Y_MAX;
-                } else {
-                    y = ((x - (wc - 0.5)) / (ww - 1) + 0.5) * (Y_MAX - Y_MIN) + Y_MIN;
-                }
-                double yg = (DEPTH - 1) * Math.pow(y / (DEPTH - 1), 1 / gamma);
-                lut[i] = (byte) yg;
+        for (int i = 0; i < DEPTH; ++i) {
+            double x = !inverted ? i * factor : (DEPTH - 1 - i) * factor;
+            if (x <= wc - 0.5 - (ww - 1) / 2) {
+                y = Y_MIN;
+            } else if (x > wc - 0.5 + (ww - 1) / 2) {
+                y = Y_MAX;
+            } else {
+                y = ((x - (wc - 0.5)) / (ww - 1) + 0.5) * (Y_MAX - Y_MIN) + Y_MIN;
             }
+            double yg = (DEPTH - 1) * Math.pow(y / (DEPTH - 1), 1 / gamma);
+            lut[i] = (byte) yg;
         }
+
         lookupOp = new LookupOp(new ByteLookupTable(0, lut), null);
     }
 

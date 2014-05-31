@@ -171,7 +171,7 @@ public class DicomViewer {
         resetBtn = new JButton();
         resetBtn.setAction(resetImageAction);
         resetBtn.setIcon(RESET_ICON);
-        resetBtn.setToolTipText("画像を初期状態に戻します(CTRL+R)");
+        resetBtn.setToolTipText("画像を初期状態に戻します(CTRL+R, LR同時クリック)");
         copyBtn = new JButton();
         copyBtn.setAction(copyImageAction);
         copyBtn.setIcon(COPY_ICON);
