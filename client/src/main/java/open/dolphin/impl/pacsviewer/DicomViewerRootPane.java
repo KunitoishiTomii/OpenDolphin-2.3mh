@@ -291,11 +291,12 @@ public class DicomViewerRootPane extends JLayeredPane {
 
         @Override
         public void mousePressed(MouseEvent e) {
-            
+
             // 左右同時クリック
             int lrMask = MouseEvent.BUTTON1_DOWN_MASK | MouseEvent.BUTTON3_DOWN_MASK;
             if ((e.getModifiersEx() & lrMask) == lrMask) {
                 resetImage();
+                return;
             }
 
             mouseButton = e.getButton();
