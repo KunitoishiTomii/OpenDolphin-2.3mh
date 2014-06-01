@@ -307,9 +307,8 @@ public class SOATransferHandler extends AbstractKarteTransferHandler {
 
         try {
             Image image = (Image) tr.getTransferData(DataFlavor.imageFlavor);
-            ImageEntry entry = ImageTool.getImageEntryFromImage(image);
-            if (entry != null) {
-                kartePane.imageEntryDropped(entry);
+            if (image != null) {
+                kartePane.imageDropped(image);
             }
         } catch (UnsupportedFlavorException ex) {
         } catch (IOException ex) {

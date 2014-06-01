@@ -1,4 +1,3 @@
-
 package open.dolphin.util;
 
 import open.dolphin.client.ImageEntry;
@@ -21,16 +20,6 @@ public class DicomImageEntry extends ImageEntry implements Comparable {
 
     public DicomObject getDicomObject() {
         return dicomObject;
-    }
-
-    // 編集用にリサイズした画像を保存しておく
-    // KartePaneのimageEntryDroppedで参照している
-    private byte[] jpegBytes;
-    public byte[] getResizedJpegBytes() {
-        return jpegBytes;
-    }
-    public void setResizedJpegBytes(byte[] bf){
-        jpegBytes = bf;
     }
 
     @Override

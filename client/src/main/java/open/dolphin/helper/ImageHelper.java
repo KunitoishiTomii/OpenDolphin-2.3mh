@@ -36,7 +36,7 @@ public class ImageHelper {
             int scaledH = (int) (scale * inImage.getHeight(null));
 
             // Create an image buffer in which to paint on.
-            outImage = new BufferedImage(scaledW, scaledH, BufferedImage.TYPE_INT_BGR);
+            outImage = new BufferedImage(scaledW, scaledH, BufferedImage.TYPE_3BYTE_BGR);
 
             // Set the scale.
             AffineTransform tx = new AffineTransform();

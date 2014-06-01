@@ -17,6 +17,7 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.FileImageInputStream;
@@ -860,6 +861,33 @@ public class KartePane implements MouseListener, CaretListener, PropertyChangeLi
                                       JOptionPane.WARNING_MESSAGE);
     }
 
+//masuda^
+    // クリップボードからドロップ
+    public void imageDropped(final Image image) {
+        
+        SwingWorker<BufferedImage, Void> worker = new SwingWorker<BufferedImage, Void>() {
+
+            @Override
+            protected BufferedImage doInBackground() throws Exception {
+                BufferedImage importImage = ImageTool.createBufferedImage(image);
+                return importImage;
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    BufferedImage importImage = get();
+                    String url = "From clipbord";
+                    openSchemaEditor(importImage, url);
+                } catch (InterruptedException | ExecutionException ex) {
+                    ex.printStackTrace(System.err);
+                }
+            }
+        };
+
+        worker.execute();
+    }
+
     /**
      * ImageTable から ImageEntry が drop された時の処理を行う。
      * entry の URL からイメージをロードし、SchemaEditorへ表示する。
@@ -867,88 +895,100 @@ public class KartePane implements MouseListener, CaretListener, PropertyChangeLi
      */
     public void imageEntryDropped(final ImageEntry entry) {
         
-        DBTask task = new DBTask<BufferedImage, Void>(parent.getContext()) {
+        SwingWorker<BufferedImage, Void> worker = new SwingWorker<BufferedImage, Void>() {
 
             @Override
             protected BufferedImage doInBackground() throws Exception {
-//masuda^   DicomImageEntryの場合はjpegBytesを使う
                 if (entry instanceof DicomImageEntry) {
-                    byte[] bytes = ((DicomImageEntry) entry).getResizedJpegBytes();
-                    return ImageTool.getBufferedImage(bytes);
-                }
-//masuda$
+                    DicomImageEntry dEntry = (DicomImageEntry) entry;
+                    BufferedImage image = ImageTool.getDicomImage(dEntry.getDicomObject());
+                    BufferedImage resized = ImageTool.adjustImageSize(image, ImageTool.MAX_IMAGE_SIZE);
+                    return resized;
+                } 
                 URL url = new URL(entry.getUrl());
                 BufferedImage importImage = ImageIO.read(url);
                 return importImage;
             }
-            
+
             @Override
-            public void succeeded(BufferedImage importImage) {
-                
-                if (importImage != null) {
-
-                    int maxImageWidth = ClientContext.getInt("image.max.width");
-                    int maxImageHeight = ClientContext.getInt("image.max.height");
-
-                    if (importImage.getWidth() > maxImageWidth || importImage.getHeight()> maxImageHeight) {
-                        boolean ok =  true;
-                        if (Project.getBoolean("showImageSizeMessage", true)) {
-                            ok = showMaxSizeMessage();
-                        }
-                        if (ok) {
-                            importImage = ImageHelper.getFirstScaledInstance(importImage, maxImageWidth);
-                        } else {
-                            return;
-                        }
-                    }
-
-                    ImageIcon icon = new ImageIcon(importImage);
-                    SchemaModel schema = new SchemaModel();
-                    schema.setIcon(icon);
-
-                    // IInfoModel として ExtRef を保持している
-                    ExtRefModel ref = new ExtRefModel();
-                    schema.setExtRefModel(ref);
-
-                    ref.setContentType(MEDIA_TYPE_IMAGE_JPEG);   // MIME
-                    ref.setTitle(DEFAULT_IMAGE_TITLE);           //
-                    ref.setUrl(entry.getUrl());                  // 元画像のURL
-
-                    // href=docID-stampId.jpg
-                    stampId++;
-                    StringBuilder sb = new StringBuilder();
-                    sb.append(getDocId());
-                    sb.append("-");
-                    sb.append(stampId);
-                    sb.append(JPEG_EXT);
-                    String fileName = sb.toString();
-                    schema.setFileName(fileName);       // href
-                    ref.setHref(fileName);              // href
-                    
-                    PluginLoader<SchemaEditor> loader 
-                        = PluginLoader.load(SchemaEditor.class);
-                    Iterator<SchemaEditor> iter = loader.iterator();
-                    if (iter.hasNext()) {
-                        final SchemaEditor editor = iter.next();
-                        editor.setSchema(schema);
-                        editor.setEditable(true);
-                        editor.addPropertyChangeListener(KartePane.this);
-                        Runnable awt = new Runnable() {
-
-                            @Override
-                            public void run() {
-                                editor.start();
-                            }
-                        };
-                        EventQueue.invokeLater(awt);
-                    }
+            protected void done() {
+                try {
+                    BufferedImage importImage = get();
+                    String url = entry.getUrl();
+                    openSchemaEditor(importImage, url);
+                } catch (InterruptedException | ExecutionException ex) {
+                    ex.printStackTrace(System.err);
                 }
             }
         };
-        
-        task.execute();
+
+        worker.execute();
     }
 
+    private void openSchemaEditor(BufferedImage importImage, String url) {
+
+        if (importImage == null) {
+            return;
+        }
+
+        int maxImageWidth = ClientContext.getInt("image.max.width");
+        int maxImageHeight = ClientContext.getInt("image.max.height");
+
+        if (importImage.getWidth() > maxImageWidth || importImage.getHeight() > maxImageHeight) {
+            boolean ok = true;
+            if (Project.getBoolean("showImageSizeMessage", true)) {
+                ok = showMaxSizeMessage();
+            }
+            if (ok) {
+                importImage = ImageHelper.getFirstScaledInstance(importImage, maxImageWidth);
+            } else {
+                return;
+            }
+        }
+
+        ImageIcon icon = new ImageIcon(importImage);
+        SchemaModel schema = new SchemaModel();
+        schema.setIcon(icon);
+
+        // IInfoModel として ExtRef を保持している
+        ExtRefModel ref = new ExtRefModel();
+        schema.setExtRefModel(ref);
+
+        ref.setContentType(MEDIA_TYPE_IMAGE_JPEG);   // MIME
+        ref.setTitle(DEFAULT_IMAGE_TITLE);           //
+        ref.setUrl(url);                  // 元画像のURL
+
+        // href=docID-stampId.jpg
+        stampId++;
+        StringBuilder sb = new StringBuilder();
+        sb.append(getDocId());
+        sb.append("-");
+        sb.append(stampId);
+        sb.append(JPEG_EXT);
+        String fileName = sb.toString();
+        schema.setFileName(fileName);       // href
+        ref.setHref(fileName);              // href
+
+        PluginLoader<SchemaEditor> loader
+                = PluginLoader.load(SchemaEditor.class);
+        Iterator<SchemaEditor> iter = loader.iterator();
+        if (iter.hasNext()) {
+            final SchemaEditor editor = iter.next();
+            editor.setSchema(schema);
+            editor.setEditable(true);
+            editor.addPropertyChangeListener(KartePane.this);
+            Runnable awt = new Runnable() {
+
+                @Override
+                public void run() {
+                    editor.start();
+                }
+            };
+            EventQueue.invokeLater(awt);
+        }
+    }
+//masuda$ 
+    
     /**
      * ファイルのDropを受け、イメージをカルテに挿入する。
      * @param file Drop されたファイル
