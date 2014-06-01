@@ -50,7 +50,7 @@
             <security-realm name="OreoreRealm">
                 <server-identities>
                     <ssl>
-                        <keystore path="oreore.keystore" relative-to="jboss.server.config.dir" keystore-password="dolphin"/>
+                        <keystore path="dolphin.keystore" relative-to="jboss.server.config.dir" keystore-password="XXXXXXXXXXXX"/>
                     </ssl>
                 </server-identities>
             </security-realm>
