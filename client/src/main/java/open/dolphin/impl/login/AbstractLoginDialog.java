@@ -21,6 +21,11 @@ import open.dolphin.setting.ProjectSettingDialog;
  */
 public abstract class AbstractLoginDialog implements ILoginDialog {
     
+    public class LoginResult{
+        public LoginStatus result;
+        public String      ip;
+    };
+
 //masuda^
     //protected JDialog dialog;
     protected JFrame dialog;
@@ -34,7 +39,7 @@ public abstract class AbstractLoginDialog implements ILoginDialog {
     protected SimpleWorker worker;
     
     // 認証結果のプロパティ
-    protected LoginStatus result;
+    protected LoginResult result;
     protected PropertyChangeSupport boundSupport;
 
     protected Action loginAction;
@@ -46,6 +51,7 @@ public abstract class AbstractLoginDialog implements ILoginDialog {
      */
     public AbstractLoginDialog() {
         boundSupport = new PropertyChangeSupport(this);
+        result       = new LoginResult();
     }
     
     /**
@@ -71,15 +77,21 @@ public abstract class AbstractLoginDialog implements ILoginDialog {
      * @return true 認証が成功した場合
      */
     public LoginStatus getResult() {
-        return result;
+        return result.result;
     }
 
     public void setResult(LoginStatus value) {
-        this.result = value;
+        this.result.result = value;
+        this.result.ip     = "";
         boundSupport.firePropertyChange("LOGIN_PROP", -100, this.result);
     }
 
-    /**
+    public void setResultWithIp(LoginStatus value, String gotIpAddr) {
+        this.result.result = value;
+        this.result.ip     = gotIpAddr;
+        boundSupport.firePropertyChange("LOGIN_PROP", -100, this.result);
+    }
+   /**
      * 警告メッセージを表示する。
      * @param msg 表示するメッセージ
      */

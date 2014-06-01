@@ -8,6 +8,7 @@ import javax.ws.rs.core.Response;
 import open.dolphin.infomodel.IInfoModel;
 import open.dolphin.infomodel.UserModel;
 import open.dolphin.project.Project;
+import org.jboss.logging.Logger;
 
 /**
  * User 関連の Business Delegater　クラス。
@@ -18,6 +19,8 @@ import open.dolphin.project.Project;
 public class UserDelegater extends BusinessDelegater {
 
     private static final String RES_USER = "user/";
+    private static final String ONLY_USER = "onlyuser/";
+    private static final String WITH_IP = "withip/";
     
     private static final boolean debug = false;
     private static final UserDelegater instance;
@@ -52,13 +55,37 @@ public class UserDelegater extends BusinessDelegater {
             System.out.println(password);
         }
 
-        return getUser(fidUid);
+        return getUserWithIP(fidUid);
     }
     
     public UserModel getUser(String userPK) throws Exception {
         
         StringBuilder sb = new StringBuilder();
         sb.append(RES_USER);
+        sb.append(ONLY_USER);
+        sb.append(userPK);
+        String path = sb.toString();
+
+        Response response = getWebTarget()
+                .path(path)
+                .request(MEDIATYPE_JSON_UTF8)
+                .get();
+
+        checkHttpStatus(response);
+        InputStream is = response.readEntity(InputStream.class);
+        UserModel userModel = (UserModel) 
+                getConverter().fromJson(is, UserModel.class);
+        
+        response.close();
+
+        return userModel;
+    }
+    
+    public UserModel getUserWithIP(String userPK) throws Exception {
+        
+        StringBuilder sb = new StringBuilder();
+        sb.append(RES_USER);
+        sb.append(WITH_IP);
         sb.append(userPK);
         String path = sb.toString();
 

@@ -27,17 +27,29 @@ public class UserResource extends AbstractResource {
     
     @Inject
     private ServletContextHolder contextHolder;
-    
 
     public UserResource() {
     }
 
     @GET
-    @Path("{userId}/")
+    @Path("onlyuser/{userId}/")
     @Produces(MEDIATYPE_JSON_UTF8)
     public Response getUser(@PathParam("userId") String userId) {
 
         UserModel result = userServiceBean.getUser(userId);
+
+        StreamingOutput so = getJsonOutStream(result);
+        
+        return Response.ok(so).build();
+    }
+
+    @GET
+    @Path("withip/{userId}/")
+    @Produces(MEDIATYPE_JSON_UTF8)
+    public Response getUserWithIp(@PathParam("userId") String userId) {
+
+        UserModel result = userServiceBean.getUser(userId);
+        result.setRemoteIpAddr(servletReq.getRemoteAddr());
 
         StreamingOutput so = getJsonOutStream(result);
         

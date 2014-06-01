@@ -72,6 +72,10 @@ public class UserModel implements Serializable {
     // アカウントロック
     private Integer failCount;
     
+    // IPアドレス
+    @Transient
+    private String remoteIpAddr;
+    
     /**
      * UserModelオブジェクトを生成する。
      */
@@ -258,6 +262,14 @@ public class UserModel implements Serializable {
     
     public String getLicenseDesc() {
         return getLicenseModel().getLicenseDesc();
+    }
+    
+    public void setRemoteIpAddr(String remoteIp){
+        remoteIpAddr = remoteIp;
+    }
+    
+    public String getRemoteIpAddr(){
+        return remoteIpAddr;
     }
     
     @Override

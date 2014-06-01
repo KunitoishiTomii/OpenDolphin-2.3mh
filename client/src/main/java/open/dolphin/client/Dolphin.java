@@ -169,20 +169,16 @@ public class Dolphin implements MainWindow, IChartEventListener {
             @Override
             public void propertyChange(PropertyChangeEvent e) {
 
-                LoginDialog.LoginStatus result = (LoginDialog.LoginStatus) e.getNewValue();
+                LoginDialog.LoginResult result = (LoginDialog.LoginResult) e.getNewValue();
                 login.close();
 
-                switch (result) {
+                switch (result.result) {
                     case AUTHENTICATED:
-                        try {
-                            // 排他処理用のUUIDを決める
-                            clientUUID = clientUUID + "," +
-                                    Project.getUserModel().getUserId().substring(22) + "," +
-                                    new Date() + "," +
-                                    InetAddress.getLocalHost().getLocalHost();
-                        } catch (UnknownHostException ex) {
-                            Logger.getLogger(Dolphin.class.getName()).log(Level.SEVERE, null, ex);
-                        }
+                        // 排他処理用のUUIDを決める
+                        clientUUID = clientUUID + "," +
+                                Project.getUserModel().getUserId().substring(22) + "," +
+                                new Date() + "," +
+                                result.ip;
                         registerLogin();
                         startServices();
                         loadStampTree();
