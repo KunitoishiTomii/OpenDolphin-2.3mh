@@ -47,6 +47,11 @@ public class ClientChartEventEndpoint {
             sb.append("ws");
         }
         sb.append(baseURI.substring(pos)).append("/dolphin/ws/");
+        // memo: mhではUUIDの後にユーザID/IPを入れているため、このままではURIが取得できずエラーになる
+        //       UUID部分のみを切り出せばエラーにはならないが、正常動作の保障がない。
+        //       現状WebsocketではなくCometを用いる予定だが、WebSocket一本になるのであれば
+        //       この処理を修正する必要がある。
+        //       b_katou
         sb.append(fidUid).append("/").append(passwd).append("/").append(clientUUID);
         URI uri = URI.create(sb.toString());
         
