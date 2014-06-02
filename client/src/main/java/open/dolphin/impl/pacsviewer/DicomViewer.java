@@ -267,10 +267,10 @@ public class DicomViewer {
             }
         });
         gammaBtn.setSelected(true);
-        gammaBtn.addChangeListener(new ChangeListener() {
+        gammaBtn.addItemListener(new ItemListener(){
 
             @Override
-            public void stateChanged(ChangeEvent e) {
+            public void itemStateChanged(ItemEvent e) {
                 if (gammaBtn.isSelected()) {
                     double d = getSliderGamma();
                     gammaField.setText(frmt1.format(d));
@@ -292,10 +292,10 @@ public class DicomViewer {
                 }
             }
         });
-        invertBtn.addChangeListener(new ChangeListener() {
+        invertBtn .addItemListener(new ItemListener(){
 
             @Override
-            public void stateChanged(ChangeEvent e) {
+            public void itemStateChanged(ItemEvent e) {
                 viewerPane.setInverted(invertBtn.isSelected());
             }
         });
