@@ -307,7 +307,14 @@ public class DicomViewer {
         thumbnailListModel = new DefaultListModel();
         thumbnailList = new ImageEntryJList<>(thumbnailListModel, JList.VERTICAL);
         thumbnailList.setMaxIconTextWidth(MAX_IMAGE_SIZE);
-        thumbnailList.setFocusable(false);
+        //thumbnailList.setFocusable(false);
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                thumbnailList.requestFocusInWindow();
+            }
+        });
         thumbnailList.setDragEnabled(false);
         // サムネイル選択で画像表示
         thumbnailList.addListSelectionListener(new ListSelectionListener() {
@@ -337,7 +344,7 @@ public class DicomViewer {
         });
         // サムネイルはScrollPaneに入れる
         thumbnailScrollPane = new JScrollPane(thumbnailList,
-                ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+                ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
                 ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         frame.add(thumbnailScrollPane, BorderLayout.WEST);
 
