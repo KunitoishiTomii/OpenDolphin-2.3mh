@@ -349,7 +349,6 @@ public class DicomViewer {
         frame.add(panel, BorderLayout.SOUTH);
         
         // ショートカット　CTRL+C でコピー
-        panel.getActionMap();
         String optionMapKey = "copyImage";
         KeyStroke ksc = KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_MASK);
         panel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(ksc, optionMapKey);
