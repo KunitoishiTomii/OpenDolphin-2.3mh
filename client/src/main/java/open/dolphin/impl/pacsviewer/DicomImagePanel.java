@@ -42,7 +42,28 @@ public class DicomImagePanel extends JPanel {
     private LookupOp lookupOp;
     private double gamma;
     private boolean inverted;
+    private boolean monochrome;
     
+    // ウソGSDF
+    private static final int[] GRAY_LUT = {
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1,
+        2, 2, 2, 3, 3, 4, 5, 5, 6, 7, 8, 9, 10, 11, 12, 14,
+        15, 16, 17, 19, 20, 21, 23, 24, 25, 27, 28, 29, 31, 32, 34, 36,
+        37, 39, 40, 42, 43, 45, 46, 48, 49, 51, 52, 54, 55, 57, 58, 60,
+        62, 63, 65, 66, 68, 69, 71, 72, 73, 75, 76, 78, 79, 81, 82, 84,
+        85, 87, 88, 90, 91, 93, 94, 95, 97, 98, 99, 101, 102, 103, 105, 106,
+        108, 109, 111, 112, 113, 115, 116, 117, 119, 120, 121, 123, 124, 125, 126, 128,
+        129, 131, 132, 133, 134, 136, 137, 138, 139, 140, 142, 143, 144, 145, 146, 148,
+        149, 150, 151, 153, 154, 155, 156, 157, 158, 159, 161, 162, 163, 164, 165, 166,
+        168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 184,
+        185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 195, 197, 198, 198, 200,
+        201, 202, 203, 204, 205, 206, 206, 208, 208, 209, 211, 211, 212, 213, 214, 215,
+        216, 217, 218, 218, 220, 220, 221, 222, 223, 224, 225, 225, 227, 227, 228, 229,
+        230, 231, 232, 233, 234, 234, 235, 236, 237, 238, 238, 239, 240, 241, 242, 242,
+        243, 244, 245, 246, 247, 247, 248, 249, 250, 250, 251, 252, 252, 253, 254, 255
+    };
+
     public DicomImagePanel(DicomViewerRootPane parent) {
         this.parent = parent;
         lut = new byte[DEPTH];
@@ -109,6 +130,14 @@ public class DicomImagePanel extends JPanel {
     public boolean isInverted() {
         return inverted;
     }
+    
+    public void setMonochrome(boolean monochrome) {
+        this.monochrome = monochrome;
+    }
+    
+    public boolean isMonochrome() {
+        return monochrome;
+    }
 
     public int getWindowCenter() {
         return windowCenter;
@@ -144,7 +173,15 @@ public class DicomImagePanel extends JPanel {
         double y;
 
         for (int i = 0; i < DEPTH; ++i) {
-            double x = !inverted ? i * factor : (DEPTH - 1 - i) * factor;
+            
+            double x;
+            if (monochrome) {
+                x = !inverted ? GRAY_LUT[i] : DEPTH - 1 - GRAY_LUT[i];
+            } else {
+                x = !inverted ? i : DEPTH - 1 - i;
+            }
+            x *= factor;
+            
             if (x <= wc - 0.5 - (ww - 1) / 2) {
                 y = Y_MIN;
             } else if (x > wc - 0.5 + (ww - 1) / 2) {

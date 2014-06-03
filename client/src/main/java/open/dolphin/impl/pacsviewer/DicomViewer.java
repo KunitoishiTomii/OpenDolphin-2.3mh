@@ -3,7 +3,6 @@ package open.dolphin.impl.pacsviewer;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Font;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.*;
@@ -52,6 +51,8 @@ public class DicomViewer {
             = ClientContext.getClientContextStub().getImageIcon("gamma-24.png");
     private static final ImageIcon INVERT_ICON
             = ClientContext.getClientContextStub().getImageIcon("blackwhite-24.png");
+    private static final ImageIcon MONO_ICON
+            = ClientContext.getClientContextStub().getImageIcon("xp-24.png");
     
     private static final int MAX_IMAGE_SIZE = 120;
 
@@ -68,6 +69,7 @@ public class DicomViewer {
     private JToggleButton measureBtn;
     private JToggleButton selectBtn;
     private JToggleButton gammaBtn;
+    private JToggleButton monoBtn;
     private JLabel studyInfoLbl;
     private JLabel statusLbl;
     private JSlider slider;
@@ -185,23 +187,23 @@ public class DicomViewer {
         showInfoCb = new JCheckBox("画像情報");
         statusLbl = new JLabel("OpenDolphin-m");
         studyInfoLbl = new JLabel("Study Info.");
+        monoBtn = new JToggleButton(MONO_ICON);
+        monoBtn.setToolTipText("モノクロ画像を見やすくします");
         gammaBtn = new JToggleButton(GAMMA_ICON);
-        Font f = new Font(Font.SANS_SERIF, Font.BOLD, 16);
-        gammaBtn.setFont(f);
-        gammaBtn.setBorderPainted(true);
+        gammaBtn.setToolTipText("γ値を変更します");
         // ガンマ係数スライダの設定
         double d = Project.getDouble(MiscSettingPanel.PACS_VIEWER_GAMMA, MiscSettingPanel.DEFAULT_PACS_GAMMA);
         int sliderMax = (int) ((gammaMax - gammaMin) / gammaStep);
         slider = new JSlider(0, sliderMax);
         JLabel lblSliderLeft = new JLabel(frmt.format(gammaMin));
         JLabel lblSliderRight = new JLabel(frmt.format(gammaMax));
-        gammaField = new JTextField(frmt1.format(d));
+        gammaField = new JTextField(frmt1.format(gammaDefault));
         gammaField.setEditable(false);
         gammaField.setFocusable(false);
         gammaField.setToolTipText("γボタン有効時クリックで値を変更できます");
         int pos = (int) ((d - gammaMin) / gammaStep);
         slider.setValue(pos);
-        viewerPane.setGamma(d);
+        viewerPane.setGamma(gammaDefault);
         sliderPanel = new JPanel();
         sliderPanel.setLayout(new BoxLayout(sliderPanel, BoxLayout.X_AXIS));
         sliderPanel.add(lblSliderLeft);
@@ -212,6 +214,7 @@ public class DicomViewer {
         JPanel toolPanel = new JPanel();
         toolPanel.setLayout(new ModifiedFlowLayout(FlowLayout.LEFT));
         JToolBar gammaBar = new JToolBar();
+        gammaBar.add(monoBtn);
         gammaBar.add(gammaBtn);
         gammaBar.add(gammaField);
         toolPanel.add(gammaBar);
@@ -266,7 +269,6 @@ public class DicomViewer {
                 viewerPane.setGamma(d);
             }
         });
-        gammaBtn.setSelected(true);
         gammaBtn.addItemListener(new ItemListener(){
 
             @Override
@@ -290,6 +292,13 @@ public class DicomViewer {
                     popup.add(sliderPanel);
                     popup.show(gammaField, 0, 32);
                 }
+            }
+        });
+        monoBtn.addItemListener(new ItemListener(){
+
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                viewerPane.setMonochrome(monoBtn.isSelected());
             }
         });
         invertBtn .addItemListener(new ItemListener(){
@@ -442,10 +451,13 @@ public class DicomViewer {
             return;
         }
         try {
-
             DicomObject object = entry.getDicomObject();
-            boolean isCR = "CR".equals(object.getString(Tag.Modality));
-            gammaBtn.setSelected(isCR);
+            String str = object.getString(Tag.PhotometricInterpretation);
+            boolean isMono = false;
+            if (str != null && str.toUpperCase().startsWith("MONOCHROME")) {
+                isMono = true;
+            }
+            monoBtn.setSelected(isMono);
             setStudyInfoLabel(object);
             viewerPane.setDicomObject(object);
         } catch (IOException ex) {
