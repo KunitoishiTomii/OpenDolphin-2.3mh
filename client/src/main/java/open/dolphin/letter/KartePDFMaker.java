@@ -598,7 +598,7 @@ public class KartePDFMaker extends AbstractPDFMaker {
                     int percentage = Math.min(PERCENTAGE_IMAGE_WIDTH * karteTable.getColumnCount(), 100);
                     table.setWidthPercentage(percentage);
                     // SchemaModelからjpeg imageを取得
-                    Image image = Image.getInstance(schema.getJpegByte());
+                    Image image = Image.getInstance(schema.getIcon().getImage(), null);
                     // セルにimageを設定
                     PdfPCell pcell = new PdfPCell(image, true);
                     pcell.setBorder(Rectangle.NO_BORDER);

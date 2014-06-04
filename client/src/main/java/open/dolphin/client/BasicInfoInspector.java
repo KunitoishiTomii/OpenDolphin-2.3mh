@@ -9,7 +9,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.text.SimpleDateFormat;
 import javax.swing.*;
-import open.dolphin.common.util.BeanUtils;
 import open.dolphin.infomodel.DocumentModel;
 import open.dolphin.infomodel.IInfoModel;
 import open.dolphin.infomodel.ModelUtils;
@@ -162,7 +161,7 @@ public class BasicInfoInspector implements DragGestureListener {
         final SimpleDateFormat sdf = new SimpleDateFormat(IInfoModel.KARTE_DATE_FORMAT);
         
         ModuleModel mm = summary.getModule(IInfoModel.MODULE_PROGRESS_COURSE);
-        ProgressCourse pc = (ProgressCourse) BeanUtils.xmlDecode(mm.getBeanBytes());
+        ProgressCourse pc = (ProgressCourse) mm.getModel();
         
         boolean first = true;
         String xml = pc.getFreeText();

@@ -751,6 +751,8 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
                 for (ModuleModel module : mc) {
                     //module.setModel((IModuleModel) BeanUtils.xmlDecode(module.getBeanBytes()));
                     module.setModel(ModuleBeanDecoder.getInstance().decode(module.getBeanBytes()));
+                    // メモリ節約？
+                    module.setBeanBytes(null);
                 }
             }
 
@@ -760,6 +762,8 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
                 for (SchemaModel schema : sc) {
                     ImageIcon icon = new ImageIcon(schema.getJpegByte());
                     schema.setIcon(icon);
+                    // メモリ節約？
+                    schema.setJpegByte(null);
                 }
             }
 

@@ -329,6 +329,8 @@ public class  DocumentDelegater extends BusinessDelegater {
                 //IModuleModel model = (IModuleModel) BeanUtils.xmlDecode(module.getBeanBytes());
                 IModuleModel model = ModuleBeanDecoder.getInstance().decode(module.getBeanBytes());
                 module.setModel(model);
+                // メモリ節約？
+                module.setBeanBytes(null);
             }
         }
         return ret;
@@ -357,9 +359,9 @@ public class  DocumentDelegater extends BusinessDelegater {
 
         byte[] bytes = model.getJpegByte();
         ImageIcon icon = new ImageIcon(bytes);
-        if (icon != null) {
-            model.setIcon(icon);
-        }
+        model.setIcon(icon);
+        // メモリ節約？
+        model.setJpegByte(null);
 
         return model;
     }
