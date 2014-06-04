@@ -17,9 +17,6 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -33,7 +30,6 @@ import open.dolphin.table.StripeTableCellRenderer;
 import open.dolphin.tr.ImageEntryTransferHandler;
 import open.dolphin.util.DicomImageEntry;
 import open.dolphin.util.ImageTool;
-import open.dolphin.util.NamedThreadFactory;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 
@@ -82,8 +78,7 @@ public class PacsDicomDocImpl extends AbstractChartDocument implements PropertyC
     private DefaultListModel<DicomImageEntry> listModel;
 
     private PacsService pacsService;
-    private ExecutorService executor;
-    
+
     private String weasisAddr;
     private String osirixAddr;
     
@@ -115,8 +110,6 @@ public class PacsDicomDocImpl extends AbstractChartDocument implements PropertyC
     @Override
     public void start() {
         initComponents();
-        NamedThreadFactory factory = new NamedThreadFactory(getClass().getSimpleName());
-        executor = Executors.newSingleThreadExecutor(factory);
         pacsService = (PacsService) ((ChartImpl) getContext()).getContext().getPlugin("pacsService");
         pacsService.addPropertyChangeListener(this);
         enter();
@@ -141,22 +134,6 @@ public class PacsDicomDocImpl extends AbstractChartDocument implements PropertyC
         if (listModel != null) {
             listModel.clear();
         }
-        
-        shutdownExecutor();
-    }
-    
-    private void shutdownExecutor() {
-
-        try {
-            executor.shutdown();
-            if (!executor.awaitTermination(10, TimeUnit.MILLISECONDS)) {
-                executor.shutdownNow();
-            }
-        } catch (InterruptedException ex) {
-            executor.shutdownNow();
-        } catch (NullPointerException ex) {
-        }
-        executor = null;
     }
 
     @Override
@@ -529,58 +506,50 @@ public class PacsDicomDocImpl extends AbstractChartDocument implements PropertyC
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if (executor != null && !executor.isShutdown()) {
-            DicomObject obj = (DicomObject) evt.getNewValue();
-            executor.execute(new RegisterDicomObject(obj));
+        
+        final DicomObject obj = (DicomObject) evt.getNewValue();
+        if (currentDicomObject == null || obj == null) {
+            return;
         }
-    }
-
-    private class RegisterDicomObject implements Runnable {
-
-        private final DicomObject object;
-
-        private RegisterDicomObject(DicomObject object) {
-            this.object = object;
+        
+        String currentStudyUID = currentDicomObject.getString(Tag.StudyInstanceUID);
+        String receivedStudyUID = obj.getString(Tag.StudyInstanceUID);
+        
+        // studyUIDが違えば何もせず破棄
+        if (!currentStudyUID.equals(receivedStudyUID)) {
+            setStatusLabel(new String[]{"Received DicomObject has different studyUID, discarded :", receivedStudyUID});
+            return;
         }
+        
+        setStatusLabel(new String[]{"Received DicomObeject :", obj.getString(Tag.SOPInstanceUID)});
 
-        @Override
-        public void run() {
-            if (currentDicomObject != null) {
-                String currentStudyUID = currentDicomObject.getString(Tag.StudyInstanceUID);
-                String receivedStudyUID = object.getString(Tag.StudyInstanceUID);
-                // studyUIDが違えば何もせず破棄
-                if (!currentStudyUID.equals(receivedStudyUID)) {
-                    setStatusLabel(new String[]{"Received DicomObject has different studyUID, discarded :", receivedStudyUID});
-                    return;
-                } else {
-                    // studyが一致しても、同じものが既に存在すれば破棄
-                    String sopInstanceUID = object.getString(Tag.SOPInstanceUID);
-                    Enumeration<DicomImageEntry> enu = listModel.elements();
-                    while (enu.hasMoreElements()) {
-                        DicomImageEntry entry = enu.nextElement();
-                        String test = entry.getTitle();
-                        if (test != null && test.equals(sopInstanceUID)) {
-                            setStatusLabel(new String[]{"Another image has same sopInstanceUID, discarded :", sopInstanceUID});
-                            return;
-                        }
-                    }
+        SwingWorker<DicomImageEntry, Void> worker = new SwingWorker<DicomImageEntry, Void>() {
+
+            @Override
+            protected DicomImageEntry doInBackground() throws Exception {
+
+                // ImageEntryを作成する
+                DicomImageEntry entry = ImageTool.getImageEntryFromDicom(obj);
+                entry.setDicomObject(obj);
+                entry.setIconText(entry.getFileName());
+                return entry;
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    DicomImageEntry entry = get();
+                    addDicomImageEntry(entry);
+                } catch (InterruptedException | ExecutionException ex) {
                 }
             }
-            try {
-                addDicomImageEntry(object);
-            } catch (IOException ex) {
-            }
-        }
+        };
+
+        worker.execute();
     }
-    
-    private void addDicomImageEntry(DicomObject object) throws IOException {
-        
-        setStatusLabel(new String[]{"Received DicomObeject :", object.getString(Tag.SOPInstanceUID)});
-        // ImageEntryを作成する
-        DicomImageEntry entry = ImageTool.getImageEntryFromDicom(object);
-        entry.setDicomObject(object);
-        entry.setIconText(entry.getFileName());
-        
+
+    private synchronized void addDicomImageEntry(DicomImageEntry entry) {
+
         int size = listModel.getSize();
         boolean added = false;
         for (int i = 0; i < size; ++i) {
