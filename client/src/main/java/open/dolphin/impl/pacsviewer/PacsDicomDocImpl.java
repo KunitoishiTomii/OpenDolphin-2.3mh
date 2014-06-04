@@ -550,20 +550,14 @@ public class PacsDicomDocImpl extends AbstractChartDocument implements PropertyC
 
     private synchronized void addDicomImageEntry(DicomImageEntry entry) {
 
-        int size = listModel.getSize();
-        boolean added = false;
-        for (int i = 0; i < size; ++i) {
-            DicomImageEntry test = listModel.getElementAt(i);
+        int i = 0;
+        for (Enumeration<DicomImageEntry> enm = listModel.elements(); enm.hasMoreElements(); ++i) {
+            DicomImageEntry test = enm.nextElement();
             if (entry.compareTo(test) < 0) {
-                listModel.add(i, entry);
-                added = true;
                 break;
             }
         }
-
-        if (!added) {
-            listModel.addElement(entry);
-        }
+        listModel.add(i, entry);
     }
 
     // Status Labelに表示
