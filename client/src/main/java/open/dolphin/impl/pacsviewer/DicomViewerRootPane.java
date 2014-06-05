@@ -156,6 +156,13 @@ public class DicomViewerRootPane extends JLayeredPane {
         imagePanel.repaint();
     }
     
+    // ウソGSDF
+    public void setMonochrome(boolean b) {
+        imagePanel.setMonochrome(b);
+        imagePanel.setLUT();
+        imagePanel.repaint();
+    }
+    
     // クリップボードにコピーする
     public void copyImage() {
         

@@ -70,6 +70,8 @@ public class KarteHtmlRenderer {
             
             //bean.setModel((IModuleModel) BeanUtils.xmlDecode(bean.getBeanBytes()));
             bean.setModel(ModuleBeanDecoder.getInstance().decode(bean.getBeanBytes()));
+            // メモリ節約？
+            bean.setBeanBytes(null);
 
             String role = bean.getModuleInfoBean().getStampRole();
             if (role != null) {

@@ -10,6 +10,7 @@ import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 import javax.swing.ImageIcon;
+import javax.swing.SwingWorker;
 import open.dolphin.client.ClientContext;
 import open.dolphin.client.ImageEntry;
 import open.dolphin.infomodel.ModelUtils;
@@ -33,39 +34,78 @@ public class ImageTool {
     public static final Dimension MAX_ICON_SIZE = new Dimension(120, 120);
 
     // DicomObjectからBufferedImageを作成
-    public static BufferedImage getDicomImage(DicomObject obj) throws IOException {
+    public static BufferedImage getDicomImage(final DicomObject obj) throws IOException {
+        
+        try (PipedInputStream pipeIn = new PipedInputStream(16 * 1024);
+                final PipedOutputStream pipeOut = new PipedOutputStream(pipeIn);) {
+            
+            SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
 
-        byte[] dicomBytes = toByteArray(obj);
-        BufferedImage image = getPixelDataAsBufferedImage(dicomBytes);
-        return image;
-    }
+                @Override
+                protected Void doInBackground() throws Exception {
+                    try (DicomOutputStream dos = new DicomOutputStream(pipeOut)) {
+                        dos.writeDicomFile(obj);
+                    } catch (IOException ex) {
+                    }
+                    return null;
+                }
 
-    // http://forums.dcm4che.org/jiveforums/thread.jspa?threadID=2611&tstart=-1
-    private static byte[] toByteArray(DicomObject obj) throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        BufferedOutputStream bos = new BufferedOutputStream(baos);
-        try (DicomOutputStream dos = new DicomOutputStream(bos)) {
-            dos.writeDicomFile(obj);
-        }
-        byte[] data = baos.toByteArray();
-        return data;
-    }
+            };
 
-    private static BufferedImage getPixelDataAsBufferedImage(byte[] dicomData) throws IOException {
-        ByteArrayInputStream bais = new ByteArrayInputStream(dicomData);
-        Iterator<ImageReader> iter = ImageIO.getImageReadersByFormatName("DICOM");
-        ImageReader reader = iter.next();
-        DicomImageReadParam param = (DicomImageReadParam) reader.getDefaultReadParam();
-        BufferedImage buff;
-        try (ImageInputStream iis = ImageIO.createImageInputStream(bais)) {
-            reader.setInput(iis, false);
-            buff = reader.read(0, param);
+            Iterator<ImageReader> iter = ImageIO.getImageReadersByFormatName("DICOM");
+            ImageReader reader = iter.next();
+            DicomImageReadParam param = (DicomImageReadParam) reader.getDefaultReadParam();
+            BufferedImage buff;
+
+            worker.execute();
+
+            try (ImageInputStream iis = ImageIO.createImageInputStream(pipeIn)) {
+                reader.setInput(iis, false);
+                buff = reader.read(0, param);
+            }
+
+            if (buff == null) {
+                throw new IOException("Could not read Dicom file. Maybe pixel data is invalid.");
+            }
+
+            return buff;
         }
-        if (buff == null) {
-            throw new IOException("Could not read Dicom file. Maybe pixel data is invalid.");
-        }
-        return buff;
     }
+    
+//    // DicomObjectからBufferedImageを作成
+//    public static BufferedImage getDicomImage(DicomObject obj) throws IOException {
+//
+//        byte[] dicomBytes = toByteArray(obj);
+//        BufferedImage image = getPixelDataAsBufferedImage(dicomBytes);
+//        return image;
+//    }
+//
+//    // http://forums.dcm4che.org/jiveforums/thread.jspa?threadID=2611&tstart=-1
+//    private static byte[] toByteArray(DicomObject obj) throws IOException {
+//        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+//        BufferedOutputStream bos = new BufferedOutputStream(baos);
+//        try (DicomOutputStream dos = new DicomOutputStream(bos)) {
+//            dos.writeDicomFile(obj);
+//        }
+//        byte[] data = baos.toByteArray();
+//        return data;
+//    }
+//
+//    private static BufferedImage getPixelDataAsBufferedImage(byte[] dicomData) throws IOException {
+//        ByteArrayInputStream bais = new ByteArrayInputStream(dicomData);
+//        Iterator<ImageReader> iter = ImageIO.getImageReadersByFormatName("DICOM");
+//        ImageReader reader = iter.next();
+//        DicomImageReadParam param = (DicomImageReadParam) reader.getDefaultReadParam();
+//        BufferedImage buff;
+//        try (ImageInputStream iis = ImageIO.createImageInputStream(bais)) {
+//            reader.setInput(iis, false);
+//            buff = reader.read(0, param);
+//        }
+//        if (buff == null) {
+//            throw new IOException("Could not read Dicom file. Maybe pixel data is invalid.");
+//        }
+//        return buff;
+//    }
 
     // ファイルからイメージエントリーを作成する
     public static ImageEntry getImageEntryFromFile(File file) throws IOException {

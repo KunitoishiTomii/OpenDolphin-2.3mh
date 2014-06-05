@@ -3,7 +3,6 @@ package open.dolphin.impl.pacsviewer;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Font;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.*;
@@ -52,6 +51,8 @@ public class DicomViewer {
             = ClientContext.getClientContextStub().getImageIcon("gamma-24.png");
     private static final ImageIcon INVERT_ICON
             = ClientContext.getClientContextStub().getImageIcon("blackwhite-24.png");
+    private static final ImageIcon MONO_ICON
+            = ClientContext.getClientContextStub().getImageIcon("xp-24.png");
     
     private static final int MAX_IMAGE_SIZE = 120;
 
@@ -68,6 +69,7 @@ public class DicomViewer {
     private JToggleButton measureBtn;
     private JToggleButton selectBtn;
     private JToggleButton gammaBtn;
+    private JToggleButton monoBtn;
     private JLabel studyInfoLbl;
     private JLabel statusLbl;
     private JSlider slider;
@@ -185,23 +187,23 @@ public class DicomViewer {
         showInfoCb = new JCheckBox("画像情報");
         statusLbl = new JLabel("OpenDolphin-m");
         studyInfoLbl = new JLabel("Study Info.");
+        monoBtn = new JToggleButton(MONO_ICON);
+        monoBtn.setToolTipText("モノクロ画像を見やすくします");
         gammaBtn = new JToggleButton(GAMMA_ICON);
-        Font f = new Font(Font.SANS_SERIF, Font.BOLD, 16);
-        gammaBtn.setFont(f);
-        gammaBtn.setBorderPainted(true);
+        gammaBtn.setToolTipText("γ値を変更します");
         // ガンマ係数スライダの設定
         double d = Project.getDouble(MiscSettingPanel.PACS_VIEWER_GAMMA, MiscSettingPanel.DEFAULT_PACS_GAMMA);
         int sliderMax = (int) ((gammaMax - gammaMin) / gammaStep);
         slider = new JSlider(0, sliderMax);
         JLabel lblSliderLeft = new JLabel(frmt.format(gammaMin));
         JLabel lblSliderRight = new JLabel(frmt.format(gammaMax));
-        gammaField = new JTextField(frmt1.format(d));
+        gammaField = new JTextField(frmt1.format(gammaDefault));
         gammaField.setEditable(false);
         gammaField.setFocusable(false);
         gammaField.setToolTipText("γボタン有効時クリックで値を変更できます");
         int pos = (int) ((d - gammaMin) / gammaStep);
         slider.setValue(pos);
-        viewerPane.setGamma(d);
+        viewerPane.setGamma(gammaDefault);
         sliderPanel = new JPanel();
         sliderPanel.setLayout(new BoxLayout(sliderPanel, BoxLayout.X_AXIS));
         sliderPanel.add(lblSliderLeft);
@@ -212,6 +214,7 @@ public class DicomViewer {
         JPanel toolPanel = new JPanel();
         toolPanel.setLayout(new ModifiedFlowLayout(FlowLayout.LEFT));
         JToolBar gammaBar = new JToolBar();
+        gammaBar.add(monoBtn);
         gammaBar.add(gammaBtn);
         gammaBar.add(gammaField);
         toolPanel.add(gammaBar);
@@ -266,11 +269,10 @@ public class DicomViewer {
                 viewerPane.setGamma(d);
             }
         });
-        gammaBtn.setSelected(true);
-        gammaBtn.addChangeListener(new ChangeListener() {
+        gammaBtn.addItemListener(new ItemListener(){
 
             @Override
-            public void stateChanged(ChangeEvent e) {
+            public void itemStateChanged(ItemEvent e) {
                 if (gammaBtn.isSelected()) {
                     double d = getSliderGamma();
                     gammaField.setText(frmt1.format(d));
@@ -292,10 +294,17 @@ public class DicomViewer {
                 }
             }
         });
-        invertBtn.addChangeListener(new ChangeListener() {
+        monoBtn.addItemListener(new ItemListener(){
 
             @Override
-            public void stateChanged(ChangeEvent e) {
+            public void itemStateChanged(ItemEvent e) {
+                viewerPane.setMonochrome(monoBtn.isSelected());
+            }
+        });
+        invertBtn .addItemListener(new ItemListener(){
+
+            @Override
+            public void itemStateChanged(ItemEvent e) {
                 viewerPane.setInverted(invertBtn.isSelected());
             }
         });
@@ -307,7 +316,14 @@ public class DicomViewer {
         thumbnailListModel = new DefaultListModel();
         thumbnailList = new ImageEntryJList<>(thumbnailListModel, JList.VERTICAL);
         thumbnailList.setMaxIconTextWidth(MAX_IMAGE_SIZE);
-        thumbnailList.setFocusable(false);
+        //thumbnailList.setFocusable(false);
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                thumbnailList.requestFocusInWindow();
+            }
+        });
         thumbnailList.setDragEnabled(false);
         // サムネイル選択で画像表示
         thumbnailList.addListSelectionListener(new ListSelectionListener() {
@@ -337,7 +353,7 @@ public class DicomViewer {
         });
         // サムネイルはScrollPaneに入れる
         thumbnailScrollPane = new JScrollPane(thumbnailList,
-                ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+                ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
                 ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         frame.add(thumbnailScrollPane, BorderLayout.WEST);
 
@@ -349,7 +365,6 @@ public class DicomViewer {
         frame.add(panel, BorderLayout.SOUTH);
         
         // ショートカット　CTRL+C でコピー
-        panel.getActionMap();
         String optionMapKey = "copyImage";
         KeyStroke ksc = KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_MASK);
         panel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(ksc, optionMapKey);
@@ -436,10 +451,13 @@ public class DicomViewer {
             return;
         }
         try {
-
             DicomObject object = entry.getDicomObject();
-            boolean isCR = "CR".equals(object.getString(Tag.Modality));
-            gammaBtn.setSelected(isCR);
+            String str = object.getString(Tag.PhotometricInterpretation);
+            boolean isMono = false;
+            if (str != null && str.toUpperCase().startsWith("MONOCHROME")) {
+                isMono = true;
+            }
+            monoBtn.setSelected(isMono);
             setStudyInfoLabel(object);
             viewerPane.setDicomObject(object);
         } catch (IOException ex) {
