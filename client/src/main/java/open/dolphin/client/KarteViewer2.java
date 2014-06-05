@@ -24,10 +24,12 @@ public class KarteViewer2 extends KarteViewer {
         super(model);
         soaPane = new KartePane();
         pPane = new KartePane();
-        initialize();
+        // 結構時間かかるようなので後回しにする
+        //initialize();
     }
 
-    private void initialize() {
+    @Override
+    public final void initialize() {
 
 //        Chart parent = getContext();
 //        boolean verticalLayout = false;

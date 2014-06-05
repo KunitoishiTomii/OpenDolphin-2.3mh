@@ -19,10 +19,12 @@ public class KarteViewer1 extends KarteViewer {
     public KarteViewer1(DocumentModel model) {
         super(model);
         soaPane = new KartePane();
-        initialize();
+        // 結構時間かかるようなので後回しにする
+        //initialize();
     }
     
-    private void initialize() {
+    @Override
+    public final void initialize() {
 
         KartePanel kartePanel = KartePanel.createKartePanel(KartePanel.MODE.SINGLE_VIEWER, false);
 
