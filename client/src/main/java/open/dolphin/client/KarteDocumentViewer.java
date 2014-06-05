@@ -525,8 +525,6 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
         // 表示している文書タイプに応じて Viewer を作成する
         DocumentModel model = selectedKarte.getModel();
         KarteViewer viewer = createKarteViewer(model);
-        // 後回しにしていたKarteViewerの初期化を行う
-        viewer.initialize();
         
         // EditorFrameで表示
         EditorFrame editorFrame = new EditorFrame();
@@ -744,9 +742,6 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
 
         @Override
         public void run() {
-            
-            // 後回しにしていたKarteViewerの初期化を行う
-            viewer.initialize();
             
             DocumentModel docModel = viewer.getModel();
 

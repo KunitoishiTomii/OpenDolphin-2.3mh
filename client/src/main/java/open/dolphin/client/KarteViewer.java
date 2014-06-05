@@ -61,8 +61,7 @@ public abstract class KarteViewer extends AbstractChartDocument {
     // KarteViewerのJTextPaneにKarteScrollerPanelのActionMapを設定する
     // これをしないとJTextPaneにフォーカスがあるとキーでスクロールできない
     public abstract void setParentActionMap(ActionMap amap);
-    
-    public abstract void initialize();
+
     
     // ファクトリー
     public static KarteViewer createKarteViewer(DocumentModel model, MODE mode) {
@@ -75,7 +74,7 @@ public abstract class KarteViewer extends AbstractChartDocument {
         }
         return null;
     }
-
+    
     protected final void setTitle() {
 
         DocInfoModel docInfo = model.getDocInfoModel();
