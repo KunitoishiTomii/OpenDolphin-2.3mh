@@ -21,13 +21,16 @@ public final class KartePanel2V extends KartePanel {
     private static final int timeStampMargin = 30;
 
     public KartePanel2V(boolean editor) {
-        super();
+//        if (editor) {
+//            initComponents(editor);
+//        }
         initComponents(editor);
     }
 
     @Override
-    protected void initComponents(boolean editor) {
+    public void initComponents(boolean editor) {
 
+        initCommonComponents();
         soaTextPane = createTextPane();
         pTextPane = createTextPane();
         

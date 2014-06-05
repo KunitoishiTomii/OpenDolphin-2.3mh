@@ -63,18 +63,6 @@ public abstract class KarteViewer extends AbstractChartDocument {
     public abstract void setParentActionMap(ActionMap amap);
 
     
-    // ファクトリー
-    public static KarteViewer createKarteViewer(DocumentModel model, MODE mode) {
-
-        switch(mode) {
-            case SINGLE:
-                return new KarteViewer1(model);
-            case DOUBLE:
-                return new KarteViewer2(model);
-        }
-        return null;
-    }
-    
     protected final void setTitle() {
 
         DocInfoModel docInfo = model.getDocInfoModel();
@@ -166,6 +154,10 @@ public abstract class KarteViewer extends AbstractChartDocument {
 
     protected final void setKartePanel(KartePanel kartePanel) {
         this.kartePanel = kartePanel;
+    }
+    
+    protected final KartePanel getKartePanel() {
+        return kartePanel;
     }
     
     // memory leak?
