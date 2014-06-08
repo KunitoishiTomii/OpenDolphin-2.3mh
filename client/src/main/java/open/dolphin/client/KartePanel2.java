@@ -16,13 +16,16 @@ public final class KartePanel2 extends KartePanel {
     private JTextPane soaTextPane;
 
     public KartePanel2(boolean editor) {
-        super();
+//        if (editor) {
+//            initComponents(editor);
+//        }
         initComponents(editor);
     }
 
     @Override
-    protected void initComponents(boolean editor) {
+    public void initComponents(boolean editor) {
 
+        initCommonComponents();
         soaTextPane = createTextPane();
         pTextPane = createTextPane();
 
@@ -34,14 +37,6 @@ public final class KartePanel2 extends KartePanel {
             panel.add(pTextPane);
             JScrollPane scroll = new JScrollPane(panel);
             add(scroll, BorderLayout.CENTER);
-/*
-            JScrollPane soaScroll = new JScrollPane(soaTextPane);
-            soaScroll.setBorder(null);
-            panel.add(soaScroll);
-            JScrollPane pScroll = new JScrollPane(pTextPane);
-            pScroll.setBorder(null);
-            panel.add(pScroll);
-*/
         } else {
             JPanel panel = new JPanel();
             panel.setLayout(new GridLayout(rows, cols, hgap, vgap));

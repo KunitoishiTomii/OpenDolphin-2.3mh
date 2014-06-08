@@ -19,13 +19,17 @@ public class KarteViewer1 extends KarteViewer {
     public KarteViewer1(DocumentModel model) {
         super(model);
         soaPane = new KartePane();
-        initialize();
+        KartePanel kp = new KartePanel1(false);
+        setKartePanel(kp);
+        setUI(kp);
     }
     
     private void initialize() {
 
-        KartePanel kartePanel = KartePanel.createKartePanel(KartePanel.MODE.SINGLE_VIEWER, false);
-
+        KartePanel kartePanel = getKartePanel();
+        //kartePanel.initComponents(false);
+        kartePanel.setBorder(NOT_SELECTED_BORDER);
+        
         // SOA Pane を生成する
         soaPane.setRole(IInfoModel.ROLE_SOA);
         soaPane.setTextPane(kartePanel.getSoaTextPane());
@@ -33,11 +37,6 @@ public class KarteViewer1 extends KarteViewer {
         // Schema 画像にファイル名を付けるのために必要
         String docId = getModel().getDocInfoModel().getDocId();
         soaPane.setDocId(docId);
-
-        kartePanel.setBorder(NOT_SELECTED_BORDER);
-
-        setKartePanel(kartePanel);
-        setUI(kartePanel);
         
         // DocumentModelのstatusをKartePaneに保存しておく
         // KarteViewerのpopup制御に利用
@@ -53,6 +52,9 @@ public class KarteViewer1 extends KarteViewer {
      */
     @Override
     public void start() {
+        
+        // Creates GUI
+        initialize();
 
         // タイトルを設定する
         setTitle();

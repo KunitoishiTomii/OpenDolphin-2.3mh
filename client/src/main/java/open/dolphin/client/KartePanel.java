@@ -17,8 +17,6 @@ import open.dolphin.infomodel.IInfoModel;
  */
 public abstract class KartePanel extends Panel2 {
 
-    public static enum MODE {SINGLE_VIEWER, DOUBLE_VIEWER, SINGLE_EDITOR, DOUBLE_EDITOR};
-    
     private static enum DOC_TYPE {OUT_PATIENT, ADMISSION, SELF_INSURANCE, TEMP_KARTE};
     
     private static final Color OUT_PATIENT_COLOR = null;    // new Color(0, 0, 0, 0);
@@ -52,38 +50,8 @@ public abstract class KartePanel extends Panel2 {
     private JLabel timeStampLabel;
     
 
-    // ファクトリー
-    public static KartePanel createKartePanel(MODE mode, boolean verticalLayout) {
-
-        KartePanel kartePanel;
-
-        switch (mode) {
-            case SINGLE_VIEWER:
-                kartePanel = new KartePanel1(false);
-                break;
-            case DOUBLE_VIEWER:
-                if (verticalLayout) {
-                    kartePanel = new KartePanel2V(false);
-                    break;
-                } else {
-                    kartePanel = new KartePanel2(false);
-                    break;
-                }
-            case SINGLE_EDITOR:
-                kartePanel = new KartePanel1(true);
-                break;
-            case DOUBLE_EDITOR:
-                kartePanel = new KartePanel2(true);
-                break;
-            default:
-                return null;
-        }
-
-        return kartePanel;
-    }
-
     // 抽象メソッド
-    protected abstract void initComponents(boolean editor);
+    public abstract void initComponents(boolean editor);
 
     public abstract JTextPane getPTextPane();
 
@@ -95,13 +63,8 @@ public abstract class KartePanel extends Panel2 {
         return timeStampLabel;
     }
 
-    protected KartePanel() {
-        initCommonComponents();
-    }
+    protected void initCommonComponents() {
 
-    private void initCommonComponents() {
-
-        //setPreferredSize(INITIAL_SIZE); // KartePanelが広がりすぎないように
         timeStampLabel = new JLabel();
         timeStampPanel = new JPanel();
         timeStampPanel.setLayout(new FlowLayout(FlowLayout.CENTER, tsHgap, tsVgap));

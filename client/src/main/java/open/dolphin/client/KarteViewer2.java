@@ -5,8 +5,6 @@ import java.awt.event.MouseListener;
 import javax.swing.ActionMap;
 import open.dolphin.infomodel.DocumentModel;
 import open.dolphin.infomodel.IInfoModel;
-import open.dolphin.project.Project;
-import open.dolphin.setting.MiscSettingPanel;
 
 /**
  * KarteViwer2
@@ -20,27 +18,20 @@ public class KarteViewer2 extends KarteViewer {
     // P Pane
     private final KartePane pPane;
     
-    public KarteViewer2(DocumentModel model) {
+    public KarteViewer2(DocumentModel model, boolean vLayout) {
         super(model);
         soaPane = new KartePane();
         pPane = new KartePane();
-        initialize();
+        KartePanel kp = vLayout ? new KartePanel2V(false) : new KartePanel2(false);
+        setKartePanel(kp);
+        setUI(kp);
     }
 
     private void initialize() {
 
-//        Chart parent = getContext();
-//        boolean verticalLayout = false;
-//        if (parent != null && parent instanceof ChartImpl) {
-//            boolean vsc = Project.getBoolean(Project.KARTE_SCROLL_DIRECTION);
-//            boolean vl = Project.getBoolean(MiscSettingPanel.USE_VERTICAL_LAYOUT);
-//            verticalLayout = !vsc && vl;
-//        }
-        boolean vsc = Project.getBoolean(Project.KARTE_SCROLL_DIRECTION);
-        boolean vl = Project.getBoolean(MiscSettingPanel.USE_VERTICAL_LAYOUT);
-        boolean verticalLayout = !vsc && vl;
-
-        KartePanel kartePanel = KartePanel.createKartePanel(KartePanel.MODE.DOUBLE_VIEWER, verticalLayout);
+        KartePanel kartePanel = getKartePanel();
+        //kartePanel.initComponents(false);
+        kartePanel.setBorder(NOT_SELECTED_BORDER);
 
         // SOA Pane を生成する
         soaPane.setRole(IInfoModel.ROLE_SOA);
@@ -51,14 +42,8 @@ public class KarteViewer2 extends KarteViewer {
         pPane.setTextPane(kartePanel.getPTextPane());
 
         // Schema 画像にファイル名を付けるのために必要
-        // Schema 画像にファイル名を付けるのために必要
         String docId = getModel().getDocInfoModel().getDocId();
         soaPane.setDocId(docId);
-
-        kartePanel.setBorder(NOT_SELECTED_BORDER);
-
-        setKartePanel(kartePanel);
-        setUI(kartePanel);
         
         // DocumentModelのstatusをKartePaneに保存しておく
         // KarteViewerのpopup制御に利用
@@ -76,6 +61,9 @@ public class KarteViewer2 extends KarteViewer {
      */
     @Override
     public void start() {
+        
+        // Creates GUI
+        initialize();
 
         // タイトルを設定する
         setTitle();

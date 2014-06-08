@@ -390,7 +390,7 @@ public class KarteEditor extends AbstractChartDocument implements IInfoModel,
      */
     private void initialize1() {
 
-        kartePanel = KartePanel.createKartePanel(KartePanel.MODE.SINGLE_EDITOR, false);
+        kartePanel = new KartePanel1(true);
 
         // TimeStampLabel を生成する
         timeStampLabel = kartePanel.getTimeStampLabel();
@@ -431,7 +431,7 @@ public class KarteEditor extends AbstractChartDocument implements IInfoModel,
      */
     private void initialize2() {
 
-        kartePanel = KartePanel.createKartePanel(KartePanel.MODE.DOUBLE_EDITOR, false);
+        kartePanel = new KartePanel2(true);
 
         // TimeStampLabel を生成する
         timeStampLabel = kartePanel.getTimeStampLabel();

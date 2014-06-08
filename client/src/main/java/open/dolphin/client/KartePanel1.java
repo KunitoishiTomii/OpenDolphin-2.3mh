@@ -13,15 +13,18 @@ public final class KartePanel1 extends KartePanel {
     private JTextPane soaTextPane;
 
     public KartePanel1(boolean editor) {
-        super();
+//        if (editor) {
+//            initComponents(editor);
+//        }
         initComponents(editor);
     }
 
     @Override
-    protected void initComponents(boolean editor) {
+    public void initComponents(boolean editor) {
 
+        initCommonComponents();
         soaTextPane = createTextPane();
-        
+
         if (editor) {
             JScrollPane scroll = new JScrollPane(soaTextPane);
             scroll.setBorder(null);

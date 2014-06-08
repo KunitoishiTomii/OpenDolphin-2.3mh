@@ -1,4 +1,3 @@
-
 package open.dolphin.util;
 
 import java.util.GregorianCalendar;
@@ -10,11 +9,6 @@ import java.util.HashSet;
  * @author masuda, Masuda Naika
  */
 public class Holiday {
-
-    public static boolean isHoliday(GregorianCalendar gc) {
-
-        return holidays.contains(gc) || isNichiyou(gc);
-    }
 
     private static final HashSet<GregorianCalendar> holidays;
 
@@ -355,12 +349,18 @@ public class Holiday {
     };
 
     static {
-        holidays = new HashSet<GregorianCalendar>();
+        holidays = new HashSet<>();
         for (int[] ymd : holidayData) {
             holidays.add(new GregorianCalendar(ymd[0], ymd[1] - 1, ymd[2]));
         }
     }
 
+    public static boolean isHoliday(GregorianCalendar gc) {
+
+        return holidays.contains(gc) || isNichiyou(gc);
+    }
+    
+    
 // おまけ VBAで作成したのを移植
     private static final int[][] regularShukujitsu = {
         { 1,  1},   // 元日
@@ -428,7 +428,11 @@ public class Holiday {
         {2030, 9, 23}
     };
 
-    private static boolean isShukujitsu(GregorianCalendar gc){
+    private static boolean isNichiyou(GregorianCalendar gc){
+        return gc.get(GregorianCalendar.DAY_OF_WEEK) == GregorianCalendar.SUNDAY;
+    }
+    
+    private boolean isShukujitsu(GregorianCalendar gc){
 
         int year = gc.get(GregorianCalendar.YEAR);
         int month = gc.get(GregorianCalendar.MONTH) + 1;
@@ -457,11 +461,7 @@ public class Holiday {
         return false;
     }
 
-    private static boolean isNichiyou(GregorianCalendar gc){
-        return gc.get(GregorianCalendar.DAY_OF_WEEK) == GregorianCalendar.SUNDAY;
-    }
-
-    private static boolean isKyujitsu(GregorianCalendar gc){
+    private boolean isKyujitsu(GregorianCalendar gc){
 
         int weekDay = gc.get(GregorianCalendar.DAY_OF_WEEK);
         // 日曜日なら休み
@@ -495,7 +495,8 @@ public class Holiday {
         return false;
     }
 
-    public static void main(String[] args) {
+    private void start() {
+
         GregorianCalendar gc = new GregorianCalendar(2009, 0, 1);
         GregorianCalendar end = new GregorianCalendar(2031, 0, 1);
 
@@ -505,19 +506,18 @@ public class Holiday {
                 int month = gc.get(GregorianCalendar.MONTH) + 1;
                 int day = gc.get(GregorianCalendar.DATE);
                 StringBuilder sb = new StringBuilder();
-                sb.append("{");
-                sb.append(year);
-                sb.append(",");
-                sb.append(month);
-                sb.append(",");
-                sb.append(day);
+                sb.append("{").append(year);
+                sb.append(",").append(month);
+                sb.append(",").append(day);
                 sb.append("},");
                 System.out.println(sb.toString());
             }
             gc.add(GregorianCalendar.DATE, 1);
         }
     }
+
+    public static void main(String[] args) {
+        new Holiday().start();
+    }
+
 }
-
-
-

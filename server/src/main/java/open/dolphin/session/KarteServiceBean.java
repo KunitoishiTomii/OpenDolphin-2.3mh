@@ -4,13 +4,11 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import javax.ejb.Asynchronous;
 import javax.ejb.Stateless;
-import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import open.dolphin.common.util.ModuleBeanDecoder;
 import open.dolphin.infomodel.*;
-import open.dolphin.mbean.ServletContextHolder;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
 
@@ -98,10 +96,7 @@ public class KarteServiceBean {
             = "from ModuleModel m where m.document.id = :id "
             + "and m.moduleInfo.role = 'soaSpec' and m.moduleInfo.name = 'progressCourse'";
 //masuda$
-    
-    @Inject
-    private ServletContextHolder contextHolder;
-    
+
     @PersistenceContext
     private EntityManager em;
     
@@ -346,107 +341,15 @@ public class KarteServiceBean {
 //masuda, katoh$
         
         return result;
-    }
+}
     
+//masuda^
     /**
      * 文書(DocumentModel Object)を取得する。
      * @param ids DocumentModel の pkコレクション
      * @return DocumentModelのコレクション
      */
-//masuda^
-/*
     public List<DocumentModel> getDocuments(List<Long> ids) {
-
-        List<DocumentModel> ret = new ArrayList<DocumentModel>(3);
-
-        // ループする
-        for (Long id : ids) {
-
-            // DocuentBean を取得する
-            DocumentModel document = (DocumentModel) em.find(DocumentModel.class, id);
-
-            // ModuleBean を取得する
-            List modules = em.createQuery(QUERY_MODULE_BY_DOC_ID)
-            .setParameter(ID, id)
-            .getResultList();
-            document.setModules(modules);
-
-            // SchemaModel を取得する
-            List images = em.createQuery(QUERY_SCHEMA_BY_DOC_ID)
-            .setParameter(ID, id)
-            .getResultList();
-            document.setSchema(images);
-
-            ret.add(document);
-        }
-
-        return ret;
-    }
-*/
-    
-    public List<DocumentModel> getDocuments(List<Long> ids) {
-/*
-        boolean mysql = contextHolder.getDatabase().toLowerCase().contains("mysql");
-        if (mysql) {
-            return getDocumentsMySQL(ids);
-        } else {
-            return getDocumentsPSQL(ids);
-        }
-*/
-        return getDocumentsWithTrick(ids);
-    }
-
-    // まとめてquery改改
-    public List<DocumentModel> getDocumentsPSQL(List<Long> ids) {
-
-        List<DocumentModel> documentList =
-                em.createQuery("from DocumentModel m where m.id in (:ids)")
-                .setParameter("ids", ids)
-                .getResultList();
-        
-        List<ModuleModel> moduleList =
-                em.createQuery("from ModuleModel m where m.document.id in (:ids)")
-                .setParameter("ids", ids)
-                .getResultList();
-        
-        List<SchemaModel> schemaList =
-                em.createQuery("from SchemaModel m where m.document.id in (:ids)")
-                .setParameter("ids", ids)
-                .getResultList();
-        
-        // DocumentModelのMapを作る
-        HashMap<Long, DocumentModel> dmMap = new HashMap<>(ids.size());
-        for (DocumentModel dm : documentList) {
-            // LazyFetchのdetached objectsは一旦バッサリ消す！
-            dm.setModules(null);
-            dm.setSchema(null);
-            dmMap.put(dm.getId(), dm);
-        }
-        
-        // ModuleModelを登録しなおす
-        for (ModuleModel mm : moduleList) {
-            long docPk = mm.getDocumentModel().getId();
-            DocumentModel docModel = dmMap.get(docPk);
-            if (docModel != null) {
-                docModel.addModule(mm);
-            }
-        }
-        
-        // SchemaModelを登録しなおす
-        for (SchemaModel sm : schemaList) {
-            long docPk = sm.getDocumentModel().getId();
-            DocumentModel docModel = dmMap.get(docPk);
-            if (docModel != null) {
-                docModel.addSchema(sm);
-            }
-        }
-        dmMap.clear();
-
-        return documentList;
-    }
-
-    // まとめてquery改改改 postgresでは遅い1？
-    public List<DocumentModel> getDocumentsWithTrick(List<Long> ids) {
 
         List<DocumentModel> documentList =
                 em.createQuery("from DocumentModel m where m.id in (:ids)")
@@ -462,8 +365,6 @@ public class KarteServiceBean {
 
         return documentList;
     }
-
-//masuda$
     
     /**
      * ドキュメント DocumentModel オブジェクトを保存する。
@@ -471,10 +372,20 @@ public class KarteServiceBean {
      * @return Document.id
      */
     public long addDocument(DocumentModel document) {
-//masuda^
+
         // 永続化する
         em.persist(document);
         long id = document.getId();
+        
+        // 修正版の処理と算定履歴登録は非同期処理させる
+        processPostAddDocument(document);
+
+        // Document.idを返す
+        return id;
+    }
+    
+    @Asynchronous
+    private void processPostAddDocument(DocumentModel document) {
         
         // 算定履歴を登録する
         registSanteiHistory(document);
@@ -482,14 +393,14 @@ public class KarteServiceBean {
         // 修正版の処理を行う
         DocInfoModel docInfo = document.getDocInfoModel();
         long parentPk = docInfo.getParentPk();
-        
+
         // 親がないならリターン
         if (parentPk == 0L) {
-            return id;
+            return;
         }
         DocumentModel old = em.find(DocumentModel.class, parentPk);
         if (old == null) {
-            return id;
+            return;
         }
         
         // 親文書が仮保存文書なら残す必要なし。なぜならそれは仮保存だから。
@@ -542,10 +453,6 @@ public class KarteServiceBean {
             // 修正されたものは算定履歴から削除する
             deleteSanteiHistory(parentPk);      
         }
-
-        // Document.idを返す
-        return id;
-//masuda$
     }
 
     /**
@@ -555,7 +462,7 @@ public class KarteServiceBean {
      */
     public int deleteDocument(long id) {
         
-//masuda^   オリジナルでは修正したり仮保存をした文書を削除できないので改変
+        // オリジナルでは修正したり仮保存をした文書を削除できないので改変
         
         // 削除対象のDocumentModelを取得
         DocumentModel target = em.find(DocumentModel.class, id);
@@ -587,7 +494,6 @@ public class KarteServiceBean {
         }
         
         return 1;
-//masuda$
     }
 
     private void DeleteOneDocument(long id, DocumentModel target, Date ended){
@@ -967,7 +873,6 @@ public class KarteServiceBean {
 
     
 //masuda^   算定情報登録
-    @Asynchronous
     private void registSanteiHistory(DocumentModel document) {
         
         // 算定履歴登録はFINALカルテのみ
@@ -1040,7 +945,6 @@ public class KarteServiceBean {
     }
     
     // 指定されたidのDocumentModelに関連するSanteiHistoryModelを削除する
-    //@Asynchronous
     private void deleteSanteiHistory(long docPk) {
         
         if (docPk == 0L) {
