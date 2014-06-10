@@ -752,31 +752,16 @@ public final class SqlMiscDao extends SqlDaoBean {
 
     public List<String[]> getRecedenCsv(String ymStr, String nyugaikbn, int teisyutusaki) throws DaoException {
 
-//        final String sql = "select recedata, totalten from tbl_receden"
-//                + " where sryym = ? and nyugaikbn = ? and teisyutusaki = ? and hospnum = ?"
-//                + " order by nyugaikbn, ptid, rennum";
-//        Object[] params = {ym, nyugaikbn, teisyutusaki, hospNum};
-        
-        final String sql1 = "select recedata, totalten from tbl_receden"
-                + " where sryym = ? and nyugaikbn = ? and teisyutusaki = ? and hospnum = ?"
-                + " order by ptid, rennum";
-
-        final String sql2 = "select rece.recedata, rece.totalten from tbl_receden rece, tbl_seikyu_main seikyu"
-                + " where seikyu.skyym = ? and rece.nyugaikbn = ? and rece.teisyutusaki = ? and rece.hospnum = ?"
+        final String sql = "select rece.recedata, rece.totalten from tbl_receden rece, tbl_seikyu_main seikyu"
+                + " where (seikyu.sryym = ? or seikyu.skyym = ?) and rece.nyugaikbn = ? and rece.teisyutusaki = ? and rece.hospnum = ?"
                 + " and rece.sryym = seikyu.sryym and rece.nyugaikbn = seikyu.nyugaikbn and rece.teisyutusaki = seikyu.teisyutusaki"
                 + " and rece.ptid = seikyu.ptid"
-                + " order by rece.ptid, rece.rennum";
+                + " order by rece.ptid, seikyu.sryym, rece.rennum";
 
-        List<String[]> valuesList = new ArrayList<>();
         int hospNum = getHospNum();
         int ym = Integer.parseInt(ymStr);
-
-        // 普通のレセ
-        Object[] params1 = {ym, nyugaikbn, teisyutusaki, hospNum};
-        valuesList.addAll(executePreparedStatement(sql1, params1));
-        // 月遅れ・返戻
-        Object[] params2 = {ymStr, nyugaikbn, teisyutusaki, hospNum};
-        valuesList.addAll(executePreparedStatement(sql2, params2));
+        Object[] params = {ym, ymStr, nyugaikbn, teisyutusaki, hospNum};
+        List<String[]> valuesList = executePreparedStatement(sql, params);
 
         for (String[] values : valuesList) {
             values[0] = values[0].trim();
