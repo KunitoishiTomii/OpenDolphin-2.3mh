@@ -814,6 +814,8 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
         @Override
         protected void succeeded(Boolean result) {
             logger.debug("DeleteTask succeeded");
+            // 削除後はキャッシュをクリアする
+            karteViewerMap.clear();
             getContext().getDocumentHistory().getDocumentHistory();
         }
     }
