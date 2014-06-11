@@ -525,7 +525,12 @@ public class KarteServiceBean {
         long linkId = dm.getLinkId();
         DocumentModel model = dm;
         while (linkId != 0) {
-            model = em.find(DocumentModel.class, linkId);
+            DocumentModel parent = em.find(DocumentModel.class, linkId);
+            if (parent == null) {
+                System.out.println(String.format("Invalid linkId: docPk=%d, linkId=%d", dm.getId(), linkId));
+                break;
+            }
+            model = parent;
             linkId = model.getLinkId();
         }
         return model;
