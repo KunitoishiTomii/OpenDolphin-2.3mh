@@ -365,12 +365,18 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
             return;
         }
 //masuda^
+        // 修正履歴表示モードは編集不許可
+        if (!canOpenKarte()) {
+            return;
+        }
         // カルテ修正はひとつだけ
         ChartImpl chart = (ChartImpl) getContext();
         // すでに修正中の document があれば toFront するだけで帰る
         if (!canModifyKarte()) {
             return;
         }
+        // 編集保存されるかもしれないのでキャッシュから削除
+        karteViewerMap.remove(selectedKarte.getModel().getId());
 //masuda$
         
         String docType = selectedKarte.getModel().getDocInfoModel().getDocType();
@@ -502,6 +508,10 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
     public void showModified() {
         showModified = !showModified;
         getContext().getDocumentHistory().setShowModified(showModified);
+        
+        // 修正履歴表示モードは編集不許可
+        // ここで制限するとみんな戸惑うかも…
+        //getContext().setReadOnly(showModified);
     }
 
     /**
@@ -517,11 +527,17 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
         }
         
  //masuda^
+        // 修正履歴表示モードは編集不許可
+        if (!canOpenKarte()) {
+            return;
+        }
         // カルテ表示はひとつだけ
         // すでに修正中の document があれば toFront するだけで帰る
         if (!canModifyKarte()) {
             return;
         }
+        // 編集保存されるかもしれないのでキャッシュから削除
+        karteViewerMap.remove(selectedKarte.getModel().getId());
 
         // 表示している文書タイプに応じて Viewer を作成する
         DocumentModel model = selectedKarte.getModel();
@@ -935,6 +951,17 @@ public class KarteDocumentViewer extends AbstractChartDocument implements Docume
         public void enter() {
             currentState.enter();
         }
+    }
+    
+    // 履歴表示モード編集制限
+    private boolean canOpenKarte() {
+        if (showModified) {
+            String title = ClientContext.getFrameTitle("カルテ編集");
+            String msg = "履歴表示モードでは編集できません";
+            JOptionPane.showMessageDialog(getContext().getFrame(), msg, title, JOptionPane.WARNING_MESSAGE);
+            return false;
+        }
+        return true;
     }
     
     private boolean canModifyKarte() {
