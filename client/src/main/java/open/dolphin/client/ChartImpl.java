@@ -2210,6 +2210,14 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
     }
 
     private boolean canOpenNewKarte() {
+        
+        // 履歴表示モード編集制限
+        if (getDocumentHistory().isShowModified()) {
+            String title = ClientContext.getFrameTitle("カルテ編集");
+            String msg = "履歴表示モードでは編集できません";
+            JOptionPane.showMessageDialog(getFrame(), msg, title, JOptionPane.WARNING_MESSAGE);
+            return false;
+        }
 
         List<EditorFrame> editorFrames = WindowSupport.getAllEditorFrames();
         if (editorFrames.isEmpty()) {

@@ -14,7 +14,7 @@ import open.dolphin.infomodel.ChartEventModel;
 import open.dolphin.project.Project;
 import org.glassfish.tyrus.client.ClientManager;
 import org.glassfish.tyrus.container.jdk.client.JdkClientContainer;
-import org.glassfish.tyrus.container.jdk.client.SslEngineConfigurator;
+import org.glassfish.tyrus.client.SslEngineConfigurator;
 //import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
 //import org.glassfish.tyrus.client.ClientManager;
 //import javax.websocket.ContainerProvider;
@@ -41,11 +41,7 @@ public class ClientChartEventEndpoint {
         int pos = baseURI.indexOf(":");
 
         StringBuilder sb = new StringBuilder();
-        if (useSSL) {
-            sb.append("wss");
-        } else {
-            sb.append("ws");
-        }
+        sb.append(useSSL ? "wss" : "ws");
         sb.append(baseURI.substring(pos)).append("/dolphin/ws/");
         // memo: mhではUUIDの後にユーザID/IPを入れているため、このままではURIが取得できずエラーになる
         //       UUID部分のみを切り出せばエラーにはならないが、正常動作の保障がない。

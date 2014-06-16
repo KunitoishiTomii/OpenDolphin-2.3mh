@@ -539,12 +539,18 @@ public class KarteServiceBean {
     // 親分文書を追いかける
     public DocumentModel getParent(DocumentModel dm) {
 
-        long linkId = dm.getLinkId();
         DocumentModel model = dm;
-        while (linkId != 0) {
-            model = em.find(DocumentModel.class, linkId);
-            linkId = model.getLinkId();
+        
+        while (model.getLinkId() != 0) {
+            DocumentModel parent = em.find(DocumentModel.class, model.getLinkId());
+            if (parent == null) {
+                System.out.println(String.format("Invalid linkId: docPk=%d, linkId=%d",
+                        model.getId(), model.getLinkId()));
+                break;
         }
+            model = parent;
+        }
+        
         return model;
     }
     
