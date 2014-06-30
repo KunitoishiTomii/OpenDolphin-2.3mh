@@ -106,9 +106,42 @@ public class CheckMedication {
         for (BundleDolphin bundle : bundleList) {
             String admin = bundle.getAdmin();
             if (admin != null && admin.startsWith("１日")) {
-                int pos = admin.indexOf("回");
-                admin = admin.substring("１日".length(), pos);
-                admin = ZenkakuUtils.toHalfNumber(admin);
+                //int pos = admin.indexOf("回");
+                //admin = admin.substring("１日".length(), pos);
+                boolean numFound = false;
+                StringBuilder sb = new StringBuilder();
+                int pos = "１日".length();
+                whileLoop:
+                while (pos < admin.length()) {
+                    char c = admin.charAt(pos);
+                    switch (c) {
+                        case '１':
+                        case '２':
+                        case '３':
+                        case '４':
+                        case '５':
+                        case '６':
+                        case '７':
+                        case '８':
+                        case '９':
+                        case '０':
+                            numFound = true;
+                            sb.append(c);
+                            break;
+                        default:
+                            if (numFound) {
+                                break whileLoop;
+                            } else {
+                                break;
+                            }
+                    }
+                    pos++;
+                }
+                if (sb.length() == 0) {
+                    admin = null;
+                } else {
+                    admin = ZenkakuUtils.toHalfNumber(sb.toString());
+                }
             } else {
                 admin = null;
             }
@@ -134,7 +167,7 @@ public class CheckMedication {
         UsingDrugs.getInstance().addUsingDrugs(newDrugs);
 
     }
-
+    
     private String checkMedication() {
 
         if (medList.isEmpty()) {
