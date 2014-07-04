@@ -473,7 +473,7 @@ public class KarteServiceBean {
         
         Date ended = new Date();
         Boolean     bIsFinalUnique = true;
-
+        
         for (DocumentModel delete: delSet) {
             if (delete.getId() != id && delete.getStatus().equals(IInfoModel.STATUS_FINAL)){
                 // 同一のparentの文書で、かつSTATUS_FINALが指定されている文書が２つ以上ある場合は記録しておき、
@@ -483,7 +483,7 @@ public class KarteServiceBean {
         }
         
         if (bIsFinalUnique == true){
-            for (DocumentModel delete : delSet) {
+        for (DocumentModel delete : delSet) {
                 // STATUS_FINALが単一なので、同一parentのDocumentすべてにDELETEマークをつける
                 DeleteOneDocument(delete.getId(), delete, ended);
             }
@@ -492,49 +492,49 @@ public class KarteServiceBean {
             // STATUS_FINALが複数あるので、指定されたDocumentのみにDELETEマークをつける
             DeleteOneDocument(id, target, ended);
         }
-        
+            
         return 1;
     }
-
+            
     private void DeleteOneDocument(long id, DocumentModel target, Date ended){
-        // HibernateSearchのFulTextEntityManagerを用意。削除済みのものはインデックスから削除する
-        final FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(em);
+            // HibernateSearchのFulTextEntityManagerを用意。削除済みのものはインデックスから削除する
+            final FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(em);
         fullTextEntityManager.purge(DocumentModel.class, id);
-
-        // 削除するものは算定履歴も削除する
+            
+            // 削除するものは算定履歴も削除する
         deleteSanteiHistory(id);
 
         if (IInfoModel.STATUS_TMP.equals(target.getStatus())) {
-            // 仮文書の場合は抹消スル
+                // 仮文書の場合は抹消スル
             DocumentModel dm = em.find(DocumentModel.class, id);
-            em.remove(dm);
-
-        } else {
-            // 削除フラグをたてる
+                em.remove(dm);
+                
+            } else {
+                // 削除フラグをたてる
             target.setStatus(IInfoModel.STATUS_DELETE);
             target.setEnded(ended);
 
-            // 関連するモジュールに同じ処理を行う
-            List<ModuleModel> deleteModules =
-                    em.createQuery(QUERY_MODULE_BY_DOC_ID)
+                // 関連するモジュールに同じ処理を行う
+                List<ModuleModel> deleteModules =
+                        em.createQuery(QUERY_MODULE_BY_DOC_ID)
                     .setParameter(ID, id)
-                    .getResultList();
-            for (ModuleModel model : deleteModules) {
-                model.setStatus(IInfoModel.STATUS_DELETE);
-                model.setEnded(ended);
-            }
+                        .getResultList();
+                for (ModuleModel model : deleteModules) {
+                    model.setStatus(IInfoModel.STATUS_DELETE);
+                    model.setEnded(ended);
+                }
 
-            // 関連する画像に同じ処理を行う
-            List<SchemaModel> deleteImages =
-                    em.createQuery(QUERY_SCHEMA_BY_DOC_ID)
+                // 関連する画像に同じ処理を行う
+                List<SchemaModel> deleteImages =
+                        em.createQuery(QUERY_SCHEMA_BY_DOC_ID)
                     .setParameter(ID, id)
-                    .getResultList();
-            for (SchemaModel model : deleteImages) {
-                model.setStatus(IInfoModel.STATUS_DELETE);
-                model.setEnded(ended);
+                        .getResultList();
+                for (SchemaModel model : deleteImages) {
+                    model.setStatus(IInfoModel.STATUS_DELETE);
+                    model.setEnded(ended);
+                }
             }
         }
-    }
 //masuda^
     // 親分文書を追いかける
     public DocumentModel getParent(DocumentModel dm) {
@@ -547,7 +547,7 @@ public class KarteServiceBean {
                 System.out.println(String.format("Invalid linkId: docPk=%d, linkId=%d",
                         model.getId(), model.getLinkId()));
                 break;
-        }
+            }
             model = parent;
         }
         
