@@ -54,10 +54,16 @@ public class BasicFilter extends AbstractCheckFilter {
             results.add(result2);
         }
         
+        // 診療情報提供料
+        CheckResult result3 = checkLetter(reModel);
+        if (result3 != null) {
+            results.add(result3);
+        }
+        
 
         return results;
     }
-    
+
     // 月遅れ・返戻チェック
     private CheckResult checkLateReze(RE_Model reModel) {
         
@@ -196,5 +202,17 @@ public class BasicFilter extends AbstractCheckFilter {
         }
 
         return ret;
+    }
+    
+    // 診療情報提供料
+    private CheckResult checkLetter(RE_Model reModel) {
+        for (IRezeItem item : reModel.getItemList()) {
+            String str = item.getDescription();
+            if (str != null && str.contains("診療情報提供料") && !str.contains("算定")) {
+                CheckResult result = createCheckResult("診療情報提供料が算定されています。コメントはいりませんか？", CheckResult.CHECK_WARNING);
+                return result;
+            }
+        }
+        return null;
     }
 }
