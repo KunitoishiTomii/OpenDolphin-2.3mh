@@ -9,6 +9,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.regex.Pattern;
 import javax.swing.*;
+import javax.swing.TransferHandler.TransferSupport;
 import javax.swing.text.BadLocationException;
 import javax.swing.tree.DefaultMutableTreeNode;
 import open.dolphin.infomodel.ModuleInfoBean;
@@ -210,7 +211,10 @@ public abstract class AbstractCodeHelper {
         textPane.setSelectionStart(start);
         textPane.setSelectionEnd(end);
         textPane.replaceSelection("");
-        handler.importData(comp, tr);
+//masuda^   CodeHelperが機能しない bug report by 金子耳鼻咽喉科 金子先生
+        //handler.importData(comp, tr);
+        handler.importData(new TransferSupport(comp, tr));
+//masuda$
         closePopup();
     }
     
