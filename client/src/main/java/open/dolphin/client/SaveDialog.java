@@ -77,7 +77,15 @@ public final class SaveDialog {
     }
     
     public void start() {
-        dialog.setVisible(true);
+//masuda^   JAVA8
+        SwingUtilities.invokeLater(new Runnable(){
+
+            @Override
+            public void run() {
+                dialog.setVisible(true);
+            }
+        });
+//masuda$
     }
     
     public SaveParams getValue() {
