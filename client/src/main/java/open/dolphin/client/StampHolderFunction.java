@@ -6,6 +6,7 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
 import java.util.List;
 import javax.swing.*;
 import open.dolphin.infomodel.BundleDolphin;
@@ -45,6 +46,7 @@ public class StampHolderFunction {
     private AbstractAction registRoutineMedAction;
     private AbstractAction deleteAction;
     private AbstractAction changeToAdmissionMedAction;
+    private AbstractAction repaintAction;
     
     private StampHolder selectedStampHolder;
     
@@ -154,10 +156,17 @@ public class StampHolderFunction {
                 registRoutineMed();
             }
         };
+        repaintAction = new AbstractAction("再描画") {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                repaintStamp();
+            }
+        };
     }
     
     // スタンプホルダにpopup menuを表示する
-    public void showPopupMenu(Point p) {
+    public void showPopupMenu(MouseEvent e) {
 
         KartePane kartePane = selectedStampHolder.getKartePane();
 
@@ -225,7 +234,13 @@ public class StampHolderFunction {
             JMenuItem item = new JMenuItem(registRoutineMedAction);
             popup.add(item);
         }
+        
+        // repaint
+        popup.addSeparator();
+        JMenuItem item = new JMenuItem(repaintAction);
+        popup.add(item);
 
+        Point p = e.getPoint();
         popup.show(selectedStampHolder, p.x, p.y);
     }
     
@@ -494,6 +509,14 @@ public class StampHolderFunction {
         Frame parent = (Frame) selectedStampHolder.getTopLevelAncestor();
         RoutineMedDialog dialog = new RoutineMedDialog();
         dialog.showDialog(stampHolderList, parent);
+    }
+    
+    // repaint stamp
+    private void repaintStamp() {
+        List<StampHolder> stampHolderList = getSelectedStampHolder();
+        for (StampHolder sh : stampHolderList) {
+            sh.setMyTextLater();
+        }
     }
     
     private boolean isAllMedicine() {

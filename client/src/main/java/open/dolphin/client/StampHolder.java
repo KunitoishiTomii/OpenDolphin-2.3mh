@@ -1,13 +1,12 @@
 package open.dolphin.client;
 
-import open.dolphin.common.util.StampRenderingHints;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import javax.swing.SwingUtilities;
 import open.dolphin.common.util.StampHtmlRenderer;
-
+import open.dolphin.common.util.StampRenderingHints;
 import open.dolphin.infomodel.ModuleModel;
 import open.dolphin.order.AbstractStampEditor;
 import open.dolphin.order.OldNewValuePair;
@@ -65,7 +64,7 @@ public final class StampHolder extends AbstractComponentHolder {
         if (e.isPopupTrigger()) {
             StampHolder sh = (StampHolder) e.getComponent();
             getFunction().setSelectedStampHolder(sh);
-            getFunction().showPopupMenu(e.getPoint());
+            getFunction().showPopupMenu(e);
         }
     }
 
