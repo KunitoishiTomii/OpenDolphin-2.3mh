@@ -46,7 +46,7 @@ public class StampHolderFunction {
     private AbstractAction registRoutineMedAction;
     private AbstractAction deleteAction;
     private AbstractAction changeToAdmissionMedAction;
-    private AbstractAction repaintAction;
+//    private AbstractAction repaintAction;
     
     private StampHolder selectedStampHolder;
     
@@ -156,13 +156,13 @@ public class StampHolderFunction {
                 registRoutineMed();
             }
         };
-        repaintAction = new AbstractAction("再描画") {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                repaintStamp();
-            }
-        };
+//        repaintAction = new AbstractAction("再描画") {
+//
+//            @Override
+//            public void actionPerformed(ActionEvent e) {
+//                repaintStamp();
+//            }
+//        };
     }
     
     // スタンプホルダにpopup menuを表示する
@@ -236,9 +236,9 @@ public class StampHolderFunction {
         }
         
         // repaint
-        popup.addSeparator();
-        JMenuItem item = new JMenuItem(repaintAction);
-        popup.add(item);
+//        popup.addSeparator();
+//        JMenuItem item = new JMenuItem(repaintAction);
+//        popup.add(item);
 
         Point p = e.getPoint();
         popup.show(selectedStampHolder, p.x, p.y);
