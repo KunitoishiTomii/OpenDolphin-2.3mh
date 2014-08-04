@@ -23,6 +23,7 @@ public class DiagnosisFilter extends AbstractCheckFilter {
 
     private static final String AND_OPERATOR = "&";
     private static final String OR_OPERATOR = "|";
+    private static final String NOT_PREFIX = "!";
 
     private static final String FILTER_NAME = "適応病名";
 
@@ -172,8 +173,11 @@ public class DiagnosisFilter extends AbstractCheckFilter {
                 default:
                     boolean hit = false;
                     for (SY_Model syModel : diagList) {
-                        boolean b3 = syModel.getDiagName().contains(token);
-                        hit |= b3;
+                        //boolean b3 = syModel.getDiagName().contains(token);
+                        boolean b3 = token.startsWith(NOT_PREFIX)
+                                ? !syModel.getDiagName().contains(token.substring(1))
+                                : syModel.getDiagName().contains(token);
+                          hit |= b3;
                         if (notCondition) {
                             if (b3) {
                                 // ドボン
