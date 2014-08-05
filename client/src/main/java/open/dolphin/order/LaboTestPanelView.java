@@ -209,7 +209,8 @@ public class LaboTestPanelView extends JPanel{
         biochemRight.add(new LaboCheckBox(160197910, "非特異的IgE"));
         biochemRight.add(createSlimSeparator());
         biochemRight.add(new LaboCheckBox(160022110, "血清鉄"));
-        biochemRight.add(new LaboCheckBox(160028710, "TIBC"));
+        //biochemRight.add(new LaboCheckBox(160028710, "TIBC"));
+        biochemRight.add(new LaboCheckBox(160023610, "TIBC(比色法)"));
         //biochemRight.add(new LaboCheckBox(160036810, "フェリチン"));
         biochemRight.add(new LaboCheckBox(160192510, "フェリチン定量"));
         biochemRight.add(new LaboCheckBox(160125650, "エリスロポエチン精密"));
