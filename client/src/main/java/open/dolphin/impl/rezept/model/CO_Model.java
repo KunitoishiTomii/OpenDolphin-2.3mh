@@ -1,5 +1,8 @@
 package open.dolphin.impl.rezept.model;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  * コメントレコード
  * 
@@ -46,6 +49,16 @@ public class CO_Model implements IRezeItem {
         return comment;
     }
     
+    public void setClassCode(String classCode) {
+        this.classCode = classCode;
+    }
+    public void setSrycd(String srycd) {
+        this.srycd = srycd;
+    }
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+    
     @Override
     public void parseLine(String csv) {
         String[] tokens = TokenSplitter.split(csv);
@@ -86,5 +99,10 @@ public class CO_Model implements IRezeItem {
     @Override
     public boolean isPass() {
         return pass;
+    }
+
+    @Override
+    public List<CO_Model> getCommentList() {
+        return Collections.EMPTY_LIST;
     }
 }

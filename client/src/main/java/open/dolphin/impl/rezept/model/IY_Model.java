@@ -19,7 +19,8 @@ public class IY_Model implements IRezeItem {
     private Float ten;              // 点数
     private int count;              // 回数
     private List<DayNumberPair> dayData;    // 算定日情報
-        
+    
+    private List<CO_Model> commentList; // コメント 
     private String description;
     
     private int hitCount;
@@ -50,6 +51,11 @@ public class IY_Model implements IRezeItem {
     }
     
     @Override
+    public List<CO_Model> getCommentList() {
+        return commentList;
+    }
+    
+    @Override
     public void parseLine(String csv) {
         String[] tokens = TokenSplitter.split(csv);
         classCode = tokens[1].trim();
@@ -57,6 +63,19 @@ public class IY_Model implements IRezeItem {
         number = tokens[4].isEmpty() ? 1 : Float.parseFloat(tokens[4]);
         ten = tokens[5].isEmpty() ? null : Float.parseFloat(tokens[5]);
         count = Integer.parseInt(tokens[6]);
+        
+        // コメント１－３
+        commentList = new ArrayList<>();
+        for (int i = 7; i < daysStart; i += 2) {
+            String coSrycd = tokens[i];
+            if (!coSrycd.isEmpty()) {
+                CO_Model coModel = new CO_Model();
+                //coModel.setClassCode(classCode);
+                coModel.setSrycd(coSrycd);
+                coModel.setComment(tokens[i + 1]);
+                commentList.add(coModel);
+            }
+        }
         
         dayData = new ArrayList<>();
         int len = tokens.length;

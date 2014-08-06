@@ -25,6 +25,8 @@ public class TO_Model implements IRezeItem {
     public String size;             // 商品名及び規格又はサイズ
     public List<DayNumberPair> dayData; // 算定日情報
     
+    private List<CO_Model> commentList; // コメント
+    
     private String description;
     
     private int hitCount;
@@ -67,6 +69,11 @@ public class TO_Model implements IRezeItem {
     }
     
     @Override
+    public List<CO_Model> getCommentList() {
+        return commentList;
+    }
+    
+    @Override
     public void parseLine(String csv) {
         String[] tokens = TokenSplitter.split(csv);
         classCode = tokens[1].trim();
@@ -78,7 +85,20 @@ public class TO_Model implements IRezeItem {
         unitPrice = tokens[8].isEmpty() ? 0 : Float.parseFloat(tokens[8]);
         name = tokens[9].trim();
         size = tokens[10].trim();
-
+        
+        // コメント１－３
+        commentList = new ArrayList<>();
+        for (int i = 11; i < daysStart; i += 2) {
+            String coSrycd = tokens[i];
+            if (!coSrycd.isEmpty()) {
+                CO_Model coModel = new CO_Model();
+                //coModel.setClassCode(classCode);
+                coModel.setSrycd(coSrycd);
+                coModel.setComment(tokens[i + 1]);
+                commentList.add(coModel);
+            }
+        }
+        
         dayData = new ArrayList<>();
         int len = tokens.length;
         for (int i = daysStart; i < len; ++i) {

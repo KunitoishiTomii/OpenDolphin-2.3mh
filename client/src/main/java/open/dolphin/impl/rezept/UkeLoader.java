@@ -347,6 +347,10 @@ public class UkeLoader {
                     } else {
                         itemSrycdSet.add(srycd);
                     }
+                    // SI, IY, TO内コメントコード処理
+                    for (CO_Model coModel : item.getCommentList()) {
+                        itemSrycdSet.add(coModel.getSrycd());
+                    }
                 }
             }
         }
@@ -371,7 +375,9 @@ public class UkeLoader {
         // 診療行為名をセットする
         for (IR_Model irModel : irModelList) {
             for (RE_Model reModel : irModel.getReModelList()) {
+                List<IRezeItem> newItemList = new ArrayList<>();
                 for (IRezeItem item : reModel.getItemList()) {
+                    newItemList.add(item);
                     String srycd = item.getSrycd();
                     TensuMaster tm = map.get(srycd);
                     // コメントコード
@@ -381,7 +387,14 @@ public class UkeLoader {
                     } else {
                         item.setDescription(tm.getName());
                     }
+                    // SI, IY, TO内コメントコード処理
+                    for (CO_Model coModel : item.getCommentList()) {
+                        TensuMaster commentTm = map.get(coModel.getSrycd());
+                        reconstructComment(commentTm, coModel, deMap);
+                        newItemList.add(coModel);
+                    }
                 }
+                reModel.setItemList(newItemList);
             }
         }
         
