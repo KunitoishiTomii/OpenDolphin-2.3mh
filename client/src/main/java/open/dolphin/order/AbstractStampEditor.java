@@ -761,16 +761,19 @@ public abstract class AbstractStampEditor implements StampEditorConst {
 
             @Override
             public void valueChanged(ListSelectionEvent e) {
-                
                 if (e.getValueIsAdjusting() == false) {
-                    int row = view.getSearchResultTable().getSelectedRow();
-                    ListTableSorter<TensuMaster> sorter 
-                            = (ListTableSorter<TensuMaster>) searchResultTable.getModel();
-                    TensuMaster o = sorter.getObject(row);
-                    if (o != null) {
-                        addSelectedTensu(o);
-                        setFocusOnSearchTextFld();
-                    }
+                    searchResultSelected();
+                }
+            }
+        });
+
+        // 連続して同じアイテムを追加する場合のため、ダブルクリックでも選択可能とする
+        searchResultTable.addMouseListener(new MouseAdapter() {
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    searchResultSelected();
                 }
             }
         });
@@ -792,6 +795,21 @@ public abstract class AbstractStampEditor implements StampEditorConst {
         }
         
         setupCommonComponents();
+    }
+    
+    private void searchResultSelected() {
+        
+        AbstractOrderView view = getOrderView();
+        JTable searchResultTable = view.getSearchResultTable();
+        int row = view.getSearchResultTable().getSelectedRow();
+        
+        ListTableSorter<TensuMaster> sorter
+                = (ListTableSorter<TensuMaster>) searchResultTable.getModel();
+        TensuMaster o = sorter.getObject(row);
+        if (o != null) {
+            addSelectedTensu(o);
+            setFocusOnSearchTextFld();
+        }
     }
     
     protected final void setupCommonComponents() {
