@@ -756,24 +756,37 @@ public abstract class AbstractStampEditor implements StampEditorConst {
         final JTable searchResultTable = view.getSearchResultTable();
         searchResultTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         searchResultTable.setRowSelectionAllowed(true);
-        ListSelectionModel lm = searchResultTable.getSelectionModel();
-        lm.addListSelectionListener(new ListSelectionListener() {
+//        ListSelectionModel lm = searchResultTable.getSelectionModel();
+//        lm.addListSelectionListener(new ListSelectionListener() {
+//
+//            @Override
+//            public void valueChanged(ListSelectionEvent e) {
+//                if (e.getValueIsAdjusting() == false) {
+//                    int row = searchResultTable.getSelectedRow();
+//                    ListTableSorter<TensuMaster> sorter
+//                            = (ListTableSorter<TensuMaster>) searchResultTable.getModel();
+//                    TensuMaster o = sorter.getObject(row);
+//                    if (o != null) {
+//                        addSelectedTensu(o);
+//                        setFocusOnSearchTextFld();
+//                    }
+//                }
+//            }
+//        });
 
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                if (e.getValueIsAdjusting() == false) {
-                    searchResultSelected();
-                }
-            }
-        });
-
-        // 連続して同じアイテムを追加する場合のため、ダブルクリックでも選択可能とする
         searchResultTable.addMouseListener(new MouseAdapter() {
 
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() == 2) {
-                    searchResultSelected();
+                if (e.getClickCount() == 1) {
+                    int row = searchResultTable.getSelectedRow();
+                    ListTableSorter<TensuMaster> sorter
+                            = (ListTableSorter<TensuMaster>) searchResultTable.getModel();
+                    TensuMaster o = sorter.getObject(row);
+                    if (o != null) {
+                        addSelectedTensu(o);
+                        setFocusOnSearchTextFld();
+                    }
                 }
             }
         });
@@ -795,21 +808,6 @@ public abstract class AbstractStampEditor implements StampEditorConst {
         }
         
         setupCommonComponents();
-    }
-    
-    private void searchResultSelected() {
-        
-        AbstractOrderView view = getOrderView();
-        JTable searchResultTable = view.getSearchResultTable();
-        int row = view.getSearchResultTable().getSelectedRow();
-        
-        ListTableSorter<TensuMaster> sorter
-                = (ListTableSorter<TensuMaster>) searchResultTable.getModel();
-        TensuMaster o = sorter.getObject(row);
-        if (o != null) {
-            addSelectedTensu(o);
-            setFocusOnSearchTextFld();
-        }
     }
     
     protected final void setupCommonComponents() {
