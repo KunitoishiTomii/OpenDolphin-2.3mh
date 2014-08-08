@@ -2,6 +2,7 @@ package open.dolphin.delegater;
 
 import java.io.IOException;
 import java.net.URI;
+//import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import javax.websocket.OnMessage;
 import javax.websocket.ClientEndpoint;
@@ -13,6 +14,7 @@ import open.dolphin.common.util.JsonConverter;
 import open.dolphin.infomodel.ChartEventModel;
 import open.dolphin.project.Project;
 import org.glassfish.tyrus.client.ClientManager;
+import org.glassfish.tyrus.client.ClientProperties;
 import org.glassfish.tyrus.container.jdk.client.JdkClientContainer;
 import org.glassfish.tyrus.client.SslEngineConfigurator;
 //import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
@@ -56,7 +58,10 @@ public class ClientChartEventEndpoint {
         if (useSSL) {
             SSLContext ssl = OreOreSSL.getSslContext();
             SslEngineConfigurator sslConfig = new SslEngineConfigurator(ssl, true, false, false);
-            client.getProperties().put(ClientManager.SSL_ENGINE_CONFIGURATOR, sslConfig);
+            sslConfig.setHostVerificationEnabled(false);
+            //HostnameVerifier verifier = OreOreSSL.getVerifier();
+            //sslConfig.setHostnameVerifier(verifier);
+            client.getProperties().put(ClientProperties.SSL_ENGINE_CONFIGURATOR, sslConfig);
         }
         wsSession = client.connectToServer(this, uri);
 /*

@@ -31,7 +31,7 @@ public class RE_Model implements IRezeModel {
     private final List<KO_Model> koModelList;
     private KH_Model khModel;
     private final List<SY_Model> syModelList;
-    private final List<IRezeItem> itemList;
+    private List<IRezeItem> itemList;
     private final List<SJ_Model> sjModelList;
     
     private List<CheckResult> checkResults;
@@ -107,6 +107,9 @@ public class RE_Model implements IRezeModel {
     }
     public void addItem(IRezeItem item) {
         itemList.add(item);
+    }
+    public void setItemList(List<IRezeItem> itemList) {
+        this.itemList = itemList;
     }
     public List<SJ_Model> getSJModelList() {
         return sjModelList;

@@ -1,5 +1,7 @@
 package open.dolphin.impl.rezept.model;
 
+import java.util.List;
+
 /**
  *
  * @author masuda, Masuda Naika
@@ -20,4 +22,6 @@ public interface IRezeItem extends IRezeModel {
     public void incrementHitCount();
     public void setPass(boolean pass);
     public boolean isPass();
+    
+    public List<CO_Model> getCommentList();
 }
