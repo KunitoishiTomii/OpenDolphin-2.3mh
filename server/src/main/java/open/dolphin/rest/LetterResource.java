@@ -32,8 +32,7 @@ public class LetterResource extends AbstractResource {
     @Produces(MEDIATYPE_TEXT_UTF8)
     public Response putLetter(String json) {
 
-        LetterModule model = (LetterModule)
-                getConverter().fromJson(json, LetterModule.class);
+        LetterModule model = getConverter().fromJson(json, LetterModule.class);
 
         Long pk = letterServiceBean.saveOrUpdateLetter(model);
 

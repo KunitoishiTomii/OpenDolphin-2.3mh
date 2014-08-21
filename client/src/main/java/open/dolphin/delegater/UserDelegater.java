@@ -69,8 +69,7 @@ public class UserDelegater extends BusinessDelegater {
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-        UserModel userModel = (UserModel) 
-                getConverter().fromJson(is, UserModel.class);
+        UserModel userModel = getConverter().fromJson(is, UserModel.class);
         
         response.close();
 
@@ -88,9 +87,9 @@ public class UserDelegater extends BusinessDelegater {
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-        TypeReference typeRef = new TypeReference<List<UserModel>>(){};
-        List<UserModel> list  = (List<UserModel>) 
-                getConverter().fromJson(is, typeRef);
+        TypeReference<List<UserModel>> typeRef = 
+                new TypeReference<List<UserModel>>(){};
+        List<UserModel> list = getConverter().fromJson(is, typeRef);
         
         response.close();
 

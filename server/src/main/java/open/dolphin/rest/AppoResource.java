@@ -34,9 +34,9 @@ public class AppoResource extends AbstractResource {
     @Produces(MEDIATYPE_TEXT_UTF8)
     public Response putAppointments(String json) {
 
-        TypeReference typeRef = new TypeReference<List<AppointmentModel>>(){};
-        List<AppointmentModel> list = (List<AppointmentModel>) 
-                getConverter().fromJson(json, typeRef);
+        TypeReference<List<AppointmentModel>> typeRef = 
+                new TypeReference<List<AppointmentModel>>(){};
+        List<AppointmentModel> list = getConverter().fromJson(json, typeRef);
 
         int count = appoServiceBean.putAppointments(list);
         

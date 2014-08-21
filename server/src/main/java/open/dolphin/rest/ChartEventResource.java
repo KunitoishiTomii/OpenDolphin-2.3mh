@@ -79,8 +79,7 @@ public class ChartEventResource extends AbstractResource {
     @Produces(MEDIATYPE_TEXT_UTF8)
     public Response putChartEvent(String json) {
         
-        ChartEventModel msg = (ChartEventModel)
-                getConverter().fromJson(json, ChartEventModel.class);
+        ChartEventModel msg = getConverter().fromJson(json, ChartEventModel.class);
 
         int cnt = eventServiceBean.processChartEvent(msg);
 

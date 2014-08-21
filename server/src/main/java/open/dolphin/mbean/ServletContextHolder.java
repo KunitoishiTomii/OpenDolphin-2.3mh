@@ -58,9 +58,9 @@ public class ServletContextHolder {
         return serverUUID;
     }
     
-    //public void setServerUUID(String uuid) {
-    //    serverUUID = uuid;
-    //}
+//    public void setServerUUID(String uuid) {
+//        serverUUID = uuid;
+//    }
 
     public Map<String, List<PatientVisitModel>> getPvtListMap() {
         return pvtListMap;

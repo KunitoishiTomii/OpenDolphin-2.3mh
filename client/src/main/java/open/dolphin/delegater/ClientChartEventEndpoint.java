@@ -59,26 +59,27 @@ public class ClientChartEventEndpoint {
             client.getProperties().put(ClientProperties.SSL_ENGINE_CONFIGURATOR, sslConfig);
         }
         wsSession = client.connectToServer(this, uri);
-/*
-        // tyrus grizzly
-        ClientManager client = ClientManager.createClient();
-        if (useSSL) {
-            SSLContext ssl = OreOreSSL.getSslContext();
-            SSLEngineConfigurator sslConfig = new SSLEngineConfigurator(ssl, true, false, false);
-            client.getProperties().put(ClientManager.SSL_ENGINE_CONFIGURATOR, sslConfig);
-        }
-        wsSession = client.connectToServer(this, uri);
-/*
-/*
-        // undertow.websocket-jsr
-        if (useSSL) {
-            SSLContext ssl = OreOreSSL.getSslContext();
-            DefaultWebSocketClientSslProvider.setSslContext(ssl);
-        }
-        WebSocketContainer c = ContainerProvider.getWebSocketContainer();
-        wsSession = c.connectToServer(this, uri);
-        
-*/
+
+//        // tyrus grizzly
+//        ClientManager client = ClientManager.createClient();
+//        if (useSSL) {
+//            SSLContext ssl = OreOreSSL.getSslContext();
+//            SSLEngineConfigurator sslConfig = new SSLEngineConfigurator(ssl, true, false, false);
+//            client.getProperties().put(ClientManager.SSL_ENGINE_CONFIGURATOR, sslConfig);
+//        }
+//        wsSession = client.connectToServer(this, uri);
+//
+//        // undertow.websocket-jsr
+//        if (useSSL) {
+//            SSLContext ssl = OreOreSSL.getSslContext();
+//            DefaultWebSocketClientSslProvider.setSslContext(ssl);
+//        }
+//        WebSocketContainer c = ContainerProvider.getWebSocketContainer();
+//        wsSession = c.connectToServer(this, uri);
+    }
+    
+    public boolean isWebsocketOpened() {
+        return wsSession != null && wsSession.isOpen();
     }
 
     public void close() {

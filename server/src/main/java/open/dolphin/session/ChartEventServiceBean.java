@@ -11,10 +11,10 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.websocket.Session;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+//import javax.ws.rs.core.Response;
 import open.dolphin.common.util.JsonConverter;
 import open.dolphin.infomodel.*;
-import open.dolphin.mbean.AsyncResponseModel;
+//import open.dolphin.mbean.AsyncResponseModel;
 import open.dolphin.mbean.ServletContextHolder;
 
 /**
@@ -46,25 +46,25 @@ public class ChartEventServiceBean {
 
         String fid = evt.getFacilityId();
 
-        // AsyncResponse
-        List<AsyncResponseModel> arList = contextHolder.getAsyncResponseList();
-        List<AsyncResponseModel> arSendList = new ArrayList<>();
-
-        for (AsyncResponseModel arModel : arList) {
-
-            String acFid = arModel.getFid();
-            String acUUID = arModel.getClientUUID();
-            String issuerUUID = evt.getIssuerUUID();
-
-            // 同一施設かつChartEventModelの発行者でないクライアントに通知する
-            // fid == nullなら全部にブロードキャストする
-            if (fid == null || (fid.equals(acFid) && !acUUID.equals(issuerUUID))) {
-                arSendList.add(arModel);
-            }
-
-        }
-        
-        deliverChartEvent(arSendList, evt);
+//        // AsyncResponse
+//        List<AsyncResponseModel> arList = contextHolder.getAsyncResponseList();
+//        List<AsyncResponseModel> arSendList = new ArrayList<>();
+//        
+//        for (AsyncResponseModel arModel : arList) {
+//
+//            String acFid = arModel.getFid();
+//            String acUUID = arModel.getClientUUID();
+//            String issuerUUID = evt.getIssuerUUID();
+//
+//            // 同一施設かつChartEventModelの発行者でないクライアントに通知する
+//            // fid == nullなら全部にブロードキャストする
+//            if (fid == null || (fid.equals(acFid) && !acUUID.equals(issuerUUID))) {
+//                arSendList.add(arModel);
+//            }
+//
+//        }
+//        
+//        deliverChartEvent(arSendList, evt);
         
         // websocket
         List<Session> sessionList = contextHolder.getSessionList();
@@ -87,14 +87,14 @@ public class ChartEventServiceBean {
         deliverChartEventWs(wsSendList, evt);
     }
 
-    @Asynchronous
-    private void deliverChartEvent(List<AsyncResponseModel> sendList, ChartEventModel evt) {
-        String json = JsonConverter.getInstance().toJson(evt);
-        for (AsyncResponseModel arModel : sendList) {
-            Response response = Response.ok(json).type(MEDIATYPE_JSON_UTF8).build();
-            arModel.getAsyncResponse().resume(response);
-        }
-    }
+//    @Asynchronous
+//    private void deliverChartEvent(List<AsyncResponseModel> sendList, ChartEventModel evt) {
+//        String json = JsonConverter.getInstance().toJson(evt);
+//        for (AsyncResponseModel arModel : sendList) {
+//            Response response = Response.ok(json).type(MEDIATYPE_JSON_UTF8).build();
+//            arModel.getAsyncResponse().resume(response);
+//        }
+//    }
     
     @Asynchronous
     private void deliverChartEventWs(List<Session> sessionList, ChartEventModel evt) {

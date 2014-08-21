@@ -80,8 +80,7 @@ public class  PatientDelegater extends BusinessDelegater {
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-        PatientModel patient = (PatientModel)
-                getConverter().fromJson(is, PatientModel.class);
+        PatientModel patient = getConverter().fromJson(is, PatientModel.class);
         
         response.close();
 
@@ -129,9 +128,9 @@ public class  PatientDelegater extends BusinessDelegater {
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-        TypeReference typeRef = new TypeReference<List<PatientModel>>(){};
-        List<PatientModel> list = (List<PatientModel>)
-                getConverter().fromJson(is, typeRef);
+        TypeReference<List<PatientModel>> typeRef = 
+                new TypeReference<List<PatientModel>>(){};
+        List<PatientModel> list = getConverter().fromJson(is, typeRef);
         
         response.close();
 
@@ -177,9 +176,9 @@ public class  PatientDelegater extends BusinessDelegater {
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-        TypeReference typeRef = new TypeReference<List<PatientModel>>(){};
-        List<PatientModel> list = (List<PatientModel>)
-                getConverter().fromJson(is, typeRef);
+        TypeReference<List<PatientModel>> typeRef = 
+                new TypeReference<List<PatientModel>>(){};
+        List<PatientModel> list = getConverter().fromJson(is, typeRef);
         
         response.close();
 
@@ -199,9 +198,9 @@ public class  PatientDelegater extends BusinessDelegater {
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-        TypeReference typeRef = new TypeReference<List<HealthInsuranceModel>>(){};
-        List<HealthInsuranceModel> list = (List<HealthInsuranceModel>)
-                getConverter().fromJson(is, typeRef);
+        TypeReference<List<HealthInsuranceModel>> typeRef = 
+                new TypeReference<List<HealthInsuranceModel>>(){};
+        List<HealthInsuranceModel> list = getConverter().fromJson(is, typeRef);
         
         response.close();
 
@@ -221,9 +220,9 @@ public class  PatientDelegater extends BusinessDelegater {
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-        TypeReference typeRef = new TypeReference<List<PatientModel>>(){};
-        List<PatientModel> list = (List<PatientModel>)
-                getConverter().fromJson(is, typeRef);
+        TypeReference<List<PatientModel>> typeRef = 
+                new TypeReference<List<PatientModel>>(){};
+        List<PatientModel> list = getConverter().fromJson(is, typeRef);
         
         response.close();
 

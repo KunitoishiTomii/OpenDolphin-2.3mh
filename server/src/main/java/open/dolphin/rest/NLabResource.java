@@ -73,8 +73,7 @@ public class NLabResource extends AbstractResource {
 
         String fid = getRemoteFacility();
 
-        NLaboModule module = (NLaboModule) 
-                getConverter().fromJson(json, NLaboModule.class);
+        NLaboModule module = getConverter().fromJson(json, NLaboModule.class);
         
         PatientModel patient = nLabServiceBean.create(fid, module);
 
@@ -92,8 +91,7 @@ public class NLabResource extends AbstractResource {
 
         String fid = getRemoteFacility();
 
-        LaboModuleValue module = (LaboModuleValue)
-                getConverter().fromJson(json, LaboModuleValue.class);
+        LaboModuleValue module = getConverter().fromJson(json, LaboModuleValue.class);
         
         // 関係を構築する ManyToOneのもの
         List<LaboSpecimenValue> specimens = module.getLaboSpecimens();

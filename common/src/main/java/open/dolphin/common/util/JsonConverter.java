@@ -90,7 +90,7 @@ public class JsonConverter {
     
     
     // JSON to Object
-    public Object fromJson(String json, Class clazz) {
+    public <T> T fromJson(String json, Class<T> clazz) {
         try {
             debug(json);
             return objectMapper.readValue(json, clazz);
@@ -101,7 +101,7 @@ public class JsonConverter {
         return null;
     }
     
-    public Object fromJson(String json, TypeReference typeRef) {
+    public <T> T fromJson(String json, TypeReference<T> typeRef) {
         try {
             debug(json);
             return objectMapper.readValue(json, typeRef);
@@ -112,9 +112,9 @@ public class JsonConverter {
     }
     
     // JSON InputStream to Object
-    public Object fromJson(InputStream is, Class clazz) {
+    public <T> T fromJson(InputStream is, Class<T> clazz) {
         try {
-            Object obj = objectMapper.readValue(is, clazz);
+            T obj = objectMapper.readValue(is, clazz);
             return obj;
         } catch (IOException ex) {
             processException(ex);
@@ -127,9 +127,9 @@ public class JsonConverter {
         return null;
     }
     
-    public Object fromJson(InputStream is, TypeReference typeRef) {
+    public <T> T fromJson(InputStream is, TypeReference<T> typeRef) {
         try {
-            Object obj = objectMapper.readValue(is, typeRef);
+            T obj = objectMapper.readValue(is, typeRef);
             return obj;
         } catch (IOException ex) {
             processException(ex);
@@ -143,23 +143,23 @@ public class JsonConverter {
     }
     
     // GZipped JSON to Object
-    public Object fromGzippedJson(byte[] bytes, Class clazz) {
+    public <T> T fromGzippedJson(byte[] bytes, Class<T> clazz) {
         
         InputStream is = new ByteArrayInputStream(bytes);
         return fromGzippedJson(is, clazz);
     }
     
-    public Object fromGzippedJson(byte[] bytes, TypeReference typeRef) {
+    public <T> T fromGzippedJson(byte[] bytes, TypeReference<T> typeRef) {
         
         InputStream is = new ByteArrayInputStream(bytes);
         return fromGzippedJson(is, typeRef);
     }
     
     // GZipped JSON InputStream to Object
-    public Object fromGzippedJson(InputStream is, Class clazz) {
+    public <T> T fromGzippedJson(InputStream is, Class<T> clazz) {
 
         try (GZIPInputStream gis = new GZIPInputStream(is)) {
-            Object obj = fromJson(gis, clazz);
+            T obj = fromJson(gis, clazz);
             return obj;
         } catch (IOException ex) {
             processException(ex);
@@ -172,10 +172,10 @@ public class JsonConverter {
         return null;
     }
 
-    public Object fromGzippedJson(InputStream is, TypeReference typeRef) {
+    public <T> T fromGzippedJson(InputStream is, TypeReference<T> typeRef) {
 
         try (GZIPInputStream gis = new GZIPInputStream(is)) {
-            Object obj = fromJson(gis, typeRef);
+            T obj = fromJson(gis, typeRef);
             return obj;
         } catch (IOException ex) {
             processException(ex);
@@ -202,7 +202,7 @@ public class JsonConverter {
         String[] strArray  = params.split(CAMMA);
         List<Long> ret = new ArrayList<>();
         for (String s : strArray) {
-            ret.add(Long.valueOf(s));
+            ret.add(Long.parseLong(s));
         }
         return ret;
     }

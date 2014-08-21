@@ -493,11 +493,11 @@ public class WatingListImpl extends AbstractMainComponent {
 
     // comet long polling機能を設定する
     private void startSyncMode() {
-        setStatusInfo();
         getFullPvt();
         cel.addListener(this);
         timerTask = new UpdatePvtInfoTask();
         restartTimer();
+        setStatusInfo(cel.isWebsocketOpened());
         enter();
     }
     
@@ -1091,14 +1091,19 @@ public class WatingListImpl extends AbstractMainComponent {
     }
     
     // 左下のstatus infoを設定する
-    private void setStatusInfo() {
+    private void setStatusInfo(boolean sync) {
 
         StringBuilder sb = new StringBuilder();
         sb.append("更新間隔: ");
         sb.append(intervalSync);
         sb.append("秒 ");
-        sb.append("同期");
+        if (sync) {
+            sb.append("同期");
+        } else {
+            sb.append("非同期");
+        }
         statusInfo = sb.toString();
+        getContext().getStatusLabel().setText(statusInfo);
     }
 
     // 更新時間・待ち人数などを設定する
@@ -1177,8 +1182,19 @@ public class WatingListImpl extends AbstractMainComponent {
 
         @Override
         public void run() {
-            // 同期時は時刻と患者数を更新するのみ
-            updatePvtInfo();
+            if (cel.isWebsocketOpened()) {
+                // 同期時は時刻と患者数を更新するのみ
+                updatePvtInfo();
+            } else {
+                try {
+                    // Websocket再接続を試みる
+                    cel.restartWebsocket();
+                    setStatusInfo(true);
+                } catch (Exception ex) {
+                    setStatusInfo(false);
+                }
+                getFullPvt();
+            }
         }
     }
     
