@@ -15,6 +15,7 @@ import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.*;
@@ -322,7 +323,7 @@ public class Dolphin implements MainWindow, IChartEventListener {
                     ClientContext.getBootLogger().debug("新規ユーザー、スタンプツリーをリソースから構築");
                     
                     try (InputStream in = ClientContext.getResourceAsStream("stamptree-seed.xml");
-                            BufferedReader reader = new BufferedReader(new InputStreamReader(in, "UTF-8"))) {
+                            BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
                         
                         String line;
                         StringBuilder sb = new StringBuilder();
