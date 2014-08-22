@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -39,7 +38,7 @@ public class PluginLister<S> {
         URL url = loader.getResource(fullName);
 
         try (InputStream in = url.openStream();
-                BufferedReader r = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
+                BufferedReader r = new BufferedReader(new InputStreamReader(in, "UTF-8"))) {
 
             String line;
             while ((line = r.readLine()) != null) {

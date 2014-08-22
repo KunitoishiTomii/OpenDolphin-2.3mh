@@ -5,7 +5,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.nio.charset.StandardCharsets;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -488,8 +488,14 @@ public class StampPublisher {
 //masuda^
         StampTreeXmlBuilder builder = new StampTreeXmlBuilder(StampTreeXmlBuilder.MODE.DEFAULT);
         String publishXml = builder.build(publishList);
-        final byte[] publishBytes = publishXml.getBytes(StandardCharsets.UTF_8);
 //masuda$
+        byte[] bytes = null;
+        try {
+            bytes = publishXml.getBytes("UTF-8");
+        } catch (UnsupportedEncodingException ex) {
+            ex.printStackTrace(System.err);
+        }
+        final byte[] publishBytes = bytes;
         
         //
         // 公開時の自分（個人用）の StampTree と同期をとる

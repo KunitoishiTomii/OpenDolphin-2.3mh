@@ -1846,7 +1846,7 @@ public final class DiagnosisDocument extends AbstractChartDocument implements Pr
 
         //byte[] bean = BeanUtils.xmlEncode(source);
         //RegisteredDiagnosisModel model = (RegisteredDiagnosisModel) BeanUtils.xmlDecode(bean);
-        RegisteredDiagnosisModel model = BeanUtils.deepCopy(source);
+        RegisteredDiagnosisModel model = (RegisteredDiagnosisModel) BeanUtils.deepCopy(source);
         return model;
     }
 

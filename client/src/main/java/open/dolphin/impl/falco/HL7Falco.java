@@ -1,7 +1,6 @@
 package open.dolphin.impl.falco;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -1052,8 +1051,7 @@ class HL7SetParam{
         //Get.fktest = HL7GetFacterString("&&11", 2,'&');
         try{
             File f = new File(fname);
-            br = new BufferedReader(new InputStreamReader(
-                    new FileInputStream(f), StandardCharsets.UTF_8));
+            br = new BufferedReader(new InputStreamReader(new FileInputStream(f), "UTF-8"));
             /* // 20111213 del
             while((line = br.readLine()) != null){
                 ADT = line.substring(0, 3);
@@ -1340,8 +1338,7 @@ class HL7SetParam{
                 HL7Sleep(1000);
                 HL7FilePath = path+File.separator+CurrentDateTime("YYYYMMDDHHMMSS")+".HL7";
             }
-            OutputStreamWriter os = new OutputStreamWriter(
-                    new FileOutputStream(outFile), StandardCharsets.UTF_8);
+            OutputStreamWriter os = new OutputStreamWriter(new FileOutputStream(outFile), "UTF-8");
             BufferedWriter bf = new BufferedWriter(os);
             bf.write(HL7Str);
             bf.flush();
