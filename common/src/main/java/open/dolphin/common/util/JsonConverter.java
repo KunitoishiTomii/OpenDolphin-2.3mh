@@ -12,6 +12,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Reader;
 import java.util.*;
 import java.util.zip.GZIPInputStream;
 
@@ -121,6 +122,21 @@ public class JsonConverter {
         } finally {
             try {
                 is.close();
+            } catch (IOException ex) {
+            }
+        }
+        return null;
+    }
+    
+    public <T> T fromJson(Reader reader, Class<T> clazz) {
+        try {
+            T obj = objectMapper.readValue(reader, clazz);
+            return obj;
+        } catch (IOException ex) {
+            processException(ex);
+        } finally {
+            try {
+                reader.close();
             } catch (IOException ex) {
             }
         }

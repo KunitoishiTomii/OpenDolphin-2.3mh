@@ -1,6 +1,7 @@
 package open.dolphin.client;
 
 //import java.io.InputStream;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -334,23 +335,34 @@ public class ChartEventListener {
     }
     
     // web socket
-    public void onWebSocketMessage(String json) {
-        onEventExec.execute(new RemoteOnEventTaskWs(json));
+//    public void onWebSocketMessage(String json) {
+//        onEventExec.execute(new RemoteOnEventTaskWs(json));
+//    }
+    
+    public void onWebSocketMessage(Reader reader) {
+        onEventExec.execute(new RemoteOnEventTaskWs(reader));
     }
     
     private class RemoteOnEventTaskWs implements Runnable {
         
-        private final String json;
+//        private String json;
+        private final Reader reader;
         
-        private RemoteOnEventTaskWs(String json) {
-            this.json = json;
+//        private RemoteOnEventTaskWs(String json) {
+//            this.json = json;
+//        }
+        
+        private RemoteOnEventTaskWs(Reader reader) {
+            this.reader = reader;
         }
 
         @Override
         public void run() {
 
+//            ChartEventModel evt = JsonConverter.getInstance()
+//                    .fromJson(json, ChartEventModel.class);
             ChartEventModel evt = JsonConverter.getInstance()
-                    .fromJson(json, ChartEventModel.class);
+                    .fromJson(reader, ChartEventModel.class);
             
             if (evt != null) {
                 processRemoteChartEvent(evt);

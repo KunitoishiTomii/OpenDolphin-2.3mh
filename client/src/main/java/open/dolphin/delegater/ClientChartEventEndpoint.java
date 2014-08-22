@@ -1,6 +1,7 @@
 package open.dolphin.delegater;
 
 import java.io.IOException;
+import java.io.Reader;
 import java.net.URI;
 //import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
@@ -95,8 +96,13 @@ public class ClientChartEventEndpoint {
         wsSession.getBasicRemote().sendText(json);
     }
 
+//    @OnMessage
+//    public void onMessage(String json) {
+//        ChartEventListener.getInstance().onWebSocketMessage(json);
+//    }
+    
     @OnMessage
-    public void onMessage(String json) {
-        ChartEventListener.getInstance().onWebSocketMessage(json);
+    public void onMessage(Reader reader) {
+        ChartEventListener.getInstance().onWebSocketMessage(reader);
     }
 }
