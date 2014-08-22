@@ -6,6 +6,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.*;
@@ -286,12 +287,8 @@ public class StampImporter {
             return;
         }
 
-        try {
-            importTree.setTreeXml(new String(importTree.getTreeBytes(), "UTF-8"));
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace(System.err);
-        }
-        
+        importTree.setTreeXml(new String(importTree.getTreeBytes(), StandardCharsets.UTF_8));
+
         // サブスクライブリストに追加する
         SubscribedTreeModel sm = new SubscribedTreeModel();
         sm.setUserModel(Project.getUserModel());

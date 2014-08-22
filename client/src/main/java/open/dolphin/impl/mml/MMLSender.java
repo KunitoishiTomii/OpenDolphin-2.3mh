@@ -3,6 +3,7 @@ package open.dolphin.impl.mml;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import open.dolphin.client.*;
 import open.dolphin.infomodel.DocumentModel;
 import open.dolphin.message.MMLHelper;
@@ -94,7 +95,8 @@ public class MMLSender implements IKarteSender {
             InputStream instream = ClientContext.getTemplateAsStream(templateFile);
 //masuda^   UTF-8に
             //BufferedReader reader = new BufferedReader(new InputStreamReader(instream, "SHIFT_JIS"));
-            BufferedReader reader = new BufferedReader(new InputStreamReader(instream, "UTF-8"));
+            BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(instream, StandardCharsets.UTF_8));
 //masuda$
             Velocity.evaluate(vct, bw, "mml", reader);
             bw.flush();

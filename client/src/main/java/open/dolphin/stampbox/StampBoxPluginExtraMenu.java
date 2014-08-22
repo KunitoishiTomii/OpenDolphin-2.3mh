@@ -7,6 +7,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.*;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -97,7 +98,7 @@ public class StampBoxPluginExtraMenu extends MouseAdapter {
                     protected void done() {
                         try {
                             String xml = get();
-                            Charset cs = Charset.forName("UTF-8");
+                            Charset cs = StandardCharsets.UTF_8;
                             try (BufferedWriter writer = Files.newBufferedWriter(path, cs)) {
                                 writer.write(xml);
                                 writer.close();
@@ -160,7 +161,7 @@ public class StampBoxPluginExtraMenu extends MouseAdapter {
                 @Override
                 protected Void doInBackground() throws Exception {
                     
-                    Charset cs = Charset.forName("UTF-8");
+                    Charset cs = StandardCharsets.UTF_8;
                     try (BufferedReader reader = Files.newBufferedReader(path, cs)) {
 //masuda^   stampBytesを含めたデータを読み込む
                         StampTreeXmlParser parser = new StampTreeXmlParser(StampTreeXmlParser.MODE.FILE);

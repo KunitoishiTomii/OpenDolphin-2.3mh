@@ -5,6 +5,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
@@ -58,7 +59,7 @@ public class IndicationExporter {
                         List<String> srycds = Collections.emptyList();
                         List<IndicationModel> list = MasudaDelegater.getInstance().getIndicationList(srycds);
 
-                        Charset cs = Charset.forName("UTF-8");
+                        Charset cs = StandardCharsets.UTF_8;
                         try (BufferedWriter writer = Files.newBufferedWriter(path, cs)) {
                             JaxbList<IndicationModel> jaxbList = new JaxbList<>(list);
                             JAXB.marshal(jaxbList, writer);
@@ -121,7 +122,7 @@ public class IndicationExporter {
                 @Override
                 protected Void doInBackground() throws Exception {
 
-                    Charset cs = Charset.forName("UTF-8");
+                    Charset cs = StandardCharsets.UTF_8;
                     try (BufferedReader reader = Files.newBufferedReader(path, cs)) {
                         JaxbList<IndicationModel> jaxbList = JAXB.unmarshal(reader, JaxbList.class);
                         List<IndicationModel> list = jaxbList.getList();

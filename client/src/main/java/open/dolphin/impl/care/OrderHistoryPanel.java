@@ -9,6 +9,7 @@ import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.*;
@@ -330,8 +331,8 @@ public final class OrderHistoryPanel extends JPanel implements PropertyChangeLis
 //masuda^   UTF-8
             //BufferedReader reader = new BufferedReader(new InputStreamReader(
             //        instream, "SHIFT_JIS"));
-            BufferedReader reader = new BufferedReader(new InputStreamReader(
-                    instream, "UTF-8"));
+            BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(instream, StandardCharsets.UTF_8));
 //masuda$
             Velocity.evaluate(context, bw, "stmpHolder", reader);
             bw.flush();
