@@ -1,10 +1,9 @@
 package open.dolphin.session;
 
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.Logger;
-import javax.ejb.Asynchronous;
+//import javax.ejb.Asynchronous;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
@@ -65,26 +64,43 @@ public class ChartEventServiceBean {
 //        }
 //        
 //        deliverChartEvent(arSendList, evt);
+
+//        // websocket
+//        List<Session> sessionList = contextHolder.getSessionList();
+//        List<Session> wsSendList = new ArrayList<>();
+//
+//        for (Session session : sessionList) {
+//
+//            String acFid = (String) session.getUserProperties().get("fid");
+//            String acUUID = (String) session.getUserProperties().get("clientUUID");
+//            String issuerUUID = evt.getIssuerUUID();
+//
+//            // 同一施設かつChartEventModelの発行者でないクライアントに通知する
+//            // fid == nullなら全部にブロードキャストする
+//            if (fid == null || (fid.equals(acFid) && !acUUID.equals(issuerUUID))) {
+//                wsSendList.add(session);
+//            }
+//
+//        }
+//        
+//        deliverChartEventWs(wsSendList, evt);
         
         // websocket
-        List<Session> sessionList = contextHolder.getSessionList();
-        List<Session> wsSendList = new ArrayList<>();
+        String issuerUUID = evt.getIssuerUUID();
+        String json = JsonConverter.getInstance().toJson(evt);
 
-        for (Session session : sessionList) {
-
+        for (Session session : contextHolder.getSessionList()) {
+            
             String acFid = (String) session.getUserProperties().get("fid");
             String acUUID = (String) session.getUserProperties().get("clientUUID");
-            String issuerUUID = evt.getIssuerUUID();
-
+            
             // 同一施設かつChartEventModelの発行者でないクライアントに通知する
             // fid == nullなら全部にブロードキャストする
             if (fid == null || (fid.equals(acFid) && !acUUID.equals(issuerUUID))) {
-                wsSendList.add(session);
+                session.getAsyncRemote().sendText(json);
             }
 
         }
-        
-        deliverChartEventWs(wsSendList, evt);
     }
 
 //    @Asynchronous
@@ -95,19 +111,17 @@ public class ChartEventServiceBean {
 //            arModel.getAsyncResponse().resume(response);
 //        }
 //    }
-    
-    @Asynchronous
-    private void deliverChartEventWs(List<Session> sessionList, ChartEventModel evt) {
-        String json = JsonConverter.getInstance().toJson(evt);
-        for (Session session : sessionList) {
-            try {
-                if (session.isOpen()) {
-                    session.getBasicRemote().sendText(json);
-                }
-            } catch (IOException ex) {
-            }
-        }
-    }
+//    
+//    @Asynchronous
+//    private void deliverChartEventWs(List<Session> sessionList, ChartEventModel evt) {
+//        String json = JsonConverter.getInstance().toJson(evt);
+//        for (Session session : sessionList) {
+//            if (session.isOpen()) {
+//                //session.getBasicRemote().sendText(json);
+//                session.getAsyncRemote().sendText(json);
+//            }
+//        }
+//    }
  
     public String getServerUUID() {
         return contextHolder.getServerUUID();
