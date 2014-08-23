@@ -17,11 +17,12 @@ public class BeanUtils {
         ByteArrayOutputStream os = new ByteArrayOutputStream(16384);
         try (XMLEncoder e = new XMLEncoder(os)) {
             e.writeObject(bean);
-            return os.toString();
         }
+        return os.toString();
     }
     
     public static Object xmlToBean(String beanXml) {
+        
         byte[] bytes = beanXml.getBytes(StandardCharsets.UTF_8);
         return xmlDecode(bytes);
     }
@@ -31,16 +32,18 @@ public class BeanUtils {
         ByteArrayOutputStream os = new ByteArrayOutputStream(16384);
         try (XMLEncoder e = new XMLEncoder(os)) {
             e.writeObject(bean);
-            return os.toByteArray();
         }
+        return os.toByteArray();
     }
     
     public static Object xmlDecode(byte[] bytes) {
         
+        Object obj;
         InputStream is = new ByteArrayInputStream(bytes);
         try (XMLDecoder d = new XMLDecoder(is)) {
-            return d.readObject();
+            obj = d.readObject();
         }
+        return obj;
     }
     
     public static <T> T xmlDecode(byte[] bytes, Class<T> clazz) {
