@@ -30,8 +30,7 @@ public class OrcaResource extends AbstractResource {
     @Produces(MEDIATYPE_JSON_UTF8)
     public Response executeQuery(String json) {
         
-        OrcaSqlModel sqlModel = (OrcaSqlModel) 
-                getConverter().fromJson(json, OrcaSqlModel.class);
+        OrcaSqlModel sqlModel = getConverter().fromJson(json, OrcaSqlModel.class);
         
         OrcaService.getInstance().executeSql(sqlModel);
         
@@ -46,8 +45,7 @@ public class OrcaResource extends AbstractResource {
     @Produces(MEDIATYPE_JSON_UTF8)
     public Response postClaim(String json) {
 
-        ClaimMessageModel model = (ClaimMessageModel)
-                getConverter().fromJson(json, ClaimMessageModel.class);
+        ClaimMessageModel model = getConverter().fromJson(json, ClaimMessageModel.class);
         
         ClaimMessageModel ret = OrcaService.getInstance().sendClaim(model);
         

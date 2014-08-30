@@ -71,8 +71,7 @@ public class  DocumentDelegater extends BusinessDelegater {
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-        KarteBean karte = (KarteBean)
-                getConverter().fromJson(is, KarteBean.class);
+        KarteBean karte = getConverter().fromJson(is, KarteBean.class);
         
         response.close();
 
@@ -124,9 +123,9 @@ public class  DocumentDelegater extends BusinessDelegater {
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-        TypeReference typeRef = new TypeReference<List<DocumentModel>>(){};
-        List<DocumentModel> list = (List<DocumentModel>)
-                getConverter().fromGzippedJson(is, typeRef);
+        TypeReference<List<DocumentModel>> typeRef = 
+                new TypeReference<List<DocumentModel>>(){};
+        List<DocumentModel> list = getConverter().fromGzippedJson(is, typeRef);
         
         response.close();
 
@@ -164,9 +163,9 @@ public class  DocumentDelegater extends BusinessDelegater {
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-        TypeReference typeRef = new TypeReference<List<DocInfoModel>>(){};
-        List<DocInfoModel> list = (List<DocInfoModel>)
-                getConverter().fromGzippedJson(is, typeRef);
+        TypeReference<List<DocInfoModel>> typeRef = 
+                new TypeReference<List<DocInfoModel>>(){};
+        List<DocInfoModel> list = getConverter().fromGzippedJson(is, typeRef);
         
         response.close();
         
@@ -186,9 +185,9 @@ public class  DocumentDelegater extends BusinessDelegater {
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
         
-        TypeReference typeRef = new TypeReference<List<LetterModule>>(){};
-        List<LetterModule> list = (List<LetterModule>)
-                getConverter().fromJson(is, typeRef);
+        TypeReference<List<LetterModule>> typeRef = 
+                new TypeReference<List<LetterModule>>(){};
+        List<LetterModule> list = getConverter().fromJson(is, typeRef);
         
         response.close();
 
@@ -318,9 +317,9 @@ public class  DocumentDelegater extends BusinessDelegater {
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-        TypeReference typeRef = new TypeReference<List<List<ModuleModel>>>(){};
-        List<List<ModuleModel>> ret = (List<List<ModuleModel>>) 
-                getConverter().fromJson(is, typeRef);
+        TypeReference<List<List<ModuleModel>>> typeRef = 
+                new TypeReference<List<List<ModuleModel>>>(){};
+        List<List<ModuleModel>> ret = getConverter().fromJson(is, typeRef);
 
         response.close();
         
@@ -352,8 +351,7 @@ public class  DocumentDelegater extends BusinessDelegater {
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-        SchemaModel model = (SchemaModel) 
-                getConverter().fromJson(is, SchemaModel.class);
+        SchemaModel model = getConverter().fromJson(is, SchemaModel.class);
         
         response.close();
 
@@ -522,9 +520,9 @@ public class  DocumentDelegater extends BusinessDelegater {
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-        TypeReference typeRef = new TypeReference<List<RegisteredDiagnosisModel>>(){};
-        List<RegisteredDiagnosisModel> list = (List<RegisteredDiagnosisModel>)
-                getConverter().fromJson(is, typeRef);
+        TypeReference<List<RegisteredDiagnosisModel>> typeRef
+                = new TypeReference<List<RegisteredDiagnosisModel>>(){};
+        List<RegisteredDiagnosisModel> list = getConverter().fromJson(is, typeRef);
         
         response.close();
 
@@ -632,9 +630,9 @@ public class  DocumentDelegater extends BusinessDelegater {
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-        TypeReference typeRef = new TypeReference<List<List<AppointmentModel>>>(){};
-        List<List<AppointmentModel>> ret = (List<List<AppointmentModel>>)
-                getConverter().fromJson(is, typeRef);
+        TypeReference<List<List<AppointmentModel>>> typeRef = 
+                new TypeReference<List<List<AppointmentModel>>>(){};
+        List<List<AppointmentModel>> ret = getConverter().fromJson(is, typeRef);
         
         response.close();
 

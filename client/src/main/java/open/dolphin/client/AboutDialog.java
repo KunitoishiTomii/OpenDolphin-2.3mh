@@ -67,13 +67,16 @@ public class AboutDialog extends JDialog {
         
         String[] copyright = ClientContext.getStringArray("copyrightString");
         
+        String javaVersion = "Java runtime version " + System.getProperty("java.runtime.version");
+        
         Object[] message = new Object[] {
             //ClientContext.getImageIcon(imageFile),
             label,
             version,
             //copyright[0],
             //copyright[1],
-            copyright
+            copyright,
+            javaVersion
         };
 //masdua$
         

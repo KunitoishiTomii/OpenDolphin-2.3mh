@@ -46,8 +46,7 @@ public class StampTreeResource extends AbstractResource {
     @Produces(MEDIATYPE_TEXT_UTF8)
     public Response putTree(String json) {
 
-        StampTreeModel model = (StampTreeModel) 
-                getConverter().fromJson(json, StampTreeModel.class);
+        StampTreeModel model = getConverter().fromJson(json, StampTreeModel.class);
 
         long pk = stampServiceBean.putTree((StampTreeModel) model);
         String pkStr = String.valueOf(pk);
@@ -63,9 +62,9 @@ public class StampTreeResource extends AbstractResource {
     @Produces(MEDIATYPE_TEXT_UTF8)
     public Response postPublishedTree(String json) {
         
-        TypeReference typeRef = new TypeReference<List<IStampTreeModel>>(){};
-        List<IStampTreeModel> list = (List<IStampTreeModel>)
-                getConverter().fromJson(json, typeRef);
+        TypeReference<List<IStampTreeModel>> typeRef = 
+                new TypeReference<List<IStampTreeModel>>(){};
+        List<IStampTreeModel> list = getConverter().fromJson(json, typeRef);
 
         long pk = stampServiceBean.saveAndPublishTree(list);
         String pkStr = String.valueOf(pk);
@@ -81,9 +80,9 @@ public class StampTreeResource extends AbstractResource {
     @Produces(MEDIATYPE_TEXT_UTF8)
     public Response putPublishedTree(String json) {
 
-        TypeReference typeRef = new TypeReference<List<IStampTreeModel>>(){};
-        List<IStampTreeModel> list = (List<IStampTreeModel>)
-                getConverter().fromJson(json, typeRef);
+        TypeReference<List<IStampTreeModel>> typeRef = 
+                new TypeReference<List<IStampTreeModel>>(){};
+        List<IStampTreeModel> list = getConverter().fromJson(json, typeRef);
 
         int cnt = stampServiceBean.updatePublishedTree(list);
         String cntStr = String.valueOf(cnt);
@@ -98,8 +97,7 @@ public class StampTreeResource extends AbstractResource {
     @Consumes(MEDIATYPE_JSON_UTF8)
     public void cancelPublishedTree(String json) {
 
-        StampTreeModel model = (StampTreeModel) 
-                getConverter().fromJson(json, StampTreeModel.class);
+        StampTreeModel model = getConverter().fromJson(json, StampTreeModel.class);
         
         int cnt = stampServiceBean.cancelPublishedTree(model);
 
@@ -130,9 +128,9 @@ public class StampTreeResource extends AbstractResource {
     @Produces(MEDIATYPE_TEXT_UTF8)
     public Response subscribeTrees(String json) {
         
-        TypeReference typeRef = new TypeReference<List<SubscribedTreeModel>>(){};
-        List<SubscribedTreeModel> list = (List<SubscribedTreeModel>)
-                getConverter().fromJson(json, typeRef);
+        TypeReference<List<SubscribedTreeModel>> typeRef = 
+                new TypeReference<List<SubscribedTreeModel>>(){};
+        List<SubscribedTreeModel> list = getConverter().fromJson(json, typeRef);
 
         List<Long> result = stampServiceBean.subscribeTrees(list);
 

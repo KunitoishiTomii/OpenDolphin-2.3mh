@@ -1,15 +1,16 @@
 package open.dolphin.client;
 
-import java.io.InputStream;
+//import java.io.InputStream;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+//import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import javax.ws.rs.core.Response;
+//import javax.ws.rs.core.Response;
 import open.dolphin.delegater.ChartEventDelegater;
 import open.dolphin.project.Project;
 import open.dolphin.common.util.BeanUtils;
@@ -22,7 +23,7 @@ import open.dolphin.infomodel.ModelUtils;
 import open.dolphin.infomodel.PVTHealthInsuranceModel;
 import open.dolphin.infomodel.PatientModel;
 import open.dolphin.infomodel.PatientVisitModel;
-import open.dolphin.setting.MiscSettingPanel;
+//import open.dolphin.setting.MiscSettingPanel;
 import open.dolphin.util.NamedThreadFactory;
 
 /**
@@ -48,7 +49,7 @@ public class ChartEventListener {
     private List<IChartEventListener> listeners;
     
     // ChartEvent監視タスク
-    private EventListenThread listenThread;
+    //private EventListenThread listenThread;
     //private ChartEventCallback eventCallback;
     
     // 状態変化を各listenerに通知するタスク
@@ -78,7 +79,8 @@ public class ChartEventListener {
         jmariCode = Project.getString(Project.JMARI_CODE);
         facilityId = Project.getFacilityId();
         listeners = new ArrayList<>();
-        useWebSocket = Project.getBoolean(MiscSettingPanel.USE_WEBSOCKET, MiscSettingPanel.DEFAULT_USE_WEBSOCKET);
+        //useWebSocket = Project.getBoolean(MiscSettingPanel.USE_WEBSOCKET, MiscSettingPanel.DEFAULT_USE_WEBSOCKET);
+        useWebSocket = true;
     }
 
     public String getClientUUID() {
@@ -172,18 +174,28 @@ public class ChartEventListener {
                 ex.printStackTrace(System.err);
             }
         }
-        if (!useWebSocket) {
-            listenThread = new EventListenThread();
-            listenThread.start();
-        }
+//        if (!useWebSocket) {
+//            listenThread = new EventListenThread();
+//            listenThread.start();
+//        }
     }
 
-    public void stop() {
-        if (useWebSocket) {
-            endpoint.close();
-        } else {
-            listenThread.halt();
+    public boolean isWebsocketOpened() {
+        return endpoint != null && endpoint.isWebsocketOpened();
+    }
+    
+    public void restartWebsocket() throws Exception {
+        if (endpoint != null && !endpoint.isWebsocketOpened()) {
+            endpoint.connect();
         }
+    }
+    
+    public void stop() {
+//        if (useWebSocket) {
+            endpoint.close();
+//        } else {
+//            listenThread.halt();
+//        }
         shutdownExecutor();
     }
 
@@ -202,39 +214,39 @@ public class ChartEventListener {
     }
 
     // Commetでサーバーと同期するスレッド
-    private class EventListenThread extends Thread {
-        
-        private Future<Response> future;
-        private boolean isRunning;
-        
-        private EventListenThread() {
-            super("ChartEvent Listen Thread");
-            isRunning = true;
-        }
-        
-        public void halt() {
-            isRunning = false;
-            interrupt();
-
-            if (future != null) {
-                future.cancel(true);
-            }
-        }
-        
-        @Override
-        public void run() {
-            
-            while (isRunning) {
-                try {
-                    future = ChartEventDelegater.getInstance().subscribe();
-                    Response response = future.get();
-                    onEventExec.execute(new RemoteOnEventTask(response));
-                } catch (Exception e) {
-                    //e.printStackTrace(System.err);
-                }
-            }
-        }
-    }
+//    private class EventListenThread extends Thread {
+//        
+//        private Future<Response> future;
+//        private boolean isRunning;
+//        
+//        private EventListenThread() {
+//            super("ChartEvent Listen Thread");
+//            isRunning = true;
+//        }
+//        
+//        public void halt() {
+//            isRunning = false;
+//            interrupt();
+//
+//            if (future != null) {
+//                future.cancel(true);
+//            }
+//        }
+//        
+//        @Override
+//        public void run() {
+//            
+//            while (isRunning) {
+//                try {
+//                    future = ChartEventDelegater.getInstance().subscribe();
+//                    Response response = future.get();
+//                    onEventExec.execute(new RemoteOnEventTask(response));
+//                } catch (Exception e) {
+//                    //e.printStackTrace(System.err);
+//                }
+//            }
+//        }
+//    }
     
     // 自クライアントの状態変更後、サーバーに通知するタスク
     private class LocalOnEventTask implements Runnable {
@@ -270,36 +282,36 @@ public class ChartEventListener {
     }
     
     // 状態変化通知メッセージをデシリアライズし各リスナに処理を分配する
-    private class RemoteOnEventTask implements Runnable {
-        
-        private final Response response;
-        
-        private RemoteOnEventTask(Response response) {
-            this.response = response;
-        }
-
-        @Override
-        public void run() {
-            
-            if (response == null) {
-                return;
-            }
-            if (response.getStatus() / 100 != 2) {
-                response.close();
-                return;
-            }
-            
-            InputStream is = response.readEntity(InputStream.class);
-            ChartEventModel evt = (ChartEventModel) 
-                    JsonConverter.getInstance().fromJson(is, ChartEventModel.class);
-            
-            response.close();
-            
-            if (evt != null) {
-                processRemoteChartEvent(evt);
-            }
-        }
-    }
+//    private class RemoteOnEventTask implements Runnable {
+//        
+//        private final Response response;
+//        
+//        private RemoteOnEventTask(Response response) {
+//            this.response = response;
+//        }
+//
+//        @Override
+//        public void run() {
+//            
+//            if (response == null) {
+//                return;
+//            }
+//            if (response.getStatus() / 100 != 2) {
+//                response.close();
+//                return;
+//            }
+//            
+//            InputStream is = response.readEntity(InputStream.class);
+//            ChartEventModel evt = JsonConverter.getInstance()
+//                    .fromJson(is, ChartEventModel.class);
+//            
+//            response.close();
+//            
+//            if (evt != null) {
+//                processRemoteChartEvent(evt);
+//            }
+//        }
+//    }
     
     private void processRemoteChartEvent(ChartEventModel evt) {
         
@@ -323,23 +335,34 @@ public class ChartEventListener {
     }
     
     // web socket
-    public void onWebSocketMessage(String json) {
-        onEventExec.execute(new RemoteOnEventTaskWs(json));
+//    public void onWebSocketMessage(String json) {
+//        onEventExec.execute(new RemoteOnEventTaskWs(json));
+//    }
+    
+    public void onWebSocketMessage(Reader reader) {
+        onEventExec.execute(new RemoteOnEventTaskWs(reader));
     }
     
     private class RemoteOnEventTaskWs implements Runnable {
         
-        private final String json;
+//        private String json;
+        private final Reader reader;
         
-        private RemoteOnEventTaskWs(String json) {
-            this.json = json;
+//        private RemoteOnEventTaskWs(String json) {
+//            this.json = json;
+//        }
+        
+        private RemoteOnEventTaskWs(Reader reader) {
+            this.reader = reader;
         }
 
         @Override
         public void run() {
 
-            ChartEventModel evt = (ChartEventModel) 
-                    JsonConverter.getInstance().fromJson(json, ChartEventModel.class);
+//            ChartEventModel evt = JsonConverter.getInstance()
+//                    .fromJson(json, ChartEventModel.class);
+            ChartEventModel evt = JsonConverter.getInstance()
+                    .fromJson(reader, ChartEventModel.class);
             
             if (evt != null) {
                 processRemoteChartEvent(evt);

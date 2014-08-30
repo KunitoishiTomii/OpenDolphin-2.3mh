@@ -44,9 +44,9 @@ public class LaboDelegater extends BusinessDelegater {
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-        TypeReference typeRef = new TypeReference<List<PatientLiteModel>>(){};
-        List<PatientLiteModel> list = (List<PatientLiteModel>)
-                getConverter().fromJson(is, typeRef);
+        TypeReference<List<PatientLiteModel>> typeRef = 
+                new TypeReference<List<PatientLiteModel>>(){};
+        List<PatientLiteModel> list = getConverter().fromJson(is, typeRef);
 
         response.close();
         
@@ -71,8 +71,7 @@ public class LaboDelegater extends BusinessDelegater {
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-        PatientModel patient = (PatientModel)
-                getConverter().fromJson(is, PatientModel.class);
+        PatientModel patient = getConverter().fromJson(is, PatientModel.class);
         
         response.close();
 
@@ -99,9 +98,9 @@ public class LaboDelegater extends BusinessDelegater {
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-        TypeReference typeRef = new TypeReference<List<NLaboModule>>(){};
-        List<NLaboModule> list = (List<NLaboModule>)
-                getConverter().fromJson(is, typeRef);
+        TypeReference<List<NLaboModule>> typeRef = 
+                new TypeReference<List<NLaboModule>>(){};
+        List<NLaboModule> list = getConverter().fromJson(is, typeRef);
         
         response.close();
 
@@ -122,8 +121,7 @@ public class LaboDelegater extends BusinessDelegater {
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-        PatientModel patient = (PatientModel) 
-                getConverter().fromJson(is, PatientModel.class);
+        PatientModel patient = getConverter().fromJson(is, PatientModel.class);
         
         response.close();
 

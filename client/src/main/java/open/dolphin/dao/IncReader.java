@@ -1,6 +1,8 @@
 package open.dolphin.dao;
 
 import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import open.dolphin.client.ClientContext;
@@ -17,7 +19,7 @@ public class IncReader {
     private static final String COMMENT_MARK = "*";
     private static final String TABLE = "SYS-%s-TBL";
     private static final String[] IGNORES = new String[]{"GF"};
-    private static final String ENCODING = "UTF-8";
+    private static final Charset ENCODING = StandardCharsets.UTF_8;
     
     private final String kanricd;
     private String orcaVer;

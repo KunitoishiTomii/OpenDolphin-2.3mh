@@ -122,8 +122,7 @@ public class PatientResource extends AbstractResource {
 
         String fid = getRemoteFacility();
 
-        PatientModel patient = (PatientModel)
-                getConverter().fromJson(json, PatientModel.class);
+        PatientModel patient = getConverter().fromJson(json, PatientModel.class);
         patient.setFacilityId(fid);
 
         long pk = patientServiceBean.addPatient(patient);
@@ -141,8 +140,7 @@ public class PatientResource extends AbstractResource {
 
         String fid = getRemoteFacility();
 
-        PatientModel patient = (PatientModel)
-                getConverter().fromJson(json, PatientModel.class);
+        PatientModel patient = getConverter().fromJson(json, PatientModel.class);
         patient.setFacilityId(fid);
 
         int cnt = patientServiceBean.update(patient);

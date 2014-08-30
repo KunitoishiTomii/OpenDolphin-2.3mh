@@ -63,8 +63,7 @@ public class LetterDelegater extends BusinessDelegater {
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-        LetterModule ret = (LetterModule)
-                getConverter().fromJson(is, LetterModule.class);
+        LetterModule ret = getConverter().fromJson(is, LetterModule.class);
         
         response.close();
 
@@ -83,9 +82,9 @@ public class LetterDelegater extends BusinessDelegater {
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-        TypeReference typeRef = new TypeReference<List<LetterModule>>(){};
-        List<LetterModule> ret = (List<LetterModule>)
-                getConverter().fromJson(is, typeRef);
+        TypeReference<List<LetterModule>> typeRef = 
+                new TypeReference<List<LetterModule>>(){};
+        List<LetterModule> ret = getConverter().fromJson(is, typeRef);
         
         response.close();
 

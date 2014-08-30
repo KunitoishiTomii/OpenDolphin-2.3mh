@@ -79,9 +79,8 @@ public class ServerChartEventEndpoint {
     @OnMessage
     public void onMessage(String json) {
         //logger.info("onMessage");
-        ChartEventModel msg = (ChartEventModel)
-                JsonConverter.getInstance().fromJson(json, ChartEventModel.class);
+        ChartEventModel evt = JsonConverter.getInstance().fromJson(json, ChartEventModel.class);
 
-        eventServiceBean.processChartEvent(msg);
+        eventServiceBean.processChartEvent(evt);
     }
 }

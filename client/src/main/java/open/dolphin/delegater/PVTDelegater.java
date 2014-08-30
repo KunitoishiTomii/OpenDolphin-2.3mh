@@ -93,9 +93,9 @@ public class PVTDelegater extends BusinessDelegater {
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-        TypeReference typeRef = new TypeReference<List<PatientVisitModel>>(){};
-        List<PatientVisitModel> pvtList = (List<PatientVisitModel>)
-                getConverter().fromJson(is, typeRef);
+        TypeReference<List<PatientVisitModel>> typeRef = 
+                new TypeReference<List<PatientVisitModel>>(){};
+        List<PatientVisitModel> pvtList = getConverter().fromJson(is, typeRef);
         
         response.close();
 

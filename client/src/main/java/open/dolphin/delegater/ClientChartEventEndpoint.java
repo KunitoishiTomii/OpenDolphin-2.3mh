@@ -1,6 +1,7 @@
 package open.dolphin.delegater;
 
 import java.io.IOException;
+import java.io.Reader;
 import java.net.URI;
 //import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
@@ -64,26 +65,27 @@ public class ClientChartEventEndpoint {
             client.getProperties().put(ClientProperties.SSL_ENGINE_CONFIGURATOR, sslConfig);
         }
         wsSession = client.connectToServer(this, uri);
-/*
-        // tyrus grizzly
-        ClientManager client = ClientManager.createClient();
-        if (useSSL) {
-            SSLContext ssl = OreOreSSL.getSslContext();
-            SSLEngineConfigurator sslConfig = new SSLEngineConfigurator(ssl, true, false, false);
-            client.getProperties().put(ClientManager.SSL_ENGINE_CONFIGURATOR, sslConfig);
-        }
-        wsSession = client.connectToServer(this, uri);
-/*
-/*
-        // undertow.websocket-jsr
-        if (useSSL) {
-            SSLContext ssl = OreOreSSL.getSslContext();
-            DefaultWebSocketClientSslProvider.setSslContext(ssl);
-        }
-        WebSocketContainer c = ContainerProvider.getWebSocketContainer();
-        wsSession = c.connectToServer(this, uri);
-        
-*/
+
+//        // tyrus grizzly
+//        ClientManager client = ClientManager.createClient();
+//        if (useSSL) {
+//            SSLContext ssl = OreOreSSL.getSslContext();
+//            SSLEngineConfigurator sslConfig = new SSLEngineConfigurator(ssl, true, false, false);
+//            client.getProperties().put(ClientManager.SSL_ENGINE_CONFIGURATOR, sslConfig);
+//        }
+//        wsSession = client.connectToServer(this, uri);
+//
+//        // undertow.websocket-jsr
+//        if (useSSL) {
+//            SSLContext ssl = OreOreSSL.getSslContext();
+//            DefaultWebSocketClientSslProvider.setSslContext(ssl);
+//        }
+//        WebSocketContainer c = ContainerProvider.getWebSocketContainer();
+//        wsSession = c.connectToServer(this, uri);
+    }
+    
+    public boolean isWebsocketOpened() {
+        return wsSession != null && wsSession.isOpen();
     }
 
     public void close() {
@@ -99,8 +101,13 @@ public class ClientChartEventEndpoint {
         wsSession.getBasicRemote().sendText(json);
     }
 
+//    @OnMessage
+//    public void onMessage(String json) {
+//        ChartEventListener.getInstance().onWebSocketMessage(json);
+//    }
+    
     @OnMessage
-    public void onMessage(String json) {
-        ChartEventListener.getInstance().onWebSocketMessage(json);
+    public void onMessage(Reader reader) {
+        ChartEventListener.getInstance().onWebSocketMessage(reader);
     }
 }

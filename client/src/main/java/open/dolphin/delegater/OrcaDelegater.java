@@ -45,8 +45,7 @@ public class OrcaDelegater extends BusinessDelegater {
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-        sqlModel = (OrcaSqlModel) 
-                getConverter().fromJson(is, OrcaSqlModel.class);
+        sqlModel = getConverter().fromJson(is, OrcaSqlModel.class);
         
         response.close();
 
@@ -87,8 +86,7 @@ public class OrcaDelegater extends BusinessDelegater {
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-        ClaimMessageModel resModel = (ClaimMessageModel)
-                getConverter().fromJson(is, ClaimMessageModel.class);
+        ClaimMessageModel resModel = getConverter().fromJson(is, ClaimMessageModel.class);
         
         response.close();
 

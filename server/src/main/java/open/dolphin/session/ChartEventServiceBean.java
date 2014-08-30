@@ -1,20 +1,19 @@
 package open.dolphin.session;
 
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.Logger;
-import javax.ejb.Asynchronous;
+//import javax.ejb.Asynchronous;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.websocket.Session;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+//import javax.ws.rs.core.Response;
 import open.dolphin.common.util.JsonConverter;
 import open.dolphin.infomodel.*;
-import open.dolphin.mbean.AsyncResponseModel;
+//import open.dolphin.mbean.AsyncResponseModel;
 import open.dolphin.mbean.ServletContextHolder;
 
 /**
@@ -46,68 +45,83 @@ public class ChartEventServiceBean {
 
         String fid = evt.getFacilityId();
 
-        // AsyncResponse
-        List<AsyncResponseModel> arList = contextHolder.getAsyncResponseList();
-        List<AsyncResponseModel> arSendList = new ArrayList<>();
+//        // AsyncResponse
+//        List<AsyncResponseModel> arList = contextHolder.getAsyncResponseList();
+//        List<AsyncResponseModel> arSendList = new ArrayList<>();
+//        
+//        for (AsyncResponseModel arModel : arList) {
+//
+//            String acFid = arModel.getFid();
+//            String acUUID = arModel.getClientUUID();
+//            String issuerUUID = evt.getIssuerUUID();
+//
+//            // 同一施設かつChartEventModelの発行者でないクライアントに通知する
+//            // fid == nullなら全部にブロードキャストする
+//            if (fid == null || (fid.equals(acFid) && !acUUID.equals(issuerUUID))) {
+//                arSendList.add(arModel);
+//            }
+//
+//        }
+//        
+//        deliverChartEvent(arSendList, evt);
 
-        for (AsyncResponseModel arModel : arList) {
-
-            String acFid = arModel.getFid();
-            String acUUID = arModel.getClientUUID();
-            String issuerUUID = evt.getIssuerUUID();
-
-            // 同一施設かつChartEventModelの発行者でないクライアントに通知する
-            // fid == nullなら全部にブロードキャストする
-            if (fid == null || (fid.equals(acFid) && !acUUID.equals(issuerUUID))) {
-                arSendList.add(arModel);
-            }
-
-        }
-        
-        deliverChartEvent(arSendList, evt);
+//        // websocket
+//        List<Session> sessionList = contextHolder.getSessionList();
+//        List<Session> wsSendList = new ArrayList<>();
+//
+//        for (Session session : sessionList) {
+//
+//            String acFid = (String) session.getUserProperties().get("fid");
+//            String acUUID = (String) session.getUserProperties().get("clientUUID");
+//            String issuerUUID = evt.getIssuerUUID();
+//
+//            // 同一施設かつChartEventModelの発行者でないクライアントに通知する
+//            // fid == nullなら全部にブロードキャストする
+//            if (fid == null || (fid.equals(acFid) && !acUUID.equals(issuerUUID))) {
+//                wsSendList.add(session);
+//            }
+//
+//        }
+//        
+//        deliverChartEventWs(wsSendList, evt);
         
         // websocket
-        List<Session> sessionList = contextHolder.getSessionList();
-        List<Session> wsSendList = new ArrayList<>();
+        String issuerUUID = evt.getIssuerUUID();
+        String json = JsonConverter.getInstance().toJson(evt);
 
-        for (Session session : sessionList) {
-
+        for (Session session : contextHolder.getSessionList()) {
+            
             String acFid = (String) session.getUserProperties().get("fid");
             String acUUID = (String) session.getUserProperties().get("clientUUID");
-            String issuerUUID = evt.getIssuerUUID();
-
+            
             // 同一施設かつChartEventModelの発行者でないクライアントに通知する
             // fid == nullなら全部にブロードキャストする
             if (fid == null || (fid.equals(acFid) && !acUUID.equals(issuerUUID))) {
-                wsSendList.add(session);
+                session.getAsyncRemote().sendText(json);
             }
 
         }
-        
-        deliverChartEventWs(wsSendList, evt);
     }
 
-    @Asynchronous
-    private void deliverChartEvent(List<AsyncResponseModel> sendList, ChartEventModel evt) {
-        String json = JsonConverter.getInstance().toJson(evt);
-        for (AsyncResponseModel arModel : sendList) {
-            Response response = Response.ok(json).type(MEDIATYPE_JSON_UTF8).build();
-            arModel.getAsyncResponse().resume(response);
-        }
-    }
-    
-    @Asynchronous
-    private void deliverChartEventWs(List<Session> sessionList, ChartEventModel evt) {
-        String json = JsonConverter.getInstance().toJson(evt);
-        for (Session session : sessionList) {
-            try {
-                if (session.isOpen()) {
-                    session.getBasicRemote().sendText(json);
-                }
-            } catch (IOException ex) {
-            }
-        }
-    }
+//    @Asynchronous
+//    private void deliverChartEvent(List<AsyncResponseModel> sendList, ChartEventModel evt) {
+//        String json = JsonConverter.getInstance().toJson(evt);
+//        for (AsyncResponseModel arModel : sendList) {
+//            Response response = Response.ok(json).type(MEDIATYPE_JSON_UTF8).build();
+//            arModel.getAsyncResponse().resume(response);
+//        }
+//    }
+//    
+//    @Asynchronous
+//    private void deliverChartEventWs(List<Session> sessionList, ChartEventModel evt) {
+//        String json = JsonConverter.getInstance().toJson(evt);
+//        for (Session session : sessionList) {
+//            if (session.isOpen()) {
+//                //session.getBasicRemote().sendText(json);
+//                session.getAsyncRemote().sendText(json);
+//            }
+//        }
+//    }
  
     public String getServerUUID() {
         return contextHolder.getServerUUID();

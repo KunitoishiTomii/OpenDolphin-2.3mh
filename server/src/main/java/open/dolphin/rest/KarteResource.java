@@ -87,8 +87,7 @@ public class KarteResource extends AbstractResource {
     @Produces(MEDIATYPE_TEXT_UTF8)
     public Response postDocument(String json) {
 
-        DocumentModel document = (DocumentModel) 
-                getConverter().fromJson(json, DocumentModel.class);
+        DocumentModel document = getConverter().fromJson(json, DocumentModel.class);
         
         long result = karteServiceBean.addDocument(document);
         String pkStr = String.valueOf(result);
@@ -217,9 +216,9 @@ public class KarteResource extends AbstractResource {
     @Produces(MEDIATYPE_TEXT_UTF8)
     public Response postDiagnosis(String json) {
         
-        TypeReference typeRef = new TypeReference<List<RegisteredDiagnosisModel>>(){};
-        List<RegisteredDiagnosisModel> list = (List<RegisteredDiagnosisModel>)
-                getConverter().fromJson(json, typeRef);
+        TypeReference<List<RegisteredDiagnosisModel>> typeRef = 
+                new TypeReference<List<RegisteredDiagnosisModel>>(){};
+        List<RegisteredDiagnosisModel> list = getConverter().fromJson(json, typeRef);
         
         List<Long> result = karteServiceBean.addDiagnosis(list);
         String text = getConverter().fromList(result);
@@ -234,9 +233,9 @@ public class KarteResource extends AbstractResource {
     @Produces(MEDIATYPE_TEXT_UTF8)
     public Response putDiagnosis(String json) {
 
-        TypeReference typeRef = new TypeReference<List<RegisteredDiagnosisModel>>(){};
-        List<RegisteredDiagnosisModel> list = (List<RegisteredDiagnosisModel>)
-                getConverter().fromJson(json, typeRef);
+        TypeReference<List<RegisteredDiagnosisModel>> typeRef = 
+                new TypeReference<List<RegisteredDiagnosisModel>>(){};
+        List<RegisteredDiagnosisModel> list = getConverter().fromJson(json, typeRef);
 
         int result = karteServiceBean.updateDiagnosis(list);
         String text = String.valueOf(result);
@@ -262,9 +261,9 @@ public class KarteResource extends AbstractResource {
     @Produces(MEDIATYPE_TEXT_UTF8)
     public Response postObservations(String json) {
         
-        TypeReference typeRef = new TypeReference<List<ObservationModel>>(){};
-        List<ObservationModel> list = (List<ObservationModel>)
-                getConverter().fromJson(json, typeRef);
+        TypeReference<List<ObservationModel>> typeRef = 
+                new TypeReference<List<ObservationModel>>(){};
+        List<ObservationModel> list = getConverter().fromJson(json, typeRef);
 
         List<Long> result = karteServiceBean.addObservations(list);
 
@@ -290,8 +289,7 @@ public class KarteResource extends AbstractResource {
     @Produces(MEDIATYPE_TEXT_UTF8)
     public Response putPatientMemo(String json) {
 
-        PatientMemoModel memo = (PatientMemoModel)
-                getConverter().fromJson(json, PatientMemoModel.class);
+        PatientMemoModel memo = getConverter().fromJson(json, PatientMemoModel.class);
 
         int result = karteServiceBean.updatePatientMemo(memo);
         String text = String.valueOf(result);

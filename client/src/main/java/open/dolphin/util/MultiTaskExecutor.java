@@ -7,7 +7,7 @@ import java.util.concurrent.*;
  * MultiTaskExecutor
  * @author masuda, Masuda Naika
  */
-public class MultiTaskExecutor<T> {
+public class MultiTaskExecutor {
 
     private static final int NUM_THREADS = 2;   // ３以上だと苦しそうｗ
     private static final int SHUTDOWN_WAIT = 1000;
@@ -19,7 +19,7 @@ public class MultiTaskExecutor<T> {
         exec = Executors.newFixedThreadPool(NUM_THREADS, factory);
     }
     
-    public List<Future<T>> execute(List<Callable<T>> taskList) throws InterruptedException {
+    public <T> List<Future<T>> execute(List<Callable<T>> taskList) throws InterruptedException {
 
         if (taskList == null || taskList.isEmpty()) {
             return null;

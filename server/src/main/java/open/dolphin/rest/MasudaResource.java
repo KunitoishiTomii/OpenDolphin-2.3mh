@@ -68,8 +68,7 @@ public class MasudaResource extends AbstractResource {
     @Produces(MEDIATYPE_TEXT_UTF8)
     public Response addRoutineMedModel(String json) {
         
-        RoutineMedModel model = (RoutineMedModel)
-                getConverter().fromJson(json, RoutineMedModel.class);
+        RoutineMedModel model = getConverter().fromJson(json, RoutineMedModel.class);
         
         long id = masudaServiceBean.addRoutineMedModel(model);
         
@@ -85,8 +84,7 @@ public class MasudaResource extends AbstractResource {
     @Produces(MEDIATYPE_TEXT_UTF8)
     public Response updateRoutineMedModel(String json) {
         
-        RoutineMedModel model = (RoutineMedModel)
-                getConverter().fromJson(json, RoutineMedModel.class);
+        RoutineMedModel model = getConverter().fromJson(json, RoutineMedModel.class);
         
         long id = masudaServiceBean.updateRoutineMedModel(model);
         
@@ -121,8 +119,7 @@ public class MasudaResource extends AbstractResource {
 
         String fid = getRemoteFacility();
 
-        DisconItemModel model = (DisconItemModel)
-                getConverter().fromJson(json, DisconItemModel.class);
+        DisconItemModel model = getConverter().fromJson(json, DisconItemModel.class);
         model.setFacilityId(fid);
 
         long id = masudaServiceBean.addDisconItem(model);
@@ -140,8 +137,7 @@ public class MasudaResource extends AbstractResource {
 
         String fid = getRemoteFacility();
 
-        DisconItemModel model = (DisconItemModel)
-                getConverter().fromJson(json, DisconItemModel.class);
+        DisconItemModel model = getConverter().fromJson(json, DisconItemModel.class);
         model.setFacilityId(fid);
 
         long id = masudaServiceBean.updateDisconItem(model);
@@ -187,8 +183,7 @@ public class MasudaResource extends AbstractResource {
 
         String fid = getRemoteFacility();
         
-        UsingDrugModel model = (UsingDrugModel)
-                getConverter().fromJson(json, UsingDrugModel.class);
+        UsingDrugModel model = getConverter().fromJson(json, UsingDrugModel.class);
         model.setFacilityId(fid);
 
         long id = masudaServiceBean.addUsingDrugModel(model);
@@ -206,8 +201,7 @@ public class MasudaResource extends AbstractResource {
 
         String fid = getRemoteFacility();
 
-        UsingDrugModel model = (UsingDrugModel)
-                getConverter().fromJson(json, UsingDrugModel.class);
+        UsingDrugModel model = getConverter().fromJson(json, UsingDrugModel.class);
         model.setFacilityId(fid);
 
         long id = masudaServiceBean.updateUsingDrugModel(model);
@@ -397,9 +391,9 @@ public class MasudaResource extends AbstractResource {
         
         String fid = getRemoteFacility();
         
-        TypeReference typeRef = new TypeReference<List<InFacilityLaboItem>>(){};
-        List<InFacilityLaboItem> list = (List<InFacilityLaboItem>)
-                getConverter().fromJson(json, typeRef);
+        TypeReference<List<InFacilityLaboItem>> typeRef = 
+                new TypeReference<List<InFacilityLaboItem>>(){};
+        List<InFacilityLaboItem> list = getConverter().fromJson(json, typeRef);
         
         long ret = masudaServiceBean.updateInFacilityLaboItem(fid, list);
         
@@ -412,9 +406,9 @@ public class MasudaResource extends AbstractResource {
     @Produces(MEDIATYPE_TEXT_UTF8)
     public Response updateETensu1Table(String json) {
         
-        TypeReference typeRef = new TypeReference<List<ETensuModel1>>(){};
-        List<ETensuModel1> list = (List<ETensuModel1>)
-                getConverter().fromJson(json, typeRef);
+        TypeReference<List<ETensuModel1>> typeRef = 
+                new TypeReference<List<ETensuModel1>>(){};
+        List<ETensuModel1> list = getConverter().fromJson(json, typeRef);
         
         String ret = masudaServiceBean.updateETensu1Table(list);
         
@@ -484,9 +478,9 @@ public class MasudaResource extends AbstractResource {
     @Produces(MEDIATYPE_TEXT_UTF8)
     public Response postUserProperties(@PathParam("uid") String userId, String json) {
         
-        TypeReference typeRef = new TypeReference<List<UserPropertyModel>>(){};
-        List<UserPropertyModel> list = (List<UserPropertyModel>) 
-                getConverter().fromJson(json, typeRef);
+        TypeReference<List<UserPropertyModel>> typeRef = 
+                new TypeReference<List<UserPropertyModel>>(){};
+        List<UserPropertyModel> list = getConverter().fromJson(json, typeRef);
         
         int cnt = masudaServiceBean.postUserProperties(list);
         
@@ -513,9 +507,9 @@ public class MasudaResource extends AbstractResource {
     @Produces(MEDIATYPE_TEXT_UTF8)
     public Response putAdmissionModels(String json) {
         
-        TypeReference typeRef = new TypeReference<List<AdmissionModel>>(){};
-        List<AdmissionModel> list = (List<AdmissionModel>) 
-                getConverter().fromJson(json, typeRef);
+        TypeReference<List<AdmissionModel>> typeRef = 
+                new TypeReference<List<AdmissionModel>>(){};
+        List<AdmissionModel> list = getConverter().fromJson(json, typeRef);
         
         int cnt = masudaServiceBean.updateAdmissionModels(list);
         
@@ -558,9 +552,8 @@ public class MasudaResource extends AbstractResource {
     public Response getIndicationList(String json) {
         
         String fid = getRemoteFacility();
-        TypeReference typeRef1 = new TypeReference<List<String>>(){};
-        List<String> srycds = (List<String>)
-                getConverter().fromJson(json, typeRef1);
+        TypeReference<List<String>> typeRef1 = new TypeReference<List<String>>(){};
+        List<String> srycds = getConverter().fromJson(json, typeRef1);
         
         List<IndicationModel> list = masudaServiceBean.getIndicationList(fid, srycds);
         
@@ -588,9 +581,9 @@ public class MasudaResource extends AbstractResource {
     public Response importIndicationModels(String json) {
         
         String fid = getRemoteFacility();
-        TypeReference typeRef = new TypeReference<List<IndicationModel>>(){};
-        List<IndicationModel> list = (List<IndicationModel>) 
-                getConverter().fromJson(json, typeRef);
+        TypeReference<List<IndicationModel>> typeRef = 
+                new TypeReference<List<IndicationModel>>(){};
+        List<IndicationModel> list = getConverter().fromJson(json, typeRef);
         
         int cnt = masudaServiceBean.importIndicationModels(fid, list);
         
@@ -602,9 +595,9 @@ public class MasudaResource extends AbstractResource {
     @Produces(MEDIATYPE_TEXT_UTF8)
     public Response addIndicationModels(String json) {
         
-        TypeReference typeRef = new TypeReference<List<IndicationModel>>(){};
-        List<IndicationModel> list = (List<IndicationModel>) 
-                getConverter().fromJson(json, typeRef);
+        TypeReference<List<IndicationModel>> typeRef = 
+                new TypeReference<List<IndicationModel>>(){};
+        List<IndicationModel> list = getConverter().fromJson(json, typeRef);
         
         int cnt = masudaServiceBean.addIndicationModels(list);
         
@@ -616,8 +609,7 @@ public class MasudaResource extends AbstractResource {
     @Produces(MEDIATYPE_TEXT_UTF8)
     public Response updateIndicationModel(String json) {
 
-        IndicationModel model = (IndicationModel) 
-                getConverter().fromJson(json, IndicationModel.class);
+        IndicationModel model = getConverter().fromJson(json, IndicationModel.class);
         
         long id = masudaServiceBean.updateIndicationModel(model);
         

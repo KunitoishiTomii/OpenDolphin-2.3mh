@@ -83,9 +83,9 @@ public class StampDelegater extends BusinessDelegater {
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-        TypeReference typeRef = new TypeReference<List<IStampTreeModel>>(){};
-        List<IStampTreeModel> treeList = (List<IStampTreeModel>) 
-                getConverter().fromJson(is, typeRef);
+        TypeReference<List<IStampTreeModel>> typeRef = 
+                new TypeReference<List<IStampTreeModel>>(){};
+        List<IStampTreeModel> treeList = getConverter().fromJson(is, typeRef);
         
         response.close();
 
@@ -217,9 +217,9 @@ public class StampDelegater extends BusinessDelegater {
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-        TypeReference typeRef = new TypeReference<List<PublishedTreeModel>>(){};
-        List<PublishedTreeModel> ret = (List<PublishedTreeModel>)
-                getConverter().fromJson(is, typeRef);
+        TypeReference<List<PublishedTreeModel>> typeRef = 
+                new TypeReference<List<PublishedTreeModel>>(){};
+        List<PublishedTreeModel> ret = getConverter().fromJson(is, typeRef);
         
         response.close();
 
@@ -402,8 +402,7 @@ public class StampDelegater extends BusinessDelegater {
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-        ret = (StampModel)
-                getConverter().fromJson(is, StampModel.class);
+        ret = getConverter().fromJson(is, StampModel.class);
         
         response.close();
 
@@ -449,9 +448,9 @@ public class StampDelegater extends BusinessDelegater {
 
             checkHttpStatus(response);
             InputStream is = response.readEntity(InputStream.class);
-            TypeReference typeRef = new TypeReference<List<StampModel>>(){};
-            List<StampModel> smList = (List<StampModel>)
-                        getConverter().fromJson(is, typeRef);
+            TypeReference<List<StampModel>> typeRef = 
+                    new TypeReference<List<StampModel>>(){};
+            List<StampModel> smList = getConverter().fromJson(is, typeRef);
             
             response.close();
 
@@ -563,9 +562,9 @@ public class StampDelegater extends BusinessDelegater {
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-        TypeReference typeRef = new TypeReference<List<StampModel>>(){};
-        List<StampModel> smList = (List<StampModel>) 
-                getConverter().fromGzippedJson(is, typeRef);
+        TypeReference<List<StampModel>> typeRef = 
+                new TypeReference<List<StampModel>>(){};
+        List<StampModel> smList = getConverter().fromGzippedJson(is, typeRef);
         
         response.close();
         

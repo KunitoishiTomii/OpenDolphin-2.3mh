@@ -81,8 +81,7 @@ public class UserResource extends AbstractResource {
         String fid = getRemoteFacility();
         debug(fid);
         
-        UserModel model = (UserModel)
-                getConverter().fromJson(json, UserModel.class);
+        UserModel model = getConverter().fromJson(json, UserModel.class);
         model.getFacilityModel().setFacilityId(fid);
 
         int result = userServiceBean.addUser(model);
@@ -101,8 +100,7 @@ public class UserResource extends AbstractResource {
     @Produces(MEDIATYPE_TEXT_UTF8)
     public Response putUser(String json) {
 
-        UserModel model = (UserModel)
-                getConverter().fromJson(json, UserModel.class);
+        UserModel model = getConverter().fromJson(json, UserModel.class);
         
         int result = userServiceBean.updateUser(model);
         String cntStr = String.valueOf(result);
@@ -133,8 +131,7 @@ public class UserResource extends AbstractResource {
     @Produces(MEDIATYPE_TEXT_UTF8)
     public Response putFacility(String json) {
 
-        UserModel model = (UserModel)
-                getConverter().fromJson(json, UserModel.class);
+        UserModel model = getConverter().fromJson(json, UserModel.class);
 
         int result = userServiceBean.updateFacility(model);
         String cntStr = String.valueOf(result);

@@ -660,7 +660,7 @@ public final class DiseaseEditor extends AbstractStampEditor {
 
         //byte[] bean = BeanUtils.xmlEncode(source);
         //RegisteredDiagnosisModel model = (RegisteredDiagnosisModel) BeanUtils.xmlDecode(bean);
-        RegisteredDiagnosisModel model = (RegisteredDiagnosisModel) BeanUtils.deepCopy(source);
+        RegisteredDiagnosisModel model = BeanUtils.deepCopy(source);
         return model;
     }
 //masuda$

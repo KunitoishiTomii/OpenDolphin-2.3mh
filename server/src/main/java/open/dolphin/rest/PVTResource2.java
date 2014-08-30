@@ -38,8 +38,7 @@ public class PVTResource2 extends AbstractResource {
     @Produces(MEDIATYPE_TEXT_UTF8)
     public Response postPvt(String json) {
 
-        PatientVisitModel model = (PatientVisitModel)
-                getConverter().fromJson(json, PatientVisitModel.class);
+        PatientVisitModel model = getConverter().fromJson(json, PatientVisitModel.class);
 
         // 関係構築
         String fid = getRemoteFacility();
