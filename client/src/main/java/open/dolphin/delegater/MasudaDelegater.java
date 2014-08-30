@@ -63,9 +63,9 @@ public class MasudaDelegater extends BusinessDelegater {
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-        TypeReference typeRef = new TypeReference<List<RoutineMedModel>>(){};
-        List<RoutineMedModel> list = (List<RoutineMedModel>) 
-                getConverter().fromJson(is, typeRef);
+        TypeReference<List<RoutineMedModel>> typeRef = 
+                new TypeReference<List<RoutineMedModel>>(){};
+        List<RoutineMedModel> list = getConverter().fromJson(is, typeRef);
         
         response.close();
 
@@ -93,8 +93,7 @@ public class MasudaDelegater extends BusinessDelegater {
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-        RoutineMedModel model = (RoutineMedModel)
-                getConverter().fromJson(is, RoutineMedModel.class);
+        RoutineMedModel model = getConverter().fromJson(is, RoutineMedModel.class);
         
         response.close();
         
@@ -175,9 +174,9 @@ public class MasudaDelegater extends BusinessDelegater {
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-        TypeReference typeRef = new TypeReference<List<DisconItemModel>>(){};
-        List<DisconItemModel> list = (List<DisconItemModel>)
-                getConverter().fromJson(is, typeRef);
+        TypeReference<List<DisconItemModel>> typeRef = 
+                new TypeReference<List<DisconItemModel>>(){};
+        List<DisconItemModel> list = getConverter().fromJson(is, typeRef);
         
         response.close();
 
@@ -247,9 +246,9 @@ public class MasudaDelegater extends BusinessDelegater {
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-        TypeReference typeRef = new TypeReference<List<UsingDrugModel>>(){};
-        List<UsingDrugModel> list = (List<UsingDrugModel>)
-                getConverter().fromJson(is, typeRef);
+        TypeReference<List<UsingDrugModel>> typeRef = 
+                new TypeReference<List<UsingDrugModel>>(){};
+        List<UsingDrugModel> list = getConverter().fromJson(is, typeRef);
         
         response.close();
 
@@ -327,9 +326,9 @@ public class MasudaDelegater extends BusinessDelegater {
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-        TypeReference typeRef = new TypeReference<List<ModuleModel>>(){};
-        List<ModuleModel> list = (List<ModuleModel>)
-                getConverter().fromJson(is, typeRef);
+        TypeReference<List<ModuleModel>> typeRef = 
+                new TypeReference<List<ModuleModel>>(){};
+        List<ModuleModel> list = getConverter().fromJson(is, typeRef);
         
         response.close();
 
@@ -359,8 +358,7 @@ public class MasudaDelegater extends BusinessDelegater {
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-        PatientVisitModel model = (PatientVisitModel)
-                getConverter().fromJson(is, PatientVisitModel.class);
+        PatientVisitModel model = getConverter().fromJson(is, PatientVisitModel.class);
         
         response.close();
         
@@ -384,9 +382,9 @@ public class MasudaDelegater extends BusinessDelegater {
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-        TypeReference typeRef = new TypeReference<List<DocInfoModel>>(){};
-        List<DocInfoModel> list = (List<DocInfoModel>)
-                getConverter().fromJson(is, typeRef);
+        TypeReference<List<DocInfoModel>> typeRef =
+                new TypeReference<List<DocInfoModel>>(){};
+        List<DocInfoModel> list = getConverter().fromJson(is, typeRef);
         
         response.close();
 
@@ -429,9 +427,9 @@ public class MasudaDelegater extends BusinessDelegater {
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-        TypeReference typeRef = new TypeReference<List<PatientModel>>(){};
-        List<PatientModel> list = (List<PatientModel>)
-                getConverter().fromJson(is, typeRef);
+        TypeReference<List<PatientModel>> typeRef = 
+                new TypeReference<List<PatientModel>>(){};
+        List<PatientModel> list = getConverter().fromJson(is, typeRef);
         
         response.close();
 
@@ -456,8 +454,7 @@ public class MasudaDelegater extends BusinessDelegater {
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-        SearchResultModel model = (SearchResultModel)
-                getConverter().fromJson(is, SearchResultModel.class);
+        SearchResultModel model = getConverter().fromJson(is, SearchResultModel.class);
 
         response.close();
         
@@ -478,9 +475,9 @@ public class MasudaDelegater extends BusinessDelegater {
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-        TypeReference typeRef = new TypeReference<List<ExamHistoryModel>>(){};
-        List<ExamHistoryModel> list = (List<ExamHistoryModel>)
-                getConverter().fromJson(is, typeRef);
+        TypeReference<List<ExamHistoryModel>> typeRef = 
+                new TypeReference<List<ExamHistoryModel>>(){};
+        List<ExamHistoryModel> list = getConverter().fromJson(is, typeRef);
         
         response.close();
 
@@ -502,9 +499,9 @@ public class MasudaDelegater extends BusinessDelegater {
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-        TypeReference typeRef = new TypeReference<List<PatientModel>>(){};
-        List<PatientModel> list = (List<PatientModel>)
-                getConverter().fromJson(is, typeRef);
+        TypeReference<List<PatientModel>> typeRef = 
+                new TypeReference<List<PatientModel>>(){};
+        List<PatientModel> list = getConverter().fromJson(is, typeRef);
 
         response.close();
         
@@ -523,9 +520,9 @@ public class MasudaDelegater extends BusinessDelegater {
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-        TypeReference typeRef = new TypeReference<List<InFacilityLaboItem>>(){};
-        List<InFacilityLaboItem> list = (List<InFacilityLaboItem>)
-                getConverter().fromJson(is, typeRef);
+        TypeReference<List<InFacilityLaboItem>> typeRef = 
+                new TypeReference<List<InFacilityLaboItem>>(){};
+        List<InFacilityLaboItem> list = getConverter().fromJson(is, typeRef);
 
         response.close();
         
@@ -609,9 +606,9 @@ public class MasudaDelegater extends BusinessDelegater {
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-        TypeReference typeRef = new TypeReference<List<SanteiHistoryModel>>(){};
-        List<SanteiHistoryModel> list = (List<SanteiHistoryModel>)
-                getConverter().fromJson(is, typeRef);
+        TypeReference<List<SanteiHistoryModel>> typeRef = 
+                new TypeReference<List<SanteiHistoryModel>>(){};
+        List<SanteiHistoryModel> list = getConverter().fromJson(is, typeRef);
 
         response.close();
         
@@ -634,9 +631,9 @@ public class MasudaDelegater extends BusinessDelegater {
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-        TypeReference typeRef = new TypeReference<List<List<RpModel>>>(){};
-        List<List<RpModel>> list = (List<List<RpModel>>)
-                getConverter().fromJson(is, typeRef);
+        TypeReference<List<List<RpModel>>> typeRef = 
+                new TypeReference<List<List<RpModel>>>(){};
+        List<List<RpModel>> list = getConverter().fromJson(is, typeRef);
         
         response.close();
 
@@ -672,9 +669,9 @@ public class MasudaDelegater extends BusinessDelegater {
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-        TypeReference typeRef = new TypeReference<List<UserPropertyModel>>(){};
-        List<UserPropertyModel> list = (List<UserPropertyModel>) 
-                getConverter().fromJson(is, typeRef);
+        TypeReference<List<UserPropertyModel>> typeRef = 
+                new TypeReference<List<UserPropertyModel>>(){};
+        List<UserPropertyModel> list = getConverter().fromJson(is, typeRef);
         
         response.close();
 
@@ -694,9 +691,9 @@ public class MasudaDelegater extends BusinessDelegater {
 
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-        TypeReference typeRef = new TypeReference<List<PatientModel>>(){};
-        List<PatientModel> list = (List<PatientModel>) 
-                getConverter().fromJson(is, typeRef);
+        TypeReference<List<PatientModel>> typeRef = 
+                new TypeReference<List<PatientModel>>(){};
+        List<PatientModel> list = getConverter().fromJson(is, typeRef);
         
         response.close();
 
@@ -719,9 +716,9 @@ public class MasudaDelegater extends BusinessDelegater {
         
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-        TypeReference typeRef2 = new TypeReference<List<IndicationModel>>(){};
-        List<IndicationModel> list = (List<IndicationModel>) 
-                getConverter().fromJson(is, typeRef2);
+        TypeReference<List<IndicationModel>> typeRef2 = 
+                new TypeReference<List<IndicationModel>>(){};
+        List<IndicationModel> list = getConverter().fromJson(is, typeRef2);
         
         response.close();
 
@@ -739,8 +736,7 @@ public class MasudaDelegater extends BusinessDelegater {
         
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-        IndicationModel model = (IndicationModel)
-                getConverter().fromJson(is, IndicationModel.class);
+        IndicationModel model = getConverter().fromJson(is, IndicationModel.class);
         
         return model;
     }
@@ -827,9 +823,9 @@ public class MasudaDelegater extends BusinessDelegater {
         
         checkHttpStatus(response);
         InputStream is = response.readEntity(InputStream.class);
-        TypeReference typeRef = new TypeReference<List<DrPatientIdModel>>(){};
-        List<DrPatientIdModel> list = (List<DrPatientIdModel>) 
-                getConverter().fromJson(is, typeRef);
+        TypeReference<List<DrPatientIdModel>> typeRef = 
+                new TypeReference<List<DrPatientIdModel>>(){};
+        List<DrPatientIdModel> list = getConverter().fromJson(is, typeRef);
         
         response.close();
 
