@@ -3,11 +3,10 @@ package open.dolphin.delegater;
 import java.io.IOException;
 import java.io.Reader;
 import java.net.URI;
-//import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
-import javax.websocket.OnMessage;
 import javax.websocket.ClientEndpoint;
 import javax.websocket.CloseReason;
+import javax.websocket.OnMessage;
 import javax.websocket.Session;
 import open.dolphin.client.ChartEventListener;
 import open.dolphin.client.Dolphin;
@@ -16,8 +15,9 @@ import open.dolphin.infomodel.ChartEventModel;
 import open.dolphin.project.Project;
 import org.glassfish.tyrus.client.ClientManager;
 import org.glassfish.tyrus.client.ClientProperties;
-import org.glassfish.tyrus.container.jdk.client.JdkClientContainer;
 import org.glassfish.tyrus.client.SslEngineConfigurator;
+import org.glassfish.tyrus.container.jdk.client.JdkClientContainer;
+import org.jboss.logging.Logger;
 //import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
 //import org.glassfish.tyrus.client.ClientManager;
 //import javax.websocket.ContainerProvider;
@@ -37,6 +37,7 @@ public class ClientChartEventEndpoint {
     public void connect() throws Exception {
 
         String clientUUID = Dolphin.getInstance().getClientUUID();
+        Integer CammaPos = clientUUID.indexOf(",");
         String fidUid = Project.getUserModel().getUserId();
         String passwd = Project.getUserModel().getPassword();
         String baseURI = Project.getString(Project.SERVER_URI);
@@ -46,12 +47,7 @@ public class ClientChartEventEndpoint {
         StringBuilder sb = new StringBuilder();
         sb.append(useSSL ? "wss" : "ws");
         sb.append(baseURI.substring(pos)).append("/dolphin/ws/");
-        // memo: mhではUUIDの後にユーザID/IPを入れているため、このままではURIが取得できずエラーになる
-        //       UUID部分のみを切り出せばエラーにはならないが、正常動作の保障がない。
-        //       現状WebsocketではなくCometを用いる予定だが、WebSocket一本になるのであれば
-        //       この処理を修正する必要がある。
-        //       b_katou
-        sb.append(fidUid).append("/").append(passwd).append("/").append(clientUUID);
+        sb.append(fidUid).append("/").append(passwd).append("/").append(clientUUID.substring(0,CammaPos));
         URI uri = URI.create(sb.toString());
         
         // tyrus JDK7 client
