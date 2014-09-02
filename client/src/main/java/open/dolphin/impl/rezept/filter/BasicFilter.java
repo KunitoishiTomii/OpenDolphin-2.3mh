@@ -21,7 +21,7 @@ import open.dolphin.impl.rezept.model.SY_Model;
 public class BasicFilter extends AbstractCheckFilter {
 
     private static final String FILTER_NAME = "基本";
-    private static final int MAX_DIAG_COUNT = 10;
+    private static final int MAX_DIAG_COUNT = 20;
     private static final String UNCODED_DIAG_SRYCD = "0000999";
 
     @Override
