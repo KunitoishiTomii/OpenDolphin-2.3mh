@@ -53,10 +53,10 @@ public class IndicationEditor {
     private static final int[] DIAG_TBL_COLUMN_WIDTH = {100, 20};
     
     private static final String INDICATION_TBL_SPEC_NAME = "indication.indicationtable.column.spec";
-    private static final String[] INDICATION_TBL_COLUMN_NAMES = {"無効", "禁忌", "キーワード"};
-    private static final String[] INDICATION_TBL_PROPERTY_NAMES = {"isDisabled", "isNotCondition", "getKeyword"};
-    private static final Class[] INDICATION_TBL_CLASSES = {Boolean.class, Boolean.class, String.class};
-    private static final int[] INDICATION_TBL_COLUMN_WIDTH = {10, 10, 100};
+    private static final String[] INDICATION_TBL_COLUMN_NAMES = {"無効", "禁忌", "週制限", "キーワード"};
+    private static final String[] INDICATION_TBL_PROPERTY_NAMES = {"isDisabled", "isNotCondition", "getValidWeek", "getKeyword"};
+    private static final Class[] INDICATION_TBL_CLASSES = {Boolean.class, Boolean.class, String.class, String.class};
+    private static final int[] INDICATION_TBL_COLUMN_WIDTH = {10, 10, 10, 100};
     
     private JDialog dialog;
     private final IndicationView view;
@@ -158,10 +158,46 @@ public class IndicationEditor {
         indRen.setDefaultRenderer();
         indicationTblHelper.setTable(indicationTable);
         // カラム設定、モデル設定
+        //final int keywordCol =indicationTblHelper.getColumnPosition("getKeyword");
         String[] indColumnNames = indicationTblHelper.getTableModelColumnNames();
         String[] indMethods = indicationTblHelper.getTableModelColumnMethods();
         Class[] indCls = indicationTblHelper.getTableModelColumnClasses();
-        indicationTableModel = new ListTableModel<>(indColumnNames, 1, indMethods, indCls);
+        indicationTableModel = new ListTableModel<IndicationItem>(indColumnNames, 1, indMethods, indCls) {
+
+            @Override
+            public boolean isCellEditable(int row, int col) {
+                return col != 3;
+            }
+
+            @Override
+            public void setValueAt(Object value, int row, int col) {
+                IndicationItem item = getObject(row);
+                if (item == null) {
+                    return;
+                }
+                switch (col) {
+                    case 0:
+                        boolean flgDis = (Boolean) value;
+                        item.setDisable(flgDis);
+                        break;
+                    case 1:
+                        boolean flgNc = (Boolean) value;
+                        item.setNotCondition(flgNc);
+                        break;
+                    case 2:
+                        try {
+                            String str = (String) value;
+                            if (str == null || str.trim().isEmpty()) {
+                                item.setValidWeek(null);
+                            } else {
+                                item.setValidWeek(Integer.parseInt(str));
+                            }
+                        } catch (NumberFormatException ex) {
+                        }
+                        break;
+                }
+            }
+        };
         indicationTable.setModel(indicationTableModel);
         indicationTblHelper.updateColumnWidth();
         
@@ -412,6 +448,7 @@ public class IndicationEditor {
         view.getAdmissionChk().setSelected(indication.isAdmission());
         view.getOutPatientChk().setSelected(indication.isOutPatient());
         view.getInclusiveChk().setSelected(indication.isInclusive());
+        view.getCommentReqChk().setSelected(indication.isCommentRequired());
         
         diagTableModel.setDataProvider(diagList);
 
@@ -440,6 +477,7 @@ public class IndicationEditor {
         indication.setAdmission(view.getAdmissionChk().isSelected());
         indication.setOutPatient(view.getOutPatientChk().isSelected());
         indication.setInclusive(view.getInclusiveChk().isSelected());
+        indication.setCommentRequired(view.getCommentReqChk().isSelected());
         if (edit81Comment) {
             List<IndicationItem> list = new ArrayList<>();
             list.addAll(nonEdit);

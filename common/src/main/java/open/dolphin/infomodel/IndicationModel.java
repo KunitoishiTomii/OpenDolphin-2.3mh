@@ -48,6 +48,8 @@ public class IndicationModel implements Serializable {
     
     private Boolean inclusive;  // 10項目以上なら審査対象外
     
+    private Boolean commentReq; // 要コメントフラッグ
+    
     @JsonManagedReference   // bi-directional references
     @JsonDeserialize(contentAs = IndicationItem.class)
     @BatchSize(size = 20)
@@ -99,6 +101,9 @@ public class IndicationModel implements Serializable {
     public void setDescription(String description) {
         this.description = description;
     }
+    public void setCommentRequired(boolean flag) {
+        this.commentReq = flag;
+    }
     
     public long getId() {
         return id;
@@ -126,5 +131,8 @@ public class IndicationModel implements Serializable {
     }
     public String getDescription() {
         return description;
+    }
+    public Boolean isCommentRequired() {
+        return commentReq == null ? false : commentReq;
     }
 }

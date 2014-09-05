@@ -12,6 +12,7 @@ import open.dolphin.impl.rezept.model.RE_Model;
 import open.dolphin.impl.rezept.model.SI_Model;
 import open.dolphin.impl.rezept.model.SJ_Model;
 import open.dolphin.impl.rezept.model.SY_Model;
+import open.dolphin.infomodel.IndicationModel;
 
 /**
  * 基本フィルタ
@@ -43,23 +44,28 @@ public class BasicFilter extends AbstractCheckFilter {
         results.addAll(list);
         
         // コメント有無チェック
-        CheckResult result1 = checkComment(reModel);
-        if (result1 != null) {
-            results.add(result1);
+        CheckResult result = checkComment(reModel);
+        if (result!= null) {
+            results.add(result);
         }
         
         // 月遅れ・返戻チェック
-        CheckResult result2 = checkLateReze(reModel);
-        if (result2 != null) {
-            results.add(result2);
+        result = checkLateReze(reModel);
+        if (result != null) {
+            results.add(result);
         }
         
-        // 診療情報提供料
-        CheckResult result3 = checkLetter(reModel);
-        if (result3 != null) {
-            results.add(result3);
-        }
+//        // 診療情報提供料
+//        result = checkLetter(reModel);
+//        if (result != null) {
+//            results.add(result);
+//        }
         
+        // 要コメント
+        result = checkCommentRequired(reModel);
+        if (result != null) {
+            results.add(result);
+        }
 
         return results;
     }
@@ -204,12 +210,27 @@ public class BasicFilter extends AbstractCheckFilter {
         return ret;
     }
     
-    // 診療情報提供料
-    private CheckResult checkLetter(RE_Model reModel) {
+//    // 診療情報提供料
+//    private CheckResult checkLetter(RE_Model reModel) {
+//        for (IRezeItem item : reModel.getItemList()) {
+//            String str = item.getDescription();
+//            if (str != null && str.contains("診療情報提供料") && !str.contains("算定")) {
+//                CheckResult result = createCheckResult("診療情報提供料が算定されています。コメントはいりませんか？", CheckResult.CHECK_WARNING);
+//                return result;
+//            }
+//        }
+//        return null;
+//    }
+    
+    // 要コメント
+    private CheckResult checkCommentRequired(RE_Model reModel) {
+        
         for (IRezeItem item : reModel.getItemList()) {
-            String str = item.getDescription();
-            if (str != null && str.contains("診療情報提供料") && !str.contains("算定")) {
-                CheckResult result = createCheckResult("診療情報提供料が算定されています。コメントはいりませんか？", CheckResult.CHECK_WARNING);
+            IndicationModel indication = viewer.getIndicationMap().get(item.getSrycd());
+            if (indication != null && indication.isCommentRequired()
+                    && (indication.isAdmission() || indication.isOutPatient())) {
+                String str = item.getDescription();
+                CheckResult result = createCheckResult(str + "が算定されています。コメントはいりませんか？", CheckResult.CHECK_WARNING);
                 return result;
             }
         }
