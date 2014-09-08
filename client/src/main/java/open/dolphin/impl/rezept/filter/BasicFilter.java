@@ -227,8 +227,7 @@ public class BasicFilter extends AbstractCheckFilter {
         
         for (IRezeItem item : reModel.getItemList()) {
             IndicationModel indication = viewer.getIndicationMap().get(item.getSrycd());
-            if (indication != null && indication.isCommentRequired()
-                    && (indication.isAdmission() || indication.isOutPatient())) {
+            if (indication != null && indication.isCommentRequired()) {
                 String str = item.getDescription();
                 CheckResult result = createCheckResult(str + "が算定されています。コメントはいりませんか？", CheckResult.CHECK_WARNING);
                 return result;
