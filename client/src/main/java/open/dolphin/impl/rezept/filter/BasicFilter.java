@@ -133,7 +133,8 @@ public class BasicFilter extends AbstractCheckFilter {
             if (UNCODED_DIAG_SRYCD.equals(syModel.getSrycd())) {
                 String diag = syModel.getDiagName();
                 String msg = String.format("病名 %s は未コード化病名です", diag);
-                CheckResult result = createCheckResult(msg, CheckResult.CHECK_WARNING);
+                // 20140909 B.Katou: 未コード化病名はWARNING→INFOにレベルダウン
+                CheckResult result = createCheckResult(msg, CheckResult.CHECK_INFO);
                 results.add(result);
             }
         }
