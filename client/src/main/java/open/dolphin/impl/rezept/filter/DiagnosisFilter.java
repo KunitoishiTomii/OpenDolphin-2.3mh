@@ -3,7 +3,9 @@ package open.dolphin.impl.rezept.filter;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Deque;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Map;
 import open.dolphin.impl.rezept.LexicalAnalyzer;
@@ -26,6 +28,8 @@ public class DiagnosisFilter extends AbstractCheckFilter {
     private static final String NOT_PREFIX = "!";
 
     private static final String FILTER_NAME = "適応病名";
+    
+    private Date billDate;
 
     @Override
     public String getFilterName() {
@@ -34,6 +38,8 @@ public class DiagnosisFilter extends AbstractCheckFilter {
 
     @Override
     public List<CheckResult> doCheck(RE_Model reModel) {
+        
+        billDate = reModel.getBillDate();
 
         boolean isAdmission = "1".equals(reModel.getNyugaikbn());
         List<CheckResult> results = new ArrayList<>();
@@ -116,10 +122,19 @@ public class DiagnosisFilter extends AbstractCheckFilter {
         // or条件
         for (IndicationItem item : orItems) {
             try {
-                String keyword = item.getKeyword();
-                boolean b = checkIndicatedDiag(diagList, keyword, false);
+                boolean b = checkIndicatedDiag(diagList, item, false);
                 if (b) {
                     rezeItem.incrementHitCount();
+                } else {
+                    // ＰＰＩなど病名ごとの投与期間制限対応策　ロジック間違ってないかな…
+                    Integer validWeek = item.getValidWeek();
+                    if (validWeek != null) {
+                        String msg = String.format("%sに対応する病名「%s」は%s週制限があります。病名開始日要チェック"
+                                , description, item.getKeyword(), validWeek);
+                        CheckResult result = createCheckResult(msg, CheckResult.CHECK_ERROR);
+                        result.setSrycd(rezeItem.getSrycd());
+                        results.add(result);
+                    }
                 }
             } catch (Exception ex) {
             }
@@ -136,12 +151,11 @@ public class DiagnosisFilter extends AbstractCheckFilter {
         // not条件
         for (IndicationItem item : notItems) {
             try {
-                String keyword = item.getKeyword();
-                boolean b = checkIndicatedDiag(diagList, keyword, true);
+                boolean b = checkIndicatedDiag(diagList, item, true);
                 if (b) {
                     // ドボンの場合
                     rezeItem.setPass(false);
-                    String msg = String.format("%sの禁止句「%s」が病名に存在します", description, keyword);
+                    String msg = String.format("%sの禁止句「%s」が病名に存在します", description, item.getKeyword());
                     CheckResult result = createCheckResult(msg, CheckResult.CHECK_ERROR);
                     result.setSrycd(rezeItem.getSrycd());
                     results.add(result);
@@ -155,7 +169,10 @@ public class DiagnosisFilter extends AbstractCheckFilter {
 
     // 傷病名リストにキーワードが含まれるかチェックする
     public boolean checkIndicatedDiag(List<SY_Model> diagList,
-            String keyword, boolean notCondition) throws Exception {
+            IndicationItem item, boolean notCondition) throws Exception {
+        
+        String keyword = item.getKeyword();
+        Integer validWeek = item.getValidWeek();
 
         Deque<Boolean> stack = new ArrayDeque();
         List<String> tokens = LexicalAnalyzer.toPostFixNotation(keyword);
@@ -177,7 +194,16 @@ public class DiagnosisFilter extends AbstractCheckFilter {
                         boolean b3 = token.startsWith(NOT_PREFIX)
                                 ? !syModel.getDiagName().contains(token.substring(1))
                                 : syModel.getDiagName().contains(token);
-                          hit |= b3;
+                        if (b3 && validWeek != null) {
+                            // ＰＰＩなど病名ごとの投与期間制限対応策
+                            GregorianCalendar gc = new GregorianCalendar();
+                            gc.setTime(syModel.getStartDate());
+                            gc.add(GregorianCalendar.DATE, validWeek * 7);
+                            if (gc.getTime().before(billDate)) {
+                                b3 = false;
+                            }
+                        }
+                        hit |= b3;
                         if (notCondition) {
                             if (b3) {
                                 // ドボン

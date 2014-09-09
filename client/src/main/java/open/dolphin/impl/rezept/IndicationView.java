@@ -37,6 +37,7 @@ public class IndicationView extends JPanel {
     private JCheckBox inclusiveChk;
     private JCheckBox admissionChk;
     private JCheckBox outPatientChk;
+    private JCheckBox commentReqChk;
     
     public IndicationView() {
         initComponents();
@@ -93,6 +94,8 @@ public class IndicationView extends JPanel {
         inclusiveChk = new JCheckBox("検査包括10項目以上は対象外");
         shinsa2.add(inclusiveChk);
         shinsa.add(shinsa2);
+        commentReqChk = new JCheckBox("要コメント");
+        shinsa2.add(commentReqChk);
         left.add(shinsa);
         
         JPanel right = new JPanel();
@@ -181,5 +184,8 @@ public class IndicationView extends JPanel {
     }
     public JCheckBox getInclusiveChk() {
         return inclusiveChk;
+    }
+    public JCheckBox getCommentReqChk() {
+        return commentReqChk;
     }
 }

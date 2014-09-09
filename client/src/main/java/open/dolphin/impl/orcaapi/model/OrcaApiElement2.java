@@ -58,17 +58,21 @@ public class OrcaApiElement2 implements IOrcaApi {
     
     /**
      * 健康保険の Element
+     * 2014.8.4　orca support center から回答
+     * 公費単独の場合は，InsuranceProvider_Class 〜 Certificate_ExpiredDate に「公費単独(980)」を入れたらだめ
+     * by Dr pns
      */
     public static class HealthInsurance_Information extends Element {
         
         //private static final long serialVersionUID = 1L;
-        
         public HealthInsurance_Information(PVTHealthInsuranceModel model) {
-            
+
             super("HealthInsurance_Information");
             setAttribute(TYPE, RECORD);
-            
-            if (model != null) {
+
+            String insuranceClassCode = model.getInsuranceClassCode();
+            // 以下の項目は「公費単独(XX)」 ** 以外 ** の場合のみ add する
+            if (!"XX".equals(insuranceClassCode)) {
                 String orcaInsuranceClassCode = convertToOrcaInsuranceClassCode(model.getInsuranceClassCode());
                 addContent(new Element("InsuranceProvider_Class").setAttribute(TYPE, STRING).addContent(orcaInsuranceClassCode));
                 addContent(new Element("InsuranceProvider_Number").setAttribute(TYPE, STRING).addContent(model.getInsuranceNumber()));
@@ -78,10 +82,10 @@ public class OrcaApiElement2 implements IOrcaApi {
                 addContent(new Element("RelationToInsuredPerson").setAttribute(TYPE, STRING).addContent(Boolean.valueOf(model.getFamilyClass()) ? "1" : "2"));
                 addContent(new Element("Certificate_IssuedDate").setAttribute(TYPE, STRING).addContent(model.getStartDate()));
                 addContent(new Element("Certificate_ExpiredDate").setAttribute(TYPE, STRING).addContent(model.getExpiredDate()));
-                PVTPublicInsuranceItemModel[] publicInsuranceModels = model.getPVTPublicInsuranceItem();
-                if (publicInsuranceModels != null) {
-                    addContent(new PublicInsurance_Information(publicInsuranceModels));
-                }
+            }
+            PVTPublicInsuranceItemModel[] publicInsuranceModels = model.getPVTPublicInsuranceItem();
+            if (publicInsuranceModels != null) {
+                addContent(new PublicInsurance_Information(publicInsuranceModels));
             }
         }
     }

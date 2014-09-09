@@ -34,6 +34,7 @@ public class IndicationItem implements Serializable {
     private Boolean notCondition; // not条件かどうか
     
     private String keyword;
+    private Integer validWeek;   // 投与期間(週)　これ以下の場合のみ条件が有効
     
     private String description;     // 810000001のコメント内容
     
@@ -67,6 +68,9 @@ public class IndicationItem implements Serializable {
     public void setDescription(String description) {
         this.description = description;
     }
+    public void setValidWeek(Integer validWeek) {
+        this.validWeek = validWeek;
+    }
     
     public long getId() {
         return id;
@@ -85,5 +89,8 @@ public class IndicationItem implements Serializable {
     }
     public String getDescription() {
         return description;
+    }
+    public Integer getValidWeek() {
+        return validWeek;
     }
 }
