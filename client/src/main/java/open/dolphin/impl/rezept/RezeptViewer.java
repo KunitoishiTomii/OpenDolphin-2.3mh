@@ -791,13 +791,13 @@ public class RezeptViewer {
                 childPane.refresh();
             }
         });   
+        if (!gairai.isEmpty()) {
+            JTabbedPane tabbedPane = createTabbedPane(gairai, model);
+            view.getTabbedPane().add("外来", tabbedPane);
+        }
         if (!nyuin.isEmpty()) {
             JTabbedPane tabbedPane = createTabbedPane(nyuin, model);
             view.getTabbedPane().add("入院", tabbedPane);
-        }
-        if (!gairai.isEmpty()) {
-            JTabbedPane tabbedPane = createTabbedPane(gairai, model);
-            view.getTabbedPane().add("入院外", tabbedPane);
         }
         
         // １件目を表示する
