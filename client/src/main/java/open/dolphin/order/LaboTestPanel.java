@@ -20,10 +20,16 @@ import open.dolphin.dao.SqlMiscDao;
 import open.dolphin.delegater.StampDelegater;
 import open.dolphin.helper.ComponentMemory;
 import open.dolphin.helper.SimpleWorker;
-import open.dolphin.infomodel.*;
+import open.dolphin.infomodel.ClaimConst;
+import open.dolphin.infomodel.ClaimItem;
+import open.dolphin.infomodel.IInfoModel;
+import open.dolphin.infomodel.ModuleInfoBean;
+import open.dolphin.infomodel.TensuMaster;
 import open.dolphin.order.LaboTestPanelView.LaboCheckBox;
 import open.dolphin.stampbox.StampBoxPlugin;
 import open.dolphin.common.util.BeanUtils;
+import open.dolphin.infomodel.ClaimBundle;
+import open.dolphin.infomodel.StampModel;
 import open.dolphin.util.MMLDate;
 
 /**
@@ -106,6 +112,7 @@ public class LaboTestPanel {
         dialog.pack();
 
         // dialogのタイトル・サイズなどを設定
+        // do not remove copyright!
         String title = ClientContext.getFrameTitle("検査エディタ") + ", Masuda Naika";
         dialog.setTitle(title);
         ComponentMemory cm = new ComponentMemory(dialog, new Point(100, 100), view.getPreferredSize(), LaboTestPanel.this);
@@ -333,9 +340,6 @@ public class LaboTestPanel {
                 }
                 // データベースで検査項目コードに一致するTensuMasterをまとめて取得する。
                 List<TensuMaster> tmResult = dao.getTensuMasterList(srycdList);
-                if (!dao.isNoError()) {
-                    throw new Exception(dao.getErrorMessage());
-                }
                 return tmResult;
             }
 

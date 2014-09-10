@@ -20,12 +20,18 @@ import javax.swing.table.TableColumn;
 import open.dolphin.client.*;
 import open.dolphin.dao.SqlMasterDao;
 import open.dolphin.dao.SqlMiscDao;
-import open.dolphin.infomodel.*;
 import open.dolphin.project.Project;
 import open.dolphin.table.ListTableModel;
 import open.dolphin.table.StripeTableCellRenderer;
 import open.dolphin.tr.MasterItemTransferHandler;
 import open.dolphin.common.util.ZenkakuUtils;
+import open.dolphin.infomodel.AdmissionModel;
+import open.dolphin.infomodel.BundleDolphin;
+import open.dolphin.infomodel.ClaimConst;
+import open.dolphin.infomodel.ClaimItem;
+import open.dolphin.infomodel.IInfoModel;
+import open.dolphin.infomodel.ModuleModel;
+import open.dolphin.infomodel.TensuMaster;
 import open.dolphin.table.ListTableSorter;
 
 /**
@@ -263,7 +269,9 @@ public abstract class AbstractStampEditor implements StampEditorConst {
                 || code.startsWith(EDITABLE_COMMENT_83)
                 || code.startsWith(EDITABLE_COMMENT_0083)
                 || code.startsWith(EDITABLE_COMMENT_85)
-                || code.startsWith(EDITABLE_COMMENT_0085));
+                || code.startsWith(EDITABLE_COMMENT_0085)
+                || code.startsWith(EDITABLE_COMMENT_86)
+                || code.startsWith(EDITABLE_COMMENT_0086));
     }
 
     //---------------------------------------
@@ -748,15 +756,31 @@ public abstract class AbstractStampEditor implements StampEditorConst {
         final JTable searchResultTable = view.getSearchResultTable();
         searchResultTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         searchResultTable.setRowSelectionAllowed(true);
-        ListSelectionModel lm = searchResultTable.getSelectionModel();
-        lm.addListSelectionListener(new ListSelectionListener() {
+//        ListSelectionModel lm = searchResultTable.getSelectionModel();
+//        lm.addListSelectionListener(new ListSelectionListener() {
+//
+//            @Override
+//            public void valueChanged(ListSelectionEvent e) {
+//                if (e.getValueIsAdjusting() == false) {
+//                    int row = searchResultTable.getSelectedRow();
+//                    ListTableSorter<TensuMaster> sorter
+//                            = (ListTableSorter<TensuMaster>) searchResultTable.getModel();
+//                    TensuMaster o = sorter.getObject(row);
+//                    if (o != null) {
+//                        addSelectedTensu(o);
+//                        setFocusOnSearchTextFld();
+//                    }
+//                }
+//            }
+//        });
+
+        searchResultTable.addMouseListener(new MouseAdapter() {
 
             @Override
-            public void valueChanged(ListSelectionEvent e) {
-                
-                if (e.getValueIsAdjusting() == false) {
-                    int row = view.getSearchResultTable().getSelectedRow();
-                    ListTableSorter<TensuMaster> sorter 
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 1) {
+                    int row = searchResultTable.getSelectedRow();
+                    ListTableSorter<TensuMaster> sorter
                             = (ListTableSorter<TensuMaster>) searchResultTable.getModel();
                     TensuMaster o = sorter.getObject(row);
                     if (o != null) {
@@ -976,9 +1000,6 @@ public abstract class AbstractStampEditor implements StampEditorConst {
                         break;
                 }
 
-                if (!dao.isNoError()) {
-                    throw new Exception(dao.getErrorMessage());
-                }
                 return result;
             }
 
@@ -1012,9 +1033,7 @@ public abstract class AbstractStampEditor implements StampEditorConst {
                     // 検索後は最初の行を表示させる
                     showFirstResult(view.getSearchResultTable());
 
-                } catch (InterruptedException ex) {
-
-                } catch (ExecutionException ex) {
+                } catch (InterruptedException | ExecutionException ex) {
                     alertSearchError(ex.getMessage());
                 }
             }
@@ -1092,9 +1111,6 @@ public abstract class AbstractStampEditor implements StampEditorConst {
         //-----------------------------
         classCode = bundle.getClassCode();
 
-        // 診療区分をデフォルト設定
-        view.setShinkuByShinku(classCode);
-
         // ClaimItemをMasterItemへ変換してテーブルへ追加する
         ClaimItem[] items = bundle.getClaimItem();
         for (ClaimItem item : items) {
@@ -1126,9 +1142,7 @@ public abstract class AbstractStampEditor implements StampEditorConst {
                     srycdList.add(mi.getCode());
                 }
                 List<TensuMaster> result = dao2.getTensuMasterList(srycdList);
-                if (!dao2.isNoError()){
-                    throw new Exception();
-                }
+
                 return result;
             }
             @Override

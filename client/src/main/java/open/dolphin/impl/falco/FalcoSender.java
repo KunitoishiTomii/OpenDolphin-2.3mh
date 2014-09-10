@@ -9,7 +9,14 @@ import java.util.List;
 import open.dolphin.client.Chart;
 import open.dolphin.client.IKarteSender;
 import open.dolphin.client.KarteSenderResult;
-import open.dolphin.infomodel.*;
+import open.dolphin.infomodel.BundleDolphin;
+import open.dolphin.infomodel.ClaimItem;
+import open.dolphin.infomodel.DocumentModel;
+import open.dolphin.infomodel.IInfoModel;
+import open.dolphin.infomodel.ModuleInfoBean;
+import open.dolphin.infomodel.ModuleModel;
+import open.dolphin.infomodel.PatientModel;
+import open.dolphin.infomodel.UserModel;
 import open.dolphin.project.Project;
 
 /**
@@ -19,7 +26,6 @@ import open.dolphin.project.Project;
  */
 public final class FalcoSender implements IKarteSender {
 
-    private static SimpleDateFormat SDF = new SimpleDateFormat("yyyyMMddHHmmssSSS");
     private Chart context;
     private DocumentModel sendModel;
     private PropertyChangeSupport boundSupport;
@@ -30,9 +36,10 @@ public final class FalcoSender implements IKarteSender {
     private static final String FALCO = "FALCO";
 
     private static String createOrderNumber() {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmssSSS");
         StringBuilder sb = new StringBuilder();
         sb.append("DL");
-        sb.append(SDF.format(new Date()));
+        sb.append(sdf.format(new Date()));
         return sb.toString();
     }
 
@@ -60,11 +67,9 @@ public final class FalcoSender implements IKarteSender {
     }
     
     @Override
-    public void removeListeners() {
+    public void removeListener(PropertyChangeListener listener) {
         if (boundSupport != null) {
-            for (PropertyChangeListener listener : boundSupport.getPropertyChangeListeners()) {
-                boundSupport.removePropertyChangeListener(KarteSenderResult.PROP_KARTE_SENDER_RESULT, listener);
-            }
+            boundSupport.removePropertyChangeListener(KarteSenderResult.PROP_KARTE_SENDER_RESULT, listener);
         }
     }
 

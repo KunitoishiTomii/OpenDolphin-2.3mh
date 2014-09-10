@@ -24,13 +24,17 @@ import open.dolphin.delegater.PatientDelegater;
 import open.dolphin.dto.PatientSearchSpec;
 import open.dolphin.helper.KeyBlocker;
 import open.dolphin.helper.SimpleWorker;
-import open.dolphin.infomodel.*;
 import open.dolphin.project.Project;
 import open.dolphin.setting.MiscSettingPanel;
 import open.dolphin.table.*;
 import open.dolphin.util.AgeCalculator;
 import open.dolphin.common.util.StringTool;
 import open.dolphin.common.util.ZenkakuUtils;
+import open.dolphin.infomodel.ChartEventModel;
+import open.dolphin.infomodel.PatientModel;
+import open.dolphin.infomodel.PatientVisitModel;
+import open.dolphin.infomodel.SearchResultModel;
+import open.dolphin.infomodel.SimpleDate;
 
 /**
  * 患者検索PatientSearchPlugin
@@ -47,7 +51,7 @@ public class PatientSearchImpl extends AbstractMainComponent {
             = {"patientId", "fullName", "kanaName", "genderDesc", "ageBirthday", "pvtDateTrimTime", "getElapsedDay", "isOpened"};
     private static final Class[] COLUMN_CLASSES = {
         String.class, String.class, String.class, String.class, String.class, 
-        String.class, Integer.class, Integer.class};
+        String.class, Integer.class, Object.class};
     private final int[] COLUMN_WIDTH = {50, 100, 120, 30, 100, 80, 20, 20};
     private final int START_NUM_ROWS = 1;
    
@@ -461,6 +465,18 @@ public class PatientSearchImpl extends AbstractMainComponent {
         };
         view.getTable().getInputMap().put(copy, "Copy");
         view.getTable().getActionMap().put("Copy", copyAction);
+        
+        // Enterでカルテオープン Katoh@Hashimoto-iin
+        final String optionMapKey = "openKarte";
+        final KeyStroke enter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
+        view.getTable().getInputMap(JTable.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(enter, optionMapKey);
+        view.getTable().getActionMap().put(optionMapKey, new AbstractAction(){
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                openKarte();
+            }
+        });
     }
 
     private class EventAdapter extends MouseAdapter implements ActionListener, ListSelectionListener {
@@ -992,6 +1008,7 @@ public class PatientSearchImpl extends AbstractMainComponent {
 
             long fromId = 0;
             int page = 0;
+            long moduleCount = 0;
             // progress bar 表示
             publish(new String[]{startingNote, "0"});
             
@@ -1000,10 +1017,10 @@ public class PatientSearchImpl extends AbstractMainComponent {
                 if (progressMonitor.isCanceled()) {
                     return new ArrayList<>(pmSet);
                 }
-                srm = dl.getSearchResult(searchText, fromId, maxResult, progressCourseOnly);
+                srm = dl.getSearchResult(searchText, fromId, maxResult, moduleCount, progressCourseOnly);
 
                 if (srm != null) {
-                    long moduleCount = srm.getTotalCount();
+                    moduleCount = srm.getTotalCount();
                     fromId = srm.getDocPk();
                     List<PatientModel> newList = srm.getResultList();
 
@@ -1097,6 +1114,7 @@ public class PatientSearchImpl extends AbstractMainComponent {
             MasudaDelegater dl = MasudaDelegater.getInstance();
 
             // maxResult毎にインデックス作成する
+            long totalModelCount = 0;
             final int maxResults = 200;
             long fromDocPk = 0;
             int page = 0;
@@ -1109,10 +1127,10 @@ public class PatientSearchImpl extends AbstractMainComponent {
                 if (progressMonitor.isCanceled()) {
                     break;
                 }
-                ret = dl.makeDocumentModelIndex(fromDocPk, maxResults);
+                ret = dl.makeDocumentModelIndex(fromDocPk, maxResults, totalModelCount);
                 if (!FINISHED.equals(ret)) {
                     String[] str = ret.split(",");
-                    long totalModelCount = Long.valueOf(str[1]);
+                    totalModelCount = Long.valueOf(str[1]);
                     fromDocPk = Long.valueOf(str[0]);
                     page++;
                     // progress bar 表示

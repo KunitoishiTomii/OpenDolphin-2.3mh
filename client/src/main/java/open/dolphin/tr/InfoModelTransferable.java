@@ -37,7 +37,7 @@ public final class InfoModelTransferable extends DolphinTransferable {
     public static DataFlavor infoModelFlavor = 
             new DataFlavor(RegisteredDiagnosisModel.class, "RegisteredDiagnosis");
 
-    public static final DataFlavor[] flavors = {InfoModelTransferable.infoModelFlavor};
+    public static final DataFlavor[] flavors = {InfoModelTransferable.infoModelFlavor, DataFlavor.stringFlavor};
     
     // 複数対応 masuda
     private final RegisteredDiagnosisModel[] infoModels;
@@ -54,15 +54,22 @@ public final class InfoModelTransferable extends DolphinTransferable {
      
     @Override
     public boolean isDataFlavorSupported( DataFlavor flavor ) {
-        return infoModelFlavor.equals(flavor);
+        for (DataFlavor df : flavors) {
+            if (df.equals(flavor)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
     public synchronized Object getTransferData(DataFlavor flavor)
 	    throws UnsupportedFlavorException, IOException {
 
-        if (flavor.equals(infoModelFlavor)) {
+        if (infoModelFlavor.equals(flavor)) {
             return infoModels;
+        } else if (DataFlavor.stringFlavor.equals(flavor)) {
+            return getDiagnosisText();
         } else {
             throw new UnsupportedFlavorException(flavor);
         }
@@ -71,5 +78,23 @@ public final class InfoModelTransferable extends DolphinTransferable {
     @Override
     public String toString() {
         return "InfoModel Transferable";
+    }
+    
+    // 病名のテキストを作る
+    private String getDiagnosisText() {
+
+        StringBuilder sb = new StringBuilder();
+        boolean first = true;
+        for (RegisteredDiagnosisModel rd : infoModels) {
+            if (!first) {
+                sb.append("\n");
+            } else {
+                first = false;
+            }
+            sb.append("＃");
+            sb.append(rd.getDiagnosis());
+            sb.append("(").append(rd.getStartDate()).append(")");
+        }
+        return sb.toString();
     }
 }

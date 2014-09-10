@@ -18,7 +18,11 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import open.dolphin.client.*;
 import open.dolphin.delegater.PVTDelegater;
-import open.dolphin.infomodel.*;
+import open.dolphin.infomodel.ChartEventModel;
+import open.dolphin.infomodel.IInfoModel;
+import open.dolphin.infomodel.ModelUtils;
+import open.dolphin.infomodel.PatientModel;
+import open.dolphin.infomodel.PatientVisitModel;
 import open.dolphin.project.Project;
 import open.dolphin.table.*;
 import open.dolphin.util.AgeCalculator;
@@ -472,6 +476,19 @@ public class WatingListImpl extends AbstractMainComponent {
         };
         pvtTable.getInputMap().put(copy, "Copy");
         pvtTable.getActionMap().put("Copy", copyAction);
+        
+        // Enterでカルテオープン Katoh@Hashimoto-iin
+        final String optionMapKey = "openKarte";
+        final KeyStroke enter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
+        pvtTable.getInputMap(JTable.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(enter, optionMapKey);
+        pvtTable.getActionMap().put(optionMapKey, new AbstractAction(){
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                openKarte();
+            }
+        });
+        
     }
 
     // comet long polling機能を設定する

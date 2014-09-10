@@ -8,7 +8,8 @@ import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import open.dolphin.client.GUIConst;
-import open.dolphin.infomodel.*;
+import open.dolphin.infomodel.TensuMaster;
+import open.dolphin.infomodel.TextStampModel;
 
 /**
  * TextStampEditor based on LTextStampEditor.java

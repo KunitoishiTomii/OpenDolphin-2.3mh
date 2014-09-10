@@ -2,7 +2,16 @@ package open.dolphin.dao;
 
 import java.util.ArrayList;
 import java.util.List;
-import open.dolphin.infomodel.*;
+import open.dolphin.infomodel.BundleDolphin;
+import open.dolphin.infomodel.BundleMed;
+import open.dolphin.infomodel.ClaimConst;
+import open.dolphin.infomodel.ClaimItem;
+import open.dolphin.infomodel.IInfoModel;
+import open.dolphin.infomodel.MMLTable;
+import open.dolphin.infomodel.ModuleInfoBean;
+import open.dolphin.infomodel.ModuleModel;
+import open.dolphin.infomodel.OrcaInputCd;
+import open.dolphin.infomodel.OrcaInputSet;
 import open.dolphin.project.Project;
 
 /**
@@ -40,7 +49,7 @@ public class SqlOrcaSetDao extends SqlDaoBean {
      * ORCA の入力セットコード（約束処方、診療セット）を返す。
      * @return 入力セットコード(OrcaInputCd)の昇順リスト
      */
-    public List<OrcaInputCd> getOrcaInputSet() {
+    public List<OrcaInputCd> getOrcaInputSet() throws DaoException {
          
         debug("getOrcaInputSet()");
         List<OrcaInputCd> collection = new ArrayList<>();
@@ -137,7 +146,7 @@ public class SqlOrcaSetDao extends SqlDaoBean {
      * @param inputSetInfo 入力セットの StampInfo
      * @return 入力セットのStampリスト
      */
-    public List<ModuleModel> getStamp(ModuleInfoBean inputSetInfo) {
+    public List<ModuleModel> getStamp(ModuleInfoBean inputSetInfo) throws DaoException {
 
         String setCd = inputSetInfo.getStampId(); // stampId=setCd; セットコード
         String stampName = inputSetInfo.getStampName();

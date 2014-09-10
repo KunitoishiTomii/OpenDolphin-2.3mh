@@ -15,6 +15,7 @@ import javax.swing.JTable;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.*;
+import open.dolphin.client.ClientContext;
 
 /**
  * TableSorter is a decorator for TableModels; adding sorting functionality to a
@@ -460,7 +461,11 @@ public class TableSorter extends AbstractTableModel {
     }
 
     private static class Arrow implements Icon {
-
+        
+//pns       use custom icon
+        private static final ImageIcon upIcon = ClientContext.getImageIcon("up.gif");
+        private static final ImageIcon downIcon = ClientContext.getImageIcon("down.gif");
+        
         private final boolean descending;
         private final int size;
 //masuda
@@ -476,9 +481,6 @@ public class TableSorter extends AbstractTableModel {
         @Override
         public void paintIcon(Component c, Graphics g, int x, int y) {
 
-//pns       use custom icon
-            ImageIcon upIcon = new ImageIcon(getClass().getResource("/open/dolphin/resources/images/up.gif"));
-            ImageIcon downIcon = new ImageIcon(getClass().getResource("/open/dolphin/resources/images/down.gif"));
             if (descending) {
                 g.drawImage(downIcon.getImage(), x, y, null);
             } else {

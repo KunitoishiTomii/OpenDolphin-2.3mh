@@ -1,18 +1,29 @@
 package open.dolphin.client;
 
 import java.awt.*;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DragGestureEvent;
+import java.awt.dnd.DragGestureListener;
+import java.awt.dnd.DragSource;
 import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
 import java.text.SimpleDateFormat;
 import javax.swing.*;
-import open.dolphin.common.util.BeanUtils;
-import open.dolphin.infomodel.*;
+import open.dolphin.common.util.ModuleBeanDecoder;
+import open.dolphin.infomodel.DocumentModel;
+import open.dolphin.infomodel.IInfoModel;
+import open.dolphin.infomodel.ModelUtils;
+import open.dolphin.infomodel.ModuleModel;
+import open.dolphin.infomodel.ProgressCourse;
+import open.dolphin.infomodel.SimpleAddressModel;
+import open.dolphin.tr.BasicInfoTransferHandler;
 
 /**
  * BasicInfoInspector
  * @author Kazushi Minagawa.
  * @author modified by masuda, Masuda Naika
  */
-public class BasicInfoInspector {
+public class BasicInfoInspector implements DragGestureListener {
 
     private JPanel basePanel; // このクラスのパネル
     private JLabel nameLabel;
@@ -131,6 +142,12 @@ public class BasicInfoInspector {
             summaryBtn.addActionListener(new PopupAction(ta));
             summaryBtn.setVisible(true);
         }
+        
+        // TransferHandler
+        BasicInfoTransferHandler tr = new BasicInfoTransferHandler(context.getPatient());
+        basePanel.setTransferHandler(tr);
+        DragSource dragSource = DragSource.getDefaultDragSource();
+        dragSource.createDefaultDragGestureRecognizer(basePanel, DnDConstants.ACTION_COPY, this);
 //masuda$
     }
 
@@ -145,7 +162,8 @@ public class BasicInfoInspector {
         final SimpleDateFormat sdf = new SimpleDateFormat(IInfoModel.KARTE_DATE_FORMAT);
         
         ModuleModel mm = summary.getModule(IInfoModel.MODULE_PROGRESS_COURSE);
-        ProgressCourse pc = (ProgressCourse) BeanUtils.xmlDecode(mm.getBeanBytes());
+        ProgressCourse pc = (ProgressCourse) ModuleBeanDecoder.getInstance().decode(mm.getBeanBytes());
+        mm.setBeanBytes(null);
         
         boolean first = true;
         String xml = pc.getFreeText();
@@ -177,6 +195,17 @@ public class BasicInfoInspector {
         return ta;
     }
     
+    @Override
+    public void dragGestureRecognized(DragGestureEvent dge) {
+
+        int action = dge.getDragAction();
+        InputEvent event = dge.getTriggerEvent();
+        JComponent comp = (JComponent) dge.getComponent();
+        TransferHandler handler = comp.getTransferHandler();
+        if (handler != null) {
+            handler.exportAsDrag(comp, event, action);
+        }
+    }
     
     private class PopupAction extends AbstractAction {
 

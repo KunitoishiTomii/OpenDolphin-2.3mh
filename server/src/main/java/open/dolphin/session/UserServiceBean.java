@@ -1,12 +1,16 @@
 package open.dolphin.session;
 
 import java.util.List;
+import java.util.logging.Logger;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.persistence.EntityExistsException;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import open.dolphin.infomodel.*;
+import open.dolphin.mbean.AsyncResponseModel;
+import open.dolphin.mbean.ServletContextHolder;
 
 /**
  *
@@ -14,6 +18,8 @@ import open.dolphin.infomodel.*;
  */
 @Stateless
 public class UserServiceBean {
+    
+    private static final Logger logger = Logger.getLogger(UserServiceBean.class.getName());
 
     private static final String UID = "uid";
     private static final String FID = "fid";
@@ -28,11 +34,14 @@ public class UserServiceBean {
     private static final String MEMBER_TYPE = "memberType";
     private static final String MEMBER_TYPE_EXPIRED = "EXPIRED";
     
+    @Inject
+    private ServletContextHolder contextHolder;
+    
     @PersistenceContext
     private EntityManager em;
     
     
-    public boolean authenticate(String userName, String password) {
+    public boolean authenticate(String userName, String password, String remoteIp) {
 
         boolean ret = false;
 
@@ -41,10 +50,16 @@ public class UserServiceBean {
                     em.createQuery(QUERY_USER_BY_UID)
                     .setParameter(UID, userName)
                     .getSingleResult();
-            if (user.getPassword().equals(password)) {
+            if (user.getPassword().equals(password) && user.getFailCount() < 5) {
                 ret = true;
+                user.setFailCount(0);
+            } else {
+                int failCount = user.getFailCount() + 1;
+                user.setFailCount(failCount);
+                String msg = String.format("Authentication Failed: user=%s, failCount=%d, remoteIp=%s", userName, failCount, remoteIp);
+                logger.warning(msg);
             }
-
+            
         } catch (Exception e) {
         }
 
@@ -239,6 +254,20 @@ public class UserServiceBean {
             user.setClientUUID(null);
             em.merge(user);
         }
+        
+        // remove AsyncResponse
+        AsyncResponseModel toRemove = null;
+        for (AsyncResponseModel arModel : contextHolder.getAsyncResponseList()) {
+            if (clientUUID.equals(arModel.getClientUUID())) {
+                toRemove = arModel;
+                break;
+            }
+        }
+        if (toRemove != null) {
+            contextHolder.getAsyncResponseList().remove(toRemove);
+            toRemove.getAsyncResponse().cancel();
+        }
+        
         return oldUUID;
     }
 }

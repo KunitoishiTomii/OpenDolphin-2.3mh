@@ -19,7 +19,22 @@ import net.sf.jooreports.templates.DocumentTemplateFactory;
 import open.dolphin.delegater.DocumentDelegater;
 import open.dolphin.dto.DocumentSearchSpec;
 import open.dolphin.helper.*;
-import open.dolphin.infomodel.*;
+import open.dolphin.infomodel.AdmissionModel;
+import open.dolphin.infomodel.BundleMed;
+import open.dolphin.infomodel.DocInfoModel;
+import open.dolphin.infomodel.DocumentModel;
+import open.dolphin.infomodel.IInfoModel;
+import open.dolphin.infomodel.IModuleModel;
+import open.dolphin.infomodel.KarteBean;
+import open.dolphin.infomodel.ModelUtils;
+import open.dolphin.infomodel.ModuleModel;
+import open.dolphin.infomodel.PVTHealthInsuranceModel;
+import open.dolphin.infomodel.PatientModel;
+import open.dolphin.infomodel.PatientVisitModel;
+import open.dolphin.infomodel.RoleModel;
+import open.dolphin.infomodel.SchemaModel;
+import open.dolphin.infomodel.UserModel;
+import open.dolphin.infomodel.VersionModel;
 import open.dolphin.plugin.PluginLister;
 import open.dolphin.plugin.PluginLoader;
 import open.dolphin.project.Project;
@@ -884,14 +899,18 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
     /**
      * ドキュメントタブにプラグインを遅延生成し追加する。
      */
-    public void tabChanged(ChangeEvent e) {
+    private void tabChanged(ChangeEvent e) {
 
         //
         // 選択されたタブ番号に対応するプラグインをテーブルから検索する
         //
         int index = tabbedPane.getSelectedIndex();
         ChartDocument plugin = providers.get(index);
-
+        
+        if (plugin == null) {
+            return;
+        }
+        
         if (plugin.getContext() == null) {
             //
             // まだ生成されていないプラグインを生成する
@@ -2191,6 +2210,14 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
     }
 
     private boolean canOpenNewKarte() {
+        
+        // 履歴表示モード編集制限
+        if (getDocumentHistory().isShowModified()) {
+            String title = ClientContext.getFrameTitle("カルテ編集");
+            String msg = "履歴表示モードでは編集できません";
+            JOptionPane.showMessageDialog(getFrame(), msg, title, JOptionPane.WARNING_MESSAGE);
+            return false;
+        }
 
         List<EditorFrame> editorFrames = WindowSupport.getAllEditorFrames();
         if (editorFrames.isEmpty()) {
@@ -2310,7 +2337,8 @@ public class ChartImpl extends AbstractMainTool implements Chart, IInfoModel {
         frame.setContentPane(doc.getUI());
         frame.pack();
         // ウィンドウサイズを記録
-        ComponentMemory cm = new ComponentMemory(frame, new Point(0, 0), frame.getPreferredSize(), frame);
+        String name = this.getClass().getName() + "-2";
+        ComponentMemory cm = new ComponentMemory(frame, new Point(0, 0), frame.getPreferredSize(), name);
         cm.setToPreferenceBounds();
 
         // 別ウィンドウで開いたChartDocumentを記録する

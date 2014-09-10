@@ -23,10 +23,21 @@ import open.dolphin.dto.DocumentSearchSpec;
 import org.jboss.logging.Logger;
 import open.dolphin.helper.DBTask;
 import open.dolphin.infomodel.*;
+import open.dolphin.dao.DaoException;
+import open.dolphin.infomodel.AdmissionModel;
+import open.dolphin.infomodel.DocInfoModel;
+import open.dolphin.infomodel.DocumentModel;
+import open.dolphin.infomodel.ID;
+import open.dolphin.infomodel.IInfoModel;
+import open.dolphin.infomodel.ModelUtils;
+import open.dolphin.infomodel.ModuleModel;
+import open.dolphin.infomodel.PVTHealthInsuranceModel;
+import open.dolphin.infomodel.PatientVisitModel;
 import open.dolphin.project.Project;
 import open.dolphin.setting.MiscSettingPanel;
 import open.dolphin.tr.PTransferHandler;
 import open.dolphin.tr.SOATransferHandler;
+import open.dolphin.tr.SummaryTransferHandler;
 import open.dolphin.util.MMLDate;
 import org.apache.commons.lang.math.NumberUtils;
 
@@ -238,6 +249,21 @@ public class KarteEditor extends AbstractChartDocument implements IInfoModel,
         if (boundSupport != null) {
             boundSupport.firePropertyChange(KarteEditor.SAVE_DONE, false, true);
         }
+        
+        // インスペクタをtoFrontする
+        if (getContext() instanceof EditorFrame) {
+            
+            SwingUtilities.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    EditorFrame ef = (EditorFrame) getContext();
+                    JFrame frame = ef.getChart().getFrame();
+                    frame.setExtendedState(java.awt.Frame.NORMAL);
+                    frame.toFront();
+                }
+            });
+        }
     }
 
     public void printPanel2(final PageFormat format) {
@@ -372,7 +398,7 @@ public class KarteEditor extends AbstractChartDocument implements IInfoModel,
      */
     private void initialize1() {
 
-        kartePanel = KartePanel.createKartePanel(KartePanel.MODE.SINGLE_EDITOR, false);
+        kartePanel = new KartePanel1(true);
 
         // TimeStampLabel を生成する
         timeStampLabel = kartePanel.getTimeStampLabel();
@@ -385,7 +411,14 @@ public class KarteEditor extends AbstractChartDocument implements IInfoModel,
         soaPane.setTextPane(kartePanel.getSoaTextPane());
         soaPane.setParent(this);
         soaPane.setRole(ROLE_SOA);
-        soaPane.getTextPane().setTransferHandler(SOATransferHandler.getInstance());
+        
+//masuda^   サマリーの場合はSummaryTransferHandlerにする
+        if (model != null && IInfoModel.DOCTYPE_SUMMARY.equals(model.getDocInfoModel().getDocType())) {
+            soaPane.getTextPane().setTransferHandler(SummaryTransferHandler.getInstance());
+        } else {
+            soaPane.getTextPane().setTransferHandler(SOATransferHandler.getInstance());
+        }
+//masuda$
 
         if (model != null) {
             // Schema 画像にファイル名を付けるのために必要
@@ -406,7 +439,7 @@ public class KarteEditor extends AbstractChartDocument implements IInfoModel,
      */
     private void initialize2() {
 
-        kartePanel = KartePanel.createKartePanel(KartePanel.MODE.DOUBLE_EDITOR, false);
+        kartePanel = new KartePanel2(true);
 
         // TimeStampLabel を生成する
         timeStampLabel = kartePanel.getTimeStampLabel();
@@ -506,6 +539,10 @@ public class KarteEditor extends AbstractChartDocument implements IInfoModel,
         // 内容を表示する
         if (model.getModules() != null) {
             KarteRenderer_2.getInstance().render(model, soaPane, pPane);
+            soaPane.setCaretPositionLast();
+            if (pPane != null) {
+                pPane.setCaretPositionLast();
+            }
         } else {
             // 新規の場合ここでKarteStyledDocumentを設定する。
             // off screen renderingのため
@@ -596,9 +633,12 @@ public class KarteEditor extends AbstractChartDocument implements IInfoModel,
         if (!stateMgr.isDirty()) {
             return;
         }
-
         // 薬剤相互作用チェックなど
-        if (!isKarteCheckOK()) {
+        try {
+            if (!isKarteCheckOK()) {
+                return;
+            }
+        } catch (DaoException ex) {
             return;
         }
         
@@ -749,10 +789,10 @@ public class KarteEditor extends AbstractChartDocument implements IInfoModel,
                     && "2.0".compareTo(ver) >= 0;   // うまくない
             params.setDateEditable(newKarte || editTemp);
             // FirstConfirmDateを設定する
-            Date firstConfirmed = model.getDocInfoModel().getFirstConfirmDate();
-            if (firstConfirmed != null) {
-                params.setConfirmed(firstConfirmed);
-            }
+            //Date firstConfirmed = model.getDocInfoModel().getFirstConfirmDate();
+            //if (firstConfirmed != null) {
+            //    params.setConfirmed(firstConfirmed);
+            //}
             // 入院中か
             AdmissionModel admission = model.getDocInfoModel().getAdmissionModel();
             params.setInHospital(admission != null);
@@ -762,15 +802,20 @@ public class KarteEditor extends AbstractChartDocument implements IInfoModel,
             params.setPrintCount(numPrint);
 
             //-----------------------------
-            // Single Mode の時は送信なし
-            //-----------------------------
-            params.setSendEnabled(getMode() != SINGLE_MODE);
-
-            //-----------------------------
             // CLAIM 送信
             // 保存ダイアログで変更する事が可能
             //-----------------------------
             params.setSendClaim(sendClaim);
+            
+            //-----------------------------
+            // Single Mode の時は送信なし
+            //-----------------------------
+            if (getMode() == SINGLE_MODE) {
+                params.setSendEnabled(false);
+                params.setSendClaim(false);
+            } else {
+                params.setSendEnabled(true);
+            }
 
             //-----------------------------
             // Labtest 送信
@@ -825,13 +870,23 @@ public class KarteEditor extends AbstractChartDocument implements IInfoModel,
 
             // MML
             params.setSendMML(sendMML);
+            
+            //-----------------------------
+            // Single Mode の時は送信なし
+            //-----------------------------
+            if (getMode() == SINGLE_MODE) {
+                params.setSendEnabled(false);
+                params.setSendClaim(false);
+            } else {
+                params.setSendEnabled(true);
+            }
         }
 
         return params;
     }
 
     // カルテ内容をチェックする
-    private boolean isKarteCheckOK() {
+    private boolean isKarteCheckOK() throws DaoException {
 
         if (getMode() == DOUBLE_MODE) {
 
@@ -847,6 +902,18 @@ public class KarteEditor extends AbstractChartDocument implements IInfoModel,
             // 禁忌がないか、禁忌あるが無視のときはfalseが帰ってくる
             CheckMedication ci = new CheckMedication();
             if (ci.checkStart(context, stamps)) {
+                return false;
+            }
+            
+            // 診療行為重複チェック
+            CheckDuplication cd = new CheckDuplication();
+            if (cd.checkStart(context, stamps)) {
+                return false;
+            }
+            
+            // 有効期限チェック
+            CheckExpiration ce = new CheckExpiration();
+            if (ce.checkStart(context, stamps)) {
                 return false;
             }
 

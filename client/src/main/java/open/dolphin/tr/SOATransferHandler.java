@@ -172,7 +172,7 @@ public class SOATransferHandler extends AbstractKarteTransferHandler {
      * @param tr Transferable
      * @return 成功した時 true
      */
-    protected boolean doStampInfoDrop(Transferable tr, KartePane soaPane) {
+    private boolean doStampInfoDrop(Transferable tr, KartePane soaPane) {
 
         try {
             // DropされたTreeNodeを取得する
@@ -224,7 +224,7 @@ public class SOATransferHandler extends AbstractKarteTransferHandler {
      * @param tr
      * @return
      */
-    private boolean doSchemaDrop(Transferable tr, KartePane soaPane) {
+    protected boolean doSchemaDrop(Transferable tr, KartePane soaPane) {
 
         try {
             // Schemaリストを取得する
@@ -268,7 +268,7 @@ public class SOATransferHandler extends AbstractKarteTransferHandler {
     /**
      * Dropされたイメージをインポートする。
      */
-    private boolean doImageEntryDrop(final Transferable tr, KartePane kartePane) {
+    protected boolean doImageEntryDrop(final Transferable tr, KartePane kartePane) {
 
         try {
             // Imageを取得する
@@ -284,7 +284,7 @@ public class SOATransferHandler extends AbstractKarteTransferHandler {
     /**
      * DropされたイメージFileをインポートする。
      */
-    private boolean doFileDrop(Transferable tr, KartePane kartePane) {
+    protected boolean doFileDrop(Transferable tr, KartePane kartePane) {
         try {
             @SuppressWarnings("unchecked")
             List<File> list = (List<File>) tr.getTransferData(DataFlavor.javaFileListFlavor);
@@ -303,13 +303,12 @@ public class SOATransferHandler extends AbstractKarteTransferHandler {
     }
 
     // クリップボードの画像を受け入れる
-    private boolean doClippedImageDrop(Transferable tr, KartePane kartePane) {
+    protected boolean doClippedImageDrop(Transferable tr, KartePane kartePane) {
 
         try {
             Image image = (Image) tr.getTransferData(DataFlavor.imageFlavor);
-            ImageEntry entry = ImageTool.getImageEntryFromImage(image);
-            if (entry != null) {
-                kartePane.imageEntryDropped(entry);
+            if (image != null) {
+                kartePane.imageDropped(image);
             }
         } catch (UnsupportedFlavorException ex) {
         } catch (IOException ex) {

@@ -14,6 +14,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import open.dolphin.client.AutoRomanListener;
 import open.dolphin.client.ClientContext;
+import open.dolphin.client.FontManager;
 import open.dolphin.client.GUIFactory;
 import open.dolphin.client.RegexConstrainedDocument;
 import open.dolphin.delegater.MasudaDelegater;
@@ -44,7 +45,7 @@ public class MiscSettingPanel extends AbstractSettingPanel {
     public static final String USE_WINE = "useWine";
     public static final String WINE_PATH = "winePath";
     public static final String SEND_PATIENT_INFO = "sendPatientInfo";
-    public static final String PVT_ON_SERVER = "pvtOnServer";
+    //public static final String PVT_ON_SERVER = "pvtOnServer";
     public static final String FEV_ON_SERVER = "fevOnServer";
 
     public static final String FOLLOW_MEDICOM = "followMedicom";
@@ -66,6 +67,7 @@ public class MiscSettingPanel extends AbstractSettingPanel {
     public static final String PACS_LOCAL_AE = "pacsClientAE";
     public static final String PACS_USE_SUFFIXSEARCH = "pacsUseSuffixSearch";
     public static final String PACS_WEASIS_ADDRESS = "weasisAddress";
+    public static final String PACS_OSIRIX_ADDRESS = "osirixAddress";
     
     //public static final String USE_JMS = "useJms";
     public static final String RP_OUT = "rp.out";
@@ -81,6 +83,16 @@ public class MiscSettingPanel extends AbstractSettingPanel {
     public static final String ZEBRA_COLOR = "zebraColor";
     public static final String HL7_FORMAT = "hl7format";
     public static final String USE_JERSEY = "useJersey";
+    public static final String USE_WEBSOCKET = "useWebsocket";
+    
+    public static final String UI_FONT_SIZE = "uiFontSize";
+    public static final String UI_FONT_NAME = "uiFontName";
+    public static final String UI_FONT_STYLE = "uiFontStyle";
+    public static final String STAMP_FONT_SIZE = "stampFontSize";
+    public static final String STAMP_FONT_NAME = "stampFontName";
+    public static final String STAMP_FONT_STYLE = "stampFontStyle";
+    
+    public static final String ORCA_MED_USE_API = "orcaMedUseApi";
 
     // preferencesのdefault
     public static final String DEFAULT_LBLPRT_ADDRESS = null;
@@ -116,6 +128,7 @@ public class MiscSettingPanel extends AbstractSettingPanel {
     public static final String DEFAULT_PACS_LOCAL_AE = "Dolphin1";
     public static final int DEFAULT_PACS_LOCAL_PORT = 8104;
     public static final String DEFAULT_PACS_WEASIS_ADDRESS = ""; // "http://localhost:8080"
+    public static final String DEFAULT_PACS_OSIRIX_ADDRESS = "";
     public static final boolean DEFAULT_USE_JMS = false;
 
     public static final int DEFAULT_KARTE_SCROLL = 0;
@@ -129,6 +142,16 @@ public class MiscSettingPanel extends AbstractSettingPanel {
     
     public static final String DEFAULT_HL7_FORMAT = "wakayama";
     public static final boolean DEFAULT_USE_JERSEY = true;
+    public static final boolean DEFAULT_USE_WEBSOCKET = false;
+    
+    public static final int DEFAULT_UI_FONT_SIZE = 13;
+    public static final String DEFAULT_UI_FONT_NAME = Font.SANS_SERIF;
+    public static final int DEFAULT_UI_FONT_STYLE = Font.PLAIN;
+    public static final int DEFAULT_STAMP_FONT_SIZE = 12;
+    public static final String DEFAULT_STAMP_FONT_NAME = Font.SANS_SERIF;
+    public static final int DEFAULT_STAMP_FONT_STYLE = Font.PLAIN;
+    
+    public static final boolean DEFAULT_ORCA_MED_USE_API = false;
 
     // GUI staff
     private JTextField tf_lblPrtAddress;
@@ -156,7 +179,7 @@ public class MiscSettingPanel extends AbstractSettingPanel {
     private JLabel lbl_fev70;
     private JLabel lbl_fevShareFolder;
     
-    private JCheckBox cb_PvtOnServer;
+    //private JCheckBox cb_PvtOnServer;
     private JCheckBox cb_FevOnServer;
     
     private JButton btn_discardSize;
@@ -194,10 +217,12 @@ public class MiscSettingPanel extends AbstractSettingPanel {
     private JLabel lbl_localHost;
     private JLabel lbl_localPort;
     private JLabel lbl_localAE;
+    private JTextField tf_osirix;
     
     private JTextField tf_zebra;
     private JLabel lbl_color;
     
+    private JCheckBox cb_orcaMedUseApi;
     private JRadioButton rb_falcoHl7;
     private JRadioButton rb_wakayamaHl7;
     private JCheckBox cb_sendLaboTest;
@@ -206,10 +231,20 @@ public class MiscSettingPanel extends AbstractSettingPanel {
     
     private JButton btn_hsInit;
     
-    private JRadioButton rb_jersey;
-    private JRadioButton rb_resteasy;
+    //private JRadioButton rb_jersey;
+    //private JRadioButton rb_resteasy;
+    private JRadioButton rb_comet;
+    private JRadioButton rb_websocket;
 
     
+    private JComboBox cmb_UiFontName;
+    private JComboBox cmb_UiFontSize;
+    private JComboBox cmb_UiFontStyle;
+    private JComboBox cmb_StampFontName;
+    private JComboBox cmb_StampFontSize;
+    private JComboBox cmb_StampFontStyle;
+    private JButton btn_UiDefault;
+
     /** 画面モデル */
     private MiscModel model;
     private StateMgr stateMgr;
@@ -244,6 +279,8 @@ public class MiscSettingPanel extends AbstractSettingPanel {
     public void save() {
         bindViewToModel();
         model.restore();
+        
+        FontManager.updateFonts();
     }
 
     /**
@@ -339,7 +376,7 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         gbl.add(label, 1, row, GridBagConstraints.WEST);
 
         row++;
-        label = new JLabel("基本料スタンプ機能を使用する");
+        label = new JLabel("カルテ保存時内科向け算定チェックする");
         cb_Santei = new JCheckBox();
         gbl.add(cb_Santei, 0, row, GridBagConstraints.EAST);
         gbl.add(label, 1, row, GridBagConstraints.WEST);
@@ -436,11 +473,11 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         JPanel inspector = gbl.getProduct();
         
         gbl = new GridBagBuilder("サーバー設定");
-        cb_PvtOnServer = new JCheckBox("PVT受信登録処理をサーバーで行う");
+        //cb_PvtOnServer = new JCheckBox("PVT受信登録処理をサーバーで行う");
         cb_FevOnServer = new JCheckBox("FEV患者登録処理をサーバーで行う");
         cb_FevOnServer.setToolTipText("出力先フォルダは設定１で入力してください");
-        gbl.add(cb_PvtOnServer, 0, 0, GridBagConstraints.CENTER);
-        gbl.add(cb_FevOnServer, 0, 1, GridBagConstraints.CENTER);
+        //gbl.add(cb_PvtOnServer, 0, 0, GridBagConstraints.CENTER);
+        gbl.add(cb_FevOnServer, 0, 0, GridBagConstraints.CENTER);
         JPanel pvt = gbl.getProduct();
         
         gbl = new GridBagBuilder("カルテスクロール");
@@ -554,6 +591,10 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         tf_pacsLocalPort = GUIFactory.createTextField(5, null, null, null);
         tf_pacsLocalAE = GUIFactory.createTextField(15, null, null, null);
         tf_weasis = GUIFactory.createTextField(15, null, null, null);
+        tf_osirix = GUIFactory.createTextField(15, null, null, null);
+        // tooltip
+        tf_weasis.setToolTipText("http://{weasisのIP]:{port}");
+        tf_osirix.setToolTipText("http://{osirixのIP]:{port}");
 
         row = 0;
         label = new JLabel("PACS接続機能を利用する");
@@ -605,23 +646,29 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         gbl.add(cb_SuffixSearch, 0, row, GridBagConstraints.EAST);
         JPanel search = gbl.getProduct();
         
-        gbl = new GridBagBuilder("Weasis設定");
-        row = 0;
+        gbl = new GridBagBuilder("Pacs viewer設定");
         JLabel lbl_weasis = new JLabel("Weasisアドレス:");
-        gbl.add(lbl_weasis, 0, row, GridBagConstraints.EAST);
-        gbl.add(tf_weasis, 1, row, GridBagConstraints.WEST);
-        JPanel weasis = gbl.getProduct();
+        gbl.add(lbl_weasis, 0, 0, GridBagConstraints.EAST);
+        gbl.add(tf_weasis, 1, 0, GridBagConstraints.WEST);
+        JLabel lbl_osirix = new JLabel("Osirix XML-RPC URL:");
+        gbl.add(lbl_osirix, 0, 1, GridBagConstraints.EAST);
+        gbl.add(tf_osirix, 1, 1, GridBagConstraints.WEST);
+        JPanel pacsViewer = gbl.getProduct();
     
-
         // 全体レイアウト
         gbl = new GridBagBuilder();
         gbl.add(server, 0, 0, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
         gbl.add(client, 0, 1, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
         gbl.add(search, 0, 2, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
-        gbl.add(weasis, 0, 3, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
+        gbl.add(pacsViewer, 0, 3, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
         JPanel pacsSetting = gbl.getProduct();
 
         // 設定３
+        // orcaMed
+        gbl = new GridBagBuilder("ORCA処方参照");
+        cb_orcaMedUseApi = new JCheckBox("ORCA APIを利用する");
+        gbl.add(cb_orcaMedUseApi, 0, 0, GridBagConstraints.CENTER);
+        JPanel orcaMed = gbl.getProduct();
         // Labo
         gbl = new GridBagBuilder("ラボ");
         row = 0;
@@ -663,6 +710,62 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         gbl.add(btn_openFalcoPath, 2, row, GridBagConstraints.WEST);
         JPanel labo = gbl.getProduct();
         
+        // HibernateSearch
+        gbl = new GridBagBuilder("HibernateSearch");
+        btn_hsInit = new JButton("初期インデックス作成");
+        btn_hsInit.addActionListener(new ActionListener(){
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                InitHibernateSearchIndex ihsi = new InitHibernateSearchIndex();
+                ihsi.start(getContext());
+            }
+        });
+        gbl.add(btn_hsInit, 0, 0, GridBagConstraints.CENTER);
+        JPanel hs = gbl.getProduct();
+/*
+        // client REST
+        gbl = new GridBagBuilder("クライアントJAX-RS");
+        rb_jersey = new JRadioButton("Jersey");
+        rb_resteasy = new JRadioButton("RESTEasy");
+        ButtonGroup bgRest = new ButtonGroup();
+        bgRest.add(rb_jersey);
+        bgRest.add(rb_resteasy);
+
+        JPanel pnlRest = new JPanel();
+        pnlRest.setLayout(new FlowLayout());
+        pnlRest.add(rb_jersey);
+        pnlRest.add(rb_resteasy);
+
+        gbl.add(pnlRest, 0, row, GridBagConstraints.CENTER);
+        JPanel rest = gbl.getProduct();
+*/
+        // comet / websocket
+        gbl = new GridBagBuilder("チャート状態同期");
+        rb_comet = new JRadioButton("Comet");
+        rb_websocket = new JRadioButton("WebSocket");
+        ButtonGroup bgSync = new ButtonGroup();
+        bgSync.add(rb_comet);
+        bgSync.add(rb_websocket);
+
+        JPanel pnlSync = new JPanel();
+        pnlSync.setLayout(new FlowLayout());
+        pnlSync.add(rb_comet);
+        pnlSync.add(rb_websocket);
+
+        gbl.add(pnlSync, 0, row, GridBagConstraints.CENTER);
+        JPanel sync = gbl.getProduct();
+        
+        // 全体レイアウト
+        gbl = new GridBagBuilder();
+        gbl.add(orcaMed, 0, 0, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
+        gbl.add(labo, 0, 1, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
+        gbl.add(hs, 0, 2, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
+        //gbl.add(rest, 0, 3, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
+        gbl.add(sync, 0, 3, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
+        JPanel setting3 = gbl.getProduct();
+        
+        // UI設定
         // 色
         gbl = new GridBagBuilder("表ストライプの色");
         tf_zebra = GUIFactory.createTextField(15, null, null, null);
@@ -701,50 +804,71 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         gbl.add(defaultColorBtn, 1, 1, GridBagConstraints.CENTER);
         JPanel color = gbl.getProduct();
         
-        // HibernateSearch
-        gbl = new GridBagBuilder("HibernateSearch");
-        btn_hsInit = new JButton("初期インデックス作成");
-        btn_hsInit.addActionListener(new ActionListener(){
+        // フォント
+        gbl = new GridBagBuilder("ＵＩフォント設定");
+        String[] fontNames = getFontNames();
+        cmb_UiFontName = new JComboBox();
+        cmb_StampFontName = new JComboBox();
+        for (String fontName : fontNames) {
+            cmb_UiFontName.addItem(fontName);
+            cmb_StampFontName.addItem(fontName);
+        }
+        cmb_UiFontSize = new JComboBox();
+        cmb_StampFontSize = new JComboBox();
+        final int[] fontSizes = FontManager.getFontSizes();
+        for (int fontSize : fontSizes) {
+            cmb_UiFontSize.addItem(fontSize);
+            cmb_StampFontSize.addItem(fontSize);
+        }
+        final String[] fontStyles = {"PLAIN", "BOLD", "ITALIC"};
+        cmb_UiFontStyle = new JComboBox();
+        cmb_StampFontStyle = new JComboBox();
+        for (String style : fontStyles) {
+            cmb_UiFontStyle.addItem(style);
+            cmb_StampFontStyle.addItem(style);
+        }
+        // style変更はやめとく
+        cmb_UiFontStyle.setVisible(false);
+        cmb_StampFontStyle.setVisible(false);
+         
+        btn_UiDefault = new JButton("デフォルト");
+        btn_UiDefault.addActionListener(new ActionListener(){
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                InitHibernateSearchIndex ihsi = new InitHibernateSearchIndex();
-                ihsi.start(getContext());
+                cmb_UiFontName.setSelectedItem(DEFAULT_UI_FONT_NAME);
+                cmb_UiFontSize.setSelectedItem(DEFAULT_UI_FONT_SIZE);
+                cmb_UiFontStyle.setSelectedIndex(0);
+                cmb_StampFontName.setSelectedItem(DEFAULT_STAMP_FONT_NAME);
+                cmb_StampFontSize.setSelectedItem(DEFAULT_STAMP_FONT_SIZE);
+                cmb_StampFontStyle.setSelectedIndex(0);
+                
             }
         });
-        gbl.add(btn_hsInit, 0, 0, GridBagConstraints.CENTER);
-        JPanel hs = gbl.getProduct();
         
-        // client REST
-        gbl = new GridBagBuilder("クライアントJAX-RS");
-        rb_jersey = new JRadioButton("Jersey");
-        rb_resteasy = new JRadioButton("RESTEasy");
-        ButtonGroup bgRest = new ButtonGroup();
-        bgRest.add(rb_jersey);
-        bgRest.add(rb_resteasy);
+        gbl.add(new JLabel("カルテ"), 0, 0, GridBagConstraints.CENTER);
+        gbl.add(cmb_UiFontName, 1, 0, GridBagConstraints.CENTER);
+        gbl.add(cmb_UiFontSize, 2, 0, GridBagConstraints.CENTER);
+        gbl.add(cmb_UiFontStyle, 3, 0, GridBagConstraints.CENTER);
+        gbl.add(new JLabel("スタンプ"), 0, 1, GridBagConstraints.CENTER);
+        gbl.add(cmb_StampFontName, 1, 1, GridBagConstraints.CENTER);
+        gbl.add(cmb_StampFontSize, 2, 1, GridBagConstraints.CENTER);
+        gbl.add(cmb_StampFontStyle, 3, 1, GridBagConstraints.CENTER);
+        gbl.add(btn_UiDefault, 1, 2, GridBagConstraints.CENTER);
+        JPanel font = gbl.getProduct();
 
-        JPanel pnlRest = new JPanel();
-        pnlRest.setLayout(new FlowLayout());
-        pnlRest.add(rb_jersey);
-        pnlRest.add(rb_resteasy);
-
-        gbl.add(pnlRest, 0, row, GridBagConstraints.CENTER);
-        JPanel rest = gbl.getProduct();
-
-        
         // 全体レイアウト
         gbl = new GridBagBuilder();
         gbl.add(color, 0, 0, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
-        gbl.add(labo, 0, 1, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
-        gbl.add(hs, 0, 2, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
-        gbl.add(rest, 0, 3, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
-        JPanel setting3 = gbl.getProduct();
+        gbl.add(font, 0, 1, GridBagConstraints.HORIZONTAL, 1.0, 0.0);
+        JPanel uiSetting = gbl.getProduct();
         
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.addTab("設定１", setting);
         tabbedPane.addTab("設定２", setting2);
         tabbedPane.addTab("設定３", setting3);
         //tabbedPane.addTab("RS_Base", settingRSB);
+        tabbedPane.addTab("ＵＩ", uiSetting);
         tabbedPane.addTab("PACS", pacsSetting);
 
         getUI().setLayout(new BorderLayout());
@@ -951,7 +1075,7 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         tf_rsbBrowserPath.setText(val);
 */
         // PVT
-        cb_PvtOnServer.setSelected(model.pvtOnServer);
+        //cb_PvtOnServer.setSelected(model.pvtOnServer);
         cb_FevOnServer.setSelected(model.fevOnServer);
         // Pacs
         cb_UsePacs.setSelected(model.usePacs);
@@ -977,6 +1101,9 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         val = String.valueOf(model.weasisAddress);
         val = val != null ? val : "";
         tf_weasis.setText(val);
+        val = String.valueOf(model.osirixAddress);
+        val = val != null ? val : "";
+        tf_osirix.setText(val);
 
         // 色
         val = String.valueOf(model.zebraColor);
@@ -1001,11 +1128,29 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         val = val != null ? val : "";
         tf_falcoOutputPath.setText(val);
         
+        // orcaMed
+        cb_orcaMedUseApi.setSelected(model.orcaMedUseApi);
+/*
         // rest
         if (model.useJersey) {
             rb_jersey.setSelected(true);
         } else {
             rb_resteasy.setSelected(true);
+        }
+*/
+        // UI
+        cmb_UiFontName.setSelectedItem(model.uiFontName);
+        cmb_UiFontSize.setSelectedItem(model.uiFontSize);
+        cmb_UiFontStyle.setSelectedIndex(model.uiFontStyle);
+        cmb_StampFontName.setSelectedItem(model.stampFontName);
+        cmb_StampFontSize.setSelectedItem(model.stampFontSize);
+        cmb_StampFontStyle.setSelectedIndex(model.stampFontStyle);
+        
+        // Chart sync
+        if (model.useWebsocket) {
+            rb_websocket.setSelected(true);
+        } else {
+            rb_comet.setSelected(true);
         }
     }
 
@@ -1058,7 +1203,7 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         model.rsbBrowserPath = tf_rsbBrowserPath.getText().trim();
 */
         // PVT
-        model.pvtOnServer = cb_PvtOnServer.isSelected();
+        //model.pvtOnServer = cb_PvtOnServer.isSelected();
         model.fevOnServer = cb_FevOnServer.isSelected();
         
         // Pacs
@@ -1071,6 +1216,7 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         model.localAE = tf_pacsLocalAE.getText().trim();
         model.localPort = Integer.valueOf(tf_pacsLocalPort.getText());
         model.weasisAddress = tf_weasis.getText().trim();
+        model.osirixAddress = tf_osirix.getText().trim();
 
         // Chart stateをサーバーと同期
         //model.useJms = cb_useJms.isSelected();
@@ -1086,8 +1232,22 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         model.falcoFacilityId = tf_falcoFacilityId.getText().trim();
         model.falcoOutputPath = tf_falcoOutputPath.getText().trim();
         
+        // orcaMed
+        model.orcaMedUseApi = cb_orcaMedUseApi.isSelected();
+        
         // rest
-        model.useJersey = rb_jersey.isSelected();
+        //model.useJersey = rb_jersey.isSelected();
+        
+        // UI
+        model.uiFontName = (String) cmb_UiFontName.getSelectedItem();
+        model.uiFontSize = (int) cmb_UiFontSize.getSelectedItem();
+        model.uiFontStyle = cmb_UiFontStyle.getSelectedIndex();
+        model.stampFontName = (String) cmb_StampFontName.getSelectedItem();
+        model.stampFontSize = (int) cmb_StampFontSize.getSelectedItem();
+        model.stampFontStyle = cmb_StampFontStyle.getSelectedIndex();
+        
+        // Chart sync
+        model.useWebsocket = rb_websocket.isSelected();
     }
 
     /**
@@ -1130,6 +1290,7 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         private int localPort;
         private String localAE;
         private String weasisAddress;
+        private String osirixAddress;
         
         private String zebraColor;
         
@@ -1137,8 +1298,17 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         private String hl7Format;
         private String falcoOutputPath;
         private String falcoFacilityId;
+        private boolean orcaMedUseApi;
         
         private boolean useJersey;
+        private boolean useWebsocket;
+        
+        private String uiFontName;
+        private int uiFontSize;
+        private int uiFontStyle;
+        private String stampFontName;
+        private int stampFontSize;
+        private int stampFontStyle;
 
         public void populate() {
 
@@ -1175,7 +1345,7 @@ public class MiscSettingPanel extends AbstractSettingPanel {
             rsbBrowserPath = Project.getString(RSB_BROWSER_PATH, DEFAULT_RSB_BROWSER_PATH);
 */
             // PVT
-            pvtOnServer = Project.getBoolean(PVT_ON_SERVER, DEFAULT_PVT_ON_SERVER);
+            //pvtOnServer = Project.getBoolean(PVT_ON_SERVER, DEFAULT_PVT_ON_SERVER);
             fevOnServer = Project.getBoolean(FEV_ON_SERVER, DEFAULT_FEV_ON_SERVER);
             
             // Pacs
@@ -1188,6 +1358,7 @@ public class MiscSettingPanel extends AbstractSettingPanel {
             localPort = Project.getInt(PACS_LOCAL_PORT, DEFAULT_PACS_LOCAL_PORT);
             localAE = Project.getString(PACS_LOCAL_AE, DEFAULT_PACS_LOCAL_AE);
             weasisAddress = Project.getString(PACS_WEASIS_ADDRESS, DEFAULT_PACS_WEASIS_ADDRESS);
+            osirixAddress = Project.getString(PACS_OSIRIX_ADDRESS, DEFAULT_PACS_OSIRIX_ADDRESS);
 
             // Chart stateをサーバーと同期
             //useJms = Project.getBoolean(RP_OUT, DEFAULT_USE_JMS);
@@ -1201,8 +1372,21 @@ public class MiscSettingPanel extends AbstractSettingPanel {
             falcoFacilityId = Project.getString(Project.SEND_LABTEST_FACILITY_ID, "");
             falcoOutputPath = Project.getString(Project.SEND_LABTEST_PATH, "");
             
+            // orca med
+            orcaMedUseApi = Project.getBoolean(ORCA_MED_USE_API, DEFAULT_ORCA_MED_USE_API);
             // rest
             useJersey = Project.getBoolean(USE_JERSEY, DEFAULT_USE_JERSEY);
+            
+            // UI
+            uiFontName = Project.getString(UI_FONT_NAME, DEFAULT_UI_FONT_NAME);
+            uiFontSize = Project.getInt(UI_FONT_SIZE, DEFAULT_UI_FONT_SIZE);
+            uiFontStyle = Project.getInt(UI_FONT_STYLE, DEFAULT_UI_FONT_STYLE);
+            stampFontName = Project.getString(STAMP_FONT_NAME, DEFAULT_STAMP_FONT_NAME);
+            stampFontSize = Project.getInt(STAMP_FONT_SIZE, DEFAULT_STAMP_FONT_SIZE);
+            stampFontStyle = Project.getInt(STAMP_FONT_STYLE, DEFAULT_STAMP_FONT_STYLE);
+            
+            // Chart sync
+            useWebsocket = Project.getBoolean(USE_WEBSOCKET, DEFAULT_USE_WEBSOCKET);
         }
 
         public void restore() {
@@ -1234,7 +1418,7 @@ public class MiscSettingPanel extends AbstractSettingPanel {
             Project.setString(RSB_BROWSER_PATH, rsbBrowserPath);
 */
             // PVT
-            Project.setBoolean(PVT_ON_SERVER, pvtOnServer);
+            //Project.setBoolean(PVT_ON_SERVER, pvtOnServer);
             Project.setBoolean(FEV_ON_SERVER, fevOnServer);
             
             // Pacs
@@ -1247,6 +1431,7 @@ public class MiscSettingPanel extends AbstractSettingPanel {
             Project.setBoolean(USE_PACS ,usePacs);
             Project.setBoolean(PACS_USE_SUFFIXSEARCH, useSuffixSearch);
             Project.setString(PACS_WEASIS_ADDRESS, weasisAddress);
+            Project.setString(PACS_OSIRIX_ADDRESS, osirixAddress);
 
             // Chart stateをサーバーと同期
             //Project.setBoolean(USE_JMS, useJms);
@@ -1260,8 +1445,22 @@ public class MiscSettingPanel extends AbstractSettingPanel {
             Project.setString(Project.SEND_LABTEST_FACILITY_ID, falcoFacilityId);
             Project.setString(Project.SEND_LABTEST_PATH, falcoOutputPath);
             
+            // orcaMed
+            Project.setBoolean(ORCA_MED_USE_API, orcaMedUseApi);
+            
             // rest
             Project.setBoolean(USE_JERSEY, useJersey);
+            
+            // UI
+            Project.setString(UI_FONT_NAME, uiFontName);
+            Project.setInt(UI_FONT_SIZE, uiFontSize);
+            Project.setInt(UI_FONT_STYLE, uiFontStyle);
+            Project.setString(STAMP_FONT_NAME, stampFontName);
+            Project.setInt(STAMP_FONT_SIZE, stampFontSize);
+            Project.setInt(STAMP_FONT_STYLE, stampFontStyle);
+            
+            // Chart sync
+            Project.setBoolean(USE_WEBSOCKET, useWebsocket);
         }
     }
 
@@ -1393,5 +1592,11 @@ public class MiscSettingPanel extends AbstractSettingPanel {
         } catch (NullPointerException | NumberFormatException e) {
         }
         return c;
+    }
+    
+    private String[] getFontNames() {
+        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        String[] fontNames =  ge.getAvailableFontFamilyNames();
+        return fontNames;
     }
 }

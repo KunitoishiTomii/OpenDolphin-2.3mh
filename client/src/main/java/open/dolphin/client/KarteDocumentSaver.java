@@ -9,7 +9,19 @@ import open.dolphin.common.util.BeanUtils;
 import open.dolphin.common.util.ZenkakuUtils;
 import open.dolphin.delegater.DocumentDelegater;
 import open.dolphin.helper.DBTask;
-import open.dolphin.infomodel.*;
+import open.dolphin.infomodel.AccessRightModel;
+import open.dolphin.infomodel.AdmissionModel;
+import open.dolphin.infomodel.ClaimBundle;
+import open.dolphin.infomodel.ClaimItem;
+import open.dolphin.infomodel.DocInfoModel;
+import open.dolphin.infomodel.DocumentModel;
+import open.dolphin.infomodel.ExtRefModel;
+import open.dolphin.infomodel.IInfoModel;
+import open.dolphin.infomodel.KarteBean;
+import open.dolphin.infomodel.ModuleInfoBean;
+import open.dolphin.infomodel.ModuleModel;
+import open.dolphin.infomodel.ProgressCourse;
+import open.dolphin.infomodel.SchemaModel;
 import open.dolphin.project.Project;
 import open.dolphin.util.ImageTool;
 
@@ -96,7 +108,8 @@ public class KarteDocumentSaver implements IInfoModel {
                 editor.saveDoubleDone(params, savedInfo);
                 
                 // カルテ内容を送信する
-                KarteContentSender.getInstance().sendKarte(chart, docModel);
+                KarteContentSender sender = new KarteContentSender();
+                sender.sendKarte(chart, docModel);
             }
         };
 

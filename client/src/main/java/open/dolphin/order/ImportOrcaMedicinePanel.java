@@ -1,4 +1,3 @@
-
 package open.dolphin.order;
 
 import java.awt.BorderLayout;
@@ -11,6 +10,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -20,7 +20,10 @@ import open.dolphin.client.BlockGlass;
 import open.dolphin.client.ClientContext;
 import open.dolphin.dao.SqlMiscDao;
 import open.dolphin.helper.ComponentMemory;
+import open.dolphin.impl.orcaapi.OrcaApiDelegater;
 import open.dolphin.infomodel.IInfoModel;
+import open.dolphin.project.Project;
+import open.dolphin.setting.MiscSettingPanel;
 import open.dolphin.table.ListTableModel;
 import open.dolphin.table.StripeTableCellRenderer;
 
@@ -32,7 +35,7 @@ import open.dolphin.table.StripeTableCellRenderer;
 
 public class ImportOrcaMedicinePanel {
 
-    private static final int period = -6;  // うんヶ月前から
+    private static final int period = 6;  // うんヶ月前から
     private String patientId;
     private boolean importFlag = false;
     private static final String[] COLUMN_NAMES = {"診療内容", "数量", "単位", " ", "回数"};
@@ -52,16 +55,25 @@ public class ImportOrcaMedicinePanel {
     private JTable tbl_MasterItem;
     private JPanel view;
     private JDialog dialog;
+    
+    private final boolean useOrcaApi;
 
     public ImportOrcaMedicinePanel() {
         initComponents();
+        useOrcaApi = Project.getBoolean(MiscSettingPanel.ORCA_MED_USE_API, MiscSettingPanel.DEFAULT_ORCA_MED_USE_API);
     }
 
     public void enter(String ptid) {
 
         // 開始
         patientId = ptid;
-        getOrcaVisit();
+        if (useOrcaApi) {
+            // 投薬のない日も含まれてしまう
+            //getOrcaVisitApi();
+            getOrcaVisit();
+        } else {
+            getOrcaVisit();
+        }
         showDialog();
     }
 
@@ -105,15 +117,20 @@ public class ImportOrcaMedicinePanel {
 
 
     private void updateTable(final String ymd) {
+        
         // 処方内容テーブルを更新する
-        final SqlMiscDao dao = SqlMiscDao.getInstance();
-
         final SwingWorker worker = new SwingWorker<List<MasterItem>, Void>() {
 
             @Override
             protected List<MasterItem> doInBackground() throws Exception {
                 blockGlass.block();
-                return dao.getMedMasterItemFromOrca(patientId, ymd);
+                if (useOrcaApi) {
+                    final OrcaApiDelegater del = OrcaApiDelegater.getInstance();
+                    return del.getOrcaMed(patientId, ymd);
+                } else {
+                    final SqlMiscDao dao = SqlMiscDao.getInstance();
+                    return dao.getMedMasterItemFromOrca(patientId, ymd.replace("-", ""));
+                }
             }
 
             @Override
@@ -130,15 +147,16 @@ public class ImportOrcaMedicinePanel {
         };
         worker.execute();
     }
-
+    
     private void getOrcaVisit() {
+        
         // ORCAに記録されている受診日を取得する
         GregorianCalendar cal = new GregorianCalendar();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
         // 検索終了日は今
         final String endDate = sdf.format(cal.getTime());
         // 検索開始日は設定ヶ月前
-        cal.add(GregorianCalendar.MONTH, period);
+        cal.add(GregorianCalendar.MONTH, -period);
         final String startDate = sdf.format(cal.getTime());
         // ORCAに記録されている受診日を取得
         final SqlMiscDao dao = SqlMiscDao.getInstance();
@@ -154,6 +172,50 @@ public class ImportOrcaMedicinePanel {
             protected void done() {
                 try {
                     List<String> result = get();
+                    // combo boxに登録
+                    cb_YMD.removeAllItems();
+                    for (String item : result) {
+                        cb_YMD.addItem(item);
+                    }
+                    if (cb_YMD.getItemCount() > 0) {
+                        cb_YMD.setSelectedIndex(0);
+                    }
+                } catch (InterruptedException | ExecutionException ex) {
+                }
+            }
+        };
+        worker.execute();
+    }
+
+    private void getOrcaVisitApi() {
+        
+        final SwingWorker worker = new SwingWorker<List<String>, Void>() {
+
+            @Override
+            protected List<String> doInBackground() throws Exception {
+                // ORCAに記録されている受診日を取得する
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                GregorianCalendar gc = new GregorianCalendar();
+                gc.set(GregorianCalendar.DAY_OF_MONTH, 1);
+
+                List<String> visits = new ArrayList<>();
+                OrcaApiDelegater del = OrcaApiDelegater.getInstance();
+                for (int i = 0; i < 6; ++i) {
+                    String ymd = sdf.format(gc.getTime());
+                    try {
+                        visits.addAll(del.getOrcaVisit(patientId, ymd));
+                    } catch (Exception ex) {
+                    }
+                    gc.add(GregorianCalendar.MONTH, -1);
+                }
+                return visits;
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    List<String> result = get();
+                    Collections.sort(result, Collections.reverseOrder());
                     // combo boxに登録
                     cb_YMD.removeAllItems();
                     for (String item : result) {
@@ -188,7 +250,7 @@ public class ImportOrcaMedicinePanel {
         btn_SelectAll = new JButton("全選択");
         cb_YMD = new JComboBox();
         cb_YMD.setMaximumSize(new Dimension(150, 40));  // てきとー
-        lbl_Name = new JLabel(label.replace("うん", String.valueOf(-period)));
+        lbl_Name = new JLabel(label.replace("うん", String.valueOf(period)));
         lbl_Copyright = new JLabel("Masuda Naika, Wakayama City");
 
 

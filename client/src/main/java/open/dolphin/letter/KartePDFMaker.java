@@ -18,10 +18,21 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import open.dolphin.client.ClientContext;
-import open.dolphin.infomodel.*;
+import open.dolphin.common.util.SchemaNumberComparator;
 import open.dolphin.project.Project;
 import open.dolphin.common.util.StampRenderingHints;
 import open.dolphin.common.util.XmlUtils;
+import open.dolphin.infomodel.AdmissionModel;
+import open.dolphin.infomodel.BundleDolphin;
+import open.dolphin.infomodel.BundleMed;
+import open.dolphin.infomodel.ClaimItem;
+import open.dolphin.infomodel.DocInfoModel;
+import open.dolphin.infomodel.DocumentModel;
+import open.dolphin.infomodel.IInfoModel;
+import open.dolphin.infomodel.ModelUtils;
+import open.dolphin.infomodel.ModuleModel;
+import open.dolphin.infomodel.ProgressCourse;
+import open.dolphin.infomodel.SchemaModel;
 import open.dolphin.util.AgeCalculator;
 
 
@@ -172,7 +183,7 @@ public class KartePDFMaker extends AbstractPDFMaker {
                 Collections.sort(soaModules);
                 Collections.sort(pModules);
                 if (schemas != null) {
-                    Collections.sort(schemas);
+                    Collections.sort(schemas, new SchemaNumberComparator());
                 }
 
                 // テーブルを作成する
@@ -376,6 +387,8 @@ public class KartePDFMaker extends AbstractPDFMaker {
         private String italic;
         private String underline;
         
+        private boolean componentFlg;
+        
         private final StampRenderingHints hints;
         private final BaseFont baseFont;
         
@@ -425,11 +438,12 @@ public class KartePDFMaker extends AbstractPDFMaker {
         private void startElement(XMLStreamReader reader) throws XMLStreamException {
             
             String eName = reader.getLocalName();
-
+            
             switch (eName) {
                 case PARAGRAPH_NAME:
                     String alignStr = reader.getAttributeValue(null, ALIGNMENT_NAME);
                     startParagraph(alignStr);
+                    componentFlg = false;
                     break;
                 case CONTENT_NAME:
                     foreground = reader.getAttributeValue(null, FOREGROUND_NAME);
@@ -441,11 +455,13 @@ public class KartePDFMaker extends AbstractPDFMaker {
                 case TEXT_NAME:
                     String text = reader.getElementText();
                     startContent(text);
+                    componentFlg = false;
                     break;
                 case COMPONENT_NAME:
                     String name = reader.getAttributeValue(null, NAME_NAME);
                     String number = reader.getAttributeValue(null, COMPONENT_NAME);
                     startComponent(name, number);
+                    componentFlg = true;
                     break;
                 //case SECTION_NAME:
                 //    break;
@@ -517,8 +533,12 @@ public class KartePDFMaker extends AbstractPDFMaker {
             }
 
             // テキストを挿入する
-            if (!text.trim().isEmpty()) {  // スタンプで改行されないために
+            if (!(text.trim().isEmpty() && componentFlg)) {  // スタンプで改行されないために
                 theParagraph.add(new Chunk(text));
+                float leading = theParagraph.getLeading();
+                if (leading < font.getSize()) {
+                    theParagraph.setLeading(font.getSize());
+                }
             }
         }
 
@@ -534,6 +554,10 @@ public class KartePDFMaker extends AbstractPDFMaker {
                         ModuleModel stamp = modules.get(index);
                         StampTableMaker maker = new StampTableMaker();
                         pTable = maker.createTable(stamp);
+                        // サマリーの場合スタンプが広がりすぎないようにする
+                        if (karteTable.getColumnCount() == 1) {
+                            pTable.setWidthPercentage(50);
+                        }
                         break;
                     }
                     case SCHEMA_HOLDER: {
@@ -574,7 +598,7 @@ public class KartePDFMaker extends AbstractPDFMaker {
                     int percentage = Math.min(PERCENTAGE_IMAGE_WIDTH * karteTable.getColumnCount(), 100);
                     table.setWidthPercentage(percentage);
                     // SchemaModelからjpeg imageを取得
-                    Image image = Image.getInstance(schema.getJpegByte());
+                    Image image = Image.getInstance(schema.getIcon().getImage(), null);
                     // セルにimageを設定
                     PdfPCell pcell = new PdfPCell(image, true);
                     pcell.setBorder(Rectangle.NO_BORDER);

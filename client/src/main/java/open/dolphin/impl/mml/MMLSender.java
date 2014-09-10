@@ -47,11 +47,9 @@ public class MMLSender implements IKarteSender {
     }
     
     @Override
-    public void removeListeners() {
+    public void removeListener(PropertyChangeListener listener) {
         if (boundSupport != null) {
-            for (PropertyChangeListener listener : boundSupport.getPropertyChangeListeners()) {
-                boundSupport.removePropertyChangeListener(KarteSenderResult.PROP_KARTE_SENDER_RESULT, listener);
-            }
+            boundSupport.removePropertyChangeListener(KarteSenderResult.PROP_KARTE_SENDER_RESULT, listener);
         }
     }
 

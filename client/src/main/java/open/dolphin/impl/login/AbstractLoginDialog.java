@@ -1,7 +1,5 @@
 package open.dolphin.impl.login;
 
-import java.awt.Dimension;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -23,6 +21,11 @@ import open.dolphin.setting.ProjectSettingDialog;
  */
 public abstract class AbstractLoginDialog implements ILoginDialog {
     
+    public class LoginResult{
+        public LoginStatus result;
+        public String      ip;
+    };
+
 //masuda^
     //protected JDialog dialog;
     protected JFrame dialog;
@@ -36,7 +39,7 @@ public abstract class AbstractLoginDialog implements ILoginDialog {
     protected SimpleWorker worker;
     
     // 認証結果のプロパティ
-    protected LoginStatus result;
+    protected LoginResult result;
     protected PropertyChangeSupport boundSupport;
 
     protected Action loginAction;
@@ -48,6 +51,7 @@ public abstract class AbstractLoginDialog implements ILoginDialog {
      */
     public AbstractLoginDialog() {
         boundSupport = new PropertyChangeSupport(this);
+        result       = new LoginResult();
     }
     
     /**
@@ -73,15 +77,21 @@ public abstract class AbstractLoginDialog implements ILoginDialog {
      * @return true 認証が成功した場合
      */
     public LoginStatus getResult() {
-        return result;
+        return result.result;
     }
 
     public void setResult(LoginStatus value) {
-        this.result = value;
+        this.result.result = value;
+        this.result.ip     = "";
         boundSupport.firePropertyChange("LOGIN_PROP", -100, this.result);
     }
 
-    /**
+    public void setResultWithIp(LoginStatus value, String gotIpAddr) {
+        this.result.result = value;
+        this.result.ip     = gotIpAddr;
+        boundSupport.firePropertyChange("LOGIN_PROP", -100, this.result);
+    }
+   /**
      * 警告メッセージを表示する。
      * @param msg 表示するメッセージ
      */
@@ -154,13 +164,7 @@ public abstract class AbstractLoginDialog implements ILoginDialog {
         // 中央へ表示する。（EDT からコールされている）
         //-------------------------------------
         dialog.pack();
-        int width = dialog.getWidth();
-        int height = dialog.getHeight();
-        Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
-        int n = ClientContext.isMac() ? 3 : 2;
-        int left = (screen.width - width) / 2;
-        int top = (screen.height - height) / n;
-        dialog.setLocation(left, top);
+        dialog.setLocationRelativeTo(null);
         dialog.setVisible(true);
 //masuda^
         SwingUtilities.invokeLater(new Runnable() {

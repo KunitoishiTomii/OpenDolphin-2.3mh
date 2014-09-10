@@ -428,11 +428,7 @@ public class DocumentHistory {
 
         // ソーティングする
         if (newHistory != null && !newHistory.isEmpty()) {
-            if (ascending) {
-                Collections.sort(newHistory);
-            } else {
-                Collections.sort(newHistory, Collections.reverseOrder());
-            }
+            Collections.sort(newHistory, new KarteDocumentSorter(ascending));
         }
 
         // 文書履歴テーブルにデータの Arraylist を設定する

@@ -3,6 +3,7 @@ package open.dolphin.infomodel;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.GregorianCalendar;
 
 /**
  * ExamHistoryModel
@@ -214,5 +215,17 @@ public class ExamHistoryModel implements Serializable {
             str = str.substring(0, str.length() - 1);
         }
         extamTitle = str;
+    }
+    
+    public int getPastMonth() {
+        GregorianCalendar gc = new GregorianCalendar();
+        int year = gc.get(GregorianCalendar.YEAR);
+        int month = gc.get(GregorianCalendar.MONTH);
+        int ym1 = year *12 + month;
+        gc.setTime(examDate);
+        year = gc.get(GregorianCalendar.YEAR);
+        month = gc.get(GregorianCalendar.MONTH);
+        int ym2 = year * 12 + month;
+        return ym1 - ym2;
     }
 }

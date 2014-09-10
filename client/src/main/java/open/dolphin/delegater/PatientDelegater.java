@@ -71,7 +71,7 @@ public class  PatientDelegater extends BusinessDelegater {
      */
     public PatientModel getPatientById(String pid) throws Exception {
         
-        String path = ID_RESOURCE;
+        String path = ID_RESOURCE + pid;
 
         Response response = getWebTarget()
                 .path(path)
@@ -171,7 +171,7 @@ public class  PatientDelegater extends BusinessDelegater {
 
         Response response = getWebTarget()
                 .path(path)
-                .queryParam(IDS, ids)
+                .queryParam("ids", ids)
                 .request(MEDIATYPE_JSON_UTF8)
                 .get();
 

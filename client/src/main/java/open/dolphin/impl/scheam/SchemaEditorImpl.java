@@ -150,7 +150,7 @@ public class SchemaEditorImpl implements SchemaEditor {
 
         int width = baseImage.getWidth();
         int height = baseImage.getHeight();
-        BufferedImage result = new BufferedImage(width, height, BufferedImage.TYPE_INT_BGR);
+        BufferedImage result = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
         Graphics2D g2 = result.createGraphics();
         // まず全部白く塗る
         Rectangle2D bounds = new Rectangle2D.Double(0, 0, width, height);
@@ -161,6 +161,10 @@ public class SchemaEditorImpl implements SchemaEditor {
 
         g2.drawImage(baseImage, null, 0, 0);
         for (DrawingHolder d : drawingList) d.draw(g2);
+//masuda^
+        g2.dispose();
+//masuda$
+        
         return result;
     }
 

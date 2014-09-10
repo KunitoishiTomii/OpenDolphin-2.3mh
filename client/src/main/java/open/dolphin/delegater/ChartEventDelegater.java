@@ -2,7 +2,6 @@ package open.dolphin.delegater;
 
 import java.util.concurrent.Future;
 import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.InvocationCallback;
 import javax.ws.rs.core.Response;
 import open.dolphin.client.Dolphin;
 import open.dolphin.infomodel.ChartEventModel;
@@ -61,18 +60,6 @@ public class ChartEventDelegater extends BusinessDelegater {
                 .async()
                 .get();
 
-        return future;
-    }
-    
-    public Future<Response> subscribe(InvocationCallback<Response> callback) {
-        
-        Future<Response> future = getAsyncWebTarget()
-                .path(SUBSCRIBE_PATH)
-                .request(MEDIATYPE_JSON_UTF8)
-                .header(CLIENT_UUID, clientUUID)
-                .async()
-                .get(callback);
-        
         return future;
     }
 

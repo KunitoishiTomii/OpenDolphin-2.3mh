@@ -12,8 +12,19 @@ import open.dolphin.client.ImageEntry;
 import open.dolphin.dto.DocumentSearchSpec;
 import open.dolphin.dto.ImageSearchSpec;
 import open.dolphin.dto.ModuleSearchSpec;
-import open.dolphin.infomodel.*;
-import open.dolphin.common.util.BeanUtils;
+import open.dolphin.common.util.ModuleBeanDecoder;
+import open.dolphin.infomodel.AppointmentModel;
+import open.dolphin.infomodel.DocInfoModel;
+import open.dolphin.infomodel.DocumentModel;
+import open.dolphin.infomodel.IInfoModel;
+import open.dolphin.infomodel.IModuleModel;
+import open.dolphin.infomodel.KarteBean;
+import open.dolphin.infomodel.LetterModule;
+import open.dolphin.infomodel.ModuleModel;
+import open.dolphin.infomodel.ObservationModel;
+import open.dolphin.infomodel.PatientMemoModel;
+import open.dolphin.infomodel.RegisteredDiagnosisModel;
+import open.dolphin.infomodel.SchemaModel;
 
 /**
  * Session と Document の送受信を行う Delegater クラス。
@@ -147,7 +158,7 @@ public class  DocumentDelegater extends BusinessDelegater {
                 .path(path)
                 .queryParam(FROM_DATE, toRestFormat(spec.getFromDate()))
                 .queryParam(TO_DATE, toRestFormat(spec.getToDate()))
-                .queryParam(INCLUDE_MODIFIED, String.valueOf(spec.isIncludeModifid()))
+                .queryParam(INCLUDE_MODIFIED, spec.isIncludeModifid())
                 .request(MEDIATYPE_JSON_UTF8)
                 .get();
 
@@ -315,8 +326,11 @@ public class  DocumentDelegater extends BusinessDelegater {
         
         for (List<ModuleModel> list : ret) {
             for (ModuleModel module : list) {
-                IModuleModel model = (IModuleModel) BeanUtils.xmlDecode(module.getBeanBytes());
+                //IModuleModel model = (IModuleModel) BeanUtils.xmlDecode(module.getBeanBytes());
+                IModuleModel model = ModuleBeanDecoder.getInstance().decode(module.getBeanBytes());
                 module.setModel(model);
+                // メモリ節約？
+                module.setBeanBytes(null);
             }
         }
         return ret;
@@ -345,9 +359,9 @@ public class  DocumentDelegater extends BusinessDelegater {
 
         byte[] bytes = model.getJpegByte();
         ImageIcon icon = new ImageIcon(bytes);
-        if (icon != null) {
-            model.setIcon(icon);
-        }
+        model.setIcon(icon);
+        // メモリ節約？
+        model.setJpegByte(null);
 
         return model;
     }
@@ -502,7 +516,7 @@ public class  DocumentDelegater extends BusinessDelegater {
         Response response = getWebTarget()
                 .path(path)
                 .queryParam(FROM_DATE, toRestFormat(fromDate))
-                .queryParam(ACTIVE_ONLY, String.valueOf(activeOnly))
+                .queryParam(ACTIVE_ONLY, activeOnly)
                 .request(MEDIATYPE_JSON_UTF8)
                 .get();
 

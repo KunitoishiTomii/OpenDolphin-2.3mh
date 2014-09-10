@@ -9,7 +9,11 @@ import javax.swing.event.DocumentListener;
 import open.dolphin.delegater.RestClient;
 import open.dolphin.delegater.UserDelegater;
 import open.dolphin.helper.ProgressMonitorWorker;
-import open.dolphin.infomodel.*;
+import open.dolphin.infomodel.DepartmentModel;
+import open.dolphin.infomodel.IInfoModel;
+import open.dolphin.infomodel.LicenseModel;
+import open.dolphin.infomodel.RoleModel;
+import open.dolphin.infomodel.UserModel;
 import open.dolphin.project.Project;
 import open.dolphin.util.HashUtil;
 import org.apache.log4j.Logger;
@@ -495,7 +499,7 @@ public class ChangePasswordImpl extends AbstractMainTool implements ChangeProfil
 //masuda^
             final UserDelegater udl = UserDelegater.getInstance();
             Component c = getFrame();
-            String message = null;
+            String message = TITLE;
             String note = PROGRESS_NOTE;
           
             ProgressMonitorWorker worker = new ProgressMonitorWorker<Void, Void>(c, message, note) {

@@ -17,8 +17,6 @@ import open.dolphin.infomodel.IInfoModel;
  */
 public abstract class KartePanel extends Panel2 {
 
-    public static enum MODE {SINGLE_VIEWER, DOUBLE_VIEWER, SINGLE_EDITOR, DOUBLE_EDITOR};
-    
     private static enum DOC_TYPE {OUT_PATIENT, ADMISSION, SELF_INSURANCE, TEMP_KARTE};
     
     private static final Color OUT_PATIENT_COLOR = null;    // new Color(0, 0, 0, 0);
@@ -50,29 +48,10 @@ public abstract class KartePanel extends Panel2 {
 
     private JPanel timeStampPanel;
     private JLabel timeStampLabel;
-
-    // ファクトリー
-    public static KartePanel createKartePanel(MODE mode, boolean verticalLayout) {
-
-        switch (mode) {
-            case SINGLE_VIEWER:
-                return new KartePanel1(false);
-            case DOUBLE_VIEWER:
-                if (verticalLayout) {
-                    return new KartePanel2V(false);
-                } else {
-                    return new KartePanel2(false);
-                }
-            case SINGLE_EDITOR:
-                return new KartePanel1(true);
-            case DOUBLE_EDITOR:
-                return new KartePanel2(true);
-        }
-        return null;
-    }
+    
 
     // 抽象メソッド
-    protected abstract void initComponents(boolean editor);
+    public abstract void initComponents(boolean editor);
 
     public abstract JTextPane getPTextPane();
 
@@ -84,13 +63,8 @@ public abstract class KartePanel extends Panel2 {
         return timeStampLabel;
     }
 
-    protected KartePanel() {
-        initCommonComponents();
-    }
+    protected void initCommonComponents() {
 
-    private void initCommonComponents() {
-
-        //setPreferredSize(INITIAL_SIZE); // KartePanelが広がりすぎないように
         timeStampLabel = new JLabel();
         timeStampPanel = new JPanel();
         timeStampPanel.setLayout(new FlowLayout(FlowLayout.CENTER, tsHgap, tsVgap));
@@ -106,7 +80,7 @@ public abstract class KartePanel extends Panel2 {
     protected final JTextPane createTextPane() {
         JTextPane textPane = new JTextPane();
         textPane.setMargin(TEXT_PANE_MARGIN);
-        textPane.setEditorKit(KartePanelEditorKit.getInstance());
+        textPane.setEditorKit(new KartePanelEditorKit());
         // これをセットしないと，勝手に cut copy paste のポップアップがセットされてしまう。 thx to Dr. pns
         textPane.putClientProperty("Quaqua.TextComponent.showPopup", false);
         return textPane;

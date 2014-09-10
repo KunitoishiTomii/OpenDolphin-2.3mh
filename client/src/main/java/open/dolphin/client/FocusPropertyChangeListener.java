@@ -8,6 +8,7 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JTextPane;
 import javax.swing.TransferHandler;
+import javax.swing.text.DefaultStyledDocument;
 import open.dolphin.helper.WindowSupport;
 import open.dolphin.tr.DolphinTransferHandler;
 import open.dolphin.tr.IKarteTransferHandler;
@@ -63,7 +64,10 @@ public class FocusPropertyChangeListener implements PropertyChangeListener {
         if (newComp == null || newComp == oldComp) {
             return;
         }
-        
+
+        // for debug
+        //docDebugDump(newComp);
+
         // DolphinTransferHandlerが設定されていない場合はChartMediator処理は不要
         // KarteViewerのJTextPaneは例外
         if (!(newComp instanceof JTextPane)) {
@@ -104,5 +108,19 @@ public class FocusPropertyChangeListener implements PropertyChangeListener {
         oldComp = newComp;
         
         DolphinTransferHandler.setModifiersEx(0);
+    }
+    
+    private void docDebugDump(JComponent newComp) {
+
+        if (newComp instanceof JTextPane) {
+            JTextPane tp = (JTextPane) newComp;
+            DefaultStyledDocument doc = (DefaultStyledDocument) tp.getDocument();
+            System.out.println("KarteStyledDocument dump:");
+            doc.dump(System.out);
+            System.out.println("\nKartePane dump:");
+            KartePaneDumper_2 dumper = new KartePaneDumper_2();
+            dumper.dump(doc);
+            System.out.println(dumper.getSpec());
+        }
     }
 }

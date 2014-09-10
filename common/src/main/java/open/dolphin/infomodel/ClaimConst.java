@@ -156,8 +156,8 @@ public final class ClaimConst {
     
     // コメントコードのsrycd
     // "099209000".matches("^099209") = false なんで？
-    public static final String REGEXP_PRESCRIPTION_COMMENT = "001000984|001000104|001000939|810000001";
-    public static final String REGEXP_COMMENT_MED = REGEXP_PRESCRIPTION_COMMENT + "|099209...|008[1-6].....";
+    public static final String REGEXP_PRESCRIPTION_COMMENT = "001000984|001000104|001000939|810000001|099209902";
+    public static final String REGEXP_COMMENT_MED = REGEXP_PRESCRIPTION_COMMENT + "|099209...|008[1-6].....|8........";
     public static final int BYOKANRENKBN_TOKUTEI = 5;
 
     // 自費

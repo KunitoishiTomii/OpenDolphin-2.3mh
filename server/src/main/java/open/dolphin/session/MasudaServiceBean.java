@@ -1,5 +1,6 @@
 package open.dolphin.session;
 
+import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import javax.ejb.Stateless;
@@ -7,7 +8,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.PersistenceContext;
-import open.dolphin.common.util.BeanUtils;
+import open.dolphin.common.util.ModuleBeanDecoder;
 import open.dolphin.infomodel.*;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.queryParser.ParseException;
@@ -303,7 +304,7 @@ public class MasudaServiceBean {
     }
 
     // DocumentModelのHiberbate search用インデックスを作成する
-    public String makeDocumentModelIndex(String fid, long fromDocPk, int maxResults) {
+    public String makeDocumentModelIndex(String fid, long fromDocPk, int maxResults, long modelCount) {
 
         long fPk = getFacilityPk(fid);
         if (fPk == 0) {
@@ -323,12 +324,23 @@ public class MasudaServiceBean {
         }
 
         // 総DocumentModel数を取得。進捗表示に使用
-        long modelCount = (Long)
-                em.createQuery("select count(m) " + fromSql)
-                .setParameter("fPk", fPk)
-                .setParameter("fromPk", 0L)
-                .getSingleResult();
-
+        if (modelCount == 0) {
+//            modelCount = (Long)
+//                    em.createQuery("select count(m) " + fromSql)
+//                    .setParameter("fPk", fPk)
+//                    .setParameter("fromPk", 0L)
+//                    .getSingleResult();
+            // use native query
+            final String countSql = "select count(d.id) from d_document d, d_users u"
+                    + " where d.creator_id = u.id and d.status = 'F' and u.facility_id = ?";
+            BigInteger value = (BigInteger) em.createNativeQuery(countSql)
+                    .setParameter(1, fPk)
+                    .getSingleResult();
+            modelCount = value.longValue();
+        }
+        if (modelCount == 0) {
+            return FINISHED;
+        }
         // idがfromPkより大きいDocumentModelをmaxResultsずつ取得
         List<DocumentModel> models =
                 em.createQuery(fromSql + " order by m.id")
@@ -519,19 +531,38 @@ public class MasudaServiceBean {
     }
 
     // grep方式の全文検索
-    public SearchResultModel getSearchResult(String fid, String searchText, long fromModuleId, int maxResult, boolean progressCourseOnly) {
+    public SearchResultModel getSearchResult(String fid, String searchText, 
+            long fromModuleId, int maxResult, long totalCount, boolean progressCourseOnly) {
 
         final String fromSql = "from ModuleModel m where m.status = 'F' and m.creator.facility.facilityId = :fid";
         final String progressCourse = " and m.moduleInfo.entity = '" + IInfoModel.MODULE_PROGRESS_COURSE + "'";
 
-        String sql1 = fromSql + " and m.id > :fromId order by m.id";
-        String sql2 = "select count(m) " + fromSql;
-
+        StringBuilder sb = new StringBuilder();
+        sb.append(fromSql).append(" and m.id > :fromId");
         if (progressCourseOnly) {
-            sql1 = sql1 + progressCourse;
-            sql2 = sql2 + progressCourse;
+            sb.append(progressCourse);
         }
-
+        sb.append(" order by m.id");
+        final String sql1 = sb.toString();
+        
+        sb= new StringBuilder();
+        sb.append("select count(m) ").append(fromSql);
+        if (progressCourseOnly) {
+            sb.append(progressCourse);
+        }
+        final String sql2 = sb.toString();
+        
+        // 総モジュール数を取得、進捗具合に利用する
+        if (totalCount == 0) {
+            totalCount = (Long)
+                    em.createQuery(sql2)
+                    .setParameter("fid", fid)
+                    .getSingleResult();
+        }
+        if (totalCount == 0) {
+            return null;
+        }
+        
         HashSet<PatientModel> patientModelSet = new HashSet<>();
         HashSet<Long> karteIdSet = new HashSet<>();
 
@@ -553,7 +584,8 @@ public class MasudaServiceBean {
         HashMap<Long, List<Long>> karteIdDocIdMap = new HashMap<>();
         for (ModuleModel mm : modules) {
             // テキスト抽出
-            IModuleModel im = (IModuleModel) BeanUtils.xmlDecode(mm.getBeanBytes());
+            //IModuleModel im = (IModuleModel) BeanUtils.xmlDecode(mm.getBeanBytes());
+            IModuleModel im = ModuleBeanDecoder.getInstance().decode(mm.getBeanBytes());
             mm.setModel(im);
             String text;
             if (im instanceof ProgressCourse) {
@@ -600,13 +632,8 @@ public class MasudaServiceBean {
         List<PatientModel> list = new ArrayList<>(patientModelSet);
         setInsuranceAndPvtDate(fid, list);
 
-        // 総モジュール数を取得、進捗具合に利用する
-        long modelCount = (Long)
-                em.createQuery(sql2)
-                .setParameter("fid", fid)
-                .getSingleResult();
         // 結果を返す
-        SearchResultModel ret = new SearchResultModel(toId, modelCount, list);
+        SearchResultModel ret = new SearchResultModel(toId, totalCount, list);
         return ret;
     }
     
@@ -626,7 +653,8 @@ public class MasudaServiceBean {
         HashMap<Long, ExamHistoryModel> examMap = new HashMap<>();
 
         for (ModuleModel mm : models) {
-            mm.setModel((IModuleModel) BeanUtils.xmlDecode(mm.getBeanBytes()));
+            //mm.setModel((IModuleModel) BeanUtils.xmlDecode(mm.getBeanBytes()));
+            mm.setModel(ModuleBeanDecoder.getInstance().decode(mm.getBeanBytes()));
             long docPk = mm.getDocumentModel().getId();
             ExamHistoryModel eh = examMap.get(docPk);
             if (eh == null) {
@@ -656,7 +684,8 @@ public class MasudaServiceBean {
         HashMap<PatientModel, List<ModuleModel>> pmmmMap = new HashMap<>();
         for (ModuleModel mm : mmList){
             // いつもデコード忘れるｗ
-            mm.setModel((IModuleModel) BeanUtils.xmlDecode(mm.getBeanBytes()));
+            //mm.setModel((IModuleModel) BeanUtils.xmlDecode(mm.getBeanBytes()));
+            mm.setModel(ModuleBeanDecoder.getInstance().decode(mm.getBeanBytes()));
             PatientModel pModel = mm.getKarteBean().getPatient();
             List<ModuleModel> list = pmmmMap.get(pModel);
             if (list == null){
@@ -802,21 +831,37 @@ public class MasudaServiceBean {
         return list;
     }
 
-    public String initSanteiHistory(String fid, long fromId, int maxResults) {
+    public String initSanteiHistory(String fid, long fromId, int maxResults, long totalCount) {
         
         final String sql1 = "from ModuleModel m "
                 + "where m.moduleInfo.entity <> '" + IInfoModel.MODULE_PROGRESS_COURSE + "' "
-                + "and m.status = 'F' and m.creator.facility.facilityId = :fid";
-        final String sql2 = "select count(m) " + sql1;
+                + "and m.status = 'F' and m.creator.facility.id = :fPk";
+        //final String sql2 = "select count(m) " + sql1;
         final String sql3 = sql1 + " and m.id > :fromId order by m.id";
         final String sql4 = "from SanteiHistoryModel s "
                 + "where s.moduleModel.id = :mid and s.srycd = :srycd "
                 + "and s.itemIndex = :index";
         
+        long fPk = getFacilityPk(fid);
+        if (fPk == 0) {
+            System.out.println("InitSanteiHistory: Illegal facility id.");
+            return FINISHED;
+        }
+        
         // 総数を取得する
-        long totalCount = (Long) em.createQuery(sql2)
-                .setParameter("fid", fid)
-                .getSingleResult();
+        if (totalCount == 0) {
+//            totalCount = (Long) em.createQuery(sql2)
+//                    .setParameter("fid", fid)
+//                    .getSingleResult();
+            // use native query
+            final String countSql = "select count(m.id) from d_module m, d_users u"
+                    + " where m.creator_id = u.id and m.entity <> 'progressCourse'"
+                    + " and m.status = 'F' and u.facility_id = ?";
+            BigInteger value = (BigInteger) em.createNativeQuery(countSql)
+                    .setParameter(1, fPk)
+                    .getSingleResult();
+            totalCount = value.longValue();
+        }
         // 0件ならFINESHEDを返して終了
         if (totalCount == 0) {
             return FINISHED;
@@ -825,7 +870,7 @@ public class MasudaServiceBean {
         // fromIdからModuleModelを取得する
         List<ModuleModel> mmList =
                 em.createQuery(sql3)
-                .setParameter("fid", fid)
+                .setParameter("fPk", fPk)
                 .setParameter("fromId", fromId)
                 .setMaxResults(maxResults)
                 .getResultList();
@@ -842,7 +887,8 @@ public class MasudaServiceBean {
         // まずはsrycdをリストアップ
         Set<String> srycds = new HashSet<>();
         for (ModuleModel mm : mmList) {
-            mm.setModel((IModuleModel) BeanUtils.xmlDecode(mm.getBeanBytes()));
+            //mm.setModel((IModuleModel) BeanUtils.xmlDecode(mm.getBeanBytes()));
+            mm.setModel(ModuleBeanDecoder.getInstance().decode(mm.getBeanBytes()));
             ClaimBundle cb = (ClaimBundle) mm.getModel();
             if (cb == null) {
                 continue;
@@ -942,7 +988,8 @@ public class MasudaServiceBean {
         // SanteiHistoryModelに算定日と名前を設定する
         for (SanteiHistoryModel shm : list) {
             ModuleModel mm = shm.getModuleModel();
-            mm.setModel((IModuleModel) BeanUtils.xmlDecode(mm.getBeanBytes()));
+            //mm.setModel((IModuleModel) BeanUtils.xmlDecode(mm.getBeanBytes()));
+            mm.setModel((IModuleModel) ModuleBeanDecoder.getInstance().decode(mm.getBeanBytes()));
             ClaimBundle cb = (ClaimBundle) mm.getModel();
             shm.setItemName(cb.getClaimItem()[shm.getItemIndex()].getName());
             shm.setSanteiDate(mm.getStarted());
@@ -1021,7 +1068,8 @@ public class MasudaServiceBean {
             
             List<RpModel> rpModelList = new ArrayList<>();
             for (ModuleModel mm : mmList) {
-                mm.setModel((IModuleModel) BeanUtils.xmlDecode(mm.getBeanBytes()));
+                //mm.setModel((IModuleModel) BeanUtils.xmlDecode(mm.getBeanBytes()));
+                mm.setModel(ModuleBeanDecoder.getInstance().decode(mm.getBeanBytes()));
                 BundleMed bm = (BundleMed) mm.getModel();
                 String rpDay = bm.getBundleNumber();
                 String adminSrycd = bm.getAdminCode();
@@ -1240,5 +1288,156 @@ public class MasudaServiceBean {
         if (pm != null) {
             pm.setHealthInsurances(null);
         }
+    }
+    
+    public List<IndicationModel> getIndicationList(String fid, List<String> srycds) {
+        
+        List<IndicationModel> list;
+        
+        if (!srycds.isEmpty()) {
+            final String sql = "from IndicationModel i where i.fid = :fid and i.srycd in (:srycds)";
+            list = (List<IndicationModel>) em.createQuery(sql)
+                    .setParameter("fid", fid)
+                    .setParameter("srycds", srycds)
+                    .getResultList();
+        } else {
+            final String sql = "from IndicationModel i where i.fid = :fid";
+            list = (List<IndicationModel>) em.createQuery(sql)
+                    .setParameter("fid", fid)
+                    .getResultList();
+        }
+        // lazy fetch
+        for (IndicationModel model : list) {
+            model.getIndicationItems().size();
+        }
+
+        return list;
+    }
+    
+    public int importIndicationModels(String fid, List<IndicationModel> list) {
+        
+        final String sql = "select i.id from IndicationModel i where i.fid = :fid";
+ 
+        // 既存のものを消す
+        List<Long> ids = em.createQuery(sql)
+                .setParameter("fid", fid)
+                .getResultList();
+        for (long id : ids) {
+            IndicationModel exist = em.find(IndicationModel.class, id);
+            em.remove(exist);
+        }
+        em.flush();
+
+        // persistする
+        for (IndicationModel model : list) {
+            em.persist(model);
+        }
+
+        return list.size();
+    }
+    
+    public IndicationModel getIndicationModel(String fid, String srycd) {
+
+        final String sql = "from IndicationModel i where i.fid = :fid and i.srycd = :srycd";
+
+        try {
+            IndicationModel model = (IndicationModel) em.createQuery(sql)
+                    .setParameter("fid", fid)
+                    .setParameter("srycd", srycd)
+                    .getSingleResult();
+
+            // lazy fetch
+            model.getIndicationItems().size();
+
+            return model;
+        } catch (NoResultException ex) {
+        }
+        return null;
+    }
+    
+    public int addIndicationModels(List<IndicationModel> list) {
+        
+        int cnt = 0;
+        for (IndicationModel model : list) {
+            try {
+                model.setLock(false);
+                em.persist(model);
+                cnt++;
+            } catch (Exception ex) {
+            }
+        }
+        return cnt;
+    }
+    
+    public long updateIndicationModel(IndicationModel model) {
+        try {
+            model.setLock(false);
+            em.merge(model);
+            return model.getId();
+        } catch (Exception ex) {
+        }
+        return -1;
+    }
+    
+    public long removeIndicationModel(long id) {
+        // 分離オブジェクトは remove に渡せないので対象を検索する
+        IndicationModel target = em.find(IndicationModel.class, id);
+        if (target != null && !target.isLock()) {
+            em.remove(target);
+            return target.getId();
+        }
+        return -1;
+    }
+    
+    // 指定月の医師と担当患者のリストを取得する
+    public List<DrPatientIdModel> getDrPatientIdModelList(String ym) {
+        
+        final String sql = "from DocumentModel d"
+                + " where d.started >= :from and d.started < :to"
+                + " and d.status='F'";
+        
+        try {
+            SimpleDateFormat frmt = new SimpleDateFormat("yyyyMMdd");
+            GregorianCalendar gc = new GregorianCalendar();
+            gc.setTime(frmt.parse(ym + "01"));
+            Date from = gc.getTime();
+            gc.add(GregorianCalendar.MONTH, 1);
+            Date to = gc.getTime();
+            
+            // 文書を取得する
+            List<DocumentModel> docList = em.createQuery(sql)
+                    .setParameter("from", from)
+                    .setParameter("to", to)
+                    .getResultList();
+            
+            // 医師ごとに分類する
+            Map<UserModel, Set<String>> map = new HashMap<>();
+            for (DocumentModel docModel : docList) {
+                UserModel user = docModel.getCreator();
+                Set<String> set = map.get(user);
+                if (set == null) {
+                    set = new HashSet<>();
+                    map.put(user, set);
+                }
+                String ptId = docModel.getKarteBean().getPatientModel().getPatientId();
+                set.add(ptId);
+            }
+            
+            // 返却モデルを作成する
+            List<DrPatientIdModel> ret = new ArrayList<>();
+            for (Map.Entry<UserModel, Set<String>> entry : map.entrySet()) {
+                DrPatientIdModel model = new DrPatientIdModel();
+                model.setUserModel(entry.getKey());
+                model.setPatientIdList(new ArrayList<>(entry.getValue()));
+                ret.add(model);
+            }
+            map.clear();
+            
+            return ret;
+            
+        } catch (java.text.ParseException ex) {
+        }
+        
+        return null;
     }
 }

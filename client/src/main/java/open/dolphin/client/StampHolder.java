@@ -1,12 +1,12 @@
 package open.dolphin.client;
 
-import open.dolphin.common.util.StampRenderingHints;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import javax.swing.SwingUtilities;
-
+import open.dolphin.common.util.StampHtmlRenderer;
+import open.dolphin.common.util.StampRenderingHints;
 import open.dolphin.infomodel.ModuleModel;
 import open.dolphin.order.AbstractStampEditor;
 import open.dolphin.order.OldNewValuePair;
@@ -23,24 +23,29 @@ public final class StampHolder extends AbstractComponentHolder {
     private static final Color LBL_COLOR = new Color(0xFF, 0xCE, 0xD9);
     private static final Color FOREGROUND = new Color(20, 20, 140);
 
-    private final StampRenderingHints hints;
-    private final StampHolderFunction function;
-
     private ModuleModel stamp;
 
     public StampHolder(KartePane kartePane, ModuleModel stamp) {
         super(kartePane);
-        function = StampHolderFunction.getInstance();
-        function.setDeleteAction(StampHolder.this);
-        hints = StampRenderingHints.getInstance();
+        getFunction().setDeleteAction(StampHolder.this);
+        setFont(getHints().getFont());
         setForeground(FOREGROUND);
         setStamp(stamp);
+    }
+
+    private StampHolderFunction getFunction() {
+        return StampHolderFunction.getInstance();
+    }
+    
+    private StampRenderingHints getHints() {
+        return StampRenderingHints.getInstance();
     }
     
     // StampRenderingHintsのlineSpacingを0にすると、ラベルの上部に隙間ができてしまう
     //　見栄えが悪いので線を追加描画する
     @Override
     protected void paintComponent(Graphics g) {
+
         super.paintComponent(g);
         Color c = g.getColor();
         g.setColor(LBL_COLOR);
@@ -58,8 +63,8 @@ public final class StampHolder extends AbstractComponentHolder {
     public void mabeShowPopup(MouseEvent e) {
         if (e.isPopupTrigger()) {
             StampHolder sh = (StampHolder) e.getComponent();
-            function.setSelectedStampHolder(sh);
-            function.showPopupMenu(e.getPoint());
+            getFunction().setSelectedStampHolder(sh);
+            getFunction().showPopupMenu(e);
         }
     }
 
@@ -79,11 +84,7 @@ public final class StampHolder extends AbstractComponentHolder {
         if (this.stamp != stamp) {
             this.stamp = stamp;
         }
-        function.setMyText(this);
-    }
-    
-    public StampRenderingHints getHints() {
-        return hints;
+        setMyText();
     }
     
     /**
@@ -92,8 +93,8 @@ public final class StampHolder extends AbstractComponentHolder {
      */
     @Override
     public void edit() {
-        function.setSelectedStampHolder(this);
-        function.edit();
+        getFunction().setSelectedStampHolder(this);
+        getFunction().edit();
     }
     
     /**
@@ -110,10 +111,10 @@ public final class StampHolder extends AbstractComponentHolder {
             if (obj instanceof OldNewValuePair) {
 
                 OldNewValuePair valuePair = (OldNewValuePair) obj;
-                function.setSelectedStampHolder(this);
+                getFunction().setSelectedStampHolder(this);
                 ModuleModel[] oldValue = (ModuleModel[]) valuePair.getOldValue();
                 ModuleModel[] newStamps = (ModuleModel[]) valuePair.getNewValue();
-                function.setNewValue(newStamps, oldValue);
+                getFunction().setNewValue(newStamps, oldValue);
             }
         }
     }
@@ -135,6 +136,41 @@ public final class StampHolder extends AbstractComponentHolder {
         kartePane.setDirty(true);
     }
     
+    public String createStampHtml() {
+        StampHtmlRenderer renderer = new StampHtmlRenderer(getStamp(), getHints());
+        return renderer.getStampHtml(true);
+    }
+
+    private void setMyText() {
+
+        if (getStamp() == null) {
+            return;
+        }
+
+        setText(createStampHtml());
+        // カルテペインへ展開された時広がるのを防ぐ
+        setMaximumSize(getPreferredSize());
+    }
+
+    public void setMyTextLater() {
+        
+        if (getStamp() == null) {
+            return;
+        }
+        
+        final String stampHtml = createStampHtml();
+
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                setText(stampHtml);
+                // カルテペインへ展開された時広がるのを防ぐ
+                setMaximumSize(getPreferredSize());
+            }
+        });
+    }
+
     @Override
     public String getAttributeName() {
         return ATTRIBUTE_NAME;

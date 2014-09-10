@@ -6,7 +6,12 @@ import java.io.UnsupportedEncodingException;
 import java.util.*;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Response;
-import open.dolphin.infomodel.*;
+import open.dolphin.infomodel.IStampTreeModel;
+import open.dolphin.infomodel.ModuleInfoBean;
+import open.dolphin.infomodel.PublishedTreeModel;
+import open.dolphin.infomodel.StampModel;
+import open.dolphin.infomodel.StampTreeModel;
+import open.dolphin.infomodel.SubscribedTreeModel;
 
 /**
  * Stamp関連の Delegater クラス。
@@ -528,7 +533,8 @@ public class StampDelegater extends BusinessDelegater {
         }
 
         String path = RES_STAMP + "postRemoveStamps";
-        Entity entity = toJsonEntity(ids);
+        TypeReference typeRef = new TypeReference<List<String>>(){};
+        Entity entity = toJsonEntity(ids, typeRef);
 
         Response response = getWebTarget()
                 .path(path)

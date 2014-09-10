@@ -5,10 +5,22 @@ import java.beans.PropertyChangeSupport;
 import java.util.*;
 import open.dolphin.client.*;
 import open.dolphin.dao.SqlMiscDao;
-import open.dolphin.infomodel.*;
 import open.dolphin.message.ClaimHelper;
 import open.dolphin.project.Project;
 import open.dolphin.common.util.ZenkakuUtils;
+import open.dolphin.dao.DaoException;
+import open.dolphin.infomodel.AdmissionModel;
+import open.dolphin.infomodel.ClaimBundle;
+import open.dolphin.infomodel.ClaimConst;
+import open.dolphin.infomodel.ClaimItem;
+import open.dolphin.infomodel.DocInfoModel;
+import open.dolphin.infomodel.DocumentModel;
+import open.dolphin.infomodel.IInfoModel;
+import open.dolphin.infomodel.IModuleModel;
+import open.dolphin.infomodel.MMLTable;
+import open.dolphin.infomodel.ModelUtils;
+import open.dolphin.infomodel.ModuleModel;
+import open.dolphin.infomodel.PVTHealthInsuranceModel;
 import open.dolphin.message.ClaimMessageBuilder;
 import org.apache.log4j.Level;
 
@@ -62,11 +74,9 @@ public class ClaimSender implements IKarteSender {
     }
 
     @Override
-    public void removeListeners() {
+    public void removeListener(PropertyChangeListener listener) {
         if (boundSupport != null) {
-            for (PropertyChangeListener listener : boundSupport.getPropertyChangeListeners()) {
-                boundSupport.removePropertyChangeListener(KarteSenderResult.PROP_KARTE_SENDER_RESULT, listener);
-            }
+            boundSupport.removePropertyChangeListener(KarteSenderResult.PROP_KARTE_SENDER_RESULT, listener);
         }
     }
 
@@ -181,9 +191,13 @@ public class ClaimSender implements IKarteSender {
             debug(helper.getHealthInsuranceClassCode());
             debug(helper.getHealthInsuranceDesc());
         }
-        
-        // ヘルパー登録を分離 masuda
-        registToHelper(helper, modules);
+        try {
+            // ヘルパー登録を分離 masuda
+            registToHelper(helper, modules);
+        } catch (DaoException ex) {
+            fireResult(new KarteSenderResult(CLAIM, KarteSenderResult.ERROR, "ORCA接続", this));
+            return;
+        }
 
         ClaimMessageBuilder mb = ClaimMessageBuilder.getInstance();
         String claimMessage = mb.build(helper);
@@ -212,7 +226,7 @@ public class ClaimSender implements IKarteSender {
     }
 
 //masuda^
-    private void registToHelper(ClaimHelper helper, List<ModuleModel> modules_src) {
+    private void registToHelper(ClaimHelper helper, List<ModuleModel> modules_src) throws DaoException {
         // 保存する KarteModel の全モジュールをチェックしClaimBundleならヘルパーに登録
         // Orcaで受信できないような大きなClaimBundleを分割する
         // 処方のコメント項目は分離して、別に".980"として送信する
@@ -317,7 +331,7 @@ public class ClaimSender implements IKarteSender {
     }
 
     // 包括対象検査区分分ごとに分類する
-    private List<ClaimBundle> divideBundleByHokatsuKbn(ClaimBundle cb) {
+    private List<ClaimBundle> divideBundleByHokatsuKbn(ClaimBundle cb) throws DaoException {
 
         // srycdを列挙する
         List<String> srycds = new ArrayList<>();

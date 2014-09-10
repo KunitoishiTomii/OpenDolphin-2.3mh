@@ -5,8 +5,17 @@ import java.util.*;
 import javax.swing.JOptionPane;
 import open.dolphin.dao.SqlMiscDao;
 import open.dolphin.delegater.MasudaDelegater;
-import open.dolphin.infomodel.*;
 import open.dolphin.common.util.ZenkakuUtils;
+import open.dolphin.dao.DaoException;
+import open.dolphin.infomodel.BundleDolphin;
+import open.dolphin.infomodel.BundleMed;
+import open.dolphin.infomodel.ClaimConst;
+import open.dolphin.infomodel.ClaimItem;
+import open.dolphin.infomodel.DrugInteractionModel;
+import open.dolphin.infomodel.IInfoModel;
+import open.dolphin.infomodel.ModuleModel;
+import open.dolphin.infomodel.PatientModel;
+import open.dolphin.infomodel.UsingDrugModel;
 
 /**
  * KarteEditorで保存したとき呼ばれる
@@ -28,7 +37,7 @@ public class CheckMedication {
     private static final int DAY_LIMIT = 14;
 
     
-    public boolean checkStart(Chart context, List<ModuleModel> stamps) {
+    public boolean checkStart(Chart context, List<ModuleModel> stamps) throws DaoException {
         
         moduleList = stamps;
         makeDrugList();
@@ -97,9 +106,16 @@ public class CheckMedication {
         for (BundleDolphin bundle : bundleList) {
             String admin = bundle.getAdmin();
             if (admin != null && admin.startsWith("１日")) {
-                int pos = admin.indexOf("回");
-                admin = admin.substring("１日".length(), pos);
-                admin = ZenkakuUtils.toHalfNumber(admin);
+                StringBuilder sb = new StringBuilder();
+                for (int pos = "１日".length(); pos < admin.length(); ++pos) {
+                    char c = admin.charAt(pos);
+                    if ('０' <= c && c <= '９') {
+                        sb.append((char) (c - '０' + '0'));
+                    } else if (sb.length() != 0) {
+                        break;
+                    }
+                }
+                admin = sb.length() == 0 ? null : sb.toString();
             } else {
                 admin = null;
             }
@@ -125,7 +141,7 @@ public class CheckMedication {
         UsingDrugs.getInstance().addUsingDrugs(newDrugs);
 
     }
-
+    
     private String checkMedication() {
 
         if (medList.isEmpty()) {
@@ -213,7 +229,7 @@ public class CheckMedication {
         return formatMsg(sb.toString());
     }
 
-    private String checkInteraction() {
+    private String checkInteraction() throws DaoException {
 
         // おのおのをsql投げるのではなくてまとめてsql投げるようにした。
         // パフォーマンス良くなるはず。
@@ -228,9 +244,7 @@ public class CheckMedication {
 
         final SqlMiscDao dao = SqlMiscDao.getInstance();
         List<DrugInteractionModel> list = dao.checkInteraction(codes, codes);
-        if (!dao.isNoError()) {
-            return null;
-        }
+
         if (list != null && !list.isEmpty()){
             for (DrugInteractionModel model : list){
                 sb.append("＜併用禁忌＞\n");

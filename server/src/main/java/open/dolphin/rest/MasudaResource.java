@@ -288,11 +288,12 @@ public class MasudaResource extends AbstractResource {
     @Produces(MEDIATYPE_TEXT_UTF8)
     public Response makeDocumentModelIndex(
             @QueryParam(FROM_DOC_PK) Long fromDocPk, 
-            @QueryParam(MAX_RESULTS) Integer maxResults) {
+            @QueryParam(MAX_RESULTS) Integer maxResults,
+            @QueryParam(TOTAL_COUNT) Long totalCount) {
 
         String fid = getRemoteFacility();
 
-        String ret = masudaServiceBean.makeDocumentModelIndex(fid, fromDocPk, maxResults);
+        String ret = masudaServiceBean.makeDocumentModelIndex(fid, fromDocPk, maxResults, totalCount);
 
         debug(ret);
         return Response.ok(ret).build();
@@ -322,11 +323,13 @@ public class MasudaResource extends AbstractResource {
             @QueryParam(TEXT) String text,
             @QueryParam(FROM_ID) Long fromId,
             @QueryParam(MAX_RESULTS) Integer maxResult,
+            @QueryParam(TOTAL_COUNT) Long totalCount,
             @QueryParam(PC_ONLY) Boolean progressCourseOnly) {
 
         String fid = getRemoteFacility();
 
-        SearchResultModel model = masudaServiceBean.getSearchResult(fid, text, fromId, maxResult, progressCourseOnly);
+        SearchResultModel model = masudaServiceBean.getSearchResult(fid, text, 
+                fromId, maxResult, totalCount, progressCourseOnly);
         
         StreamingOutput so = getJsonOutStream(model);
         
@@ -423,11 +426,12 @@ public class MasudaResource extends AbstractResource {
     @Produces(MEDIATYPE_TEXT_UTF8)
     public Response initSanteiHistory(
             @QueryParam(FROM_ID) Long fromIndex,
-            @QueryParam(MAX_RESULTS) Integer maxResults) {
+            @QueryParam(MAX_RESULTS) Integer maxResults,
+            @QueryParam(TOTAL_COUNT) Long totalCount) {
         
         String fid = getRemoteFacility();
         
-        String ret = masudaServiceBean.initSanteiHistory(fid, fromIndex, maxResults);
+        String ret = masudaServiceBean.initSanteiHistory(fid, fromIndex, maxResults, totalCount);
         
         return Response.ok(ret).build();
     }
@@ -547,6 +551,102 @@ public class MasudaResource extends AbstractResource {
         return Response.ok(so).build();
     }
     
+    @POST
+    @Path("indication/postget")
+    @Consumes(MEDIATYPE_JSON_UTF8)
+    @Produces(MEDIATYPE_JSON_UTF8)
+    public Response getIndicationList(String json) {
+        
+        String fid = getRemoteFacility();
+        TypeReference typeRef1 = new TypeReference<List<String>>(){};
+        List<String> srycds = (List<String>)
+                getConverter().fromJson(json, typeRef1);
+        
+        List<IndicationModel> list = masudaServiceBean.getIndicationList(fid, srycds);
+        
+        TypeReference typeRef2 = new TypeReference<List<IndicationModel>>(){};
+        StreamingOutput so = getJsonOutStream(list, typeRef2);
+        
+        return Response.ok(so).build();
+    }
+    
+    @GET
+    @Path("indication/{srycd}")
+    @Produces(MEDIATYPE_JSON_UTF8)
+    public Response getIndicationModel(@PathParam(SRYCD) String srycd) {
+        
+        String fid = getRemoteFacility();
+        IndicationModel model = masudaServiceBean.getIndicationModel(fid, srycd);
+        StreamingOutput so = getJsonOutStream(model);
+        
+        return Response.ok(so).build();
+    }
+    
+    @POST
+    @Path("indication/import")
+    @Produces(MEDIATYPE_TEXT_UTF8)
+    public Response importIndicationModels(String json) {
+        
+        String fid = getRemoteFacility();
+        TypeReference typeRef = new TypeReference<List<IndicationModel>>(){};
+        List<IndicationModel> list = (List<IndicationModel>) 
+                getConverter().fromJson(json, typeRef);
+        
+        int cnt = masudaServiceBean.importIndicationModels(fid, list);
+        
+        return Response.ok(String.valueOf(cnt)).build();
+    }
+    
+    @POST
+    @Path("indication/list")
+    @Produces(MEDIATYPE_TEXT_UTF8)
+    public Response addIndicationModels(String json) {
+        
+        TypeReference typeRef = new TypeReference<List<IndicationModel>>(){};
+        List<IndicationModel> list = (List<IndicationModel>) 
+                getConverter().fromJson(json, typeRef);
+        
+        int cnt = masudaServiceBean.addIndicationModels(list);
+        
+        return Response.ok(String.valueOf(cnt)).build();
+    }
+    
+    @PUT
+    @Path("indication")
+    @Produces(MEDIATYPE_TEXT_UTF8)
+    public Response updateIndicationModel(String json) {
+
+        IndicationModel model = (IndicationModel) 
+                getConverter().fromJson(json, IndicationModel.class);
+        
+        long id = masudaServiceBean.updateIndicationModel(model);
+        
+        return Response.ok(String.valueOf(id)).build();
+    }
+    
+    @DELETE
+    @Path("indication/{param}")
+    public void removeIndicationModel(@PathParam("param") String param) {
+
+        long id = Long.parseLong(param);
+
+        long ret = masudaServiceBean.removeIndicationModel(id);
+
+        debug(String.valueOf(ret));
+    }
+    
+    @GET
+    @Path("drPatientId/{ym}")
+    @Produces(MEDIATYPE_JSON_UTF8)
+    public Response getDrPatientIdModelList(@PathParam("ym") String ym) {
+        
+        List<DrPatientIdModel> list = masudaServiceBean.getDrPatientIdModelList(ym);
+        
+        TypeReference typeRef = new TypeReference<List<DrPatientIdModel>>(){};
+        StreamingOutput so = getJsonOutStream(list, typeRef);
+        
+        return Response.ok(so).build();
+    }
     
     @Override
     protected void debug(String msg) {

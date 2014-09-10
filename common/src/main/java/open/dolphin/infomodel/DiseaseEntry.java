@@ -1,5 +1,8 @@
 package open.dolphin.infomodel;
 
+import java.text.SimpleDateFormat;
+import java.util.GregorianCalendar;
+
 /**
  * DiseaseEntry
  * 
@@ -24,6 +27,9 @@ public final class DiseaseEntry extends MasterEntry {
     @Override
     public boolean isInUse() {
         if (getDisUseDate() != null) {
+            GregorianCalendar gc = new GregorianCalendar();
+            SimpleDateFormat f = new SimpleDateFormat("yyyyMMdd");
+            String refDate = f.format(gc.getTime());
             return refDate.compareTo(getDisUseDate()) <= 0;
         }
         return false;

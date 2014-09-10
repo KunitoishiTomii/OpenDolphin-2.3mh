@@ -6,7 +6,13 @@ import javax.swing.JScrollPane;
 import javax.swing.text.JTextComponent;
 import open.dolphin.client.ClientContext;
 import open.dolphin.client.Panel2;
-import open.dolphin.infomodel.*;
+import open.dolphin.infomodel.IInfoModel;
+import open.dolphin.infomodel.LetterItem;
+import open.dolphin.infomodel.LetterModule;
+import open.dolphin.infomodel.LetterText;
+import open.dolphin.infomodel.ModelUtils;
+import open.dolphin.infomodel.PatientModel;
+import open.dolphin.infomodel.UserModel;
 import open.dolphin.project.Project;
 import org.apache.log4j.Level;
 

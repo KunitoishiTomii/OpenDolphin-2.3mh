@@ -1,9 +1,11 @@
 package open.dolphin.client;
 
 import java.awt.Color;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.Enumeration;
-import java.util.LinkedList;
+import java.util.Iterator;
 import java.util.List;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
@@ -29,6 +31,7 @@ public final class KartePaneDumper_2 {
     private static final String FOREGROUND_NAME = StyleConstants.Foreground.toString();
     private static final String NAME_NAME = StyleConstants.NameAttribute.toString();
     private static final String CONTENT_NAME = AbstractDocument.ContentElementName;
+    private static final String SIZE_NAME = StyleConstants.Size.toString();
     private static final String TEXT_NAME = "text";
     private static final String ATTR_START = "start";
     private static final String ATTR_END = "end";
@@ -36,18 +39,19 @@ public final class KartePaneDumper_2 {
     
     private final List<ModuleModel> moduleList;
     private final List<SchemaModel> schemaList;
-    private final LinkedList<Element> stack;
+    private final Deque<Element> stack;
     private final Logger logger;
     
     private SimpleXmlWriter writer;
     private String spec;
     
+    private int baseFontSize;
     
     public KartePaneDumper_2() {
         logger = ClientContext.getBootLogger();
         moduleList = new ArrayList<>();
         schemaList = new ArrayList<>();
-        stack = new LinkedList<>();
+        stack = new ArrayDeque<>();
     }
     
     /**
@@ -93,6 +97,8 @@ public final class KartePaneDumper_2 {
      */
     public void dump(DefaultStyledDocument doc) {
         
+        baseFontSize = ((KarteStyledDocument) doc).getKartePane().getTextPane().getFont().getSize();
+
         writer = new SimpleXmlWriter();
         writer.setRepcaceXmlChar(true);
         writer.setReplaceZenkaku(false);
@@ -148,7 +154,7 @@ public final class KartePaneDumper_2 {
                     .writeEndElement();
         }
         
-        stack.addFirst(element);
+        stack.push(element);
     }
     
     private void writeAttributes(AttributeSet atts, boolean isContent) {
@@ -178,7 +184,11 @@ public final class KartePaneDumper_2 {
                 Color c = (Color) atts.getAttribute(StyleConstants.Foreground);
                 logger.debug("color = " + c.toString());
                 writer.writeAttribute(attrName, getColorStr(c));
-
+            } else if (SIZE_NAME.equals(attrName)) {
+                int viewFontSize = (int) atts.getAttribute(StyleConstants.Size);
+                int modelFontSize = FontManager.toModelFontSize(viewFontSize, baseFontSize);
+                //logger.debug("size = " + String.valueOf(viewFontSize));
+                writer.writeAttribute(attrName, String.valueOf(modelFontSize));
             } else {
                 // 属性セットから名前をキーにして属性オブジェクトを取得する
                 Object attObject = atts.getAttribute(nextName);
@@ -212,24 +222,18 @@ public final class KartePaneDumper_2 {
     private void endElementsIfParentElementChanged(Element element) {
 
         // 親Elementが変更になる場合はwriteEndElementする
-        if (stack.isEmpty()) {
-            return;
-        }
-
         Element parent = element.getParentElement();
-        Element current = getCurrentElement();
-
-        if (parent != current) {
-            int index = stack.indexOf(parent);
-            for (int i = 0; i < index; ++i) {
+        
+        if (stack.contains(parent)) {
+            for (Iterator<Element> itr = stack.iterator(); itr.hasNext();) {
+                Element elem = itr.next();
+                if (elem == parent) {
+                    break;
+                }
+                itr.remove();
                 writer.writeEndElement();
-                stack.removeFirst();
             }
         }
-    }
-    
-    private Element getCurrentElement() {
-        return stack.getFirst();
     }
     
     private void endStackedElements() {

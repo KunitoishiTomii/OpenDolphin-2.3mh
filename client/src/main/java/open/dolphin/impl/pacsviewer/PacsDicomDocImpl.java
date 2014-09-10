@@ -17,9 +17,6 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -33,7 +30,6 @@ import open.dolphin.table.StripeTableCellRenderer;
 import open.dolphin.tr.ImageEntryTransferHandler;
 import open.dolphin.util.DicomImageEntry;
 import open.dolphin.util.ImageTool;
-import open.dolphin.util.NamedThreadFactory;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 
@@ -46,20 +42,21 @@ import org.dcm4che2.data.Tag;
 public class PacsDicomDocImpl extends AbstractChartDocument implements PropertyChangeListener {
 
     private static final String TITLE = "PACS";
-    private static final ImageIcon ICON_WEASIS_S = ClientContext.getImageIcon("weasis_s.png");
-    private static final ImageIcon ICON_WEASIS_P = ClientContext.getImageIcon("weasis_p.png");
-
+    private static final ImageIcon ICON_WEASIS = ClientContext.getImageIcon("weasis.png");
+    private static final ImageIcon ICON_OSIRIX = ClientContext.getImageIcon("osirix.png");
+    
     private JPanel panel;
     private JButton retrieveBtn;
     private JButton viewBtn;
     private JButton searchBtn;
     private JButton weasisStudyBtn;
     private JButton weasisPatientBtn;
+    private JButton osirixStudyBtn;
+    private JButton osirixPatientBtn;
     private JTable listTable;
     private JLabel statusLabel;
 
     private DicomObject currentDicomObject;
-    private boolean useSuffixSearch;
 
     private ListTableModel<ListDicomObject> listTableModel;
     
@@ -81,9 +78,9 @@ public class PacsDicomDocImpl extends AbstractChartDocument implements PropertyC
     private DefaultListModel<DicomImageEntry> listModel;
 
     private PacsService pacsService;
-    private ExecutorService executor;
-    
+
     private String weasisAddr;
+    private String osirixAddr;
     
 
     public PacsDicomDocImpl() {
@@ -101,13 +98,18 @@ public class PacsDicomDocImpl extends AbstractChartDocument implements PropertyC
             sb.append("weasis-pacs-connector/viewer.jnlp?");
             weasisAddr = sb.toString();
         }
+        
+        // Osirixの設定
+        addr = Project.getString(MiscSettingPanel.PACS_OSIRIX_ADDRESS, MiscSettingPanel.DEFAULT_PACS_OSIRIX_ADDRESS);
+        if (addr != null && !addr.isEmpty()) {
+            osirixAddr = addr;
+            OsirixXmlRpcClient.getInstance().setupWebTarget();
+        }
     }
 
     @Override
     public void start() {
         initComponents();
-        NamedThreadFactory factory = new NamedThreadFactory(getClass().getSimpleName());
-        executor = Executors.newSingleThreadExecutor(factory);
         pacsService = (PacsService) ((ChartImpl) getContext()).getContext().getPlugin("pacsService");
         pacsService.addPropertyChangeListener(this);
         enter();
@@ -132,22 +134,6 @@ public class PacsDicomDocImpl extends AbstractChartDocument implements PropertyC
         if (listModel != null) {
             listModel.clear();
         }
-        
-        shutdownExecutor();
-    }
-    
-    private void shutdownExecutor() {
-
-        try {
-            executor.shutdown();
-            if (!executor.awaitTermination(10, TimeUnit.MILLISECONDS)) {
-                executor.shutdownNow();
-            }
-        } catch (InterruptedException ex) {
-            executor.shutdownNow();
-        } catch (NullPointerException ex) {
-        }
-        executor = null;
     }
 
     @Override
@@ -170,12 +156,23 @@ public class PacsDicomDocImpl extends AbstractChartDocument implements PropertyC
         searchBtn = new JButton("検索");
         retrieveBtn = new JButton("取得");
         viewBtn = new JButton("閲覧");
-        weasisStudyBtn = new JButton();
-        weasisStudyBtn.setIcon(ICON_WEASIS_S);
+        weasisStudyBtn = new JButton("S");
+        weasisStudyBtn.setIconTextGap(0);
+        weasisStudyBtn.setIcon(ICON_WEASIS);
         weasisStudyBtn.setToolTipText("選択中のstudyをWEASISで開きます");
-        weasisPatientBtn = new JButton();
-        weasisPatientBtn.setIcon(ICON_WEASIS_P);
+        weasisPatientBtn = new JButton("P");
+        weasisPatientBtn.setIconTextGap(0);
+        weasisPatientBtn.setIcon(ICON_WEASIS);
         weasisPatientBtn.setToolTipText("この患者をWEASISで開きます");
+        osirixStudyBtn = new JButton("S");
+        osirixStudyBtn.setIconTextGap(0);
+        osirixStudyBtn.setIcon(ICON_OSIRIX);
+        osirixStudyBtn.setToolTipText("選択中のstudyをOsirixで開きます");
+        osirixPatientBtn = new JButton("P");
+        osirixPatientBtn.setIconTextGap(0);
+        osirixPatientBtn.setIcon(ICON_OSIRIX);
+        osirixPatientBtn.setToolTipText("この患者をOsirixで開きます");
+        
         
         JPanel panel2 = new JPanel();
         panel2.setLayout(new BoxLayout(panel2, BoxLayout.Y_AXIS));
@@ -185,6 +182,8 @@ public class PacsDicomDocImpl extends AbstractChartDocument implements PropertyC
         panel2.add(Box.createVerticalStrut(10));
         panel2.add(weasisStudyBtn);
         panel2.add(weasisPatientBtn);
+        panel2.add(osirixStudyBtn);
+        panel2.add(osirixPatientBtn);
         panel1.add(panel2, BorderLayout.EAST);
         panel1.setPreferredSize(new Dimension(0, 300));
         panel.add(panel1);
@@ -247,9 +246,28 @@ public class PacsDicomDocImpl extends AbstractChartDocument implements PropertyC
                 openWeasisByPatientId();
             }
         });
+        // Osirixボタン
+        osirixStudyBtn.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                openOsirixByStudyUID();
+            }
+        });
+        osirixPatientBtn.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                openOsirixByPatientId();
+            }
+        });
         if (weasisAddr == null) {
             weasisStudyBtn.setEnabled(false);
             weasisPatientBtn.setEnabled(false);
+        }
+        if (osirixAddr == null) {
+            osirixStudyBtn.setEnabled(false);
+            osirixPatientBtn.setEnabled(false);
         }
         
         //列の入れ替えを禁止
@@ -317,7 +335,7 @@ public class PacsDicomDocImpl extends AbstractChartDocument implements PropertyC
         // 問合わせ
         statusLabel.setText("Start querying.");
         listTableModel.clear();
-        useSuffixSearch = Project.getBoolean(MiscSettingPanel.PACS_USE_SUFFIXSEARCH, MiscSettingPanel.DEFAULT_PACS_SUFFIX_SEARCH);
+        final boolean useSuffixSearch = Project.getBoolean(MiscSettingPanel.PACS_USE_SUFFIXSEARCH, MiscSettingPanel.DEFAULT_PACS_SUFFIX_SEARCH);
 
         SwingWorker worker = new SwingWorker<List<DicomObject>, Void>() {
 
@@ -418,9 +436,13 @@ public class PacsDicomDocImpl extends AbstractChartDocument implements PropertyC
     }
     
     private void openWeasisByPatientId() {
+        boolean useSuffixSearch = Project.getBoolean(MiscSettingPanel.PACS_USE_SUFFIXSEARCH, MiscSettingPanel.DEFAULT_PACS_SUFFIX_SEARCH);
         String patientId = getContext().getPatient().getPatientId();
         StringBuilder sb = new StringBuilder();
         sb.append("patientID=");
+        if (useSuffixSearch) {
+            sb.append("*");
+        }
         sb.append(patientId);
         String param = sb.toString();
         openWeasis(param);
@@ -437,16 +459,38 @@ public class PacsDicomDocImpl extends AbstractChartDocument implements PropertyC
         sb.append(param);
         String url = sb.toString();
 
-        if (Desktop.isDesktopSupported()) {
-            Desktop desktop = Desktop.getDesktop();
-            if (desktop.isSupported(Desktop.Action.BROWSE)) {
-                try {
-                    desktop.browse(new URI(url));
-                } catch (IOException | URISyntaxException ex) {
-                    //ex.printStackTrace(System.err);
+        try {
+            ProcessBuilder pb = new ProcessBuilder("javaws", url);
+            pb.start();
+        } catch (IOException e) {
+            if (Desktop.isDesktopSupported()) {
+                Desktop desktop = Desktop.getDesktop();
+                if (desktop.isSupported(Desktop.Action.BROWSE)) {
+                    try {
+                        desktop.browse(new URI(url));
+                    } catch (IOException | URISyntaxException ex) {
+                        //ex.printStackTrace(System.err);
+                    }
                 }
             }
         }
+    }
+    
+    // Osirixで開く
+    private void openOsirixByStudyUID() {
+
+        if (currentDicomObject == null) {
+            return;
+        }
+
+        String studyUID = currentDicomObject.getString(Tag.StudyInstanceUID);
+        OsirixXmlRpcClient.getInstance().openByStudyUID(studyUID);
+    }
+
+    private void openOsirixByPatientId() {
+
+        String patientId = getContext().getPatient().getPatientId();
+        OsirixXmlRpcClient.getInstance().openByPatientId(patientId);
     }
 
     // listTableで現在選択されているstudyを記録する
@@ -462,71 +506,58 @@ public class PacsDicomDocImpl extends AbstractChartDocument implements PropertyC
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if (executor != null && !executor.isShutdown()) {
-            DicomObject obj = (DicomObject) evt.getNewValue();
-            executor.execute(new RegisterDicomObject(obj));
+        
+        final DicomObject obj = (DicomObject) evt.getNewValue();
+        if (currentDicomObject == null || obj == null) {
+            return;
         }
-    }
-
-    private class RegisterDicomObject implements Runnable {
-
-        private final DicomObject object;
-
-        private RegisterDicomObject(DicomObject object) {
-            this.object = object;
+        
+        String currentStudyUID = currentDicomObject.getString(Tag.StudyInstanceUID);
+        String receivedStudyUID = obj.getString(Tag.StudyInstanceUID);
+        
+        // studyUIDが違えば何もせず破棄
+        if (!currentStudyUID.equals(receivedStudyUID)) {
+            setStatusLabel(new String[]{"Received DicomObject has different studyUID, discarded :", receivedStudyUID});
+            return;
         }
+        
+        setStatusLabel(new String[]{"Received DicomObeject :", obj.getString(Tag.SOPInstanceUID)});
 
-        @Override
-        public void run() {
-            if (currentDicomObject != null) {
-                String currentStudyUID = currentDicomObject.getString(Tag.StudyInstanceUID);
-                String receivedStudyUID = object.getString(Tag.StudyInstanceUID);
-                // studyUIDが違えば何もせず破棄
-                if (!currentStudyUID.equals(receivedStudyUID)) {
-                    setStatusLabel(new String[]{"Received DicomObject has different studyUID, discarded :", receivedStudyUID});
-                    return;
-                } else {
-                    // studyが一致しても、同じものが既に存在すれば破棄
-                    String sopInstanceUID = object.getString(Tag.SOPInstanceUID);
-                    Enumeration<DicomImageEntry> enu = listModel.elements();
-                    while (enu.hasMoreElements()) {
-                        DicomImageEntry entry = enu.nextElement();
-                        String test = entry.getTitle();
-                        if (test != null && test.equals(sopInstanceUID)) {
-                            setStatusLabel(new String[]{"Another image has same sopInstanceUID, discarded :", sopInstanceUID});
-                            return;
-                        }
-                    }
+        SwingWorker<DicomImageEntry, Void> worker = new SwingWorker<DicomImageEntry, Void>() {
+
+            @Override
+            protected DicomImageEntry doInBackground() throws Exception {
+
+                // ImageEntryを作成する
+                DicomImageEntry entry = ImageTool.getImageEntryFromDicom(obj);
+                entry.setDicomObject(obj);
+                entry.setIconText(entry.getFileName());
+                return entry;
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    DicomImageEntry entry = get();
+                    addDicomImageEntry(entry);
+                } catch (InterruptedException | ExecutionException ex) {
                 }
             }
-            try {
-                addDicomImageEntry(object);
-            } catch (IOException ex) {
-            }
-        }
+        };
+
+        worker.execute();
     }
-    
-    private void addDicomImageEntry(DicomObject object) throws IOException {
-        
-        setStatusLabel(new String[]{"Received DicomObeject :", object.getString(Tag.SOPInstanceUID)});
-        // ImageEntryを作成する
-        DicomImageEntry entry = ImageTool.getImageEntryFromDicom(object);
-        entry.setDicomObject(object);
-        
-        int size = listModel.getSize();
-        boolean added = false;
-        for (int i = 0; i < size; ++i) {
-            DicomImageEntry test = listModel.getElementAt(i);
+
+    private synchronized void addDicomImageEntry(DicomImageEntry entry) {
+
+        int i = 0;
+        for (Enumeration<DicomImageEntry> enm = listModel.elements(); enm.hasMoreElements(); ++i) {
+            DicomImageEntry test = enm.nextElement();
             if (entry.compareTo(test) < 0) {
-                listModel.add(i, entry);
-                added = true;
                 break;
             }
         }
-
-        if (!added) {
-            listModel.addElement(entry);
-        }
+        listModel.add(i, entry);
     }
 
     // Status Labelに表示

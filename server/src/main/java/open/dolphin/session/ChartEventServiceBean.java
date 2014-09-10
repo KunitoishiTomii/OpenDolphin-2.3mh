@@ -1,5 +1,6 @@
 package open.dolphin.session;
 
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.Logger;
@@ -8,10 +9,13 @@ import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.websocket.Session;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import open.dolphin.common.util.JsonConverter;
 import open.dolphin.infomodel.*;
 import open.dolphin.mbean.AsyncResponseModel;
 import open.dolphin.mbean.ServletContextHolder;
-import open.dolphin.rest.ChartEventResource;
 
 /**
  * ChartEventServiceBean
@@ -20,7 +24,10 @@ import open.dolphin.rest.ChartEventResource;
  */
 @Stateless
 public class ChartEventServiceBean {
-
+    
+    private static final String CHARSET_UTF8 = "; charset=UTF-8";
+    private static final String MEDIATYPE_JSON_UTF8 = MediaType.APPLICATION_JSON + CHARSET_UTF8;
+    
     private static final String QUERY_INSURANCE_BY_PATIENT_PK 
             = "from HealthInsuranceModel h where h.patient.id=:pk";
     
@@ -31,9 +38,6 @@ public class ChartEventServiceBean {
     @Inject
     private ServletContextHolder contextHolder;
     
-    @Inject
-    private ChartEventResource chartEventResource;
-
     @PersistenceContext
     private EntityManager em;
     
@@ -42,8 +46,9 @@ public class ChartEventServiceBean {
 
         String fid = evt.getFacilityId();
 
+        // AsyncResponse
         List<AsyncResponseModel> arList = contextHolder.getAsyncResponseList();
-        List<AsyncResponseModel> sendList = new ArrayList<>();
+        List<AsyncResponseModel> arSendList = new ArrayList<>();
 
         for (AsyncResponseModel arModel : arList) {
 
@@ -54,20 +59,56 @@ public class ChartEventServiceBean {
             // 同一施設かつChartEventModelの発行者でないクライアントに通知する
             // fid == nullなら全部にブロードキャストする
             if (fid == null || (fid.equals(acFid) && !acUUID.equals(issuerUUID))) {
-                sendList.add(arModel);
+                arSendList.add(arModel);
             }
 
         }
+        
+        deliverChartEvent(arSendList, evt);
+        
+        // websocket
+        List<Session> sessionList = contextHolder.getSessionList();
+        List<Session> wsSendList = new ArrayList<>();
 
-        deliverChartEvent(sendList, evt);
+        for (Session session : sessionList) {
+
+            String acFid = (String) session.getUserProperties().get("fid");
+            String acUUID = (String) session.getUserProperties().get("clientUUID");
+            String issuerUUID = evt.getIssuerUUID();
+
+            // 同一施設かつChartEventModelの発行者でないクライアントに通知する
+            // fid == nullなら全部にブロードキャストする
+            if (fid == null || (fid.equals(acFid) && !acUUID.equals(issuerUUID))) {
+                wsSendList.add(session);
+            }
+
+        }
+        
+        deliverChartEventWs(wsSendList, evt);
     }
 
     @Asynchronous
     private void deliverChartEvent(List<AsyncResponseModel> sendList, ChartEventModel evt) {
-        chartEventResource.deliverChartEvent(sendList, evt);
+        String json = JsonConverter.getInstance().toJson(evt);
+        for (AsyncResponseModel arModel : sendList) {
+            Response response = Response.ok(json).type(MEDIATYPE_JSON_UTF8).build();
+            arModel.getAsyncResponse().resume(response);
+        }
     }
-
-
+    
+    @Asynchronous
+    private void deliverChartEventWs(List<Session> sessionList, ChartEventModel evt) {
+        String json = JsonConverter.getInstance().toJson(evt);
+        for (Session session : sessionList) {
+            try {
+                if (session.isOpen()) {
+                    session.getBasicRemote().sendText(json);
+                }
+            } catch (IOException ex) {
+            }
+        }
+    }
+ 
     public String getServerUUID() {
         return contextHolder.getServerUUID();
     }

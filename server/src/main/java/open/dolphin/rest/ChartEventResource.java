@@ -1,6 +1,5 @@
 package open.dolphin.rest;
 
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 import javax.ws.rs.*;
@@ -86,15 +85,6 @@ public class ChartEventResource extends AbstractResource {
         int cnt = eventServiceBean.processChartEvent(msg);
 
         return Response.ok(String.valueOf(cnt)).build();
-    }
-
-    public void deliverChartEvent(List<AsyncResponseModel> sendList, ChartEventModel evt) {
-        
-        String json = getConverter().toJson(evt);
-        for (AsyncResponseModel arModel : sendList) {
-            Response response = Response.ok(json).type(MEDIATYPE_JSON_UTF8).build();
-            arModel.getAsyncResponse().resume(response);
-        }
     }
     
     @Override

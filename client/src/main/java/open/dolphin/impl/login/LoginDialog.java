@@ -82,7 +82,7 @@ public class LoginDialog extends AbstractLoginDialog {
                     Project.getProjectStub().setFacilityId(userModel.getFacilityModel().getFacilityId());
                     Project.getProjectStub().setUserId(userModel.idAsLocal());  // facilityId無し
 
-                    setResult(LoginStatus.AUTHENTICATED);
+                    setResultWithIp(LoginStatus.AUTHENTICATED, userModel.getRemoteIpAddr());
                      
                 } else {
                     if (tryCount <= maxTryCount) {

@@ -46,7 +46,7 @@ public class TempKarteCheckDialog extends JDialog implements IChartEventListener
     private final String[] PROPERTY_NAMES 
             = {"patientId", "fullName", "kanaName", "genderDesc", "ageBirthday", "isOpened"};
     private static final Class[] COLUMN_CLASSES = {
-        String.class, String.class, String.class, String.class, String.class, Integer.class};
+        String.class, String.class, String.class, String.class, String.class, Object.class};
     private final int[] COLUMN_WIDTH = {50, 100, 120, 30, 100, 20};
     
     private static final ImageIcon INFO_ICON = ClientContext.getImageIconAlias("icon_info_small");
@@ -66,21 +66,10 @@ public class TempKarteCheckDialog extends JDialog implements IChartEventListener
     
     private ChartEventListener cel;
     
-    
-    private static final TempKarteCheckDialog instance;
-    
-    static {
-        instance = new TempKarteCheckDialog();
-    }
-    
-    private TempKarteCheckDialog() {
+    public TempKarteCheckDialog() {
         setup();
         initComponents();
         connect();
-    }
-    
-    public static TempKarteCheckDialog getInstance() {
-        return instance;
     }
     
     private void setup() {
@@ -225,7 +214,7 @@ public class TempKarteCheckDialog extends JDialog implements IChartEventListener
         });
     }
     
-    public void renewList() throws Exception {
+    private void renewList() throws Exception {
 
         UserModel user = Project.getUserModel();
         long userPk = user.getId();
@@ -250,12 +239,14 @@ public class TempKarteCheckDialog extends JDialog implements IChartEventListener
             return;
         }
         if (b) {
-            cel.addListener(instance);
+            cel.addListener(this);
+            super.setVisible(b);
         } else {
-            cel.removeListener(instance);
+            cel.removeListener(this);
             setModal(false);
+            super.setVisible(b);
+            dispose();
         }
-        super.setVisible(b);
     }
     
     public boolean isTempKarteExists() {

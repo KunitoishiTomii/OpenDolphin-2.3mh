@@ -8,7 +8,6 @@ import javax.swing.ActionMap;
 import javax.swing.JComponent;
 import javax.swing.text.JTextComponent;
 import open.dolphin.client.GUIConst;
-import open.dolphin.infomodel.*;
 
 /**
  * TextComponentTransferHandler (renamed from BundleTransferHandler)
@@ -61,17 +60,11 @@ public class TextComponentTransferHandler extends AbstractKarteTransferHandler {
 
         boolean imported = false;
 
-        if (tr.isDataFlavorSupported(OrderListTransferable.orderListFlavor)) {
-            // KartePaneからのオーダスタンプをインポートする P
-            imported =  doStampDrop(tr, dest);
-        } else if (tr.isDataFlavorSupported(stringFlavor)) {
+        if (tr.isDataFlavorSupported(stringFlavor)) {
             // テキストをインポートする SOA/P
             imported = doTextDrop(tr, dest);
-//masuda^   病名エディタからDropされるRegisteredDiagnosis Flavor
-        } else if (tr.isDataFlavorSupported(InfoModelTransferable.infoModelFlavor)) {
-            imported = doDiagnosisDrop(tr, dest);
         }
-//masuda$
+        
         if (imported) {
             importDataSuccess(dest);
         } else {
@@ -95,69 +88,9 @@ public class TextComponentTransferHandler extends AbstractKarteTransferHandler {
         JTextComponent tc = (JTextComponent) support.getComponent();
         boolean canImport = true;
         canImport = canImport && tc.isEditable();
-        canImport = canImport && (support.isDataFlavorSupported(DataFlavor.stringFlavor)
-                || support.isDataFlavorSupported(OrderListTransferable.orderListFlavor)
-//masuda^   病名エディタからDropされるRegisteredDiagnosis Flavor
-                || support.isDataFlavorSupported(InfoModelTransferable.infoModelFlavor));
-//masuda$
+        canImport = canImport && support.isDataFlavorSupported(DataFlavor.stringFlavor);
+
         return canImport;
-    }
-
-    /**
-     * DropされたStamp(ModuleModel)をインポートする。
-     * @param tr Transferable
-     * @return インポートに成功した時 true
-     */
-    private boolean doStampDrop(Transferable tr, JTextComponent tc) {
-
-        try {
-            // スタンプのリストを取得する
-            OrderList list = (OrderList) tr.getTransferData(OrderListTransferable.orderListFlavor);
-            ModuleModel[] stamps = list.getOrderList();
-            // pPaneにスタンプを挿入する
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < stamps.length; i++) {
-                IModuleModel model = stamps[i].getModel();
-                if (model instanceof BundleMed) {
-                    BundleMed bm = (BundleMed) model;
-                    sb.append(bm.getAdminDisplayString2());
-                } else if (model instanceof BundleDolphin) {
-                    BundleDolphin bd = (BundleDolphin) model;
-                    sb.append(bd.toString());
-                }
-            }
-            tc.replaceSelection(sb.toString());
-
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace(System.err);
-        }
-        return false;
-    }
-
-    // DiagnosisDocumentからの病名を挿入する
-    private boolean doDiagnosisDrop(Transferable tr, JTextComponent tc) {
-        try {
-            // 複数対応
-            RegisteredDiagnosisModel[] rds = (RegisteredDiagnosisModel[]) tr.getTransferData(InfoModelTransferable.infoModelFlavor);
-            StringBuilder sb = new StringBuilder();
-            boolean first = true;
-            for (RegisteredDiagnosisModel rd : rds) {
-                if (!first) {
-                    sb.append("\n");
-                } else {
-                    first = false;
-                }
-                sb.append("＃");
-                sb.append(rd.getDiagnosis());
-                sb.append("(").append(rd.getStartDate()).append(")");
-            }
-            tc.replaceSelection(sb.toString());
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace(System.err);
-        }
-        return false;
     }
     
     @Override
@@ -185,8 +118,7 @@ public class TextComponentTransferHandler extends AbstractKarteTransferHandler {
         }
 
         boolean canImport = true;
-        canImport = canImport && (t.isDataFlavorSupported(DataFlavor.stringFlavor)
-                || t.isDataFlavorSupported(OrderListTransferable.orderListFlavor));
+        canImport = canImport && t.isDataFlavorSupported(DataFlavor.stringFlavor);
         return canImport;
     }
 }

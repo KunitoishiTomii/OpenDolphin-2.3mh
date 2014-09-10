@@ -63,7 +63,7 @@ public class LetterPDFMaker extends AbstractPDFMaker {
             Font urlFont = new Font(Font.HELVETICA, URL_FONT_SIZE, Font.NORMAL);
             Font hospitalFont = new Font(baseFont, HOSPITAL_FONT_SIZE);
             
-            // フッターに宣伝
+            // フッターに宣伝 do not remove!
             document.setFooter(getDolphinFooter());
             document.open();
             

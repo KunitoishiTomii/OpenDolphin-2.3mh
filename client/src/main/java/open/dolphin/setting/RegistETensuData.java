@@ -124,7 +124,7 @@ public class RegistETensuData {
             
             MasudaDelegater del = MasudaDelegater.getInstance();
             
-            final int maxResults = 100;
+            final int maxResults = 500;
             long totalModelCount = 0;
             long fromId = 0;
             int page = 0;
@@ -140,7 +140,7 @@ public class RegistETensuData {
                     break;
                 }
 
-                ret = del.initSanteiHistory(fromId, maxResults);
+                ret = del.initSanteiHistory(fromId, maxResults, totalModelCount);
                 
                 if (!FINISHED.equals(ret)) {
                     String[] str = ret.split(",");

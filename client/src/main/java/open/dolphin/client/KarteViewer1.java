@@ -3,6 +3,7 @@ package open.dolphin.client;
 import java.awt.Color;
 import java.awt.event.MouseListener;
 import javax.swing.ActionMap;
+import open.dolphin.infomodel.DocumentModel;
 import open.dolphin.infomodel.IInfoModel;
 
 /**
@@ -13,25 +14,29 @@ import open.dolphin.infomodel.IInfoModel;
 public class KarteViewer1 extends KarteViewer {
 
     // SOA Pane
-    private KartePane soaPane;
+    private final KartePane soaPane;
+    
+    public KarteViewer1(DocumentModel model) {
+        super(model);
+        soaPane = new KartePane();
+        KartePanel kp = new KartePanel1(false);
+        setKartePanel(kp);
+        setUI(kp);
+    }
     
     private void initialize() {
 
-        KartePanel kartePanel = KartePanel.createKartePanel(KartePanel.MODE.SINGLE_VIEWER, false);
-
+        KartePanel kartePanel = getKartePanel();
+        //kartePanel.initComponents(false);
+        kartePanel.setBorder(NOT_SELECTED_BORDER);
+        
         // SOA Pane を生成する
-        soaPane = new KartePane();
         soaPane.setRole(IInfoModel.ROLE_SOA);
         soaPane.setTextPane(kartePanel.getSoaTextPane());
 
         // Schema 画像にファイル名を付けるのために必要
         String docId = getModel().getDocInfoModel().getDocId();
         soaPane.setDocId(docId);
-
-        kartePanel.setBorder(NOT_SELECTED_BORDER);
-
-        setKartePanel(kartePanel);
-        setUI(kartePanel);
         
         // DocumentModelのstatusをKartePaneに保存しておく
         // KarteViewerのpopup制御に利用
@@ -47,33 +52,25 @@ public class KarteViewer1 extends KarteViewer {
      */
     @Override
     public void start() {
-
+        
         // Creates GUI
         initialize();
-
-        if (getModel() == null) {
-            return;
-        }
 
         // タイトルを設定する
         setTitle();
 
         // レンダリングする
-//masuda^
-        //new KarteRenderer_2(soaPane, null).render(getModel());
         KarteRenderer_2.getInstance().render(getModel(), soaPane, null);
-//masuda$
         
         // モデル表示後にリスナ等を設定する
         ChartMediator mediator = getContext().getChartMediator();
         soaPane.init(false, mediator);
-
+        
     }
 
     @Override
     public void stop() {
         soaPane.clear();
-        soaPane = null;
         // memory leak?
         dispose();
     }

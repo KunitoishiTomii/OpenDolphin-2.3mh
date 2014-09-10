@@ -44,7 +44,7 @@ public class AdmissionList extends AbstractMainComponent {
     // 来院テーブルのクラス名
     private static final Class[] COLUMN_CLASSES = {
         String.class, String.class, String.class, String.class, String.class, 
-        String.class, String.class, String.class, Integer.class};
+        String.class, String.class, String.class, Object.class};
     // 来院テーブルのカラム幅
     private static final int[] COLUMN_WIDTH = {
         30, 40, 100, 20, 40, 80, 50, 80, 20};
@@ -240,6 +240,12 @@ public class AdmissionList extends AbstractMainComponent {
                 openKarte();
             }
         };
+        
+        // Enterでカルテオープン Katoh@Hashimoto-iin
+        final String optionMapKey = "openKarte";
+        final KeyStroke enter = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
+        table.getInputMap(JTable.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(enter, optionMapKey);
+        table.getActionMap().put(optionMapKey, openKarteAction);
     }
     
     /**

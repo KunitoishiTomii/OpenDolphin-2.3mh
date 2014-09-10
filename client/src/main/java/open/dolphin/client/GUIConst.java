@@ -105,6 +105,7 @@ public class GUIConst {
     public static final String ACTION_EDIT_DISCONITEM = "editDisconItem";
     public static final String ACTION_EDIT_USINGDRUG = "editUsingDrug";
     public static final String ACTION_CHECK_TEMP_KARTE = "checkTempKarte";
+    public static final String ACTION_SHOW_REZETEN = "showRezeTen";
     // PacsService
     public static final String KEY_PACS_SERVICE = "pacsService";
     public static final String KEY_PACS_SETTING = "pacsSetting";

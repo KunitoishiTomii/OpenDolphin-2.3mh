@@ -8,8 +8,13 @@ import javax.swing.text.DefaultStyledDocument.ElementSpec;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
-import open.dolphin.infomodel.*;
+import open.dolphin.common.util.SchemaNumberComparator;
 import open.dolphin.common.util.XmlUtils;
+import open.dolphin.infomodel.DocumentModel;
+import open.dolphin.infomodel.IInfoModel;
+import open.dolphin.infomodel.ModuleModel;
+import open.dolphin.infomodel.ProgressCourse;
+import open.dolphin.infomodel.SchemaModel;
 import open.dolphin.tr.SchemaHolderTransferHandler;
 import open.dolphin.tr.StampHolderTransferHandler;
 
@@ -62,7 +67,7 @@ public class KarteRenderer_2 {
      *
      * @param model レンダリングする DocumentModel
      */
-    public final void render(final DocumentModel model, final KartePane soaPane, final KartePane pPane) {
+    public final void render(DocumentModel model, KartePane soaPane, KartePane pPane) {
 
         final List<ModuleModel> modules = model.getModules();
 
@@ -100,22 +105,11 @@ public class KarteRenderer_2 {
         Collections.sort(soaModules);
         Collections.sort(pModules);
         if (schemas != null) {
-            Collections.sort(schemas);
-        }
-
-        // この処理はなんだろう？ soaPaneにスタンプホルダ―？？？
-        if (soaSpec != null && pSpec != null) {
-            if (soaSpec.contains(NAME_STAMP_HOLDER)) {
-                String sTmp = soaSpec;
-                String pTmp = pSpec;
-                soaSpec = pTmp;
-                pSpec = sTmp;
-            }
+            Collections.sort(schemas, new SchemaNumberComparator());
         }
 
         // SOA Pane をレンダリングする
         if (soaSpec == null || soaSpec.isEmpty()) {
-            // soaにModuleModelはないはずだよね… あ、モディファイ版にはあるかもしれない…
             soaPane.initKarteStyledDocument();  // 忘れてたｗ
             for (ModuleModel mm : soaModules) {
                 soaPane.stamp(mm);
@@ -138,224 +132,10 @@ public class KarteRenderer_2 {
             }
         }
     }
-    
-    // StAX版
-    private static class KartePaneRenderer {
-
-        private KartePane kartePane;
-        private KarteStyledDocument doc;
-        private Style defaultStyle;
-        private List<ModuleModel> modules;
-        private List<SchemaModel> schemas;
-
-        private String foreground;
-        private String size;
-        private String bold;
-        private String italic;
-        private String underline;
-        private boolean componentFlg;
-        
-        /**
-         * TextPane Dump の XML を解析する。
-         *
-         * @param xml TextPane Dump の XML
-         */
-        private void renderPane(String xml, List<ModuleModel> modules, List<SchemaModel> schemas, KartePane kartePane) {
-
-            this.modules = modules;
-            this.schemas = schemas;
-            this.kartePane = kartePane;
-
-            // Offscreen updates trick
-            doc = new KarteStyledDocument(kartePane);
-            
-            defaultStyle = doc.setDefaultStyle();
-            
-            XMLInputFactory factory = XMLInputFactory.newInstance();
-            XMLStreamReader reader = null;
-            
-            try (StringReader stream = new StringReader(xml)) {
-
-                reader = factory.createXMLStreamReader(stream);
-
-                while (reader.hasNext()) {
-                    int eventType = reader.next();
-                    switch (eventType) {
-                        case XMLStreamReader.START_ELEMENT:
-                            startElement(reader);
-                            break;
-                        case XMLStreamReader.END_ELEMENT:
-                            endElement(reader);
-                            break;
-                    }
-                }
-
-            } catch (XMLStreamException ex) {
-            } finally {
-                try {
-                    if (reader != null) {
-                        reader.close();
-                    }
-                } catch (XMLStreamException ex) {
-                }
-            }
-
-            // レンダリング後はdefault styleに戻す
-            doc.setDefaultStyle();
-            
-            // JTextPaneにKarteStyledDocumentを設定する
-            kartePane.getTextPane().setDocument(doc);
-        }
-
-        private void startElement(XMLStreamReader reader) throws XMLStreamException {
-
-            String eName = reader.getLocalName();
-            
-            switch (eName) {
-                case PARAGRAPH_NAME:
-                    String alignStr = reader.getAttributeValue(null, ALIGNMENT_NAME);
-                    startParagraph(alignStr);
-                    break;
-                case CONTENT_NAME:
-                    foreground = reader.getAttributeValue(null, FOREGROUND_NAME);
-                    size = reader.getAttributeValue(null, SIZE_NAME);
-                    bold = reader.getAttributeValue(null, BOLD_NAME);
-                    italic = reader.getAttributeValue(null, ITALIC_NAME);
-                    underline = reader.getAttributeValue(null, UNDERLINE_NAME);
-                    break;
-                case TEXT_NAME:
-                    String text = reader.getElementText();
-                    // StampHolder直後に改行を補う
-                    if (componentFlg && !text.startsWith(CR)) {
-                        doc.insertFreeString(CR, null);
-                    }
-                    componentFlg = false;
-                    startContent(text);
-                    break;
-                case COMPONENT_NAME:
-                    // StampHolderが連続している場合、間に改行を補う
-                    if (componentFlg) {
-                        doc.insertFreeString(CR, null);
-                    }
-                    componentFlg = true;
-                    String name = reader.getAttributeValue(null, NAME_NAME);
-                    String number = reader.getAttributeValue(null, COMPONENT_NAME);
-                    startComponent(name, number);
-                    break;
-                //case SECTION_NAME:
-                //    break;
-                default:
-                    break;
-            }
-        }
-
-        private void endElement(XMLStreamReader reader) {
-
-            String eName = reader.getLocalName();
-            
-            switch (eName) {
-                case PARAGRAPH_NAME:
-                    endParagraph();
-                    break;
-                //case CONTENT_NAME:
-                //case COMPONENT_NAME:
-                //case SECTION_NAME:
-                default:
-                    break;
-            }
-        }
-
-        private void startParagraph(String alignStr) {
-
-            MutableAttributeSet atts = new SimpleAttributeSet();
-            atts.setResolveParent(defaultStyle);
-
-            if (alignStr != null) {
-                switch (alignStr) {
-                    case "0":
-                        StyleConstants.setAlignment(atts, StyleConstants.ALIGN_LEFT);
-                        break;
-                    case "1":
-                        StyleConstants.setAlignment(atts, StyleConstants.ALIGN_CENTER);
-                        break;
-                    case "2":
-                        StyleConstants.setAlignment(atts, StyleConstants.ALIGN_RIGHT);
-                        break;
-                }
-            }
-            // ParagraphにAlignmentを設定する
-            doc.setParagraphAttributes(doc.getLength(), 0, atts, true);
-        }
-
-        private void endParagraph() {
-            doc.clearLogicalStyle();
-        }
-
-        private void startContent(String text) {
-
-            // 特殊文字を戻す
-            text = XmlUtils.fromXml(text);
-
-            // このコンテントに設定する AttributeSet
-            MutableAttributeSet atts = new SimpleAttributeSet();
-
-            // foreground 属性を設定する
-            if (foreground != null) {
-                String[] tokens = foreground.split(",");
-                int r = Integer.parseInt(tokens[0]);
-                int g = Integer.parseInt(tokens[1]);
-                int b = Integer.parseInt(tokens[2]);
-                StyleConstants.setForeground(atts, new Color(r, g, b));
-            }
-
-            // size 属性を設定する
-            if (size != null) {
-                StyleConstants.setFontSize(atts, Integer.parseInt(size));
-            }
-            // bold 属性を設定する
-            if (bold != null) {
-                StyleConstants.setBold(atts, Boolean.valueOf(bold));
-            }
-            // italic 属性を設定する
-            if (italic != null) {
-                StyleConstants.setItalic(atts, Boolean.valueOf(italic));
-            }
-            // underline 属性を設定する
-            if (underline != null) {
-                StyleConstants.setUnderline(atts, Boolean.valueOf(underline));
-            }
-
-            // テキストを挿入する
-            doc.insertFreeString(text, atts);
-        }
-
-        private void startComponent(String name, String number) {
-
-            if (name == null) {
-                return;
-            }
-
-            int index = Integer.parseInt(number);
-            switch (name) {
-                case STAMP_HOLDER:
-                    // StampHolderを作成する。JTextPaneにDocumentは未設定なのでKartePane.flowStampは使えない
-                    StampHolder stamp = new StampHolder(kartePane, modules.get(index));
-                    stamp.setTransferHandler(StampHolderTransferHandler.getInstance());
-                    doc.flowComponent(stamp);
-                    break;
-                case SCHEMA_HOLDER:
-                    // SchemaHolderを作成する
-                    SchemaHolder schema = new SchemaHolder(kartePane, schemas.get(index));
-                    schema.setTransferHandler(SchemaHolderTransferHandler.getInstance());
-                    doc.flowComponent(schema);
-                    break;
-            }
-        }
-    }
 
     // ElementSpec版
     private static class KartePaneRenderer_ElementSpec {
-
+        
         private KartePane kartePane;
         private KarteStyledDocument doc;
         private Style defaultStyle;
@@ -368,6 +148,7 @@ public class KarteRenderer_2 {
         private String italic;
         private String underline;
         private boolean componentFlg;
+        private int baseFontSize;
 
         private List<ElementSpec> specList;
 
@@ -381,12 +162,13 @@ public class KarteRenderer_2 {
             this.modules = modules;
             this.schemas = schemas;
             this.kartePane = kartePane;
+            baseFontSize = kartePane.getTextPane().getFont().getSize();
             specList = new ArrayList<>();
                         
             doc = new KarteStyledDocument(kartePane);
             
             defaultStyle = doc.getStyle(DEFAULT_STYLE_NAME);
-
+            
             XMLInputFactory factory = XMLInputFactory.newInstance();
             XMLStreamReader reader = null;
             
@@ -418,16 +200,15 @@ public class KarteRenderer_2 {
             
             // DocumentをElementSpecListで一括作成する
             doc.createDocument(specList);
-            // ComponentHolderのPositionを設定する。ダサイが止む無し
+            // ComponentHolderのPositionを設定する
             doc.setComponentPositions();
-            
             // レンダリング後はdefault styleに戻す
             doc.setDefaultStyle();
-            
+
             // JTextPaneにKarteStyledDocumentを設定する
             kartePane.getTextPane().setDocument(doc);
         }
-
+        
         private void startElement(XMLStreamReader reader) throws XMLStreamException {
 
             final String eName = reader.getLocalName();
@@ -539,7 +320,9 @@ public class KarteRenderer_2 {
 
             // size 属性を設定する
             if (size != null) {
-                StyleConstants.setFontSize(atts, Integer.parseInt(size));
+                int modelFontSize = Integer.parseInt(size);
+                int viewFontSize = FontManager.toViewFontSize(modelFontSize, baseFontSize);
+                StyleConstants.setFontSize(atts, viewFontSize);
             }
             // bold 属性を設定する
             if (bold != null) {
@@ -567,7 +350,7 @@ public class KarteRenderer_2 {
             final int index = Integer.parseInt(number);
             switch (name) {
                 case STAMP_HOLDER: {
-                    // StampHolderを作成する
+                    // StampHolderを作成する。setMyTextは後回し
                     final StampHolder sh = new StampHolder(kartePane, modules.get(index));
                     sh.setTransferHandler(StampHolderTransferHandler.getInstance());
                     // このスタンプ用のスタイルを生成する

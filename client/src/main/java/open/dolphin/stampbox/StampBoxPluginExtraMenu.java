@@ -146,7 +146,7 @@ public class StampBoxPluginExtraMenu extends MouseAdapter {
         fileChooser.setDialogTitle("スタンプインポート");
         File current = fileChooser.getCurrentDirectory();
         fileChooser.setSelectedFile(new File(current.getPath(), "DolphinStamp.xml"));
-        int selected = fileChooser.showSaveDialog(context.getFrame());
+        int selected = fileChooser.showOpenDialog(context.getFrame());
 
         if (selected == JFileChooser.APPROVE_OPTION) {
             

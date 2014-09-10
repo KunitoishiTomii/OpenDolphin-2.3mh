@@ -16,7 +16,11 @@ import open.dolphin.client.ClientContext;
 import open.dolphin.client.PopupCalendarListener;
 import open.dolphin.delegater.LaboDelegater;
 import open.dolphin.delegater.MasudaDelegater;
-import open.dolphin.infomodel.*;
+import open.dolphin.infomodel.IInfoModel;
+import open.dolphin.infomodel.InFacilityLaboItem;
+import open.dolphin.infomodel.NLaboItem;
+import open.dolphin.infomodel.NLaboModule;
+import open.dolphin.infomodel.SimpleDate;
 import open.dolphin.project.Project;
 import open.dolphin.table.ListTableModel;
 import open.dolphin.table.StripeTableCellRenderer;
@@ -140,6 +144,7 @@ public class InFacilityLabo {
         StripeTableCellRenderer renderer = new StripeTableCellRenderer(templateTable);
         renderer.setDefaultRenderer();
         templateTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        templateTable.getTableHeader().setReorderingAllowed(false);
         // 列幅を設定する
         int len = TEMPLATE_COL_NAME.length;
         TableColumn column;
@@ -159,6 +164,7 @@ public class InFacilityLabo {
         renderer = new StripeTableCellRenderer(setTable);
         renderer.setDefaultRenderer();
         setTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        setTable.getTableHeader().setReorderingAllowed(false);
         // 列幅を設定する
         len = SET_COL_NAME.length;
         for (int i = 0; i < len; i++) {

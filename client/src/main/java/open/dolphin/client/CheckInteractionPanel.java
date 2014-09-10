@@ -13,8 +13,14 @@ import open.dolphin.dao.SqlMasterDao;
 import open.dolphin.dao.SqlMiscDao;
 import open.dolphin.delegater.MasudaDelegater;
 import open.dolphin.helper.ComponentMemory;
-import open.dolphin.infomodel.*;
 import open.dolphin.common.util.StringTool;
+import open.dolphin.dao.DaoException;
+import open.dolphin.infomodel.ClaimBundle;
+import open.dolphin.infomodel.ClaimItem;
+import open.dolphin.infomodel.DrugInteractionModel;
+import open.dolphin.infomodel.IInfoModel;
+import open.dolphin.infomodel.ModuleModel;
+import open.dolphin.infomodel.TensuMaster;
 
 /**
  * 薬剤併用チェックを行うためのパネル
@@ -147,15 +153,16 @@ public class CheckInteractionPanel {
             protected void done() {
                 try {
                     get();
-                    blockGlass.unblock();
                 } catch (InterruptedException | ExecutionException ex) {
+                } finally {
+                    blockGlass.unblock();
                 }
             }
         };
         worker.execute();
     }
 
-    private void searchTask() {
+    private void searchTask() throws DaoException {
 
         final int minKeywordLength = 3;     // キーワードの最短文字数制限
 
@@ -183,10 +190,7 @@ public class CheckInteractionPanel {
         String d = effectiveFormat.format(new Date());
         SqlMasterDao daoMaster = SqlMasterDao.getInstance();
         List<TensuMaster> medicineEntries = daoMaster.getTensuMasterByName(targetName, d, false);
-        if (!daoMaster.isNoError()) {
-            resultArea.setText("ORCAに接続できません。");
-            return;
-        }
+
         // 検索薬剤がなかったら
         if (medicineEntries.isEmpty()) {
             resultArea.setText("対象薬剤が見つかりません");
@@ -204,10 +208,7 @@ public class CheckInteractionPanel {
         // データベースで検索する。まとめてSQLをなげる
         SqlMiscDao daoMisc = SqlMiscDao.getInstance();
         List<DrugInteractionModel> list = daoMisc.checkInteraction(codes1, codes2);
-        if (!daoMisc.isNoError()) {
-            resultArea.setText("ORCAに接続できません。");
-            return;
-        }
+
         // 結果の処理
         if (list != null && !list.isEmpty()) {
             for (DrugInteractionModel model : list){

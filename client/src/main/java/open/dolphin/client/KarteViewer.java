@@ -6,7 +6,11 @@ import java.awt.print.PageFormat;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.border.Border;
-import open.dolphin.infomodel.*;
+import open.dolphin.infomodel.AdmissionModel;
+import open.dolphin.infomodel.DocInfoModel;
+import open.dolphin.infomodel.DocumentModel;
+import open.dolphin.infomodel.IInfoModel;
+import open.dolphin.infomodel.ModelUtils;
 import open.dolphin.project.Project;
 import open.dolphin.util.AgeCalculator;
 
@@ -28,9 +32,9 @@ public abstract class KarteViewer extends AbstractChartDocument {
     protected static final Border NOT_SELECTED_BORDER = BorderFactory.createLineBorder(NOT_SELECTED_COLOR);
     // 仮保存中のドキュメントを表す文字
     protected static final String UNDER_TMP_SAVE = " - 仮保存中";
-
+    
     // この view のモデル
-    private DocumentModel model;
+    private final DocumentModel model;
 
     // 2号カルテパネル
     private KartePanel kartePanel;
@@ -40,6 +44,10 @@ public abstract class KarteViewer extends AbstractChartDocument {
     
     // １号用紙か２号用紙
     public static enum MODE {SINGLE, DOUBLE};
+    
+    public KarteViewer(DocumentModel model) {
+        this.model = model;
+    }
 
     // 抽象メソッド
     public abstract KartePane getSOAPane();
@@ -53,18 +61,7 @@ public abstract class KarteViewer extends AbstractChartDocument {
     // KarteViewerのJTextPaneにKarteScrollerPanelのActionMapを設定する
     // これをしないとJTextPaneにフォーカスがあるとキーでスクロールできない
     public abstract void setParentActionMap(ActionMap amap);
-    
-    // ファクトリー
-    public static KarteViewer createKarteViewer(MODE mode) {
 
-        switch(mode) {
-            case SINGLE:
-                return new KarteViewer1();
-            case DOUBLE:
-                return new KarteViewer2();
-        }
-        return null;
-    }
     
     protected final void setTitle() {
 
@@ -136,6 +133,18 @@ public abstract class KarteViewer extends AbstractChartDocument {
         // KarteViewerで日付の右Dr名を表示する
         sb.append("／");
         sb.append(model.getUserModel().getCommonName());
+        
+//katoh^
+        // a little modification by masuda
+        // 初版作成者と最新版作成者が違う場合はその旨表示する
+        String rootUser = model.getDocInfoModel().getRootUser();
+        if (rootUser != null && !rootUser.equals(model.getUserModel().getCommonName())) {
+            sb.append("(初版：");
+            sb.append(rootUser);
+            sb.append(")");
+        }
+//katoh$
+        
         kartePanel.getTimeStampLabel().setText(sb.toString());
         
 //masuda^   タイトルを文書種別によって色分けする
@@ -145,6 +154,10 @@ public abstract class KarteViewer extends AbstractChartDocument {
 
     protected final void setKartePanel(KartePanel kartePanel) {
         this.kartePanel = kartePanel;
+    }
+    
+    protected final KartePanel getKartePanel() {
+        return kartePanel;
     }
     
     // memory leak?
@@ -190,9 +203,9 @@ public abstract class KarteViewer extends AbstractChartDocument {
      * 表示するモデルを設定する。
      * @param model 表示するDocumentModel
      */
-    public final void setModel(DocumentModel model) {
-        this.model = model;
-    }
+//    public final void setModel(DocumentModel model) {
+//        this.model = model;
+//    }
 
     /**
      * 表示するモデルを返す。

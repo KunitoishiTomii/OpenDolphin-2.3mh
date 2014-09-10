@@ -16,22 +16,23 @@ import java.util.logging.Logger;
 public class PvtServletServer {
 
     private static final Logger logger = Logger.getLogger(PvtServletServer.class.getSimpleName());
-    
+
     private static final int DEFAULT_PORT = 5002;
     private final int port = DEFAULT_PORT;
-    
+
     // ServerSocketのスレッド nio!
-    private Thread thread;
+    private Thread sThread;
     private PvtServerThread serverThread;
-    // PVT登録処理のSingle Thread Executor
+
+    // PvtPostTask
     private ExecutorService exec;
 
     private static final PvtServletServer instance;
-    
+
     static {
         instance = new PvtServletServer();
     }
-    
+
     public static PvtServletServer getInstance() {
         return instance;
     }
@@ -41,16 +42,16 @@ public class PvtServletServer {
 
     public void start() {
 
-        exec = Executors.newSingleThreadExecutor();
-
         try {
             InetSocketAddress address = new InetSocketAddress(InetAddress.getLocalHost(), port);
             String msg = "PVT Server is binded " + address;
             logger.info(msg);
 
             serverThread = new PvtServerThread(address);
-            thread = new Thread(serverThread, "PVT server socket");
-            thread.start();
+            sThread = new Thread(serverThread, "PVT server socket");
+            sThread.start();
+
+            exec = Executors.newSingleThreadExecutor();
 
         } catch (IOException ex) {
             String msg = "IOException while creating the ServerSocket: " + ex.toString();
@@ -61,35 +62,29 @@ public class PvtServletServer {
     public void dispose() {
 
         // ServerThreadを中止させる
-        serverThread.stop();
+        if (serverThread != null) {
+            serverThread.stop();
+            // ServerSocketのThread破棄する
+            sThread.interrupt();
+        }
 
-        // ServerSocketのThread破棄する
-        thread.interrupt();
-        thread = null;
-
-        // SocketReadTaskをシャットダウンする
-        shutdownExecutor();
+        // shutdown PvtPostTask
+        if (exec != null) {
+            exec.shutdown();
+            try {
+                if (!exec.awaitTermination(100, TimeUnit.MILLISECONDS)) {
+                    exec.shutdownNow();
+                }
+            } catch (InterruptedException ex) {
+                exec.shutdownNow();
+            }
+        }
 
         logger.info("PVT Server stopped.");
     }
 
-    private void shutdownExecutor() {
-
-        try {
-            exec.shutdown();
-            if (!exec.awaitTermination(5, TimeUnit.SECONDS)) {
-                exec.shutdownNow();
-            }
-        } catch (InterruptedException ex) {
-            exec.shutdownNow();
-        } catch (NullPointerException ex) {
-        }
-        exec = null;
-    }
-
     // PvtClaimIOHanlderから呼ばれる
     public void postPvt(String pvtXml) {
-        PvtPostTask task = new PvtPostTask(pvtXml);
-        exec.submit(task);
+        exec.submit(new PvtPostTask(pvtXml));
     }
 }

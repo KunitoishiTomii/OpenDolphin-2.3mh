@@ -12,7 +12,12 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import open.dolphin.delegater.UserDelegater;
 import open.dolphin.helper.ProgressMonitorWorker;
-import open.dolphin.infomodel.*;
+import open.dolphin.infomodel.DepartmentModel;
+import open.dolphin.infomodel.FacilityModel;
+import open.dolphin.infomodel.IInfoModel;
+import open.dolphin.infomodel.LicenseModel;
+import open.dolphin.infomodel.RoleModel;
+import open.dolphin.infomodel.UserModel;
 import open.dolphin.project.Project;
 import open.dolphin.table.ListTableModel;
 import open.dolphin.table.StripeTableCellRenderer;
@@ -34,7 +39,7 @@ public class AddUserImpl extends AbstractMainTool implements AddUser {
     private static final String ADD_USER_SUCCESS_MSG = "ユーザを登録しました。";
     private static final String DELETE_USER_SUCCESS_MSG = "ユーザを削除しました。";
     private static final String DELETE_OK_USER_ = "選択したユーザを削除します";
-    
+
     private JFrame frame;
     private final Logger logger;
 
@@ -482,69 +487,29 @@ public class AddUserImpl extends AbstractMainTool implements AddUser {
         }
     }
     
+    private final String[] COLUMN_NAMES = new String[]{"ユーザID", "姓", "名", "医療資格", "診療科", "FailCount"};
+    private static final String[] PROPERTY_NAMES = new String[]{
+        "idAsLocal()","getSirName","getGivenName","getLicenseDesc","getDepartmentDesc","getFailCount"};
+    private static final Class[] COLUMN_CLASSES = new Class[]{
+        String.class, String.class, String.class, String.class, String.class, Integer.class};
     /**
      * ユーザリストを取得するクラス。名前がいけない。
      */
     protected class UserListPanel extends JPanel {
-        
+
         private ListTableModel<UserModel> tableModel;
         private JTable table;
         private final JButton getButton;
         private final JButton deleteButton;
         private final JButton cancelButton;
-        
+        private final JButton unlockButton;
+
         public UserListPanel() {
-            
-            String[] columns = new String[] { "ユーザID", "姓", "名", "医療資格", "診療科" };
-            
-            // ユーザテーブル
-            tableModel = new ListTableModel<UserModel>(columns, 7) {
-                
-                // 編集不可
-                @Override
-                public boolean isCellEditable(int row, int col) {
-                    return false;
-                }
-                
-                // オブジェクトをテーブルに表示する
-                @Override
-                public Object getValueAt(int row, int col) {
-                    
-                    UserModel entry = getObject(row);
-                    if (entry == null) {
-                        return null;
-                    }
-                    
-                    String ret = null;
-                    
-                    switch (col) {
-                        
-                        case 0:
-                            ret = entry.idAsLocal();
-                            break;
-                            
-                        case 1:
-                            ret = entry.getSirName();
-                            break;
-                            
-                        case 2:
-                            ret = entry.getGivenName();
-                            break;
-                            
-                        case 3:
-                            ret = entry.getLicenseModel().getLicenseDesc();
-                            break;
-                            
-                        case 4:
-                            ret = entry.getDepartmentModel().getDepartmentDesc();
-                            break;
-                    }
-                    return ret;
-                }
-            };
-            
+
+//masuda^   // ユーザテーブル
+            tableModel =  new ListTableModel<>(COLUMN_NAMES, 1, PROPERTY_NAMES, COLUMN_CLASSES);
             table = new JTable(tableModel);
-//masuda^   ストライプテーブル
+            // ストライプテーブル
             StripeTableCellRenderer renderer = new StripeTableCellRenderer();
             renderer.setTable(table);
             renderer.setDefaultRenderer();
@@ -564,8 +529,11 @@ public class AddUserImpl extends AbstractMainTool implements AddUser {
                         // 医療資格が other 以外は削除できない
                         int index = table.getSelectedRow();
                         UserModel entry = tableModel.getObject(index);
-                        if (entry!=null) {
+                        if (entry != null) {
                             controleDelete(entry);
+                            unlockButton.setEnabled(true);
+                        } else {
+                            unlockButton.setEnabled(false);
                         }
                     }
                 }
@@ -607,11 +575,21 @@ public class AddUserImpl extends AbstractMainTool implements AddUser {
             });
             //cancelButton.setMnemonic('C');
             
+            unlockButton = new JButton("Unlock");
+            unlockButton.setToolTipText("アカウントロックを解除します");
+            unlockButton.addActionListener(new ActionListener(){
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    unlockUser();
+                }
+            });
+            
             JPanel btnPanel;
             if (isMac()) {
-                btnPanel = GUIFactory.createCommandButtonPanel(new JButton[]{deleteButton, cancelButton, getButton});
+                btnPanel = GUIFactory.createCommandButtonPanel(new JButton[]{deleteButton, unlockButton, cancelButton, getButton});
             } else {
-                btnPanel = GUIFactory.createCommandButtonPanel(new JButton[]{getButton, deleteButton, cancelButton});
+                btnPanel = GUIFactory.createCommandButtonPanel(new JButton[]{getButton, deleteButton, unlockButton, cancelButton});
             }
             this.setLayout(new BorderLayout(0, 17));
             this.add(scroller, BorderLayout.CENTER);
@@ -674,6 +652,53 @@ public class AddUserImpl extends AbstractMainTool implements AddUser {
             worker.execute();
 //masuda$
         }
+        
+//masuda^   アカウントロックを解除する
+        private void unlockUser() {
+            
+            int row = table.getSelectedRow();
+            final UserModel entry = tableModel.getObject(row);
+            if (entry == null) {
+                return;
+            }
+            // failCountをクリアする
+            entry.setFailCount(0);
+            
+            final UserDelegater udl = UserDelegater.getInstance();
+            Component c = getFrame();
+            String message = null;
+            String note = "アカウントロック解除";
+            
+            ProgressMonitorWorker worker = new ProgressMonitorWorker<List<UserModel>, Void>(c, message, note) {
+        
+                @Override
+                protected List<UserModel> doInBackground() throws Exception {
+                    udl.updateUser(entry);
+                    List<UserModel> result   = udl.getAllUser();
+                    return result;
+                }
+
+                @Override
+                protected void succeeded(List<UserModel> results) {
+                    tableModel.setDataProvider(results);
+                    JOptionPane.showMessageDialog(getFrame(),
+                            "アカウントロックを解除しました",
+                            ClientContext.getFrameTitle(getName()),
+                            JOptionPane.INFORMATION_MESSAGE);
+                }
+
+                @Override
+                protected void failed(java.lang.Throwable cause) {
+                    JOptionPane.showMessageDialog(getFrame(),
+                            cause.getMessage(),
+                            ClientContext.getFrameTitle(getName()),
+                            JOptionPane.WARNING_MESSAGE);
+                }
+            };
+            
+            worker.execute();
+        }
+//masuda$
         
         /**
          * 選択したユーザを削除する。
@@ -911,10 +936,6 @@ public class AddUserImpl extends AbstractMainTool implements AddUser {
             label = new JLabel("確認:", SwingConstants.RIGHT);
             constrain(content, label, x + 2, y, 1, 1, GridBagConstraints.NONE, GridBagConstraints.EAST);
             constrain(content, userPassword2, x + 3, y, 1, 1, GridBagConstraints.NONE, GridBagConstraints.WEST);
-//masuda^   生パスワード
-            //chk_rawPass = new JCheckBox("生Pass登録");
-            //constrain(content, chk_rawPass, x + 4, y, 1, 1, GridBagConstraints.NONE, GridBagConstraints.WEST);
-//masuda$
             
             x = 0;
             y += 1;
@@ -998,15 +1019,7 @@ public class AddUserImpl extends AbstractMainTool implements AddUser {
             user.setSirName(sn.getText().trim());
             user.setGivenName(givenName.getText().trim());
             user.setCommonName(user.getSirName() + " " + user.getGivenName());
-/*
-//masuda^   生パスワード
-            if (chk_rawPass.isSelected()) {
-                user.setPasswd(pass);
-            } else {
-                user.setPasswd(null);
-            }
-//masuda$
-*/
+
             // 施設情報
             // 管理者のものを使用する
             user.setFacilityModel(Project.getUserModel().getFacilityModel());

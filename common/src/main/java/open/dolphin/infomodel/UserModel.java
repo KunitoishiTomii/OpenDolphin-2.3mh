@@ -69,6 +69,13 @@ public class UserModel implements Serializable {
     // 排他処理
     private String clientUUID;
     
+    // アカウントロック
+    private Integer failCount;
+    
+    // IPアドレス
+    @Transient
+    private String remoteIpAddr;
+    
     /**
      * UserModelオブジェクトを生成する。
      */
@@ -239,6 +246,30 @@ public class UserModel implements Serializable {
     
     public void setClientUUID(String clientUUID) {
         this.clientUUID = clientUUID;
+    }
+    
+    public void setFailCount(int failCount) {
+        this.failCount = failCount;
+    }
+    
+    public int getFailCount() {
+        return failCount == null ? 0 : failCount;
+    }
+    
+    public String getDepartmentDesc() {
+        return getDepartmentModel().getDepartmentDesc();
+    }
+    
+    public String getLicenseDesc() {
+        return getLicenseModel().getLicenseDesc();
+    }
+    
+    public void setRemoteIpAddr(String remoteIp){
+        remoteIpAddr = remoteIp;
+    }
+    
+    public String getRemoteIpAddr(){
+        return remoteIpAddr;
     }
     
     @Override

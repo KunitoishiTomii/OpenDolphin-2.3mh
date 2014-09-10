@@ -6,8 +6,23 @@ import java.util.Date;
 import java.util.List;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Response;
-import open.dolphin.infomodel.*;
-import open.dolphin.common.util.BeanUtils;
+import open.dolphin.common.util.ModuleBeanDecoder;
+import open.dolphin.infomodel.DisconItemModel;
+import open.dolphin.infomodel.DocInfoModel;
+import open.dolphin.infomodel.DrPatientIdModel;
+import open.dolphin.infomodel.ETensuModel1;
+import open.dolphin.infomodel.ExamHistoryModel;
+import open.dolphin.infomodel.InFacilityLaboItem;
+import open.dolphin.infomodel.IndicationModel;
+import open.dolphin.infomodel.ModuleModel;
+import open.dolphin.infomodel.PatientModel;
+import open.dolphin.infomodel.PatientVisitModel;
+import open.dolphin.infomodel.RoutineMedModel;
+import open.dolphin.infomodel.RpModel;
+import open.dolphin.infomodel.SanteiHistoryModel;
+import open.dolphin.infomodel.SearchResultModel;
+import open.dolphin.infomodel.UserPropertyModel;
+import open.dolphin.infomodel.UsingDrugModel;
 
 /**
  * MasudaDelegater
@@ -41,8 +56,8 @@ public class MasudaDelegater extends BusinessDelegater {
 
         Response response = getWebTarget()
                 .path(path)
-                .queryParam(FIRST_RESULT, String.valueOf(firstResult))
-                .queryParam(MAX_RESULTS, String.valueOf(maxResults))
+                .queryParam(FIRST_RESULT, firstResult)
+                .queryParam(MAX_RESULTS, maxResults)
                 .request(MEDIATYPE_JSON_UTF8)
                 .get();
 
@@ -57,7 +72,10 @@ public class MasudaDelegater extends BusinessDelegater {
         // いつもデコード忘れるｗ
         for (RoutineMedModel model : list) {
             for (ModuleModel mm : model.getModuleList()) {
-                mm.setModel((IModuleModel) BeanUtils.xmlDecode(mm.getBeanBytes()));
+                //mm.setModel((IModuleModel) BeanUtils.xmlDecode(mm.getBeanBytes()));
+                mm.setModel(ModuleBeanDecoder.getInstance().decode(mm.getBeanBytes()));
+                // メモリ節約？
+                mm.setBeanBytes(null);
             }
         }
 
@@ -85,7 +103,10 @@ public class MasudaDelegater extends BusinessDelegater {
         }
         // いつもデコード忘れるｗ
         for (ModuleModel mm : model.getModuleList()) {
-            mm.setModel((IModuleModel) BeanUtils.xmlDecode(mm.getBeanBytes()));
+            //mm.setModel((IModuleModel) BeanUtils.xmlDecode(mm.getBeanBytes()));
+            mm.setModel(ModuleBeanDecoder.getInstance().decode(mm.getBeanBytes()));
+            // メモリ節約？
+            mm.setBeanBytes(null);
         }
 
         return model;
@@ -313,7 +334,10 @@ public class MasudaDelegater extends BusinessDelegater {
         response.close();
 
         for (ModuleModel module : list) {
-            module.setModel((IModuleModel) BeanUtils.xmlDecode(module.getBeanBytes()));
+            //module.setModel((IModuleModel) BeanUtils.xmlDecode(module.getBeanBytes()));
+            module.setModel(ModuleBeanDecoder.getInstance().decode(module.getBeanBytes()));
+            // メモリ節約？
+            module.setBeanBytes(null);
         }
 
         return list;
@@ -370,14 +394,15 @@ public class MasudaDelegater extends BusinessDelegater {
     }
 
     // Hibernate Searchの初期インデックスを作成する
-    public String makeDocumentModelIndex(long fromDocPk, int maxResults) throws Exception {
+    public String makeDocumentModelIndex(long fromDocPk, int maxResults, long totalCount) throws Exception {
         
         String path = RES_BASE +"search/makeIndex";
 
         Response response = getWebTarget()
                 .path(path)
-                .queryParam(FROM_DOC_PK, String.valueOf(fromDocPk))
-                .queryParam(MAX_RESULTS, String.valueOf(maxResults))
+                .queryParam(FROM_DOC_PK, fromDocPk)
+                .queryParam(MAX_RESULTS, maxResults)
+                .queryParam(TOTAL_COUNT, totalCount)
                 .request(MEDIATYPE_TEXT_UTF8)
                 .get();
 
@@ -397,7 +422,7 @@ public class MasudaDelegater extends BusinessDelegater {
         
         Response response = getWebTarget()
                 .path(path)
-                .queryParam(KARTE_ID, String.valueOf(karteId))
+                .queryParam(KARTE_ID, karteId)
                 .queryParam(TEXT, text)
                 .request(MEDIATYPE_JSON_UTF8)
                 .get();
@@ -414,17 +439,18 @@ public class MasudaDelegater extends BusinessDelegater {
     }
 
     // grep方式の全文検索
-    public SearchResultModel getSearchResult(
-            String text, long fromId, int maxResult, boolean progressCourseOnly) throws Exception {
+    public SearchResultModel getSearchResult(String text, long fromId, 
+            int maxResult, long totalCount, boolean progressCourseOnly) throws Exception {
         
         String path = RES_BASE + "search/grep";
 
         Response response = getWebTarget()
                 .path(path)
                 .queryParam(TEXT, text)
-                .queryParam(FROM_ID, String.valueOf(fromId))
-                .queryParam(MAX_RESULTS, String.valueOf(maxResult))
-                .queryParam(PC_ONLY, String.valueOf(progressCourseOnly))
+                .queryParam(FROM_ID, fromId)
+                .queryParam(MAX_RESULTS, maxResult)
+                .queryParam(TOTAL_COUNT, totalCount)
+                .queryParam(PC_ONLY, progressCourseOnly)
                 .request(MEDIATYPE_JSON_UTF8)
                 .get();
 
@@ -470,7 +496,7 @@ public class MasudaDelegater extends BusinessDelegater {
                 .path(path)
                 .queryParam(FROM_DATE, toRestFormat(fromDate))
                 .queryParam(TO_DATE, toRestFormat(toDate))
-                .queryParam(YOYUU, String.valueOf(yoyuu))
+                .queryParam(YOYUU, yoyuu)
                 .request(MEDIATYPE_JSON_UTF8)
                 .get();
 
@@ -545,14 +571,15 @@ public class MasudaDelegater extends BusinessDelegater {
         return ret;
     }
 
-    public String initSanteiHistory(long fromId, int maxResults) throws Exception {
+    public String initSanteiHistory(long fromId, int maxResults, long totalCount) throws Exception {
         
         String path = RES_BASE + "santeiHistory/init";
 
         Response response = getWebTarget()
                 .path(path)
-                .queryParam(FROM_ID, String.valueOf(fromId))
-                .queryParam(MAX_RESULTS, String.valueOf(maxResults))
+                .queryParam(FROM_ID, fromId)
+                .queryParam(MAX_RESULTS, maxResults)
+                .queryParam(TOTAL_COUNT, totalCount)
                 .request(MEDIATYPE_TEXT_UTF8)
                 .get();
 
@@ -601,7 +628,7 @@ public class MasudaDelegater extends BusinessDelegater {
                 .path(path)
                 .queryParam(FROM_DATE, toRestFormat(fromDate))
                 .queryParam(TO_DATE, toRestFormat(toDate))
-                .queryParam(LAST_ONLY, String.valueOf(lastOnly))
+                .queryParam(LAST_ONLY, lastOnly)
                 .request(MEDIATYPE_JSON_UTF8)
                 .get();
 
@@ -675,6 +702,140 @@ public class MasudaDelegater extends BusinessDelegater {
 
         return list;
     }
+    
+    // 適応モデル
+    public List<IndicationModel> getIndicationList(List<String> srycds) throws Exception {
+        
+        String path = RES_BASE + "indication/postget";
+        
+        // パラメーターで送るにはsrycd数が多いのでpostでデータを送る
+        TypeReference typeRef1 = new TypeReference<List<String>>(){};
+        Entity entity = toJsonEntity(srycds, typeRef1);
+        
+        Response response = getWebTarget()
+                .path(path)
+                .request(MEDIATYPE_JSON_UTF8)
+                .post(entity);
+        
+        checkHttpStatus(response);
+        InputStream is = response.readEntity(InputStream.class);
+        TypeReference typeRef2 = new TypeReference<List<IndicationModel>>(){};
+        List<IndicationModel> list = (List<IndicationModel>) 
+                getConverter().fromJson(is, typeRef2);
+        
+        response.close();
+
+        return list;
+    }
+    
+    public IndicationModel getIndicationModel(String srycd) throws Exception {
+        
+        String path = RES_BASE + "indication/" + srycd;
+        
+        Response response = getWebTarget()
+                .path(path)
+                .request(MEDIATYPE_JSON_UTF8)
+                .get();
+        
+        checkHttpStatus(response);
+        InputStream is = response.readEntity(InputStream.class);
+        IndicationModel model = (IndicationModel)
+                getConverter().fromJson(is, IndicationModel.class);
+        
+        return model;
+    }
+    
+    public void addIndicationModels(List<IndicationModel> list) throws Exception {
+        
+        String path = RES_BASE + "indication/list";
+        
+        TypeReference typeRef = new TypeReference<List<IndicationModel>>(){};
+        Entity entity = toJsonEntity(list, typeRef);
+
+        Response response = getWebTarget()
+                .path(path)
+                .request(MEDIATYPE_TEXT_UTF8)
+                .post(entity);
+
+        int status = checkHttpStatus(response);
+        String ret = response.readEntity(String.class);
+        debug(status, ret);
+        
+        response.close();
+    }
+    
+    public void importIndicationModels(List<IndicationModel> list) throws Exception {
+        
+        String path = RES_BASE + "indication/import";
+        
+        TypeReference typeRef = new TypeReference<List<IndicationModel>>(){};
+        Entity entity = toJsonEntity(list, typeRef);
+
+        Response response = getWebTarget()
+                .path(path)
+                .request(MEDIATYPE_TEXT_UTF8)
+                .post(entity);
+
+        int status = checkHttpStatus(response);
+        String ret = response.readEntity(String.class);
+        debug(status, ret);
+        
+        response.close();
+    }
+    
+    public void updateIndicationModel(IndicationModel model) throws Exception {
+        
+        String path = RES_BASE + "indication";
+  
+        Entity entity = toJsonEntity(model);
+
+        Response response = getWebTarget()
+                .path(path)
+                .request(MEDIATYPE_TEXT_UTF8)
+                .put(entity);
+
+        int status = checkHttpStatus(response);
+        String ret = response.readEntity(String.class);
+        debug(status, ret);
+        
+        response.close();
+    }
+    
+    public void removeIndicationModel(IndicationModel model) throws Exception {
+        
+        String path = RES_BASE + "indication/" + String.valueOf(model.getId());
+
+        Response response = getWebTarget()
+                .path(path)
+                .request()
+                .delete();
+
+        int status = checkHttpStatus(response);
+        debug(status, "delete response");
+        
+        response.close();
+    }
+    
+    public List<DrPatientIdModel> getDrPatientIdList(String ym) throws Exception {
+        
+        String path = RES_BASE + "drPatientId/" + ym;
+        
+        Response response = getWebTarget()
+                .path(path)
+                .request(MEDIATYPE_JSON_UTF8)
+                .get();
+        
+        checkHttpStatus(response);
+        InputStream is = response.readEntity(InputStream.class);
+        TypeReference typeRef = new TypeReference<List<DrPatientIdModel>>(){};
+        List<DrPatientIdModel> list = (List<DrPatientIdModel>) 
+                getConverter().fromJson(is, typeRef);
+        
+        response.close();
+
+        return list;
+    }
+    
     
     @Override
     protected void debug(int status, String entity) {

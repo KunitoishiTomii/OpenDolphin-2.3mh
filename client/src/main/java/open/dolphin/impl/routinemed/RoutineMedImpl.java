@@ -1,4 +1,3 @@
-
 package open.dolphin.impl.routinemed;
 
 import java.awt.Color;
@@ -8,12 +7,10 @@ import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -112,8 +109,8 @@ public class RoutineMedImpl extends AbstractChartDocument {
         undoAction.setEnabled(false);
         redoAction = getContext().getChartMediator().getAction(GUIConst.ACTION_REDO);
         redoAction.setEnabled(false);
-        undoQue = new LinkedList<>();
-        redoQue = new LinkedList<>();
+        undoQue = new ArrayDeque<>();
+        redoQue = new ArrayDeque<>();
     }
     
     private void initComponents() {
@@ -487,7 +484,7 @@ public class RoutineMedImpl extends AbstractChartDocument {
         RoutineMedDequeModel model = new RoutineMedDequeModel(oldMed, newMed);
 
         // dequeに登録
-        undoQue.offerLast(model);
+        undoQue.push(model);
         // redoQueはクリア
         redoQue.clear();
         // 編集の場合はoldMedをnewMedで置き換える
@@ -511,13 +508,13 @@ public class RoutineMedImpl extends AbstractChartDocument {
     public void undo() {
 
         // undoQueから取ってくる
-        RoutineMedDequeModel model = (RoutineMedDequeModel) undoQue.pollLast();
+        RoutineMedDequeModel model = (RoutineMedDequeModel) undoQue.poll();
 
         if (model == null){
             return;
         }
         // redoのためにredoQueに追加する
-        redoQue.offerLast(model);
+        redoQue.push(model);
 
         RoutineMedModel oldMed = model.getOldMed();
         RoutineMedModel newMed = model.getNewMed();
@@ -540,13 +537,13 @@ public class RoutineMedImpl extends AbstractChartDocument {
     public void redo() {
 
         // redoQueから取ってくる
-        RoutineMedDequeModel model = (RoutineMedDequeModel) redoQue.pollLast();
+        RoutineMedDequeModel model = (RoutineMedDequeModel) redoQue.poll();
 
         if (model == null){
             return;
         }
         // redoのundoのため、undoQueに追加する
-        undoQue.offerLast(model);
+        undoQue.push(model);
 
         RoutineMedModel oldMed = model.getOldMed();
         RoutineMedModel newMed = model.getNewMed();

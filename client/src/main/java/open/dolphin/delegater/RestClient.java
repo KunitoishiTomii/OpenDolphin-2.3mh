@@ -1,28 +1,19 @@
 package open.dolphin.delegater;
 
+import java.net.URI;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
+//import java.util.concurrent.TimeUnit;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.WebTarget;
 import open.dolphin.project.Project;
 import open.dolphin.setting.MiscSettingPanel;
 import open.dolphin.util.HashUtil;
-import org.apache.http.params.HttpConnectionParams;
-import org.apache.http.params.HttpParams;
 import org.glassfish.jersey.client.ClientProperties;
-import org.glassfish.jersey.client.JerseyClient;
 import org.glassfish.jersey.client.JerseyClientBuilder;
-import org.jboss.resteasy.client.jaxrs.ResteasyClient;
-import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
-import org.jboss.resteasy.client.jaxrs.engines.ApacheHttpClient4Engine;
+//import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 
 /**
  * RestClient
@@ -33,9 +24,12 @@ public class RestClient {
 
     private static final RestClient instance;
     
-    private static final int TIMEOUT_IN_MILLISEC = 30 * 1000; // 30sec
+    private static final int TIMEOUT_IN_MILLISEC = 60 * 1000; // 60sec
     
     private String baseURI;
+    
+    private final boolean useJersey;
+    private final boolean useComet;
     
     // 非同期通信を分けるほうがよいのかどうか不明だが
     private Client client;
@@ -51,6 +45,10 @@ public class RestClient {
     }
 
     private RestClient() {
+        
+        useJersey = Project.getBoolean(MiscSettingPanel.USE_JERSEY, MiscSettingPanel.DEFAULT_USE_JERSEY);
+        useComet = !Project.getBoolean(MiscSettingPanel.USE_WEBSOCKET, MiscSettingPanel.DEFAULT_USE_WEBSOCKET);
+        
         setupSslClients();
     }
 
@@ -63,22 +61,25 @@ public class RestClient {
         authFilter.setUserName(username);
         authFilter.setPassword(password);
     }
-
+/*
     public String getBaseURI() {
         return baseURI;
     }
-
-    public void setBaseURI(String uri) {
+*/
+    public void setBaseURI(String strUri) {
 
         String oldURI = baseURI;
-        baseURI = uri;
+        baseURI = strUri;
 
         if (baseURI == null || baseURI.equals(oldURI)) {
             return;
         }
         
-        webTarget = client.target(baseURI);
-        asyncWebTarget = asyncClient.target(baseURI);
+        URI uri = URI.create(baseURI);
+        webTarget = client.target(uri);
+        if (useComet) {
+            asyncWebTarget = asyncClient.target(uri);
+        }
     }
     
     public WebTarget getWebTarget() {
@@ -93,92 +94,71 @@ public class RestClient {
     // オレオレSSL復活ｗ
     private void setupSslClients() {
         
-        boolean useJersey = Project.getBoolean(MiscSettingPanel.USE_JERSEY, MiscSettingPanel.DEFAULT_USE_JERSEY);
-
-        try {
-            SSLContext ssl = SSLContext.getInstance("TLS");
-            TrustManager[] certs = {new OreOreTrustManager()};
-            ssl.init(null, certs, new SecureRandom());
-            HostnameVerifier verifier = new OreOreHostnameVerifier();
-            
-            client = createClient(useJersey, ssl, verifier, true);
-            asyncClient = createClient(useJersey, ssl, verifier, false);
-
-        } catch (KeyManagementException | NoSuchAlgorithmException ex) {
-            client = createClient(useJersey, null, null, true);
-            asyncClient = createClient(useJersey, null, null, false);
-        }
-
         // DolphnAuthFilterを設定する
         authFilter = new DolphinAuthFilter();
-        client.register(authFilter);
-        asyncClient.register(authFilter);
+        
+        try {
+            SSLContext ssl = OreOreSSL.getSslContext();
+            HostnameVerifier verifier = OreOreSSL.getVerifier();
+            client = createClient(ssl, verifier, false);
+            client.register(authFilter);
+            if (useComet) {
+                asyncClient = createClient(ssl, verifier, true);
+                asyncClient.register(authFilter);
+            }
+
+        } catch (KeyManagementException | NoSuchAlgorithmException ex) {
+            client = createClient(null, null, false);
+            client.register(authFilter);
+            if (useComet) {
+                asyncClient = createClient(null, null, true);
+                asyncClient.register(authFilter);
+            }
+        }
     }
     
     // Clientを作成する
-    private Client createClient(boolean useJersey, SSLContext ssl, HostnameVerifier verifier, boolean enableTimeout) {
-
+    private Client createClient(SSLContext ssl, HostnameVerifier verifier, boolean async) {
+/*
         Client ret = useJersey
-                ? createJerseyClient(ssl, verifier, enableTimeout)
-                : createResteasyClient(ssl, verifier, enableTimeout);
-        
+                ? createJerseyClient(ssl, verifier, async)
+                : createResteasyClient(ssl, verifier, async);
+*/
+        Client ret = createJerseyClient(ssl, verifier, async);
         return ret;
     }
     
     // JerseyClientを作成する
-    private Client createJerseyClient(SSLContext ssl, HostnameVerifier verifier, boolean enableTimeout) {
+    private Client createJerseyClient(SSLContext ssl, HostnameVerifier verifier, boolean async) {
         
-        JerseyClient jerseyClient = (ssl != null && verifier != null)
-                ? new JerseyClientBuilder().sslContext(ssl).hostnameVerifier(verifier).build()
-                : new JerseyClientBuilder().build();
+        JerseyClientBuilder builder = new JerseyClientBuilder();
         
-        // read timeoutを設定する
-        if (enableTimeout) {
-            jerseyClient.getConfiguration().property(ClientProperties.READ_TIMEOUT, TIMEOUT_IN_MILLISEC);
+        if (ssl != null && verifier != null) {
+            builder.sslContext(ssl).hostnameVerifier(verifier);
+        }
+        if (!async) {
+            builder.getConfiguration().property(ClientProperties.READ_TIMEOUT, TIMEOUT_IN_MILLISEC);
         }
         
-        return jerseyClient;
+        return builder.build();
     }
     
+/*
     // ResteasyClientを作成する
-    private Client createResteasyClient(SSLContext ssl, HostnameVerifier verifier, boolean enableTimeout) {
+    private Client createResteasyClient(SSLContext ssl, HostnameVerifier verifier, boolean async) {
         
-        ResteasyClient resteasyClient = (ssl != null && verifier != null)
-                ? new ResteasyClientBuilder().sslContext(ssl).hostnameVerifier(verifier).build()
-                : new ResteasyClientBuilder().build();
+        ResteasyClientBuilder builder = new ResteasyClientBuilder();
         
-        // read timeoutを設定する、めんどくちゃ
-        if (enableTimeout && resteasyClient.httpEngine() instanceof ApacheHttpClient4Engine) {
-            ApacheHttpClient4Engine engine = (ApacheHttpClient4Engine) resteasyClient.httpEngine();
-            HttpParams params = engine.getHttpClient().getParams();
-            HttpConnectionParams.setConnectionTimeout(params, TIMEOUT_IN_MILLISEC);
+        if (ssl != null && verifier != null) {
+            //builder.disableTrustManager();
+            builder.sslContext(ssl).hostnameVerifier(verifier);
         }
-
-        return resteasyClient;
-    }
-
-    private static class OreOreHostnameVerifier implements HostnameVerifier {
-
-        @Override
-        public boolean verify(String string, SSLSession ssls) {
-            return true;
+        if (!async) {
+            builder.connectionPoolSize(20);
+            builder.socketTimeout(TIMEOUT_IN_MILLISEC, TimeUnit.MILLISECONDS);
         }
         
+        return builder.build();
     }
-    
-    private static class OreOreTrustManager implements X509TrustManager {
-
-        @Override
-        public void checkClientTrusted(X509Certificate[] xcs, String string) throws CertificateException {
-        }
-
-        @Override
-        public void checkServerTrusted(X509Certificate[] xcs, String string) throws CertificateException {
-        }
-
-        @Override
-        public X509Certificate[] getAcceptedIssuers() {
-            return null;
-        }
-    }
+*/
 }

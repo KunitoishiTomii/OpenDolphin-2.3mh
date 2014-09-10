@@ -23,11 +23,9 @@ public interface IOrcaApi {
     public static final String ARRAY = "array";
     public static final String NAME = "name";
     public static final String STRING = "string";
-    
-    public static final String _CHILD = "_child";
-    
     public static final String CLASS = "class";
     public static final String TYPE = "type";
+    public static final String _CHILD = "_child";
     
     public static final String BASE_DATE = "Base_Date";
     
@@ -37,8 +35,15 @@ public interface IOrcaApi {
     public static final String PERFORM_TIME = "Perform_Time";
     public static final String MEDICAL_UID = "Medical_Uid";
     
-    public static final String DIAGNOSIS_INFORMATION = "Diagnosis_Information";
+    public static final String MEDICA_GET_REQ = "medicalgetreq";
+    public static final String SEQUENTIAL_NUMBER = "Sequential_Number";
+    public static final String INSURANCE_COMBINATION_NUMBER = "Insurance_Combination_Number";
     public static final String DEPARTMENT_CODE = "Department_Code";
+    public static final String PERFORM_CALENDAR = "Perform_Calendar";
+    public static final String PATIENT_INFORMATION = "Patient_Information";
+    public static final String WHOLE_NAME = "WholeName";
+    
+    public static final String DIAGNOSIS_INFORMATION = "Diagnosis_Information";
     public static final String PHYSICIAN_CODE = "Physician_Code";
     
     public static final String HEALTH_INSURANCE_INFORMATION = "HealthInsurance_Information";
@@ -63,10 +68,12 @@ public interface IOrcaApi {
     
     public static final String MEDICAL_INFORMATION = "Medical_Information";
     public static final String MEDICAL_INFORMATION_CHILD = MEDICAL_INFORMATION + _CHILD;
+    public static final String MEDICAL_LIST_INFORMATION = "Medical_List_Information";
+    public static final String MEDICAL_LIST_INFORMATION_CHILD = MEDICAL_LIST_INFORMATION + _CHILD;
     public static final String MEDICAL_CLASS = "Medical_Class";
     public static final String MEDICAL_CLASS_NAME = "Medical_Class_Name";
     public static final String MEDICAL_CLASS_NUMBER = "Medical_Class_Number";
-    public static final String MEDICATION_INFO = "Medication_Info";
+    public static final String MEDICATION_INFO = "Medication_info";
     public static final String MEDICATION_INFO_CHILD = MEDICATION_INFO + _CHILD;
     public static final String MEDICATION_CODE = "Medication_Code";
     public static final String MEDICATION_NAME = "Medication_Name";

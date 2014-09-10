@@ -64,7 +64,9 @@ public class LogFilter implements Filter {
         boolean authentication = password.equals(userMap.get(userName));
         
         if (!authentication) {
-            authentication = userService.authenticate(userName, password);
+            userMap.remove(userName);
+            String remoteIp = req.getRemoteAddr();
+            authentication = userService.authenticate(userName, password, remoteIp);
             if (!authentication) {
                 HttpServletResponse res = (HttpServletResponse) response;
                 StringBuilder sb = new StringBuilder();

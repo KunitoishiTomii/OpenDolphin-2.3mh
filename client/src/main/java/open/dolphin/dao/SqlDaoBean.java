@@ -6,14 +6,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import javax.swing.JOptionPane;
 import open.dolphin.delegater.OrcaDelegater;
 import open.dolphin.infomodel.DiseaseEntry;
 import open.dolphin.infomodel.OrcaSqlModel;
 import open.dolphin.infomodel.TensuMaster;
 import open.dolphin.project.Project;
-import org.apache.tomcat.jdbc.pool.DataSource;
-import org.apache.tomcat.jdbc.pool.PoolProperties;
+//import org.apache.tomcat.jdbc.pool.DataSource;
+//import org.apache.tomcat.jdbc.pool.PoolProperties;
 
 /**
  * SqlDaoBean
@@ -57,7 +56,7 @@ public class SqlDaoBean extends DaoBean {
     
     protected static final DecimalFormat srycdFrmt = new DecimalFormat("000000000");
     
-    private static DataSource dataSource;
+    //private static DataSource dataSource;
     
     
     /**
@@ -112,7 +111,7 @@ public class SqlDaoBean extends DaoBean {
         return client;
     }
     
-    protected List<String[]> executeStatement(String sql) {
+    protected List<String[]> executeStatement(String sql) throws DaoException {
         
         if (isClient()) {
             return executeStatement1(sql);
@@ -120,7 +119,7 @@ public class SqlDaoBean extends DaoBean {
         return executeStatement2(sql);
     }
     
-    private List<String[]> executeStatement1(String sql) {
+    private List<String[]> executeStatement1(String sql) throws DaoException {
 
         List<String[]> valuesList = new ArrayList<>();
 
@@ -139,19 +138,17 @@ public class SqlDaoBean extends DaoBean {
             }
 
         } catch (Exception ex) {
-            //ex.printStackTrace(System.err);
             processError(ex);
         }
 
         return valuesList;
     }
     
-    private List<String[]> executeStatement2(String sql) {
-        
+    private List<String[]> executeStatement2(String sql) throws DaoException {
+
         OrcaSqlModel sqlModel = new OrcaSqlModel();
         sqlModel.setUrl(getURL());
         sqlModel.setSql(sql);
-
         try {
             OrcaSqlModel result = OrcaDelegater.getInstance().executeQuery(sqlModel);
             if (result != null) {
@@ -163,26 +160,74 @@ public class SqlDaoBean extends DaoBean {
                 }
             }
         } catch (Exception ex) {
+            processError(ex);
         }
-
         return Collections.emptyList();
+
     }
 
-    protected List<String[]> executePreparedStatement(String sql, Object[] params) {
+    protected List<String[]> executePreparedStatement(String sql, Object[] params) throws DaoException {
+
+        if (isClient()) {
+            return executePreparedStatement1(sql, params);
+        } else {
+            return executePreparedStatement2(sql, params);
+        }
+    }
+    
+    private List<String[]> executePreparedStatement1(String sql, Object[] params) throws DaoException {
+        
+        List<String[]> valuesList = new ArrayList<>();
+
+        try (Connection con = getConnection();
+                PreparedStatement ps = con.prepareStatement(sql)) {
+
+            for (int i = 0; i < params.length; ++i) {
+                ps.setObject(i + 1, params[i]);
+            }
+
+            try (ResultSet rs = ps.executeQuery()) {
+                int columnCount = rs.getMetaData().getColumnCount();
+                while (rs.next()) {
+                    final String[] values = new String[columnCount];
+                    for (int i = 0; i < columnCount; ++i) {
+                        values[i] = String.valueOf(rs.getObject(i + 1));
+                    }
+                    valuesList.add(values);
+                }
+            }
+        } catch (Exception ex) {
+            processError(ex);
+        }
+        
+        return valuesList;
+    }
+    
+    private List<String[]> executePreparedStatement2(String sql, Object[] params) throws DaoException {
+
+        OrcaSqlModel sqlModel = new OrcaSqlModel();
+        sqlModel.setUrl(getURL());
+        sqlModel.setSql(sql);
+        sqlModel.setParams(params);
         
         try {
-            String sql2 = createSql(sql, params);
-            if (isClient()) {
-                return executeStatement1(sql2);
+            OrcaSqlModel result = OrcaDelegater.getInstance().executeQuery(sqlModel);
+            if (result != null) {
+                String errMsg = result.getErrorMessage();
+                if (errMsg != null) {
+                    processError(new SQLException(result.getErrorMessage()));
+                } else {
+                    return result.getValuesList();
+                }
             }
-            return executeStatement2(sql2);
-        } catch (SQLException ex) {
+        } catch (Exception ex) {
+            processError(ex);
         }
         
         return Collections.emptyList();
     }
     
-    private String createSql(String sql, Object[] params) throws SQLException {
+    private String createSql(String sql, Object[] params) throws DaoException {
         
         int index = 0;
         StringBuilder sb = new StringBuilder();
@@ -204,11 +249,10 @@ public class SqlDaoBean extends DaoBean {
                 }
             }
         } catch (Exception ex) {
-            throw new SQLException(ex.getMessage());
+            throw new DaoException(ex);
         }
-
         if (index != params.length) {
-            throw new SQLException("Illegal parameter count.");
+            throw new DaoException("Illegal parameter count.");
         }
 
         return sb.toString();
@@ -236,7 +280,7 @@ public class SqlDaoBean extends DaoBean {
     }
 
     // ORCAのptidを取得する
-    protected final long getOrcaPtID(String patientId){
+    protected final long getOrcaPtID(String patientId) throws DaoException {
 
         long ptid = 0;
         int hospNum = getHospNum();
@@ -255,53 +299,39 @@ public class SqlDaoBean extends DaoBean {
         return ptid;
     }
 
-    private Connection getConnection() throws Exception {
-        Connection con;
-        try {
-            if (false) {
-                con = DriverManager.getConnection(getURL(), getUser(), getPasswd());
-            } else {
-                con = getConnectionFromPool();
-            }
-        } catch (Exception ex) {
-            processError(ex);
-            String msg = getErrorMessage();
-            String title = "ORCA接続";
-            JOptionPane.showMessageDialog(null, msg, title, JOptionPane.WARNING_MESSAGE);
-            throw ex;
-        }
-        return con;
+    private Connection getConnection() throws SQLException {
+        
+        return DriverManager.getConnection(getURL(), getUser(), getPasswd());
+        //return getConnectionFromPool();
     }
     
-    private Connection getConnectionFromPool() throws Exception {
-        
-        if (dataSource == null) {
-            setupDataSource();
-        }
-        // 呼び出し前にエラーをクリア。シングルトン化の影響ｗ
-        errorCode = TT_NO_ERROR;
-        errorMessage = null;
-        
-        return dataSource.getConnection();
-    }
-    
-    private void setupDataSource() {
-        PoolProperties p = new PoolProperties();
-        p.setDriverClassName(getDriver());
-        p.setUrl(getURL());
-        p.setUsername(getUser());
-        p.setPassword(getPasswd());
-        p.setDefaultReadOnly(true);
-        p.setMaxActive(2);
-        p.setMaxIdle(2);
-        p.setMinIdle(1);
-        p.setInitialSize(1);
-        p.setMaxWait(5000);
-        p.setRemoveAbandonedTimeout(30);
-        p.setRemoveAbandoned(true);
-        dataSource = new DataSource();
-        dataSource.setPoolProperties(p);
-    }
+//    private Connection getConnectionFromPool() throws SQLException{
+//        
+//        if (dataSource == null) {
+//            setupDataSource();
+//        }
+//        
+//        return dataSource.getConnection();
+//    }
+//    
+//    private void setupDataSource() {
+//        
+//        PoolProperties p = new PoolProperties();
+//        p.setDriverClassName(getDriver());
+//        p.setUrl(getURL());
+//        p.setUsername(getUser());
+//        p.setPassword(getPasswd());
+//        p.setDefaultReadOnly(true);
+//        p.setMaxActive(2);
+//        p.setMaxIdle(2);
+//        p.setMinIdle(1);
+//        p.setInitialSize(1);
+//        p.setMaxWait(5000);
+//        p.setRemoveAbandonedTimeout(30);
+//        p.setRemoveAbandoned(true);
+//        dataSource = new DataSource();
+//        dataSource.setPoolProperties(p);
+//    }
 
     public String getDriver() {
         return driver;
@@ -372,9 +402,9 @@ public class SqlDaoBean extends DaoBean {
     }
     
     public static void closeDao() {
-        if (dataSource != null) {
-            dataSource.close(true);
-        }
+//        if (dataSource != null) {
+//            dataSource.close(true);
+//        }
     }
     
     protected void rollback(Connection con) {

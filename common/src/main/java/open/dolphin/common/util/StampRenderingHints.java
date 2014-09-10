@@ -1,6 +1,7 @@
 package open.dolphin.common.util;
 
 import java.awt.Color;
+import java.awt.Font;
 import open.dolphin.infomodel.BundleDolphin;
 import open.dolphin.infomodel.ClaimConst;
 import open.dolphin.infomodel.ClaimItem;
@@ -22,6 +23,8 @@ public class StampRenderingHints {
     private int cellSpacing = 1;    //masuda 0 -> 1 to avoid unexpected line wrap
     private int cellPadding = 0;    //masuda 3 -> 0 to make slim
     private boolean laboFold = true;
+    
+    private Font font;
 
     private static final StampRenderingHints instance;
     
@@ -62,9 +65,15 @@ public class StampRenderingHints {
     }
     
     public String build84Name(ClaimItem item) {
+        
+        String number = item.getNumber();
+        if (number == null) {
+            return item.getName();
+        }
+        
         try {
             char[] chars = item.getName().toCharArray();
-            String[] numTokens = item.getNumber().split("-");
+            String[] numTokens = number.split("-");
             StringBuilder sb = new StringBuilder();
             boolean skip = false;
             int index = 0;
@@ -85,7 +94,7 @@ public class StampRenderingHints {
         } catch (Exception ex) {
         }
         
-        return item.getName() + " " + item.getNumber();
+        return item.getName() + " " + number;
     }
     
     public String getMedTypeAndCode(BundleDolphin model) {
@@ -115,6 +124,20 @@ public class StampRenderingHints {
         return sb.toString();
     }
     // velocityから使う↑
+    
+    public Font getFont() {
+        return font;
+    }
+    
+    public void setFont(Font font) {
+        this.font = font;
+        setFontSize(font.getSize());
+    }
+    
+    public void setFont(String stampFontName, int stampFontStyle, int stampFontSize) {
+       font = new Font(stampFontName, stampFontStyle, stampFontSize);
+       fontSize = stampFontSize;
+    }
 
     public int getFontSize() {
         return fontSize;

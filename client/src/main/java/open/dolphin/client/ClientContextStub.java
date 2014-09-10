@@ -4,7 +4,6 @@ import ch.randelshofer.quaqua.QuaquaManager;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.io.*;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.text.DateFormat;
 import java.util.List;
@@ -30,10 +29,10 @@ import org.apache.velocity.app.Velocity;
 /**
  * Dolphin Client のコンテキストクラス。
  *
- * @author  Kazushi Minagawa, Digital Globe, Inc.
+ * @author Kazushi Minagawa, Digital Globe, Inc.
  */
 public final class ClientContextStub {
-    
+
     //--------------------------------------------------------------------------
     private final String RESOURCE_LOCATION = "/open/dolphin/resources/";
     private final String TEMPLATE_LOCATION = "/open/dolphin/resources/templates/";
@@ -55,11 +54,8 @@ public final class ClientContextStub {
     private String pathToDolphin;
 
     private final boolean dolphinPro;
-    
-    private boolean isNimbus;
 
     //private URLClassLoader pluginClassLoader;
-
     /**
      * ClientContextStub オブジェクトを生成する。
      */
@@ -73,12 +69,12 @@ public final class ClientContextStub {
             //----------------------------------------
 //masuda^
 /*
-            if (dolphinPro) {
-                pathToDolphin = createDirectory(System.getProperty("user.home"), "OpenDolphinPro");
-            } else {
-                pathToDolphin = createDirectory(System.getProperty("user.home"), "OpenDolphin");
-            }
-*/
+             if (dolphinPro) {
+             pathToDolphin = createDirectory(System.getProperty("user.home"), "OpenDolphinPro");
+             } else {
+             pathToDolphin = createDirectory(System.getProperty("user.home"), "OpenDolphin");
+             }
+             */
             pathToDolphin = createDirectory(System.getProperty("user.home"), "OpenDolphin-m");
 //masuda%
             String pathToSetting = createDirectory(pathToDolphin, "setting");
@@ -154,7 +150,6 @@ public final class ClientContextStub {
 //            }
 //            URL[] urls = list.toArray(new URL[list.size()]);
 //            pluginClassLoader = new URLClassLoader(urls);
-
             //------------------------------
             // Velocityを初期化する
             //------------------------------
@@ -172,7 +167,6 @@ public final class ClientContextStub {
 //masuda^   Projectを作ってからにする
             //setUI();
 //masuda$
-
         } catch (DolphinException | IOException e) {
             e.printStackTrace(System.err);
             System.exit(1);
@@ -199,7 +193,7 @@ public final class ClientContextStub {
         sb.append(getLogDirectory()).append("/").append(logFile);
         return sb.toString();
     }
-    
+
     public LinkedHashMap<String, String> getToolProviders() {
         return toolProviders;
     }
@@ -207,7 +201,6 @@ public final class ClientContextStub {
 //    public URLClassLoader getPluginClassLoader() {
 //        return pluginClassLoader;
 //    }
-
     public VelocityContext getVelocityContext() {
         return new VelocityContext();
     }
@@ -232,12 +225,11 @@ public final class ClientContextStub {
         int index = clsName.lastIndexOf(".");
         sb.append(clsName.subSequence(0, index));
         sb.append(".resources.");
-        sb.append(clsName.substring(index+1));
+        sb.append(clsName.substring(index + 1));
         return sb.toString();
     }
 
     //---------------------------------------------------------
-
     public Logger getBootLogger() {
         return Logger.getLogger("boot.logger");
     }
@@ -267,7 +259,6 @@ public final class ClientContextStub {
     }
 
     //-----------------------------------------------------------
-
     public boolean isMac() {
         return System.getProperty(PROPERTY_OS).toLowerCase().startsWith(OS_MAC);
     }
@@ -290,7 +281,6 @@ public final class ClientContextStub {
     }
 
     //-----------------------------------------------------------
-
     private String getLocation(String dirName) {
         StringBuilder sb = new StringBuilder();
         sb.append(getBaseDirectory()).append(File.separator).append(dirName);
@@ -304,7 +294,6 @@ public final class ClientContextStub {
 //    public String getPluginsDirectory() {
 //        return getLocation("plugins");
 //    }
-
     public String getSettingDirectory() {
         return getLocation("setting");
     }
@@ -312,7 +301,7 @@ public final class ClientContextStub {
     public String getLogDirectory() {
         return getLocation("log");
     }
-    
+
     public String getPDFDirectory() {
         return getLocation("pdf");
     }
@@ -320,13 +309,12 @@ public final class ClientContextStub {
     public String getSchemaDirectory() {
         return getLocation("schema");
     }
-    
+
     public String getOdtTemplateDirectory() {
         return getLocation("odt_template");
     }
 
     //-----------------------------------------------------------
-
     public String getVersion() {
         return getString(RESNAME_VERSION);
     }
@@ -377,7 +365,7 @@ public final class ClientContextStub {
     }
 
     public ImageIcon getImageIcon(String name) {
-        if (name!=null) {
+        if (name != null) {
             return new ImageIcon(getImageResource(name));
         }
         return null;
@@ -625,7 +613,7 @@ public final class ClientContextStub {
     public int getMoreHigherRowHeight() {
         return isMac() ? 20 : 25;
     }
-    
+
     private void listJars(List list, File dir) {
         File[] files = dir.listFiles();
         for (File file : files) {
@@ -641,21 +629,18 @@ public final class ClientContextStub {
     }
 
     /**
-     * LookAndFeel、フォント、Mac メニューバー使用を設定する。
-     * Modified by masuda
+     * LookAndFeel、フォント、Mac メニューバー使用を設定する。 Modified by masuda
      */
     public void setUI() {
 
-        //String sytemLafCls = UIManager.getSystemLookAndFeelClassName();
-        //Locale locale = Locale.getDefault();
+        //String systemLaf = UIManager.getSystemLookAndFeelClassName();
         String systemLaf = isMac()
                 ? ILookAndFeelConst.AQUA_LAF_CLS
                 : ILookAndFeelConst.NIMBUS_LAF_CLS;
         String userLaf = Project.getString("lookAndFeel", systemLaf);
 
-        //userLaf = QUAQUA_LAF_CLS;
         boolean isQuaqua = ILookAndFeelConst.QUAQUA_LAF_CLS.equals(userLaf);
-        isNimbus = userLaf.contains("nimbus");
+        boolean isNimbus = userLaf.contains("nimbus");
 
         // Quaqua設定
         if (isQuaqua) {
@@ -675,21 +660,16 @@ public final class ClientContextStub {
             //UIManager.put("Quaqua.Debug.showVisualBounds", true);
             //UIManager.put("Quaqua.Debug.showClipBounds", true);
         }
-        
-        // MacにもNimbusあった
-        //if (isMac() && isNimbus) {
-        //    userLaf = sytemLafCls;
-        //}
-        
-        // JTattooの設定
-        if (userLaf.startsWith(ILookAndFeelConst.JTATTOO)) {
-            try {
-                Class cls = Class.forName(userLaf);
-                Method method = cls.getMethod("setTheme", new Class[]{String.class, String.class, String.class});
-                method.invoke(cls.newInstance(), "Default", "", "");
-            } catch (Exception ex) {
-            }
-        }
+
+//        // JTattooの設定
+//        if (userLaf.startsWith(ILookAndFeelConst.JTATTOO)) {
+//            try {
+//                Class cls = Class.forName(userLaf);
+//                Method method = cls.getMethod("setTheme", new Class[]{String.class, String.class, String.class});
+//                method.invoke(cls.newInstance(), "Default", "", "");
+//            } catch (Exception ex) {
+//            }
+//        }
 
         // UIManagerにLAFを設定する
         try {
@@ -698,6 +678,9 @@ public final class ClientContextStub {
             e.printStackTrace(System.err);
             getBootLogger().warn(e.getMessage());
         }
+
+        // フォント設定
+        FontManager.initFonts();
         
         // 上書き設定群
         if (isQuaqua) {
@@ -714,71 +697,24 @@ public final class ClientContextStub {
                 defaults.put(key, map);
             }
             
-            Font font12 = new Font("SansSerif", Font.PLAIN, 12);
-            UIManager.put("Label.font", font12);
-            UIManager.put("Button.font", font12);
-            UIManager.put("ToggleButton.font", font12);
-            UIManager.put("Menu.font", font12);
-            UIManager.put("MenuItem.font", font12);
-            UIManager.put("CheckBox.font", font12);
-            UIManager.put("CheckBoxMenuItem.font", font12);
-            UIManager.put("RadioButton.font", font12);
-            UIManager.put("RadioButtonMenuItem.font", font12);
-            UIManager.put("ToolBar.font", font12);
-            UIManager.put("ComboBox.font", font12);
-            UIManager.put("TabbedPane.font", font12);
-            UIManager.put("TitledBorder.font", font12);
-            UIManager.put("List.font", font12);
-            
-        } else {
-            Font font11 = new Font("SansSerif", Font.PLAIN, 11);
-            Font font12 = new Font("SansSerif", Font.PLAIN, 12);
-            Font font13 = new Font("SansSerif", Font.PLAIN, 13);
-            
-            UIManager.put("Label.font", font12);
-            UIManager.put("Button.font", font12);
-            UIManager.put("ToggleButton.font", font12);
-            UIManager.put("Menu.font", font12);
-            UIManager.put("MenuItem.font", font12);
-            UIManager.put("CheckBox.font", font12);
-            UIManager.put("CheckBoxMenuItem.font", font12);
-            UIManager.put("RadioButton.font", font12);
-            UIManager.put("RadioButtonMenuItem.font", font12);
-            UIManager.put("ToolBar.font", font12);
-            UIManager.put("ComboBox.font", font12);
-            UIManager.put("TabbedPane.font", font12);
-            UIManager.put("TitledBorder.font", font12);
-            UIManager.put("List.font", font12);
-            UIManager.put("TextPane.font", font13);     // 大き目
-            UIManager.put("TextField.font", font13);
-            UIManager.put("PasswordField.font", font13);
-            UIManager.put("TextArea.font", font13);
-            UIManager.put("Table.font", font12);
-            UIManager.put("TableHeader.font", font11);  // 小さ目
-            UIManager.put("Tree.rowHeight", 20);        // 高さ指定
-            UIManager.put("TabbedPane.font", font12);
-            UIManager.put("OptionPane.font", font13);
-            UIManager.put("OptionPane.messageFont", font13);
-        }
-        
-        // NimbusのUI調節
-        if (isNimbus) {
+        } else if (isNimbus) {
+            // NimbusのUI調節
             UIManager.put("TextPaneUI", BasicTextPaneUI.class.getName());
             UIManager.put("TextPane.selectionBackground", new Color(57, 105, 138));
             UIManager.put("TextPane.selectionForeground", Color.WHITE);
             UIManager.put("TextPane.border", new EmptyBorder(8, 8, 8, 8));
             UIManager.put("TextArea.contentMargins", new Insets(0, 0, 0, 0));
             UIManager.put("TitledBorder.border", new BevelBorder(BevelBorder.LOWERED));
-        }
-        
-        // Windows LAF テーブル選択背景色変更
-        if (ILookAndFeelConst.WIN_LAF_CLS.equals(userLaf)) {
+            
+        } else if (ILookAndFeelConst.WIN_LAF_CLS.equals(userLaf)) {
+            // Windows LAF テーブル選択背景色変更
             final Color c = new Color(56, 117, 215);
             UIManager.put("Table.selectionBackground", c);
             UIManager.put("Tree.selectionBackground", c);
             UIManager.put("List.selectionBackground", c);
         }
         
+        UIManager.put("Tree.rowHeight", 20);    // 高さ指定
         UIManager.put("Table.dropLineColor", Color.BLACK);
         UIManager.put("Tree.dropLineColor", Color.BLACK);
         UIManager.put("List.dropLineColor", Color.BLACK);
@@ -790,14 +726,12 @@ public final class ClientContextStub {
         UIManager.put("OptionPane.noButtonText", "いいえ");
 
         getBootLogger().debug("デフォルトのフォントを変更しました。");
-        
-        // Web Look and Feelがロケールを書き換えやがるので戻す
-        //Locale.setDefault(locale);
+
         // ウィンドウフレームの装飾
         //JFrame.setDefaultLookAndFeelDecorated(true);
         //JDialog.setDefaultLookAndFeelDecorated(true);
     }
-    
+
     public Color getZebraColor() {
 
         Color c = getColor("color.even");
@@ -817,7 +751,7 @@ public final class ClientContextStub {
         }
         return c;
     }
-    
+
 //minagawa^ Icon Server
     public ImageIcon getImageIconArias(String name) {
         return this.getImageIcon(getString(name));

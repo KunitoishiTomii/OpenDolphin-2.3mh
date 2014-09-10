@@ -19,7 +19,13 @@ import javax.swing.table.TableColumn;
 import open.dolphin.client.*;
 import open.dolphin.delegater.LaboDelegater;
 import open.dolphin.helper.WindowSupport;
-import open.dolphin.infomodel.*;
+import open.dolphin.infomodel.ChartEventModel;
+import open.dolphin.infomodel.LaboModuleValue;
+import open.dolphin.infomodel.NLaboItem;
+import open.dolphin.infomodel.NLaboModule;
+import open.dolphin.infomodel.PatientLiteModel;
+import open.dolphin.infomodel.PatientModel;
+import open.dolphin.infomodel.PatientVisitModel;
 import open.dolphin.project.Project;
 import open.dolphin.table.ColumnSpecHelper;
 import open.dolphin.table.ListTableModel;
@@ -45,7 +51,7 @@ public class NLaboTestImporter extends AbstractMainComponent {
                     "karteName", "karteSex", "sampleDate", "numOfTestItems", "result", "isOpened"};
     private static final Class[] COLUMN_CLASSES = {
         String.class, String.class, String.class, String.class, String.class, 
-        String.class, String.class, String.class, Integer.class, String.class, String.class};
+        String.class, String.class, String.class, Integer.class, String.class, Object.class};
     // 来院テーブルのカラム幅
     private static final int[] COLUMN_WIDTH = {
         50, 50, 80, 100, 50, 100, 50, 80, 50, 50, 20};

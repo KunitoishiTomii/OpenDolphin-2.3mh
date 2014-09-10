@@ -14,10 +14,16 @@ import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import open.dolphin.client.ClientContext;
 import open.dolphin.delegater.StampDelegater;
-import open.dolphin.infomodel.*;
+import open.dolphin.infomodel.IInfoModel;
+import open.dolphin.infomodel.ModuleInfoBean;
+import open.dolphin.infomodel.ModuleModel;
 import open.dolphin.stampbox.StampTree;
 import open.dolphin.stampbox.StampTreeNode;
 import open.dolphin.common.util.BeanUtils;
+import open.dolphin.infomodel.IModuleModel;
+import open.dolphin.infomodel.RegisteredDiagnosisModel;
+import open.dolphin.infomodel.StampModel;
+import open.dolphin.infomodel.TextStampModel;
 
 /**
  * EditorSetPanel

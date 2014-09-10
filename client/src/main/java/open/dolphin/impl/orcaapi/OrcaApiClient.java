@@ -1,13 +1,14 @@
 package open.dolphin.impl.orcaapi;
 
+import java.net.URI;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.WebTarget;
 import open.dolphin.project.Project;
-import open.dolphin.setting.MiscSettingPanel;
+//import open.dolphin.setting.MiscSettingPanel;
 import org.glassfish.jersey.client.JerseyClientBuilder;
-import org.glassfish.jersey.client.filter.HttpBasicAuthFilter;
-import org.jboss.resteasy.client.jaxrs.BasicAuthentication;
-import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
+import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
+//import org.jboss.resteasy.client.jaxrs.BasicAuthentication;
+//import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 
 /**
  * ORCA API用のRest Client
@@ -26,36 +27,47 @@ public class OrcaApiClient implements IOrcaApi {
     }
     
     private OrcaApiClient() {
-        setup();
+        setupClient();
     }
     
     public static OrcaApiClient getInstance() {
         return instance;
     }
     
-    final public void setup() {
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("http://");
-        sb.append(Project.getString(Project.CLAIM_ADDRESS));
-        sb.append(":").append(String.valueOf(API_PORT));
-        String uri = sb.toString();
-        String username = Project.getString(Project.ORCA_USER_ID);
-        String password = Project.getString(Project.ORCA_USER_PASSWORD);
-        
+    private void setupClient() {
+/*
         boolean useJersey = Project.getBoolean(MiscSettingPanel.USE_JERSEY, MiscSettingPanel.DEFAULT_USE_JERSEY);
         
         if (useJersey) {
             client = new JerseyClientBuilder().build();
-            webTarget = client.target(uri);
-            webTarget.register(new HttpBasicAuthFilter(username, password));
         } else {
             client = new ResteasyClientBuilder().build();
-            webTarget = client.target(uri);
-            webTarget.register(new BasicAuthentication(username, password));
         }
+*/
+        boolean useJersey = true;
+        client = new JerseyClientBuilder().build();
+        
+        setupWebTarget(useJersey);
     }
     
+    private void setupWebTarget(boolean useJersey) {
+        
+        StringBuilder sb = new StringBuilder();
+        sb.append("http://");
+        sb.append(Project.getString(Project.CLAIM_ADDRESS));
+        sb.append(":").append(String.valueOf(API_PORT));
+        URI uri = URI.create(sb.toString());
+        String username = Project.getString(Project.ORCA_USER_ID);
+        String password = Project.getString(Project.ORCA_USER_PASSWORD);
+
+        webTarget = client.target(uri);
+        if (useJersey) {
+            webTarget.register(HttpAuthenticationFeature.basic(username, password));
+        } else {
+            //webTarget.register(new BasicAuthentication(username, password));
+        }
+    }
+
     public WebTarget getWebTarget() {
         return webTarget;
     }

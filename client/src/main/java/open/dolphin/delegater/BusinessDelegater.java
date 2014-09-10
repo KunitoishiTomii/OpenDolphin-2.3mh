@@ -9,9 +9,14 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import open.dolphin.client.ClientContext;
-import open.dolphin.infomodel.*;
 import open.dolphin.common.util.BeanUtils;
 import open.dolphin.common.util.JsonConverter;
+import open.dolphin.infomodel.HealthInsuranceModel;
+import open.dolphin.infomodel.IInfoModel;
+import open.dolphin.infomodel.IRestConstants;
+import open.dolphin.infomodel.PVTHealthInsuranceModel;
+import open.dolphin.infomodel.PatientModel;
+import open.dolphin.infomodel.PatientVisitModel;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
