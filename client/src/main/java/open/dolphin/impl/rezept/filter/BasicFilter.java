@@ -114,15 +114,22 @@ public class BasicFilter extends AbstractCheckFilter {
         }
         
         // 重複
-        for (int i = 0; i < len; ++i) {
-            String diag1 = diagList.get(i).getDiagName();
-            for (int j = i; j < len; ++j) {
-                if (i != j) {
-                    String diag2 = diagList.get(j).getDiagName();
-                    if (diag1.equals(diag2)) {
-                        String msg = String.format("病名 %s は重複しています", diag1);
-                        CheckResult result = createCheckResult(msg, CheckResult.CHECK_ERROR);
-                        results.add(result);
+        if (len >= 2){
+            for (int i = 0; i < len-1; ++i) {
+                SY_Model diag1 = diagList.get(i);
+                for (int j = i+1; j < len; ++j) {
+                    SY_Model diag2 = diagList.get(j);
+                    if (diag1.getDiagName().equals(diag2.getDiagName())) {
+                        if (diag1.getOutcome() == null && diag2.getOutcome() == null){
+                            String msg = String.format("病名 %s は重複しています(転帰なし)", diag1.getDiagName());
+                            CheckResult result = createCheckResult(msg, CheckResult.CHECK_ERROR);
+                            results.add(result);
+                        }
+                        else{
+                            String msg = String.format("病名 %s は重複しています(転帰あり)", diag1.getDiagName());
+                            CheckResult result = createCheckResult(msg, CheckResult.CHECK_WARNING);
+                            results.add(result);
+                        }
                     }
                 }
             }
