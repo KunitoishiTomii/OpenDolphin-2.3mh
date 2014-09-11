@@ -37,7 +37,7 @@ public class ClientChartEventEndpoint {
     public void connect() throws Exception {
 
         String clientUUID = Dolphin.getInstance().getClientUUID();
-        Integer CammaPos = clientUUID.indexOf(",");
+        Integer CammaPos = clientUUID.indexOf(",");     // websocketのendpoint作成はUUIDのみ(日付・ID等は含まない。カンマを含むとエラーになるため)
         String fidUid = Project.getUserModel().getUserId();
         String passwd = Project.getUserModel().getPassword();
         String baseURI = Project.getString(Project.SERVER_URI);
