@@ -753,7 +753,7 @@ public final class SqlMiscDao extends SqlDaoBean {
     public List<String[]> getRecedenCsv(String ymStr, String nyugaikbn, int teisyutusaki) throws DaoException {
 
         final String sql = "select rece.recedata, rece.totalten from tbl_receden rece, tbl_seikyu_main seikyu"
-                + " where (seikyu.sryym = ? or seikyu.skyym = ?) and rece.nyugaikbn = ? and rece.teisyutusaki = ? and rece.hospnum = ?"
+                + " where ((seikyu.sryym = ? and seikyu.skyym = '000000') or seikyu.skyym = ?) and rece.nyugaikbn = ? and rece.teisyutusaki = ? and rece.hospnum = ?"
                 + " and rece.sryym = seikyu.sryym and rece.nyugaikbn = seikyu.nyugaikbn and rece.teisyutusaki = seikyu.teisyutusaki"
                 + " and rece.ptid = seikyu.ptid"
                 + " order by rece.ptid, seikyu.sryym, rece.rennum";
