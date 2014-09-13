@@ -1,6 +1,8 @@
 package open.dolphin.impl.rezept.model;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
@@ -180,6 +182,27 @@ public class RE_Model implements IRezeModel {
             addCheckResult(result);
         }
     }
+    public void sortCheckResults(){
+        
+        int iResultCnt;
+        
+        if(checkResults != null){
+            Collections.sort(checkResults, new CheckResultSorter());
+
+            // リスト内でメッセージが重複しているものを削除して見やすくする
+            iResultCnt = 0;
+            while(iResultCnt < checkResults.size() - 1){
+            if(checkResults.get(iResultCnt).getMsg().equals(checkResults.get(iResultCnt+1).getMsg())){
+                checkResults.remove(iResultCnt+1);
+            }
+            else{
+                iResultCnt++;
+            }
+        }        }
+        else{
+            // リストないため何もしない
+        }
+    }
     
     public void initCheckResult() {
         
@@ -200,5 +223,38 @@ public class RE_Model implements IRezeModel {
         }
         checkFlag = 0;
         
+    }
+
+    private static class CheckResultSorter implements Comparator<CheckResult>{
+
+        @Override
+        public int compare(CheckResult d1, CheckResult d2){
+            int i = 0;
+            // 関数名のcompareは決まりごとである。
+            // d1がd2より先に来るなら、d1の特徴量がd2のそれより小さくなるような関数を作成する。
+            
+            if(d1.getResult() > d2.getResult()){
+                i = -1;
+            }else if(d1.getResult() < d2.getResult()){
+                i = 1;
+            }
+            
+            if (i==0){
+                if(d1.getFilterName().compareTo(d2.getFilterName()) < 0){
+                    i = -1;
+                }else if(d1.getFilterName().compareTo(d2.getFilterName()) > 0){
+                    i = 1;
+                }
+            }
+            
+            if (i==0){
+                if(d1.getMsg().compareTo(d2.getMsg()) < 0){
+                    i = 1;
+                }else if(d1.getMsg().compareTo(d2.getMsg()) > 0){
+                    i = 1;
+                }
+            }
+            return i;
+        }
     }
 }

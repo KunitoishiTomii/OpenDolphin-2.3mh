@@ -570,6 +570,8 @@ public class RezeptViewer {
             } catch (Exception ex) {
             }
         }
+        
+        reModel.sortCheckResults();
     }
     
     private void createIndicationMap() throws Exception {
