@@ -69,6 +69,10 @@ public class OrcaApiElement2 implements IOrcaApi {
 
             super("HealthInsurance_Information");
             setAttribute(TYPE, RECORD);
+            
+            if (model == null) {
+                return;
+            }
 
             String insuranceClassCode = model.getInsuranceClassCode();
             // 以下の項目は「公費単独(XX)」 ** 以外 ** の場合のみ add する
